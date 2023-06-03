@@ -16,8 +16,14 @@ cost.
 
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :hidden:
+   
+   installation
+   usage/index
+   gettingstarted
+   overview/index
+   code
+   references
 
 
 
