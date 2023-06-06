@@ -3,3 +3,5 @@ DCRL-green is a framework for testing multi-agent Reinforcement Learning (MARL) 
 
 <img src="https://github.com/HewlettPackard/dc-rl/blob/main/sphinx/images/DCRL-sim1.png" align="centre" width="500" />
 
+## Documentation and Installation
+Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for documentation of the DCRL-Green.
