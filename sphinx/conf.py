@@ -43,6 +43,10 @@ extensions = [
 # source for bib references
 bibtex_bibfiles = ['references.bib']
 
+# citation style
+bibtex_default_style = 'plain'
+bibtex_reference_style = 'label'
+
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
 
