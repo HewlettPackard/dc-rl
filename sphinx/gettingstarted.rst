@@ -2,4 +2,4 @@
 Getting Started
 ===============
 
-Describe how to run algorithm of choice
+Describe how to run with default configurations

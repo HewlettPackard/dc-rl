@@ -28,7 +28,7 @@ Dependencies
 First-time setup
 ----------------
 
-Clone the latest DCRL-green version from github using:
+Clone the latest DCRL-Green version from github using:
 
 .. code-block:: bash
     
