@@ -19,8 +19,8 @@ cost. It uses OpenAI Gym standard and supports modeling and control of three dif
    :hidden:
    
    installation
-   usage/index
    gettingstarted
+   usage/index
    overview/index
    code
    references

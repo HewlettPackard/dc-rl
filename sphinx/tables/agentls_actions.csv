@@ -1,1 +1,3 @@
 Name,Type,Description,Range
+Allocate_workload,Binary,,0
+Idle,Binary,,1

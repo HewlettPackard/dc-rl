@@ -25,10 +25,10 @@ Include python command to run MADDPG
 DC simulation
 -------------
 
-The data center simulation framework can be constructed using the following two options
+The data center simulation framework can be constructed using the following two options:
 
-.. toctree::
-   :maxdepth: 1
+EnergyPlus enabled execution
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   load_using_manual
-   load_using_docker
+Custom built execution
+~~~~~~~~~~~~~~~~~~~~~~
