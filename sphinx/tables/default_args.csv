@@ -1,4 +1,4 @@
-Argument,Default input,Description
+Name,Default input,Description
 Experiment name,latest_experiment,Assigns a name for the experiment
 Location,ny,"Specifies the location of weather/ Carbon intensity data. ""ny"" represents New York"
 Carbon Intensity,NYIS_NG_&_avgCI.csv,The filename of the carbon-intensity data. The file format should be .csv
