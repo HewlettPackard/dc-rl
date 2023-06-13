@@ -18,7 +18,7 @@ cost. It uses OpenAI Gym standard and supports modeling and control of three dif
 .. toctree::
    :hidden:
    
-   installation
+   installation/index
    gettingstarted
    usage/index
    overview/index

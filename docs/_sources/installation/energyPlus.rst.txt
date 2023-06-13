@@ -1,8 +1,6 @@
-============
-Installation
-============
-
-DCRL-Green enables data center simulation framework hosted using OpenAI Gym. The framework is self-contained but allows for the integration of other co-simulation models such as EnergyPlus :cite:p:`crawley2000energy` through a plug-in interface.
+================================
+EnergyPlus enabled DC simulation
+================================
 
 Dependencies
 ------------

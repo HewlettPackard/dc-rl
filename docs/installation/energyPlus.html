@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>EnergyPlus enabled DC simulation &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Getting Started" href="../gettingstarted.html" />
+    <link rel="prev" title="DCRL-Green’s custom DC simulation" href="custom.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="custom.html">DCRL-Green’s custom DC simulation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">EnergyPlus enabled DC simulation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#first-time-setup">First-time setup</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Installation</a></li>
+      <li class="breadcrumb-item active">EnergyPlus enabled DC simulation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/installation/energyPlus.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="energyplus-enabled-dc-simulation">
+<h1>EnergyPlus enabled DC simulation<a class="headerlink" href="#energyplus-enabled-dc-simulation" title="Permalink to this headline"></a></h1>
+<section id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline"></a></h2>
+<ol class="arabic simple">
+<li><dl class="simple">
+<dt><a class="reference external" href="https://python.land/installing-python">Python</a></dt><dd><p>Python version 3.x is recommended.</p>
+</dd>
+</dl>
+</li>
+</ol>
+<ol class="arabic simple" start="2">
+<li><dl class="simple">
+<dt><a class="reference external" href="https://docs.docker.com/get-docker/">Docker</a></dt><dd><p>We include a Dockerfile for installing and setting up the image for running <a class="reference external" href="https://ugr-sail.github.io/sinergym/compilation/main/index.html">Sinergym</a> <span id="id1">[<a class="reference internal" href="../references.html#id3" title="Javier Jiménez-Raboso, Alejandro Campoy-Nieves, Antonio Manjavacas-Lucas, Juan Gómez-Romero, and Miguel Molina-Solana. Sinergym: a building simulation and control framework for training reinforcement learning agents. In Proceedings of the 8th ACM International Conference on Systems for Energy-Efficient Buildings, Cities, and Transportation, 319–323. New York, NY, USA, 2021. Association for Computing Machinery. URL: https://doi.org/10.1145/3486611.3488729, doi:10.1145/3486611.3488729.">4</a>]</span>.</p>
+</dd>
+</dl>
+</li>
+</ol>
+<ol class="arabic simple" start="3">
+<li><dl class="simple">
+<dt><a class="reference external" href="https://pypi.org/project/tensorboard/">TensorBoard</a></dt><dd><p>DCRL-Green uses <a class="reference external" href="ray">Ray RLlib</a>  to execute reinforcement learning algorithms. By default, RLlib logs results in Tensorboard.
+RLlib does not automatically install a deep-learning framework, but supports TensorFlow (both 1.x with static-graph and 2.x with eager mode) as well as PyTorch. Depending on your needs, make sure to install either TensorFlow or PyTorch (or both).</p>
+</dd>
+</dl>
+</li>
+</ol>
+</section>
+<section id="first-time-setup">
+<h2>First-time setup<a class="headerlink" href="#first-time-setup" title="Permalink to this headline"></a></h2>
+<p>Clone the latest DCRL-Green version from github using:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/HewlettPackard/dc-rl.git
+</pre></div>
+</div>
+<p>Pull the Docker image with command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>sudo docker pull agnprz/carbon_sustain:v3
+</pre></div>
+</div>
+<p>A docker container can be launched using the command:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">sudo docker run -t -i -v ./:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3</span>
+</pre></div>
+</div>
+<p>If the docker container is launched successfully, the <code class="code docutils literal notranslate"><span class="pre">sinergym</span></code> environment is enabled. A python script can be executed by navigating to the directory <code class="code docutils literal notranslate"><span class="pre">dc-rl</span></code>.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="custom.html" class="btn btn-neutral float-left" title="DCRL-Green’s custom DC simulation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../gettingstarted.html" class="btn btn-neutral float-right" title="Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

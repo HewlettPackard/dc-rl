@@ -38,6 +38,7 @@ extensions = [
     'sphinxemoji.sphinxemoji', # for emojis
     'sphinx_copybutton', # to copy code block
     'sphinx_panels', # for backgrounds
+    'sphinx.ext.autosectionlabel', #for reference sections using its title
 ]
 
 # source for bib references
