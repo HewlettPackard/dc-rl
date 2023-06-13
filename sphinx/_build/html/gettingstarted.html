@@ -82,16 +82,17 @@
              
   <section id="getting-started">
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline"></a></h1>
-<p>Run the following to simulate the DC enivronment and optimize the agents with default configurations:</p>
+<p>Within the docker container, run the following command to simulate the DC enivronment and optimize the agents with default configurations:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">filename</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 <p>The training logs and the results of each trial are stored in the specified local directory, under a sub-folder called <code class="code docutils literal notranslate"><span class="pre">/results/</span></code> and can be visualized with TensorBoard by specifying the output directory of the results.</p>
+<p>Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="n">results</span><span class="o">/</span><span class="n">latest_experiment</span>
 </pre></div>
 </div>
 <p>In this example, <code class="code docutils literal notranslate"><span class="pre">latest_experiment</span></code> is the default name of the experiment.</p>
-<p>A detailed description of the configurations are provided in the Usage section. The Default configurations are as followed:</p>
+<p>A detailed description of the configurations are provided in the Usage section. The Default configurations in DCRL-green are as follows:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 33%" />
@@ -154,8 +155,16 @@
 <td><p>Provides the batch size to sample from the replay memory</p></td>
 </tr>
 <tr class="row-even"><td><p>Learning rate</p></td>
-<td><p>5.E-06</p></td>
+<td><p>5.00E-06</p></td>
 <td><p>the learning rate of the optimizer</p></td>
+</tr>
+<tr class="row-odd"><td><p>Algorithm</p></td>
+<td></td>
+<td><p>MARL algorithm to train the agents</p></td>
+</tr>
+<tr class="row-even"><td><p>Epmodel</p></td>
+<td></td>
+<td><p>Specifes the choice of the simulation model</p></td>
 </tr>
 </tbody>
 </table>

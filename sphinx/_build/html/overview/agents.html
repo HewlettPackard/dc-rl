@@ -57,7 +57,6 @@
 <li class="toctree-l2"><a class="reference internal" href="observations.html">Observations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="actions.html">Actions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reward_function.html">Reward function</a></li>
-<li class="toctree-l2"><a class="reference internal" href="dataset.html">Dataset</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../code.html">Code</a></li>
@@ -91,6 +90,16 @@
              
   <section id="agents">
 <h1>Agents<a class="headerlink" href="#agents" title="Permalink to this headline"></a></h1>
+<p>DCRL-Green includes three different agents for energy and carbon footprint optimization as shown in the figure. It includes the Flexible Load
+Shifting agent to schedule data center workloads, HVAC Cooling agent to model the data center operations under the given workload, grid
+and weather conditions, to makes decisions on the temperature setpoint of the cooling system and the Energy Storage agent is a typical data center Uninterrupted Power System (UPS)
+with a scheduler that decides when to charge or discharge the battery based on data center power demand and grid Carbon intensity.</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/dependency.png"><img alt="Internal and External System Dependencies" src="../_images/dependency.png" style="width: 392.7px; height: 243.0px;" /></a>
+<figcaption>
+<p><span class="caption-text">Internal and External System Dependencies</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
 </section>
 
 

@@ -51,17 +51,12 @@
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#reinforcement-learning-algorithms">Reinforcement learning algorithms</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#ippo">IPPO</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#ia2c">IA2C</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#maddpg">MADDPG</a></li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="#dc-simulation">DC simulation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#energyplus-enabled-execution">EnergyPlus enabled execution</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#custom-built-execution">Custom built execution</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="#reinforcement-learning-algorithms">Reinforcement learning algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dc-simulation">DC simulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#carbon-intensity-data">Carbon Intensity data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#weather-data">Weather data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#workload-data">Workload data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#miscellaneous-inputs">Miscellaneous Inputs</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
@@ -97,29 +92,98 @@
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline"></a></h1>
 <section id="reinforcement-learning-algorithms">
 <h2>Reinforcement learning algorithms<a class="headerlink" href="#reinforcement-learning-algorithms" title="Permalink to this headline"></a></h2>
-<p>DCRL-Green supports the following multi-agent reinforcement learning (MARL) algorithms:</p>
-<section id="ippo">
-<h3>IPPO<a class="headerlink" href="#ippo" title="Permalink to this headline"></a></h3>
-<p>Include python command to run IPPO</p>
-</section>
-<section id="ia2c">
-<h3>IA2C<a class="headerlink" href="#ia2c" title="Permalink to this headline"></a></h3>
-<p>Include python command to run IA2C</p>
-</section>
-<section id="maddpg">
-<h3>MADDPG<a class="headerlink" href="#maddpg" title="Permalink to this headline"></a></h3>
-<p>Include python command to run MADDPG</p>
-</section>
+<p>DCRL-Green supports the two multi-agent training approaches: independent learning approach such as IPPO <span id="id1">[<a class="reference internal" href="../references.html#id5" title="Christian Schroeder de Witt, Tarun Gupta, Denys Makoviichuk, Viktor Makoviychuk, Philip H. S. Torr, Mingfei Sun, and Shimon Whiteson. Is independent learning all you need in the starcraft multi-agent challenge? 2020. arXiv:2011.09533.">3</a>]</span>, IA2C that decompose the problem into single-agent tasks for learning
+and centralised learning approach such as MADDPG <span id="id2">[<a class="reference internal" href="../references.html#id6" title="Ryan Lowe, Yi Wu, Aviv Tamar, Jean Harb, Pieter Abbeel, and Igor Mordatch. Multi-agent actor-critic for mixed cooperative-competitive environments. 2020. arXiv:1706.02275.">5</a>]</span> that uses a centralised critic with decentralised execution.</p>
+<p><code class="code docutils literal notranslate"><span class="pre">--algorithm</span></code> argument can be used to provide the MARL algorithm of choice.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 23%" />
+<col style="width: 77%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Implementation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>IPPO</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--algorithm</span> <span class="pre">IPPO</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>IA2C</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--algorithm</span> <span class="pre">IA2C</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>MADDPG</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--algorithm</span> <span class="pre">MADDPG</span></code></p></td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="dc-simulation">
 <h2>DC simulation<a class="headerlink" href="#dc-simulation" title="Permalink to this headline"></a></h2>
-<p>The data center simulation framework can be constructed using the following two options:</p>
-<section id="energyplus-enabled-execution">
-<h3>EnergyPlus enabled execution<a class="headerlink" href="#energyplus-enabled-execution" title="Permalink to this headline"></a></h3>
+<p>The data center simulation framework can be constructed using the following two options:
+EnergyPlus enabled execution , Custom built execution</p>
+<p><code class="code docutils literal notranslate"><span class="pre">--EPmodel</span></code> argument can be used to provide the DC simulation of choice.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 31%" />
+<col style="width: 69%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
+<th class="head"><p>Implementation</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>EnergyPlus</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--EPmodel</span> <span class="pre">option</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>EnergyPlus</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">--EPmodel</span> <span class="pre">option</span></code></p></td>
+</tr>
+</tbody>
+</table>
 </section>
-<section id="custom-built-execution">
-<h3>Custom built execution<a class="headerlink" href="#custom-built-execution" title="Permalink to this headline"></a></h3>
+<section id="carbon-intensity-data">
+<h2>Carbon Intensity data<a class="headerlink" href="#carbon-intensity-data" title="Permalink to this headline"></a></h2>
+<p>This dataset includes hourly average carbon intensity (CI) information for a given location. DCRL-Green includes CI data for 3 locations (NY, AZ, WA) collected by
+<a class="reference external" href="eia">US Energy Information Administration</a>.
+Users can upload CI dataset of choice in the repository, under <code class="code docutils literal notranslate"><span class="pre">dc-rl/data/CarbonIntensity</span></code> and use the argument <code class="code docutils literal notranslate"><span class="pre">--cintensity</span></code> to specify the filename.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>CI dataset should be saved in .csv format</p>
+</div>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python filename.py --cintensity NYIS.csv
+</pre></div>
+</div>
 </section>
+<section id="weather-data">
+<h2>Weather data<a class="headerlink" href="#weather-data" title="Permalink to this headline"></a></h2>
+<p>Description of weather dataset. What info does it give? The default weather data in DCRL-Green was obtained from the EnergyPlus <span id="id3">[<a class="reference internal" href="../references.html#id2" title="Drury B Crawley, Linda K Lawrie, Curtis O Pedersen, and Frederick C Winkelmann. Energy plus: energy simulation program. ASHRAE journal, 42(4):49–56, 2000.">2</a>]</span>
+weather files collection. Users can upload weather dataset of choice in the repository, under <code class="code docutils literal notranslate"><span class="pre">dc-rl/data/Weather</span></code> and use the argument <code class="code docutils literal notranslate"><span class="pre">--weather</span></code> to specify the filename.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Weather dataset should be saved in .epw format</p>
+</div>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python filename.py --weather NYIS.epw
+</pre></div>
+</div>
+</section>
+<section id="workload-data">
+<h2>Workload data<a class="headerlink" href="#workload-data" title="Permalink to this headline"></a></h2>
+<p>This dataset provides hourly IT workload information. The default weather data in DCRL-Green was obtained from the Alibaba open source database <span id="id4">[<a class="reference internal" href="../references.html#id7" title="Yue Cheng, Zheng Chai, and Ali Anwar. Characterizing co-located datacenter workloads: an alibaba case study. In Proceedings of the 9th Asia-Pacific Workshop on Systems, APSys '18. New York, NY, USA, 2018. Association for Computing Machinery. URL: https://doi.org/10.1145/3265723.3265742, doi:10.1145/3265723.3265742.">1</a>]</span>. Users can upload IT workload dataset of choice in the repository, under <code class="code docutils literal notranslate"><span class="pre">dc-rl/data/Workload</span></code> and use the argument <code class="code docutils literal notranslate"><span class="pre">--workload</span></code> to specify the filename.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Workload dataset should be saved in .csv format</p>
+</div>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python filename.py --workload Alibaba_CPU_Data_Hourly.csv
+</pre></div>
+</div>
+</section>
+<section id="miscellaneous-inputs">
+<h2>Miscellaneous Inputs<a class="headerlink" href="#miscellaneous-inputs" title="Permalink to this headline"></a></h2>
 </section>
 </section>
 

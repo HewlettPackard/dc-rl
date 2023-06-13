@@ -11,4 +11,6 @@ gamma,0.99,Represents the discount factor
 Total timesteps,100_000_000_000,total timesteps of the experiments
 Number of workers,24,"Specifies the number of parallel environments, it must be in multiples of 12"
 Batch size,128,Provides the batch size to sample from the replay memory
-Learning rate,5.E-06,the learning rate of the optimizer
+Learning rate,5.00E-06,the learning rate of the optimizer
+Algorithm,,MARL algorithm to train the agents
+Epmodel,,Specifes the choice of the simulation model

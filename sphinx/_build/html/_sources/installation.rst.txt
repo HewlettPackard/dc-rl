@@ -42,8 +42,8 @@ Pull the Docker image with command:
 
 A docker container can be launched using the command:
 
-(Note: start by navigating to the directory :code:`dc-rl`)
-
 .. code-block:: console
 
    sudo docker run -t -i -v ./:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
+
+If the docker container is launched successfully, the :code:`sinergym` environment is enabled. A python script can be executed by navigating to the directory :code:`dc-rl`.
