@@ -2,26 +2,17 @@
 EnergyPlus enabled DC simulation
 ================================
 
-Dependencies
-------------
+DCRL-Green uses Sinergym_ :cite:p:`2021sinergym` to create an environment following Gymnasium interface for wrapping EnergyPlus for data center control. 
 
-1. Python_ 
-    Python version 3.x is recommended.
+Prerequisites
+-------------
 
-.. _Python: https://python.land/installing-python
-
-2. Docker_
-    We include a Dockerfile for installing and setting up the image for running Sinergym_ :cite:p:`2021sinergym`.
+Docker_
+    We include a Dockerfile for installing and setting up the image for running Sinergym.
 
 .. _Sinergym: https://ugr-sail.github.io/sinergym/compilation/main/index.html
 .. _Docker: https://docs.docker.com/get-docker/
 
-3. TensorBoard_ 
-    DCRL-Green uses `Ray RLlib <ray>`_  to execute reinforcement learning algorithms. By default, RLlib logs results in Tensorboard. 
-    RLlib does not automatically install a deep-learning framework, but supports TensorFlow (both 1.x with static-graph and 2.x with eager mode) as well as PyTorch. Depending on your needs, make sure to install either TensorFlow or PyTorch (or both).
-
-.. _ray: https://docs.ray.io/en/latest/rllib/index.html
-.. _TensorBoard: https://pypi.org/project/tensorboard/
 
 First-time setup
 ----------------
