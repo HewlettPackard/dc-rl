@@ -39,6 +39,7 @@ extensions = [
     'sphinx_copybutton', # to copy code block
     'sphinx_panels', # for backgrounds
     'sphinx.ext.autosectionlabel', #for reference sections using its title
+    'sphinx_multitoc_numbering', #numbering sections
 ]
 
 # source for bib references

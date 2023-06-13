@@ -49,7 +49,14 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation/index.html">Installation</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#example">1. Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#train-the-agents">2. Train the agents</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#monitor-the-results">2.1 Monitor the results</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="usage/index.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="overview/index.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code.html">Code</a></li>
@@ -82,10 +89,22 @@
              
   <section id="getting-started">
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline"></a></h1>
-<p>Within the docker container, run the following command to simulate the DC enivronment and optimize the agents with default configurations:</p>
+<section id="example">
+<h2>1. Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h2>
+<p>This is the simplest example to simulate one episode and view the roll-out information.</p>
+</section>
+<section id="train-the-agents">
+<h2>2. Train the agents<a class="headerlink" href="#train-the-agents" title="Permalink to this headline"></a></h2>
+<p>Run the following command to simulate the DC enivronment and optimize the agents with default configurations:</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>For execution using EnergyPlus model, launch the Sinergym environment before running the script (details can be found in <a class="reference internal" href="installation/energyPlus.html#energyplus-enabled-dc-simulation"><span class="std std-ref">EnergyPlus enabled DC simulation</span></a>)</p>
+</div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">filename</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
+<section id="monitor-the-results">
+<h3>2.1 Monitor the results<a class="headerlink" href="#monitor-the-results" title="Permalink to this headline"></a></h3>
 <p>The training logs and the results of each trial are stored in the specified local directory, under a sub-folder called <code class="code docutils literal notranslate"><span class="pre">/results/</span></code> and can be visualized with TensorBoard by specifying the output directory of the results.</p>
 <p>Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="n">results</span><span class="o">/</span><span class="n">latest_experiment</span>
@@ -100,7 +119,7 @@
 <col style="width: 33%" />
 </colgroup>
 <thead>
-<tr class="row-odd"><th class="head"><p>Argument</p></th>
+<tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Default input</p></th>
 <th class="head"><p>Description</p></th>
 </tr>
@@ -168,6 +187,8 @@
 </tr>
 </tbody>
 </table>
+</section>
+</section>
 </section>
 
 

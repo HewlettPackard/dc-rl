@@ -11,6 +11,7 @@ Dependencies
 .. _Python: https://python.land/installing-python
 
 2. `Gymnasium <gym>`_ 
+    Enivronments defined with DCRL-Green can easily be wrapped by Gymnasium interface.
 
 .. _gym: https://github.com/Farama-Foundation/Gymnasium
 

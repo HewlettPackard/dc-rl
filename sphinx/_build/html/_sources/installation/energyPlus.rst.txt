@@ -3,19 +3,23 @@ EnergyPlus enabled DC simulation
 ================================
 
 DCRL-Green uses Sinergym_ :cite:p:`2021sinergym` to create an environment following Gymnasium interface for wrapping EnergyPlus for data center control. 
+It is recommended to install Sinergym supported by a Docker container that imports dependencies by default. The instructions for manual installations are also provided in the following sections.
 
-Prerequisites
--------------
+*******************
+1. Docker container
+*******************
+
+1.1 Prerequisites
+-----------------
 
 Docker_
-    We include a Dockerfile for installing and setting up the image for running Sinergym.
 
 .. _Sinergym: https://ugr-sail.github.io/sinergym/compilation/main/index.html
 .. _Docker: https://docs.docker.com/get-docker/
 
 
-First-time setup
-----------------
+1.2 First-time setup
+--------------------
 
 Clone the latest DCRL-Green version from github using:
 
@@ -27,12 +31,22 @@ Pull the Docker image with command:
 
 .. code-block:: bash
     
-    sudo docker pull agnprz/carbon_sustain:v3
+    docker pull agnprz/carbon_sustain:v3
+
+.. note::
+   To run command with elevated privileges, use the prefix :code:`sudo` 
 
 A docker container can be launched using the command:
 
 .. code-block:: console
 
-   sudo docker run -t -i -v ./:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
+   docker run -t -i -v ./:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
 
-If the docker container is launched successfully, the :code:`sinergym` environment is enabled. A python script can be executed by navigating to the directory :code:`dc-rl`.
+If the docker container is launched successfully, the isolated :code:`sinergym` environment is enabled. A python script can be executed by navigating to the directory :code:`dc-rl`.
+
+.. note::
+   To reopen a Docker container: TODO
+
+**********************
+2. Manual installation
+**********************
