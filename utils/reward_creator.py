@@ -15,7 +15,6 @@ def default_dc_reward(params: dict) -> float:
     return - 1.0 * ((data_center_total_ITE_Load + CT_Cooling_load)-energy_lb)/(energy_ub-energy_lb)
 
 def default_bat_reward(params: dict) -> float:
-    
     total_energy_with_battery = params['total_energy_with_battery']
     norm_CI = params['norm_CI']
     a_t = params['a_t']
@@ -44,10 +43,7 @@ REWARD_METHOD_MAP = {
     'custom_agent_reward' : custom_agent_reward,
 }
 
-
-
 def get_reward_method(reward_method : str = 'default_dc_reward'):
-    
     assert reward_method in REWARD_METHOD_MAP.keys(), f"Specified Reward Method {reward_method} not in REWARD_METHOD_MAP"
     
     return REWARD_METHOD_MAP[reward_method]
