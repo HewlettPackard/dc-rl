@@ -55,15 +55,15 @@ def make_dc_pyeplus_env(month : int = 1,
     ]
         
     observation_space = gym.spaces.Box(low=np.float32(-2.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
-                                        high=np.float32(2.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
-                                        )
+                                       high=np.float32(5.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
+                                       )
     
     ################################################################################
     ########################## Action Variables ####################################
     ################################################################################
     
     action_variables = ['Cooling_Setpoint_RL']
-    action_definition={'cooling setpoints': {'name': 'Cooling_Setpoint_RL', 'initial_value': 18}}
+    action_definition = {'cooling setpoints': {'name': 'Cooling_Setpoint_RL', 'initial_value': 18}}
     min_temp = 15.0
     max_temp = 21.6
     action_mapping = {
