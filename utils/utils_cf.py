@@ -248,7 +248,7 @@ class Weather_Manager():
         x = range(0, len(temperature_data))
         xtemperature_new = np.linspace(0, len(temperature_data), len(temperature_data)*4)
         
-        self.min_temp = -10
+        self.min_temp = -11
         self.max_temp = 40
         
         # Interpolate the carbon data to increase the number of data points
