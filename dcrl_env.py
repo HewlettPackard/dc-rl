@@ -133,8 +133,6 @@ class DCRL(MultiAgentEnv):
         terminated["__all__"] = False
         truncated["__all__"] = False
 
-        # print(f'Location: {self.location}')
-
         workload,day_workload = self.workload_m.step()
         ci_i, ci_if = self.ci_m.step()
         t_i = self.t_m.step()
@@ -155,11 +153,8 @@ class DCRL(MultiAgentEnv):
 
         self.ls_env.update_workload(day_workload, workload)
         self.ls_state, self.ls_penalties, self.ls_terminated, self.ls_truncated, self.ls_info  = self.ls_env.step(action)
-        self.ls_state = np.hstack((t_i, self.ls_state, ci_if, workload))
-        #print(self.ls_state)
-    
+        self.ls_state = np.hstack((t_i, self.ls_state, ci_if, workload))   
         rew_i =  self.ls_penalties
-        #print('REWARD LS', rew_i)
         terminated_i = self.ls_terminated
         truncated_i = self.ls_truncated
         info_i = self.ls_info
@@ -170,24 +165,21 @@ class DCRL(MultiAgentEnv):
             truncated["agent_ls"] = truncated_i
             info["agent_ls"] = info_i
 
-        # print(f"Deciding the action for agent_dc")
+
         if "agent_dc" in self.agents:
             action = action_dict["agent_dc"]
-            # print('Is inside self.agents: ', action)
+
 
         else:
             action = self.base_agents["agent_dc"].do_nothing_action()
-            # print('NO is inside self.agents, so the action is: ', action)
-            # print(f'Inside self.agents: {self.agents}')
 
         wkld = self.ls_info['load']
         self.dc_env.set_shifted_wklds(wkld)
         ci = self.ls_state[6]
         batSoC = self.bat_state[1]
         self.dc_env.set_ambient_temp(temp)
-        #self.dc_state[-3:] = [wkld, ci, batSoC]
         
-        self.dc_state,_, self.dc_terminated, self.dc_truncated, self.dc_info = self.dc_env.step(action)#self._do_dc_env_step(action_dict)
+        self.dc_state,_, self.dc_terminated, self.dc_truncated, self.dc_info = self.dc_env.step(action)
         self.dc_state = np.hstack((t_i,self.dc_state,workload,ci_if[0],batSoC))
 
         if self.dc_info['IT POWER w'] > self.max_consumption:
@@ -230,7 +222,6 @@ class DCRL(MultiAgentEnv):
         self.ls_state = np.hstack((self.ls_state,var_to_LS_energy,batSoC))
         if "agent_ls" in self.agents:
             obs['agent_ls'] = self.ls_state
-        #self.ls_state = self.ls_env.update_state()
         
         if "agent_bat" in self.agents:
             obs["agent_bat"] = obs_i

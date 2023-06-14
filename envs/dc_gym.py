@@ -139,7 +139,6 @@ class dc_gymenv(gym.Env):
                                                                          DC_Config=DC_Config)
         
         # calculate reward
-        # self.reward = - 1.0 * ((data_center_total_ITE_Load + self.CT_Cooling_load)-40000)/(160000-40000)  # TODO: random agents shows -40000 to -160000
         self.reward = self.reward_method(
             params = {
                 'data_center_total_ITE_Load' : data_center_total_ITE_Load,
