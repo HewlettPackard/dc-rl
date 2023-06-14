@@ -13,7 +13,7 @@ Currently, we provide two versions for the data center dynamics.
 
 `DCRL (dcrl_env.py)`: This default version is implemented in Python and can be used with the prerequisites listed below. 
 
-`DCRLeplus (dcrl_eplus_env.py)`: This uses the EnergyPlus model of a data center from the [Sinergym](https://github.com/ugr-sail/sinergym) repository. We also provide a seperate docker that incorporates this environment.
+`DCRLeplus (dcrl_eplus_env.py)`: This uses the [EnergyPlus](https://energyplus.net/) model of a data center from the [Sinergym](https://github.com/ugr-sail/sinergym) repository. We also provide a seperate docker that incorporates this environment.
 
 
 ## Documentation and Installation
@@ -80,7 +80,8 @@ $ python train_a2c.py
 
 ### Training on the DCRLeplus environment
 
-```
+```bash
+$ docker pull agnprz/carbon_sustain:v3
 $ docker run -t -i -v $PWD:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
 $ cd dc-rl
 $ EPLUS=1 python train_ppo.py
