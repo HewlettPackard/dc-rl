@@ -33,7 +33,12 @@ CONFIG = (
                 'individual_reward_weight': 0.8,
                 
                 # Flexible load ratio
-                'flexible_load': 0.1
+                'flexible_load': 0.1,
+                
+                # Specify reward methods
+                'ls_reward': 'default_ls_reward',
+                'dc_reward': 'default_dc_reward',
+                'bat_reward': 'default_bat_reward'
             }
         )
         .framework("tf")

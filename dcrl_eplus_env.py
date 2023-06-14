@@ -31,6 +31,10 @@ class DCRLeplus(MultiAgentEnv):
 
         self.terminateds = set()
         self.truncateds = set()
+        
+        ls_reward_method = 'default_ls_reward' if not 'ls_reward' in env_config.keys() else env_config['ls_reward']
+        dc_reward_method = 'default_dc_reward' if not 'dc_reward' in env_config.keys() else env_config['dc_reward']
+        bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
 
         # Assign month according to worker index, if available
         if hasattr(env_config, 'worker_index'):
@@ -38,9 +42,9 @@ class DCRLeplus(MultiAgentEnv):
         else:
             month = env_config.get('month', 0)
 
-        self.ls_env = make_envs.make_ls_env(month, self.location)
-        self.dc_env = make_envs.make_dc_env(month, self.location) 
-        self.bat_env = make_envs.make_bat_fwd_env(month, self.location)
+        self.ls_env = make_envs.make_ls_env(month, self.location, reward_method=ls_reward_method)
+        self.dc_env = make_envs.make_dc_env(month, self.location, reward_method=dc_reward_method) 
+        self.bat_env = make_envs.make_bat_fwd_env(month, self.location, reward_method=bat_reward_method)
 
         self._obs_space_in_preferred_format = True
         

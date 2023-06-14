@@ -40,9 +40,13 @@ class DCRL(MultiAgentEnv):
         
         ci_loc, wea_loc = obtain_paths(self.location)
         
-        self.ls_env = make_ls_env(month)
-        self.dc_env = make_dc_pyeplus_env(month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
-        self.bat_env = make_bat_fwd_env(month, max_bat_cap_Mw=self.max_bat_cap_Mw)
+        ls_reward_method = 'default_ls_reward' if not 'ls_reward' in env_config.keys() else env_config['ls_reward']
+        dc_reward_method = 'default_dc_reward' if not 'dc_reward' in env_config.keys() else env_config['dc_reward']
+        bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
+        
+        self.ls_env = make_ls_env(month, reward_method=ls_reward_method)
+        self.dc_env = make_dc_pyeplus_env(month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, reward_method=dc_reward_method) 
+        self.bat_env = make_bat_fwd_env(month, max_bat_cap_Mw=self.max_bat_cap_Mw, reward_method=bat_reward_method)
 
         self._obs_space_in_preferred_format = True
         self._action_space_in_preferred_format = True
@@ -269,7 +273,12 @@ if __name__ == '__main__':
             'individual_reward_weight': 0.8,
                 
             # Flexible load ratio
-            'flexible_load': 0.1
+            'flexible_load': 0.1,
+            
+            # Specify reward methods
+            'ls_reward': 'default_ls_reward',
+            'dc_reward': 'default_dc_reward',
+            'bat_reward': 'default_bat_reward'
             }
     )
 

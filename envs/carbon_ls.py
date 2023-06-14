@@ -109,9 +109,11 @@ class CarbonLoadEnv(gym.Env):
                 "action": action, 
                 "info_load_left": info_load_left,
                 "out_of_time": out_of_time}
+        
         state = np.asarray(np.hstack(([alarm, norm_load_left])), dtype=np.float32)
         truncated = False
-        return state, reward, done, truncated, info      
+        
+        return state, reward, done, truncated, info 
         
     def update_workload(self, day_workload, workload):
         self.day_workload = day_workload

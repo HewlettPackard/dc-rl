@@ -10,7 +10,7 @@ from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
 from envs.carbon_ls import CarbonLoadEnv
 from utils.utils_cf import get_init_day, Workload_Manager, CI_Manager
 
-def make_dc_env(month, location):
+def make_dc_env(month, location, reward_method='default_dc_reward'):
     datacenter_env = 'Eplus-datacenter-mixed-continuous-v1'
 
     obs_variables = [
@@ -146,17 +146,18 @@ def make_dc_env(month, location):
     dc_env = tinyMultiObsWrapper(dc_env, n=3, add_sincos=True)
     return dc_env
 
-def make_ls_env(month,location,n_vars_energy=4,n_vars_battery=1):
+def make_ls_env(month, location, n_vars_energy=4, n_vars_battery=1, reward_method='default_ls_reward'):
     loc = 'NYIS'
     if location == 'az':
         loc = 'AZPS'
     elif location == 'wa':
         loc = 'BPAT'
     total_wkl = Workload_Manager().get_total_wkl()
+    env_config = {'reward_method':reward_method}
+    
+    return CarbonLoadEnv(env_config=env_config, n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery)
 
-    return CarbonLoadEnv(n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery)
-
-def make_bat_fwd_env(month,location):
+def make_bat_fwd_env(month, location, reward_method='default_bat_reward'):
     loc = 'NYIS'
     if location == 'az':
         loc = 'AZPS'
@@ -164,7 +165,8 @@ def make_bat_fwd_env(month,location):
         loc = 'BPAT'
 
     init_day = get_init_day(month)
-    env_config= {'n_fwd_steps':4, 'max_bat_cap':2, 'charging_rate':0.5, '24hr_episodes':True,
-                'start_point':init_day, 'dcload_max': 1.2, 'dcload_min': 0.05}
+    env_config = {'n_fwd_steps':4, 'max_bat_cap':2, 'charging_rate':0.5, '24hr_episodes':True,
+                'start_point':init_day, 'dcload_max': 1.2, 'dcload_min': 0.05, 
+                'reward_method':reward_method}
     bat_env = battery_env_fwd(env_config)
     return bat_env

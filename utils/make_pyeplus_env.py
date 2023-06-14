@@ -17,7 +17,8 @@ def make_dc_pyeplus_env(month : int = 1,
                         episode_length_in_time : pd.Timedelta = None,
                         use_ls_cpu_load : bool = False,
                         standalone_pyeplus : bool = False,
-                        num_sin_cos_vars : int = 4
+                        num_sin_cos_vars : int = 4,
+                        reward_method : str = 'default_dc_reward'
                         ):
     """Method that creates the data center environment with the timeline, location, proper data files, gym specifications and auxiliary methods
 
@@ -138,7 +139,8 @@ def make_dc_pyeplus_env(month : int = 1,
                         max_temp=max_temp,
                         action_definition=action_definition,
                         cpu_usage_ts= None if use_ls_cpu_load else cpu_usage_ts,  # adjust based on month
-                        episode_length_in_time=episode_length_in_time
+                        episode_length_in_time=episode_length_in_time,
+                        reward_method=reward_method
                         )
         
         dc_env.NormalizeObservation()
