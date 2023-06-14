@@ -144,7 +144,6 @@ class Workload_Manager():
         self.cpu_smooth = self.cpu_smooth * (1-self.flexible_workload_ratio)
         self.storage_load = np.sum(self.cpu_smooth[self.time_step:self.time_step+self.time_steps_day]*self.flexible_workload_ratio)
 
-        print(f'Reset in Workload. New self.time_step = {self.time_step}')
         return self.cpu_smooth[self.time_step], self.storage_load
         
     # Function to advance the time step and return the workload at the new time step
