@@ -138,9 +138,8 @@ def renewable_energy_reward(params: dict) -> float:
     """
     renewable_energy_ratio = params['renewable_energy_ratio']
     total_energy_consumption = params['total_energy_consumption']
-    max_possible_reward = 1.0  # decide how much weight you want to give to renewable energy usage. 
 
-    reward = max_possible_reward * renewable_energy_ratio - total_energy_consumption
+    reward = -1.0 * renewable_energy_ratio * total_energy_consumption
     return reward
 
 
@@ -156,10 +155,10 @@ def energy_efficiency_reward(params: dict) -> float:
     Returns:
         float: Reward value.
     """
-    ITE_load = params['ITE_load']  
+    it_equipment_energy = params['it_equipment_energy']  
     total_energy_consumption = params['total_energy_consumption']  
     
-    reward = ITE_load / total_energy_consumption
+    reward = it_equipment_energy / total_energy_consumption
     return reward
 
 
