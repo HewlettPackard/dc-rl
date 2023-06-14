@@ -1,6 +1,9 @@
+# Get PyTorch CPU-only wheels from here
+--find-links https://download.pytorch.org/whl/torch_stable.html
+
 numpy==1.23.5
 pandas==1.5.3
-torch==2.0.0
+torch==2.0.0+cpu
 tensorflow==2.12.0
 ray[rllib]==2.4.0
 gymnasium
