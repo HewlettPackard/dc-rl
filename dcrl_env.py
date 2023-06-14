@@ -267,11 +267,9 @@ if __name__ == '__main__':
             # Battery capacity
             'max_bat_cap_Mw': 2,
             
-            'reward_method': 'default_dc_reward',
-            
             # Collaborative weight in the reward
             'individual_reward_weight': 0.8,
-                
+            
             # Flexible load ratio
             'flexible_load': 0.1,
             

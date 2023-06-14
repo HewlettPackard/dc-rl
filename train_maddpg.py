@@ -27,8 +27,6 @@ CONFIG = (
                 # MADDPG returns logits instead of discrete actions
                 "actions_are_logits": True,
                 
-                'reward_method': 'default_dc_reward',
-                
                 # Collaborative weight in the reward
                 'individual_reward_weight': 0.8,
                 

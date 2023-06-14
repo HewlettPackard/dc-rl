@@ -74,13 +74,20 @@ def default_bat_reward(params: dict) -> float:
     return rew_footprint
 
 
-# Example custom reward method
 def custom_agent_reward(params: dict) -> float:
-    #read reward input parameters from dict object
-    #custom reward calculations 
-    custom_reward = 0.0 #update with custom reward shaping 
-    return custom_reward
+    """
+    A template for creating a custom agent reward function.
 
+    Args:
+        params (dict): Dictionary containing custom parameters for reward calculation.
+
+    Returns:
+        float: Custom reward value. Currently returns 0.0 as a placeholder.
+    """
+    # read reward input parameters from dict object
+    # custom reward calculations 
+    custom_reward = 0.0 # update with custom reward shaping 
+    return custom_reward
 
 # Example of ToU reward based on energy usage and price of electricity
 # ToU reward is based on the ToU (Time of Use) of the agent, which is the amount of the energy time
@@ -89,6 +96,18 @@ def custom_agent_reward(params: dict) -> float:
 #   - 'energy_usage': the energy usage of the agent
 #   - 'hour': the hour of the day
 def tou_reward(params: dict) -> float:
+    """
+    Calculates a reward value based on the Time of Use (ToU) of energy.
+
+    Args:
+        params (dict): Dictionary containing parameters:
+            energy_usage (float): The energy usage of the agent.
+            hour (int): The current hour of the day (24-hour format).
+
+    Returns:
+        float: Reward value.
+    """
+    
     # ToU dict: {Hour, price}
     tou = {0: 0.25,
            1: 0.25,
@@ -116,9 +135,12 @@ def tou_reward(params: dict) -> float:
            23: 0.25,
            }
     
+    # Obtain the price of electricity at the current hour
     current_price = tou[params['hour']]
+    # Obtain the energy usage
     energy_usage = params['energy_usage']
     
+    # The reward is negative as the agent's objective is to minimize energy cost
     tou_reward = -1.0 * energy_usage * current_price
 
     return tou_reward
