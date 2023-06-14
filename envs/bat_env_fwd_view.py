@@ -16,7 +16,7 @@ class BatteryEnvFwd(gym.Env):
         self.end_point = self.starting_point + 30 * 96
         self.observation_space = gym.spaces.Box(low=np.float32(-2 * np.ones(1 + 1 + 4 + n_fwd_steps)),
                                                 high=np.float32(2 * np.ones(1 + 1 + 4 + n_fwd_steps)))
-        self.max_dc_pw = 6.44
+        self.max_dc_pw = 7.24
         self.action_space = gym.spaces.Discrete(3)
         self._action_to_direction = {0: 'charge', 1: 'discharge', 2: 'idle'}
         other_states_max = np.array([self.max_dc_pw, max_bat_cap])
@@ -38,10 +38,8 @@ class BatteryEnvFwd(gym.Env):
         self.total_energy_with_battery = 0
         self.ci = 0
         self.ci_n = []
-        # self.dcload_max = 1.2
-        # self.dcload_min = 0.05
-        self.dcload_max = 1.61
-        self.dcload_min = 0.6
+        self.dcload_max = env_config['dcload_max']
+        self.dcload_min = env_config['dcload_min']
         
     def reset(self, *, seed=None, options=None):
         self.current_step = self.starting_point
