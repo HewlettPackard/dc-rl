@@ -1,3 +1,5 @@
+import os
+
 import ray
 from ray.rllib.algorithms.a2c import A2CConfig
 
@@ -15,7 +17,7 @@ NUM_WORKERS = 24
 CONFIG = (
         A2CConfig()
         .environment(
-            env=DCRL,
+            env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
             env_config={
                 # Agents active
                 'agents': ['agent_ls', 'agent_dc', 'agent_bat'],

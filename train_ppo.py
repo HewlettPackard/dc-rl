@@ -1,3 +1,5 @@
+import os
+
 import ray
 from ray.rllib.algorithms.ppo import PPOConfig
 
@@ -16,7 +18,7 @@ NUM_WORKERS = 24
 CONFIG = (
         PPOConfig()
         .environment(
-            env=DCRL,
+            env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
             env_config={
                 # Agents active
                 'agents': ['agent_ls', 'agent_dc', 'agent_bat'],

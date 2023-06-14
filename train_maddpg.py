@@ -1,7 +1,6 @@
-import gym
+import os
+
 import ray
-from ray import air, tune
-from ray.rllib.policy.policy import PolicySpec
 
 from maddpg import MADDPGConfigStable, MADDPGStable
 from utils.rllib_callbacks import CustomCallbacks
@@ -12,7 +11,7 @@ from dcrl_env import DCRL
 CONFIG = (
         MADDPGConfigStable()
         .environment(
-            env=DCRL,
+            env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
             env_config={
                 # Agents active
                 'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
