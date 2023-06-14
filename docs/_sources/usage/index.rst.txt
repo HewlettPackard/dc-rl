@@ -81,7 +81,7 @@ Example:
 Workload data
 -------------
 
-This dataset provides hourly IT workload information. The default weather data in DCRL-Green was obtained from the Alibaba open source database :cite:p:`alibaba2018`. Users can upload IT workload dataset of choice in the repository, under :code:`dc-rl/data/Workload` and use the argument :code:`"workload_file"` to specify the filename.
+This dataset provides hourly IT workload information. The default weather data in DCRL-Green was obtained from the Alibaba open source database :cite:p:`alibaba2018`. Users can upload IT workload dataset of choice in the repository, under :code:`dc-rl/data/Workload` and use the variable :code:`"workload_file"` to specify the filename.
 
 .. note::
    Workload dataset should be saved in .csv format
@@ -95,6 +95,22 @@ Example:
 Agent configuration
 -------------------
 
-Miscellaneous Inputs
---------------------
+DCRL-Green supports three MARL agents to optimize energy usage and reduce carbon footprint of data centers. More details of the agents' operations are discussed in :ref:`Agents` section. Based on the requirement, users can include agents of choice in the training script. The agents that are not involved in training will select the :code:`Idle` action by default and will not contribute to the optimization process. The variable :code:`"agents"` can be used to specify the required agents.
 
+.. note::
+   Agent names must be provided as a list of strings, where :code:`"agent_ls"`, :code:`"agent_dc"`, :code:`"agent_bat"` represents load shifting agent, DC cooling agent, battery control agent respectively
+
+Example:
+
+.. code-block:: bash
+   
+   'agents': ['agent_ls','agent_dc', 'agent_bat']
+
+Hyperparameter configuration
+----------------------------
+
+The hyperparameters are specific to the MARL algorithms discussed above. The following table represent the default values used and method to modify the hyperparameters. 
+
+.. csv-table::
+   :file: ../tables/hperparameters_table.csv
+   :header-rows: 1

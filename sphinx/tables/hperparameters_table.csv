@@ -1,0 +1,10 @@
+Algorithm,Hyperparameter,Default value,Description
+"IPPO, IA2C, MADDPG", :code:`gamma`,0.99,Discount factor
+"IPPO, IA2C", :code:`lr`,1.00E-06,Learning rate
+"IPPO, IA2C", :code:`use_gae`,TRUE,"If true, use the Generalized Advantage Estimator (GAE) with a value function"
+"IPPO, IA2C", :code:`train_batch_size`,6912,The size of batches that are trained over during each iteration
+IPPO, :code:`kl_coeff`,0.3,Initial coefficient for KL divergence
+IPPO, :code:`clip_param`,0.02,The PPO clip parameter
+IPPO, :code:`entropy_coeff`,0.05,Coefficient of the entropy regularizer
+MADDPG, :code:`lr`,1.00E-07,Learning rate
+MADDPG, :code:`use_local_critic`,FALSE,Use a local critic for this policy

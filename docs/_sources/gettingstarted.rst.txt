@@ -7,6 +7,8 @@ Getting Started
 
 This is the simplest example to simulate one episode and view the roll-out information.
 
+TODO
+
 2. Train the agents
 -------------------
 
@@ -17,7 +19,7 @@ Run the following command to simulate the DC enivronment and optimize the agents
 
 .. code-block:: python
 
-    python filename.py 
+    python train_ppo.py 
 
 2.1 Monitor the results
 ~~~~~~~~~~~~~~~~~~~~~~~
