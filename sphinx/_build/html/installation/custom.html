@@ -94,28 +94,28 @@
 <section id="dependencies">
 <h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline"></a></h2>
 <ol class="arabic simple">
-<li><p><a class="reference external" href="https://python.land/installing-python">Python</a> (version 3.x is recommended)</p></li>
-</ol>
-<ol class="arabic simple" start="2">
-<li><p><a class="reference external" href="gym">Gymnasium</a></p></li>
-</ol>
-<ol class="arabic simple" start="3">
-<li><p><a class="reference external" href="ray">Ray RLlib</a></p></li>
-</ol>
-<ol class="arabic simple" start="4">
-<li><p><a class="reference external" href="https://pypi.org/project/tensorboard/">TensorBoard</a></p></li>
-</ol>
-<ol class="arabic simple" start="5">
-<li><p><a class="reference external" href="https://pandas.pydata.org/docs/getting_started/install.html">Pandas</a></p></li>
-</ol>
-<ol class="arabic simple" start="6">
-<li><p>TensorFlow and PyTorch</p></li>
+<li><p>Linux OS (Ubuntu 20.04)</p></li>
+<li><p>Conda</p></li>
 </ol>
 </section>
 <section id="first-time-setup">
 <h2>First time setup<a class="headerlink" href="#first-time-setup" title="Permalink to this headline"></a></h2>
 <p>Clone the latest DCRL-Green version from github using:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/HewlettPackard/dc-rl.git
+</pre></div>
+</div>
+<p>If using SSH, execute:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone git@github.com:HewlettPackard/dc-rl.git
+</pre></div>
+</div>
+<p>Change the current working directory to the dc-rl folder:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> dc-rl
+</pre></div>
+</div>
+<p>Create a conda environment and install dependencies:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n dcrl <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
+conda activate dcrl
+pip install -r requirements.txt
 </pre></div>
 </div>
 </section>

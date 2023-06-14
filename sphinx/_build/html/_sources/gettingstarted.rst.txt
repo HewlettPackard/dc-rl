@@ -7,7 +7,9 @@ Getting Started
 
 This is the simplest example to simulate one episode and view the roll-out information.
 
-TODO
+.. code-block:: python
+
+    python dcrl_env.py 
 
 2. Train the agents
 -------------------

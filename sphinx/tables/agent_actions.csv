@@ -5,7 +5,7 @@ DC Cooling agent,9,Discrete,"[0,8]","| :code:`0` - Reduce temperature by 5 units
 | :code:`1` - Reduce temperature by 2 units
 | :code:`2` - Reduce temperature by 1 unit
 | :code:`3` - Reduce temperature by 0.5 unit
-| :code:`4` - No change in temperature
+| :code:`4` - No change in temperature (Idle)
 | :code:`5` - Increase temperature by 0.5 unit
 | :code:`6` - Increase temperature by 1 unit
 | :code:`7` - Increase temperature by 2 units
