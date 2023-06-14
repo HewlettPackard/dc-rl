@@ -37,6 +37,7 @@ If using SSH, execute:
 $ git clone git@github.com:HewlettPackard/dc-rl.git
 ```
 
+Make sure you have conda installed. For more instructions on installing conda please check the [documentation](https://conda.io/projects/conda/en/latest/user-guide/install/linux.html#install-linux-silent).
 
 Change the current working directory to the dc-rl folder:
 
