@@ -34,14 +34,14 @@ git clone https://github.com/HewlettPackard/dc-rl.git
 ```
 If using SSH, execute
 ```bash
-git clone git@github.com:ugr-sail/sinergym.git
+git clone git@github.com:HewlettPackard/dc-rl.git
 ```
 
 
 Change the current working directory to the DC-CFR_Benchmark folder:
 
 ```bash
-cd DC-CFR_Benchmark
+cd dc-rl
 ```
 
 ## Usage
