@@ -95,6 +95,14 @@ Monitor the training using TensorBoard. By default, the location of the training
 $ tensorboard --logdir ./results
 ```
 
+### Running in Background Mode
+If you want to run the DCRL-Green framework in background mode use the following command:
+
+```bash
+$ hohup PYTHON_SCRIPT > OUTPUT_FILE  &
+```
+where ```PYTHON_SCRIPT``` is the script you want to run (e.g., ```train_ppo.py```) and ```OUTPUT_FILE``` is the name of the file that will contain the output (e.g. ```latest_experiment_output.txt```).
+
 ## Contributing
 Contributions are welcome. For major changes, please open an issue first to discuss what you would like to change. Please ensure to update tests as appropriate.
 
