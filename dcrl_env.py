@@ -11,7 +11,6 @@ from utils.make_ls_env import make_ls_env
 from utils.make_pyeplus_env import make_dc_pyeplus_env
 from utils.make_bat_env import make_bat_fwd_env
 
-
 from utils.utils_cf import get_init_day, Time_Manager, Workload_Manager, CI_Manager, Weather_Manager, obtain_paths, get_energy_variables
 from utils.base_agents import BaseBatteryAgent, BaseLoadShiftingAgent, BaseHVACAgent
 
@@ -264,7 +263,7 @@ if __name__ == '__main__':
             # Battery capacity
             'max_bat_cap_Mw': 2,
             
-            'reward_method': 'default_dc_reward'
+            'reward_method': 'default_dc_reward',
             
             # Collaborative weight in the reward
             'individual_reward_weight': 0.8,
