@@ -153,7 +153,7 @@ def make_ls_env(month,location,n_vars_energy=4,n_vars_battery=1):
     elif location == 'wa':
         loc = 'BPAT'
     total_wkl = Workload_Manager().get_total_wkl()
-    # init_day = get_init_day(month)
+
     return CarbonLoadEnv(n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery)
 
 def make_bat_fwd_env(month,location):
@@ -162,10 +162,9 @@ def make_bat_fwd_env(month,location):
         loc = 'AZPS'
     elif location == 'wa':
         loc = 'BPAT'
-    #DATAPATH = f'/sinergym/sustainability_cfp_dc/data/{loc}_NG_DCload_avgCI.csv'    
-    #print(f"Creating the following environment: {start_date}")    
+
     init_day = get_init_day(month)
     env_config= {'n_fwd_steps':4, 'max_bat_cap':2, 'charging_rate':0.5, '24hr_episodes':True,
-                'start_point':init_day}
+                'start_point':init_day, 'dcload_max': 1.2, 'dcload_min': 0.05}
     bat_env = battery_env_fwd(env_config)
     return bat_env

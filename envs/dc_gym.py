@@ -100,8 +100,7 @@ class dc_gymenv(gym.Env):
     
     def reset(self, *, seed=None, options=None):
         super().reset(seed=self.seed)
-        
-        # TODO: Initialize these default values outside the gym environment
+
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_cooling_load, self.Compressor_load = 100, 1000, 1000, 100  
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         
@@ -114,7 +113,7 @@ class dc_gymenv(gym.Env):
         self.raw_curr_state = self.get_obs()
         
         if self.scale_obs:
-            return self.normalize(self.raw_curr_state), {}  # TODO : Ask AGP what variable he needs
+            return self.normalize(self.raw_curr_state), {}  
         
     def step(self, action):
         
@@ -122,7 +121,7 @@ class dc_gymenv(gym.Env):
         self.raw_curr_stpt += crac_setpoint_delta
         self.raw_curr_stpt = max(min(self.raw_curr_stpt,self.max_temp), self.min_temp)
     
-        ITE_load_pct_list = [self.cpu_load*100 for i in range(DC_Config.NUM_RACKS)]  # TODO *100
+        ITE_load_pct_list = [self.cpu_load*100 for i in range(DC_Config.NUM_RACKS)] 
         
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = \
             self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=self.raw_curr_stpt)
@@ -131,7 +130,6 @@ class dc_gymenv(gym.Env):
                                                                      rackwise_outlet_temp=self.rackwise_outlet_temp)
         data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr)+sum(self.rackwise_itfan_pwr)
         
-        #ambient_temp=self.weather_ts.loc[self.ts_idx, 'dry bulb temperature']
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
                                                                          avg_CRAC_return_temp=avg_CRAC_return_temp,
                                                                          ambient_temp=self.ambient_temp,
@@ -139,7 +137,6 @@ class dc_gymenv(gym.Env):
                                                                          DC_Config=DC_Config)
         
         # calculate reward
-        # self.reward = - 1.0 * ((data_center_total_ITE_Load + self.CT_Cooling_load)-40000)/(160000-40000)  # TODO: random agents shows -40000 to -160000
         self.reward = self.reward_method(
             params = {
                 'data_center_total_ITE_Load' : data_center_total_ITE_Load,
@@ -150,7 +147,7 @@ class dc_gymenv(gym.Env):
         )
         
         # calculate done
-        self.ts_end = (self.ts_idx + self.time_delta) == self.ts_end_idx  # epsidoe ends if data ends
+        self.ts_end = (self.ts_idx + self.time_delta) == self.ts_end_idx  
 
         if self.max_episode_length_in_time is not None:
             episode_end = (self.curr_episode_length_in_time >= self.max_episode_length_in_time)
@@ -170,7 +167,7 @@ class dc_gymenv(gym.Env):
         
         # calculate self.raw_next_state
         self.raw_next_state = self.get_obs()
-        # add info dictionary  # TODO: Ask AGP what infos he needs
+        # add info dictionary 
         self.info = {
             'IT POWER w' : data_center_total_ITE_Load,
             'HVAC POWER w' : self.CT_Cooling_load,

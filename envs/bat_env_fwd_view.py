@@ -16,7 +16,7 @@ class BatteryEnvFwd(gym.Env):
         self.end_point = self.starting_point + 30 * 96
         self.observation_space = gym.spaces.Box(low=np.float32(-2 * np.ones(1 + 1 + 4 + n_fwd_steps)),
                                                 high=np.float32(2 * np.ones(1 + 1 + 4 + n_fwd_steps)))
-        self.max_dc_pw = 6.44
+        self.max_dc_pw = 7.24
         self.action_space = gym.spaces.Discrete(3)
         self._action_to_direction = {0: 'charge', 1: 'discharge', 2: 'idle'}
         other_states_max = np.array([self.max_dc_pw, max_bat_cap])
@@ -38,10 +38,8 @@ class BatteryEnvFwd(gym.Env):
         self.total_energy_with_battery = 0
         self.ci = 0
         self.ci_n = []
-        # self.dcload_max = 1.2
-        # self.dcload_min = 0.05
-        self.dcload_max = 1.61
-        self.dcload_min = 0.6
+        self.dcload_max = env_config['dcload_max']
+        self.dcload_min = env_config['dcload_min']
         
     def reset(self, *, seed=None, options=None):
         self.current_step = self.starting_point
@@ -103,29 +101,6 @@ class BatteryEnvFwd(gym.Env):
     def update_ci(self, ci, ci_n):
         self.ci = ci
         self.ci_n = ci_n
-
-    # def reward(self, total_energy_with_battery, norm_CI, a_t):
-    #     norm_net_dc_load = (total_energy_with_battery / 1e3 - self.dcload_min) / (self.dcload_max - self.dcload_min)
-    #     rew_footprint = -1.0 * norm_CI * norm_net_dc_load
-    #     penalty_action = 0.0
-    #     if self.battery.current_load > 0.9 * self.max_bat_cap:
-    #         if a_t == 'charge':
-    #             penalty_action = -1.0
-    #         elif a_t == 'discharge':
-    #             penalty_action = 1.0
-    #         else:
-    #             penalty_action = 0.0
-    #     elif self.battery.current_load < 0.1 * self.max_bat_cap:
-    #         if a_t == 'charge':
-    #             penalty_action = 1.0
-    #         elif a_t == 'discharge':
-    #             penalty_action = -1.0
-    #         else:
-    #             penalty_action = 0.0
-    #     else:
-    #         pass
-
-    #     return rew_footprint + penalty_action
 
     def get_dcload(self):
         raise NotImplementedError
@@ -198,9 +173,8 @@ class BatteryEnvFwd(gym.Env):
         return discharging_rate
 
     def cal_maxmin(self):
-        # find the max min of some variables of interest
         self.dcload_max, self.dcload_min = self.max_dc_pw/4, 0.2/4  # /4 because we have 15 minutes time interval and we are using this to normalize MWH
-        #self.ci_max, self.ci_min = self.hist_data['avg_CI'].max(), self.hist_data['avg_CI'].min()
+
     
     def update_dcload_ranges(self, current_dc_load):
         current_dc_load = current_dc_load/4

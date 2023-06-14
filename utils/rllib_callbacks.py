@@ -16,8 +16,6 @@ class CustomCallbacks(DefaultCallbacks):
         episode.user_data["load_left"] = 0
 
     def on_episode_step(self, *, worker, base_env, episode, env_index, **kwargs) -> None:
-        # which_agent = base_env.envs[0].which_agent
-        # if which_agent == "agent_bat":
         net_energy = base_env.envs[0].bat_info["total_energy_with_battery"]
         CO2_footprint = base_env.envs[0].bat_info["CO2_footprint"]
         load_left = base_env.envs[0].ls_info["info_load_left"]
