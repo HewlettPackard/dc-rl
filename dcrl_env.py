@@ -12,7 +12,7 @@ from utils.make_pyeplus_env import make_dc_pyeplus_env
 from utils.make_bat_env import make_bat_fwd_env
 
 
-from utils.utils_cf import get_init_day, Time_Manager, Workload_Manager, CI_Manager, Weather_Manager,  obtain_paths, get_energy_variables
+from utils.utils_cf import get_init_day, Time_Manager, Workload_Manager, CI_Manager, Weather_Manager, obtain_paths, get_energy_variables
 from utils.base_agents import BaseBatteryAgent, BaseLoadShiftingAgent, BaseHVACAgent
 
 class DCRL(MultiAgentEnv):
@@ -23,7 +23,11 @@ class DCRL(MultiAgentEnv):
         self.ci_file = env_config['cintensity_file']
         self.weather_file = env_config['weather_file']
         self.max_bat_cap_Mw = env_config['max_bat_cap_Mw']
+        self.indv_reward = env_config['individual_reward_weight']
+        self.collab_reward = (1 - self.indv_reward) / 2
         
+        self.flexible_load = env_config['flexible_load']
+
         # Assign month according to worker index, if available
         if hasattr(env_config, 'worker_index'):
             month = int((env_config.worker_index - 1) % 12)
@@ -38,8 +42,8 @@ class DCRL(MultiAgentEnv):
         ci_loc, wea_loc = obtain_paths(self.location)
         
         self.ls_env = make_ls_env(month)
-        self.dc_env = make_dc_pyeplus_env(month + 1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
-        self.bat_env = make_bat_fwd_env(month, max_bat_cap_Mw = self.max_bat_cap_Mw)
+        self.dc_env = make_dc_pyeplus_env(month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
+        self.bat_env = make_bat_fwd_env(month, max_bat_cap_Mw=self.max_bat_cap_Mw)
 
         self._obs_space_in_preferred_format = True
         self._action_space_in_preferred_format = True
@@ -52,7 +56,7 @@ class DCRL(MultiAgentEnv):
         if "agent_ls" in self.agents:
             self.observation_space["agent_ls"] = self.ls_env.observation_space
             self.action_space["agent_ls"] = self.ls_env.action_space
-            flexible_load = 0.1
+            flexible_load = self.flexible_load
         else:
             self.base_agents["agent_ls"] = BaseLoadShiftingAgent()
             
@@ -70,7 +74,7 @@ class DCRL(MultiAgentEnv):
 
 
         self.init_day = get_init_day(month)
-        self.workload_m = Workload_Manager(flexible_workload_ratio=flexible_load,init_day=self.init_day)
+        self.workload_m = Workload_Manager(flexible_workload_ratio=flexible_load, init_day=self.init_day)
         self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file)
         self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file)
         self.t_m = Time_Manager(self.init_day)
@@ -103,14 +107,13 @@ class DCRL(MultiAgentEnv):
         self.dc_state, self.dc_info = self.dc_env.reset()
         bat_s, self.bat_info = self.bat_env.reset()
         
-
         ci_i,ci_if = self.ci_m.reset()
         t_i = self.t_m.reset()
         
         batSoC = bat_s[1]
         self.ls_state = np.hstack((t_i, ls_s, ci_if, workload))
-        self.dc_state = np.hstack((t_i,self.dc_state,workload,ci_if[0],batSoC))
-        var_to_LS_energy = get_energy_variables(self.dc_state)  # AN modified index
+        self.dc_state = np.hstack((t_i, self.dc_state, workload,ci_if[0], batSoC))
+        var_to_LS_energy = get_energy_variables(self.dc_state)
         
         self.ls_state = np.hstack((self.ls_state,var_to_LS_energy,batSoC))
         self.bat_state = np.hstack((t_i, bat_s, ci_if))
@@ -133,18 +136,15 @@ class DCRL(MultiAgentEnv):
         terminated["__all__"] = False
         truncated["__all__"] = False
 
-        # print(f'Location: {self.location}')
-
-        workload,day_workload = self.workload_m.step()
+        workload, day_workload = self.workload_m.step()
         ci_i, ci_if = self.ci_m.step()
         t_i = self.t_m.step()
-        temp,n_temp = self.weather_m.step()
+        temp, n_temp = self.weather_m.step()
 
         if self.actions_are_logits:
             for k, v in action_dict.items():
                 if isinstance(v, np.ndarray):
                     action_dict[k] = np.random.choice(np.arange(len(v)), p=v)
-
         
         if "agent_ls" in self.agents:
             action = action_dict["agent_ls"]
@@ -156,10 +156,8 @@ class DCRL(MultiAgentEnv):
         self.ls_env.update_workload(day_workload, workload)
         self.ls_state, self.ls_penalties, self.ls_terminated, self.ls_truncated, self.ls_info  = self.ls_env.step(action)
         self.ls_state = np.hstack((t_i, self.ls_state, ci_if, workload))
-        #print(self.ls_state)
     
         rew_i =  self.ls_penalties
-        #print('REWARD LS', rew_i)
         terminated_i = self.ls_terminated
         truncated_i = self.ls_truncated
         info_i = self.ls_info
@@ -170,25 +168,19 @@ class DCRL(MultiAgentEnv):
             truncated["agent_ls"] = truncated_i
             info["agent_ls"] = info_i
 
-        # print(f"Deciding the action for agent_dc")
         if "agent_dc" in self.agents:
             action = action_dict["agent_dc"]
-            # print('Is inside self.agents: ', action)
 
         else:
             action = self.base_agents["agent_dc"].do_nothing_action()
-            # print('NO is inside self.agents, so the action is: ', action)
-            # print(f'Inside self.agents: {self.agents}')
 
-        wkld = self.ls_info['load']
-        self.dc_env.set_shifted_wklds(wkld)
-        ci = self.ls_state[6]
+        shifted_wkld = self.ls_info['load']
+        self.dc_env.set_shifted_wklds(shifted_wkld)
         batSoC = self.bat_state[1]
         self.dc_env.set_ambient_temp(temp)
-        #self.dc_state[-3:] = [wkld, ci, batSoC]
         
-        self.dc_state,_, self.dc_terminated, self.dc_truncated, self.dc_info = self.dc_env.step(action)#self._do_dc_env_step(action_dict)
-        self.dc_state = np.hstack((t_i,self.dc_state,workload,ci_if[0],batSoC))
+        self.dc_state, _, self.dc_terminated, self.dc_truncated, self.dc_info = self.dc_env.step(action)
+        self.dc_state = np.hstack((t_i, self.dc_state, shifted_wkld, ci_if[0], batSoC))
 
         if self.dc_info['IT POWER w'] > self.max_consumption:
             self.max_consumption = self.dc_info['IT POWER w']
@@ -213,11 +205,11 @@ class DCRL(MultiAgentEnv):
         i = "agent_bat"
         self.bat_env.set_dcload(self.dc_info['Total Power kW']/1e3)
         self.bat_state = self.bat_env.update_state()
-        self.bat_env.update_ci(ci_i,ci_if[0])
+        self.bat_env.update_ci(ci_i, ci_if[0])
         self.bat_state, self.bat_reward, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
         batSoC = self.bat_state[1]
-        self.bat_state = np.hstack((t_i,self.bat_state,ci_if))
-        obs_i =  self.bat_state 
+        self.bat_state = np.hstack((t_i, self.bat_state, ci_if))
+        obs_i = self.bat_state 
         rew_i = self.bat_reward
         terminated_i = self.bat_terminated
         truncated_i = self.bat_truncated
@@ -225,12 +217,11 @@ class DCRL(MultiAgentEnv):
         
         self.dc_reward = -1*self.bat_info['total_energy_with_battery']/1e3 
 
-        var_to_LS_energy = get_energy_variables(self.dc_state)  # AN modified index
+        var_to_LS_energy = get_energy_variables(self.dc_state)
         
-        self.ls_state = np.hstack((self.ls_state,var_to_LS_energy,batSoC))
+        self.ls_state = np.hstack((self.ls_state, var_to_LS_energy, batSoC))
         if "agent_ls" in self.agents:
             obs['agent_ls'] = self.ls_state
-        #self.ls_state = self.ls_env.update_state()
         
         if "agent_bat" in self.agents:
             obs["agent_bat"] = obs_i
@@ -238,22 +229,23 @@ class DCRL(MultiAgentEnv):
             terminated["agent_bat"] = terminated_i
             truncated["agent_bat"] = truncated_i
             info["agent_bat"] = info_i
-            rew["agent_bat"] = rew["agent_bat"] + 0.1*self.dc_reward + 0.1*self.ls_penalties
+            rew["agent_bat"] = self.indv_reward * rew["agent_bat"] + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_penalties
             terminated["agent_bat"] = self.dc_terminated
 
         if "agent_ls" in self.agents:
-            rew["agent_ls"] = rew["agent_ls"] + self.bat_reward + 0.1*self.dc_reward
+            rew["agent_ls"] = self.indv_reward * (self.ls_penalties + self.bat_reward) + self.collab_reward * self.dc_reward
             terminated["agent_ls"] = self.dc_terminated
 
-        
         if "agent_dc" in self.agents:
             obs["agent_dc"][-1] = batSoC
-            rew["agent_dc"] = self.dc_reward + 0.1*self.ls_penalties + 0.1*self.bat_reward
+            rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_penalties + self.collab_reward * self.bat_reward
 
         if self.dc_terminated:
             terminated["__all__"] = True
             truncated["__all__"] = True
-        
+            for agent in self.agents:
+                truncated[agent] = True
+                
         return obs, rew, terminated, truncated, info
 
 
@@ -273,6 +265,12 @@ if __name__ == '__main__':
             'max_bat_cap_Mw': 2,
             
             'reward_method': 'default_dc_reward'
+            
+            # Collaborative weight in the reward
+            'individual_reward_weight': 0.8,
+                
+            # Flexible load ratio
+            'flexible_load': 0.1
             }
     )
 

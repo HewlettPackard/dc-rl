@@ -26,6 +26,12 @@ CONFIG = (
 
                 # MADDPG returns logits instead of discrete actions
                 "actions_are_logits": True,
+                
+                # Collaborative weight in the reward
+                'individual_reward_weight': 0.8,
+                
+                # Flexible load ratio
+                'flexible_load': 0.1
             }
         )
         .framework("tf")
