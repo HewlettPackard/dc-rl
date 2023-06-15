@@ -24,12 +24,3 @@ cost. It uses OpenAI Gym standard and supports modeling and control of three dif
    overview/index
    code
    references
-
-
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

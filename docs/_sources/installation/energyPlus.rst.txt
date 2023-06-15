@@ -49,7 +49,9 @@ If the docker container is launched successfully, the isolated :code:`sinergym` 
    cd dc-rl
 
 .. note::
-   To reopen a Docker container: TODO
+   Some useful Docker commands could be found here_
+   
+.. _here: https://docs.docker.com/engine/reference/commandline/cli/
 
 **********************
 2. Manual installation
