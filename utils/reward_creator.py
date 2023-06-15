@@ -1,3 +1,5 @@
+# File where the rewards are defined
+
 def default_ls_reward(params: dict) -> float:
     """
     Calculates a reward value based on normalized load shifting.
@@ -5,7 +7,7 @@ def default_ls_reward(params: dict) -> float:
     Args:
         params (dict): Dictionary containing parameters:
             norm_load_left (float): Normalized load left.
-            out_of_time (bool): Indicator whether the agent is out of time.
+            out_of_time (bool): Indicator (alarm) whether the agent is in the last hour of the day.
             penalty (float): Penalty value.
 
     Returns:
@@ -160,8 +162,10 @@ def renewable_energy_reward(params: dict) -> float:
     """
     renewable_energy_ratio = params['renewable_energy_ratio']
     total_energy_consumption = params['total_energy_consumption']
+    factor = 1.0 # factor to scale the weight of the renewable energy usage
 
-    reward = -1.0 * renewable_energy_ratio * total_energy_consumption
+    # Reward = maximize renewable energy usage - minimize total energy consumption
+    reward = factor * renewable_energy_ratio  -1.0 * total_energy_consumption
     return reward
 
 
