@@ -163,9 +163,9 @@ class Workload_Manager():
             self.storage_load = np.sum(self.cpu_smooth[self.time_step:self.time_step+self.time_steps_day]*self.flexible_workload_ratio)
             data_load = self.storage_load
         
-        # If it tries to read further, just begin from January 1st (index = 0)
+        # If it tries to read further, restart from the inital day
         if self.time_step >= len(self.cpu_smooth):
-            self.time_step = 0
+            self.time_step = self.init_time_step
         # assert self.time_step < len(self.cpu_smooth), f'Episode length: {self.time_step} is longer than the provide cpu_smooth: {len(self.cpu_smooth)}'
         return self.cpu_smooth[self.time_step], data_load
     
@@ -228,9 +228,9 @@ class CI_Manager():
     def step(self):
         self.time_step +=1
         
-        # If it tries to read further, just begin from January 1st (index = 0)
+        # If it tries to read further, restart from the initial index
         if self.time_step >= len(self.carbon_smooth):
-            self.time_step = 0
+            self.time_step = self.init_day*self.time_steps_day
             
         # assert self.time_step < len(self.carbon_smooth), 'Eposide length is longer than the provide CI_data'
         if self.time_step + self.future_steps > len(self.carbon_smooth):
@@ -295,9 +295,9 @@ class Weather_Manager():
     def step(self):
         self.time_step += 1
         
-        # If it tries to read further, just begin from January 1st (index = 0)
+        # If it tries to read further, restart from the initial index
         if self.time_step >= len(self.temperature_data):
-            self.time_step = 0
+            self.time_step = self.init_day*self.time_steps_day
             
         # assert self.time_step < len(self.temperature_data), 'Episode length is longer than the provide Temperature_data'
         return self.temperature_data[self.time_step], self.norm_temp_data[self.time_step]
