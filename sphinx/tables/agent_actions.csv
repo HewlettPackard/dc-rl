@@ -1,7 +1,7 @@
 Source,Size,Type,Range,Description
-Load shifting agent,2,Discrete,"[0,1]","| :code:`0` - Shift flexible load to a time horizon of N hours in the future
+agent_ls,2,Discrete,"[0,1]","| :code:`0` - Shift flexible load to a time horizon of N hours in the future
 | :code:`1` - Do not shift flexible load (Idle)"
-DC Cooling agent,9,Discrete,"[0,8]","| :code:`0` - Reduce temperature by 5 units
+agent_dc,9,Discrete,"[0,8]","| :code:`0` - Reduce temperature by 5 units
 | :code:`1` - Reduce temperature by 2 units
 | :code:`2` - Reduce temperature by 1 unit
 | :code:`3` - Reduce temperature by 0.5 unit
@@ -10,6 +10,6 @@ DC Cooling agent,9,Discrete,"[0,8]","| :code:`0` - Reduce temperature by 5 units
 | :code:`6` - Increase temperature by 1 unit
 | :code:`7` - Increase temperature by 2 units
 | :code:`8` - Increase temperature by 5 units"
-Battery controlling agent,3,Discrete,"[0,2]","| :code:`0` - Use the charge function to store energy in the battery
+agent_bat,3,Discrete,"[0,2]","| :code:`0` - Use the charge function to store energy in the battery
 | :code:`1` - Use the discharge function to release energy from the battery
 | :code:`2` - Do nothing (Idle)"

@@ -1,6 +1,6 @@
-================================
-EnergyPlus enabled DC simulation
-================================
+============================================
+EnergyPlus enabled DC simulation (DCRLeplus)
+============================================
 
 DCRL-Green uses Sinergym_ :cite:p:`2021sinergym` to create an environment following Gymnasium interface for wrapping EnergyPlus for data center control. 
 It is recommended to install Sinergym supported by a Docker container that imports dependencies by default. The instructions for manual installations are also provided in the following sections.
@@ -43,6 +43,10 @@ A docker container can be launched using the command:
    docker run -t -i -v ./:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
 
 If the docker container is launched successfully, the isolated :code:`sinergym` environment is enabled. A python script can be executed by navigating to the directory :code:`dc-rl`.
+
+.. code-block:: console
+
+   cd dc-rl
 
 .. note::
    To reopen a Docker container: TODO

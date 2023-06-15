@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>EnergyPlus enabled DC simulation &mdash; DCRL-Green 0.0.1 documentation</title>
+  <title>EnergyPlus enabled DC simulation (DCRLeplus) &mdash; DCRL-Green 0.0.1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Getting Started" href="../gettingstarted.html" />
-    <link rel="prev" title="DCRL-Green’s custom DC simulation" href="custom.html" /> 
+    <link rel="prev" title="DCRL-Green’s custom DC simulation (DCRL)" href="custom.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -49,8 +49,8 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="custom.html">DCRL-Green’s custom DC simulation</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">EnergyPlus enabled DC simulation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="custom.html">DCRL-Green’s custom DC simulation (DCRL)</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">EnergyPlus enabled DC simulation (DCRLeplus)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#docker-container">1. Docker container</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#prerequisites">1.1 Prerequisites</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#first-time-setup">1.2 First-time setup</a></li>
@@ -83,7 +83,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Installation</a></li>
-      <li class="breadcrumb-item active">EnergyPlus enabled DC simulation</li>
+      <li class="breadcrumb-item active">EnergyPlus enabled DC simulation (DCRLeplus)</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/installation/energyPlus.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -93,8 +93,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="energyplus-enabled-dc-simulation">
-<h1>EnergyPlus enabled DC simulation<a class="headerlink" href="#energyplus-enabled-dc-simulation" title="Permalink to this headline"></a></h1>
+  <section id="energyplus-enabled-dc-simulation-dcrleplus">
+<h1>EnergyPlus enabled DC simulation (DCRLeplus)<a class="headerlink" href="#energyplus-enabled-dc-simulation-dcrleplus" title="Permalink to this headline"></a></h1>
 <p>DCRL-Green uses <a class="reference external" href="https://ugr-sail.github.io/sinergym/compilation/main/index.html">Sinergym</a> <span id="id1">[<a class="reference internal" href="../references.html#id3" title="Javier Jiménez-Raboso, Alejandro Campoy-Nieves, Antonio Manjavacas-Lucas, Juan Gómez-Romero, and Miguel Molina-Solana. Sinergym: a building simulation and control framework for training reinforcement learning agents. In Proceedings of the 8th ACM International Conference on Systems for Energy-Efficient Buildings, Cities, and Transportation, 319–323. New York, NY, USA, 2021. Association for Computing Machinery. URL: https://doi.org/10.1145/3486611.3488729, doi:10.1145/3486611.3488729.">4</a>]</span> to create an environment following Gymnasium interface for wrapping EnergyPlus for data center control.
 It is recommended to install Sinergym supported by a Docker container that imports dependencies by default. The instructions for manual installations are also provided in the following sections.</p>
 <section id="docker-container">
@@ -122,6 +122,9 @@ It is recommended to install Sinergym supported by a Docker container that impor
 </pre></div>
 </div>
 <p>If the docker container is launched successfully, the isolated <code class="code docutils literal notranslate"><span class="pre">sinergym</span></code> environment is enabled. A python script can be executed by navigating to the directory <code class="code docutils literal notranslate"><span class="pre">dc-rl</span></code>.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd dc-rl</span>
+</pre></div>
+</div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>To reopen a Docker container: TODO</p>
@@ -137,7 +140,7 @@ It is recommended to install Sinergym supported by a Docker container that impor
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="custom.html" class="btn btn-neutral float-left" title="DCRL-Green’s custom DC simulation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="custom.html" class="btn btn-neutral float-left" title="DCRL-Green’s custom DC simulation (DCRL)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../gettingstarted.html" class="btn btn-neutral float-right" title="Getting Started" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

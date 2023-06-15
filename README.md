@@ -54,7 +54,7 @@ $ pip install -r requirements.txt
 
 ## Usage
 ### Running the DCRL environment
-To run an episode of the environment with a random agent:
+Please make sure you are in the ```dc-rl``` folder. If you are in your home directory, run ```cd dc-rl``` or ```cd PATH_TO_PROJECT``` depending on where you downloaded the GitHub repository. To run an episode of the environment with a random agent:
 ```bash
 $ python dcrl_env.py
 ```
@@ -80,13 +80,19 @@ $ python train_a2c.py
 ```
 
 ### Training on the DCRLeplus environment
+Make sure you are inside the ```dc-rl``` directory first. Next pull and run the docker image using:
 
 ```bash
 $ docker pull agnprz/carbon_sustain:v3
 $ docker run -t -i -v $PWD:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
+```
+
+Finally to run DCRL use:
+```bash
 $ cd dc-rl
 $ EPLUS=1 python train_ppo.py
 ```
+Note that this will use ```PPO``` agents; for ```MADDPG``` use the ```train_maddpg.py``` Python script and for ```A2C``` use the ```train_a2c.py``` script.
 
 ### Monitoring Training
 Monitor the training using TensorBoard. By default, the location of the training data is at ```./results```. To visualize, run:
