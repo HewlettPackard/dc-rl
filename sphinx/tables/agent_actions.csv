@@ -1,5 +1,5 @@
 Source,Size,Type,Range,Description
-agent_ls,2,Discrete,"[0,1]","| :code:`0` - Shift flexible load to a time horizon of N hours in the future
+agent_ls,2,Discrete,"[0,1]","| :code:`0` - Assign load at the current time step from the flexible load budget
 | :code:`1` - Do not shift flexible load (Idle)"
 agent_dc,9,Discrete,"[0,8]","| :code:`0` - Reduce temperature by 5 units
 | :code:`1` - Reduce temperature by 2 units

@@ -1,16 +1,18 @@
 Name,Default input,Description
-Experiment name,latest_experiment,Assigns a name for the experiment
+Experiment name,test,Assigns a name for the experiment
 Location,ny,"Specifies the location of weather/ Carbon intensity data. ""ny"" represents New York"
 Carbon Intensity,NYIS_NG_&_avgCI.csv,The filename of the carbon-intensity data. The file format should be .csv
 Weather,USA_NY_New.York-Kennedy.epw,The filename of the weather data. The file format should be .epw
 Workload,,The filename of the workload data. The file format should be .epw
 Agents,"[""agents_ls"" , ""agents_dc"" , ""agents_bat""]","List of agents (ls= load shifting, dc= DC cooling, bat= Battery controller) to train"
-Seed,1,Random seed for the experiment
+max_bat_cap_Mw,2,Battery capacity
+individual_reward_weight,0.8,:math:`\eta` value for collaborative weight in rewards
+flexible_load,0.1,Ratio of workload that is flexible
 Save model,FALSE,Indicates option to store the training checkpoints
 gamma,0.99,Represents the discount factor
 Total timesteps,100_000_000_000,total timesteps of the experiments
-Number of workers,24,"Specifies the number of parallel environments, it must be in multiples of 12"
+NUM_AGENTS ,3,Number of agents
+NUM_WORKERS ,24,"Specifies the number of parallel environments, it must be in multiples of 12"
 Batch size,128,Provides the batch size to sample from the replay memory
-Learning rate,5.00E-06,the learning rate of the optimizer
-Algorithm,,MARL algorithm to train the agents
-Epmodel,,Specifes the choice of the simulation model
+Learning rate,1.E-06,the learning rate of the optimizer
+Algorithm,PPO,MARL algorithm to train the agents

@@ -8,42 +8,26 @@ Reinforcement learning algorithms
 DCRL-Green supports the two multi-agent training approaches: independent learning approach such as IPPO :cite:p:`dewitt2020independent`, IA2C that decompose the problem into single-agent tasks for learning
 and centralised learning approach such as MADDPG :cite:p:`lowe2020multiagent` that uses a centralised critic with decentralised execution.
 
-The following coomand can be used to run the MARL algorithm of choice:
+The following command can be used to run the MARL algorithm of choice:
 
-+--------+---------------------------+
-| Name   |   Implementation          | 
-+========+===========================+
-| IPPO   | .. code-block:: bash      |
-|        |                           |   
-|        |    python train_PPO.py    |
-+--------+---------------------------+
-| IA2C   | .. code-block:: bash      |
-|        |                           |   
-|        |    python train_A2C.py    |
-+--------+---------------------------+
-| MADDPG | .. code-block:: bash      |
-|        |                           |   
-|        |    python train_MADDPG.py |
-+--------+---------------------------+
++--------+---------------------------+------------------------------------+
+| Name   |   DCRL Implementation     | DCRLeplus Implementation           |
++========+===========================+====================================+
+| IPPO   | .. code-block:: bash      | .. code-block:: bash               |
+|        |                           |                                    |
+|        |    python train_PPO.py    |   EPLUS=1 python train_ppo.py      |
++--------+---------------------------+------------------------------------+
+| IA2C   | .. code-block:: bash      | .. code-block:: bash               |
+|        |                           |                                    |
+|        |    python train_a2c.py    |    EPLUS=1 python train_a2c.py     |
++--------+---------------------------+------------------------------------+
+| MADDPG | .. code-block:: bash      | .. code-block:: bash               |
+|        |                           |                                    |
+|        |    python train_MADDPG.py |    EPLUS=1  python train_MADDPG.py |
++--------+---------------------------+------------------------------------+
 
 .. note::
    User configurations described in the following sections can be modified by directly editing the above python scripts.
-
-DC simulation
--------------
-
-The data center simulation framework can be constructed using the following two options:
-EnergyPlus enabled execution , Custom built execution
-
-:code:`env` variable can be used to assign the DC simulation of choice.
-
-+--------------+---------------------------+
-| Name         |   Implementation          | 
-+==============+===========================+
-| Custom model | :code:`env = DCRL`        |
-+--------------+---------------------------+
-| EnergyPlus   | :code:`env = DCRLeplus`   |
-+--------------+---------------------------+
 
 Carbon Intensity data
 ---------------------

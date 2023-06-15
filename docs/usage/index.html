@@ -52,7 +52,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Usage</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#reinforcement-learning-algorithms">Reinforcement learning algorithms</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#dc-simulation">DC simulation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#carbon-intensity-data">Carbon Intensity data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#weather-data">Weather data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#workload-data">Workload data</a></li>
@@ -95,15 +94,17 @@
 <h2>Reinforcement learning algorithms<a class="headerlink" href="#reinforcement-learning-algorithms" title="Permalink to this headline"></a></h2>
 <p>DCRL-Green supports the two multi-agent training approaches: independent learning approach such as IPPO <span id="id1">[<a class="reference internal" href="../references.html#id5" title="Christian Schroeder de Witt, Tarun Gupta, Denys Makoviichuk, Viktor Makoviychuk, Philip H. S. Torr, Mingfei Sun, and Shimon Whiteson. Is independent learning all you need in the starcraft multi-agent challenge? 2020. arXiv:2011.09533.">3</a>]</span>, IA2C that decompose the problem into single-agent tasks for learning
 and centralised learning approach such as MADDPG <span id="id2">[<a class="reference internal" href="../references.html#id6" title="Ryan Lowe, Yi Wu, Aviv Tamar, Jean Harb, Pieter Abbeel, and Igor Mordatch. Multi-agent actor-critic for mixed cooperative-competitive environments. 2020. arXiv:1706.02275.">5</a>]</span> that uses a centralised critic with decentralised execution.</p>
-<p>The following coomand can be used to run the MARL algorithm of choice:</p>
+<p>The following command can be used to run the MARL algorithm of choice:</p>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 23%" />
-<col style="width: 77%" />
+<col style="width: 11%" />
+<col style="width: 38%" />
+<col style="width: 51%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
-<th class="head"><p>Implementation</p></th>
+<th class="head"><p>DCRL Implementation</p></th>
+<th class="head"><p>DCRLeplus Implementation</p></th>
 </tr>
 </thead>
 <tbody>
@@ -112,15 +113,27 @@ and centralised learning approach such as MADDPG <span id="id2">[<a class="refer
 </pre></div>
 </div>
 </td>
+<td><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">EPLUS</span><span class="o">=</span><span class="m">1</span> python train_ppo.py
+</pre></div>
+</div>
+</td>
 </tr>
 <tr class="row-odd"><td><p>IA2C</p></td>
-<td><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python train_A2C.py
+<td><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python train_a2c.py
+</pre></div>
+</div>
+</td>
+<td><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">EPLUS</span><span class="o">=</span><span class="m">1</span> python train_a2c.py
 </pre></div>
 </div>
 </td>
 </tr>
 <tr class="row-even"><td><p>MADDPG</p></td>
 <td><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python train_MADDPG.py
+</pre></div>
+</div>
+</td>
+<td><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">EPLUS</span><span class="o">=</span><span class="m">1</span>  python train_MADDPG.py
 </pre></div>
 </div>
 </td>
@@ -131,31 +144,6 @@ and centralised learning approach such as MADDPG <span id="id2">[<a class="refer
 <p class="admonition-title">Note</p>
 <p>User configurations described in the following sections can be modified by directly editing the above python scripts.</p>
 </div>
-</section>
-<section id="dc-simulation">
-<h2>DC simulation<a class="headerlink" href="#dc-simulation" title="Permalink to this headline"></a></h2>
-<p>The data center simulation framework can be constructed using the following two options:
-EnergyPlus enabled execution , Custom built execution</p>
-<p><code class="code docutils literal notranslate"><span class="pre">env</span></code> variable can be used to assign the DC simulation of choice.</p>
-<table class="docutils align-default">
-<colgroup>
-<col style="width: 34%" />
-<col style="width: 66%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Name</p></th>
-<th class="head"><p>Implementation</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>Custom model</p></td>
-<td><p><code class="code docutils literal notranslate"><span class="pre">env</span> <span class="pre">=</span> <span class="pre">DCRL</span></code></p></td>
-</tr>
-<tr class="row-odd"><td><p>EnergyPlus</p></td>
-<td><p><code class="code docutils literal notranslate"><span class="pre">env</span> <span class="pre">=</span> <span class="pre">DCRLeplus</span></code></p></td>
-</tr>
-</tbody>
-</table>
 </section>
 <section id="carbon-intensity-data">
 <h2>Carbon Intensity data<a class="headerlink" href="#carbon-intensity-data" title="Permalink to this headline"></a></h2>
