@@ -30,7 +30,7 @@ Users have an option to choose between the two reward mechanisms. This can be do
 +================+=======================================+
 | Collaborative  | .. code-block:: bash                  |
 |                |                                       |   
-|                |    'individual_reward_weight': 0.0    |
+|                |    'individual_reward_weight': 0.33   |
 +----------------+---------------------------------------+
 | Independent    | .. code-block:: bash                  |
 |                |                                       |   
@@ -77,22 +77,28 @@ Some examples of custom rewards are listed below:
 
 .. code-block:: bash
 
-    def renewable_energy_reward(params: dict) -> float:
+    def energy_PUE_reward(params: dict) -> float:
         """
-        Calculates a reward value based on the usage of renewable energy sources.
+        Calculates a reward value based on Power Usage Effectiveness (PUE).
 
         Args:
             params (dict): Dictionary containing parameters:
-                renewable_energy_ratio (float): Ratio of energy coming from renewable sources.
                 total_energy_consumption (float): Total energy consumption of the data center.
+                it_equipment_energy (float): Energy consumed by the IT equipment.
 
         Returns:
             float: Reward value.
         """
-        renewable_energy_ratio = params['renewable_energy_ratio']
-        total_energy_consumption = params['total_energy_consumption']
-
-        reward = -1.0 * renewable_energy_ratio * total_energy_consumption
+        total_energy_consumption = params['total_energy_consumption']  
+        it_equipment_energy = params['it_equipment_energy']  
+        
+        # Calculate PUE
+        pue = total_energy_consumption / it_equipment_energy if it_equipment_energy != 0 else float('inf')
+        
+        # We aim to get PUE as close to 1 as possible, hence we take the absolute difference between PUE and 1
+        # We use a negative sign since RL seeks to maximize reward, but we want to minimize PUE
+        reward = -abs(pue - 1)
+        
         return reward
 
     REWARD_METHOD_MAP = {
@@ -101,6 +107,6 @@ Some examples of custom rewards are listed below:
         'default_ls_reward' : default_ls_reward,
         # Add custom reward methods here
         'custom_agent_reward' : custom_agent_reward,
-        'renewable_energy_reward': renewable_energy_reward,
+        'energy_PUE_reward': energy_PUE_reward,
     }
 

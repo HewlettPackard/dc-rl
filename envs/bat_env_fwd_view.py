@@ -6,7 +6,6 @@ from utils import reward_creator
 class BatteryEnvFwd(gym.Env):
     def __init__(self, env_config) -> None:
         super(BatteryEnvFwd, self).__init__()
-
         n_fwd_steps = env_config['n_fwd_steps']
         max_bat_cap = env_config['max_bat_cap']
         charging_rate = env_config['charging_rate']
@@ -83,19 +82,9 @@ class BatteryEnvFwd(gym.Env):
                                                  'max_bat_cap':self.max_bat_cap,
                                                  'battery_current_load':self.battery.current_load,
                                                  'max_bat_cap':self.max_bat_cap})
-        # self.current_step += 1
+
         self.raw_obs = self._hist_data_collector()
         self.temp_state = self._process_obs(self.raw_obs)
-        #self.ep_len_intervals += 1
-        # self.dataset_end = self.current_step == self.end_point
-        # if self.episodes_24hr:
-        #     done = self.dataset_end or (self.ep_len_intervals >= 24 * 4 * 7)
-        # else:
-        #     done = self.dataset_end
-
-        # if self.dataset_end:
-        #     self.current_step = self.starting_point
-
         self.info = {
             'action': action_id,
             'battery SOC': self.battery.current_load,
@@ -113,9 +102,6 @@ class BatteryEnvFwd(gym.Env):
     def update_ci(self, ci, ci_n):
         self.ci = ci
         self.ci_n = ci_n
-
-    # def get_dcload(self):
-        # raise NotImplementedError
 
     def _process_obs(self, state):
         scaled_value = (state - self.observation_min) / self.delta
@@ -186,14 +172,5 @@ class BatteryEnvFwd(gym.Env):
 
     def cal_maxmin(self):
         self.dcload_max, self.dcload_min = self.max_dc_pw/4, 0.2/4  # /4 because we have 15 minutes time interval and we are using this to normalize MWH
-
-    # def update_dcload_ranges(self, current_dc_load):
-    #     current_dc_load = current_dc_load/4
-    #     if current_dc_load > self.dcload_max:
-    #         self.dcload_max = current_dc_load
-    #         print('max dcload updated to: ', self.dcload_max)
-    #     elif current_dc_load < self.dcload_min:
-    #         self.dcload_min = current_dc_load
-    #         print('min dcload updated to: ', self.dcload_min)
         
         

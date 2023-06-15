@@ -1,16 +1,10 @@
 import os
 from typing import Optional, Tuple
-
 import gymnasium as gym
 import numpy as np
-
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
-
-from utils.make_ls_env import make_ls_env
-from utils.make_pyeplus_env import make_dc_pyeplus_env
-from utils.make_bat_env import make_bat_fwd_env
-
+from utils.make_envs_pyenv import make_dc_pyeplus_env, make_bat_fwd_env, make_ls_env
 from utils.utils_cf import get_init_day, Time_Manager, Workload_Manager, CI_Manager, Weather_Manager, obtain_paths, get_energy_variables
 from utils.base_agents import BaseBatteryAgent, BaseLoadShiftingAgent, BaseHVACAgent
 

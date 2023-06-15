@@ -5,7 +5,6 @@ import pandas as pd
 import gymnasium as gym
 
 import envs.datacenter as DataCenter
-# import utils.dc_config as DC_Config
 import utils.dc_config_reader as DC_Config
 from utils import reward_creator
 
@@ -16,15 +15,11 @@ class dc_gymenv(gym.Env):
                        action_variables: list[str],
                        action_space : gym.spaces.Discrete,
                        action_mapping: dict,
-                       ranges : dict[str,list],
-                       weather_ts: pd.DataFrame,  # this data frame should be time indexed for the code to work
-                       ci_ts : pd.DataFrame,   # this data frame should be time indexed for the code to work
+                       ranges : dict[str,list],  # this data frame should be time indexed for the code to work
                        add_cpu_usage : bool,
-                       time_delta : pd.Timedelta,  # eg pd.Timedelta('15m')
                        min_temp : float,
                        max_temp : float,
                        action_definition : dict,
-                       cpu_usage_ts : pd.DataFrame = None,   # this data frame should be time indexed for the code to work
                        seed : int = 123,
                        episode_length_in_time : pd.Timedelta = None,  # can be 1 week in minutes eg pd.Timedelta('7days')
                        reward_method : str = 'default_dc_reward'
@@ -42,12 +37,9 @@ class dc_gymenv(gym.Env):
             action_mapping (dict): A mapping from agent discrete action choice to actual delta change in setpoint. The mapping is defined in
                                     utils.make_pyeplus_env.py
             ranges (dict[str,list]): The upper and lower bounds on the observation_variables
-            weather_ts (pd.DataFrame): The weather dataframe for the given 1 month/ 30 days period
-            time_delta (pd.Timedelta): The sampling frequency of the dataset for the environment
             max_temp (float): The maximum temperature allowed for the CRAC setpoint
             min_temp (float): The minimum temperature allowed for the CRAC setpoint
             action_definition (dict): A mapping of the action name to the default or initialized value. Specified in utils.make_pyeplus_env.py
-            cpu_usage_ts (pd.DataFrame, optional): The cpu usage dataframe for the given 1 month/ 30 days period. Defaults to None.
             episode_length_in_time (pd.Timedelta, optional): The maximum length after which the done flag should be True. Defaults to None. 
                                                             Setting none causes done to be True after data set is exausted.
             reward_method (str, optional) : Default or custom reward function to be used for evaluating the reward
@@ -59,9 +51,6 @@ class dc_gymenv(gym.Env):
         self.action_space = action_space
         self.action_mapping = action_mapping
         self.ranges = ranges
-        self.weather_ts = weather_ts
-        self.cpu_usage_ts = cpu_usage_ts
-        self.ci_ts = ci_ts
         self.seed = seed
         self.add_cpu_usage = add_cpu_usage
         self.ambient_temp = 20
@@ -69,12 +58,6 @@ class dc_gymenv(gym.Env):
         self.obs_max = []
         self.obs_min = []
         
-        # self.ts_start_idx, self.ts_end_idx = self.weather_ts.index[0], self.weather_ts.index[-1]
-        # self.ts_idx = self.ts_start_idx
-        # self.ts_end = False
-        self.time_delta = time_delta
-        self.max_episode_length_in_time = episode_length_in_time
-        self.curr_episode_length_in_time = pd.Timedelta('0m')
         self.reward_method = reward_creator.get_reward_method(reward_method=reward_method)
         
         # similar to reset
@@ -102,12 +85,6 @@ class dc_gymenv(gym.Env):
 
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_cooling_load, self.Compressor_load = 100, 1000, 1000, 100  
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
-        
-        # if self.ts_end:
-        #     self.ts_idx = self.ts_start_idx
-        #     self.ts_end = False
-        # else:
-        #     self.ts_idx += self.time_delta
         
         self.raw_curr_state = self.get_obs()
         
@@ -144,24 +121,7 @@ class dc_gymenv(gym.Env):
                 'energy_ub' : 160000
                 }
         )
-        
-        # # calculate done
-        # self.ts_end = (self.ts_idx + self.time_delta) == self.ts_end_idx  
-
-        # if self.max_episode_length_in_time is not None:
-        #     episode_end = (self.curr_episode_length_in_time >= self.max_episode_length_in_time)
-        # else:
-        #     episode_end = False
-            
-        # if not episode_end:
-        #    self.curr_episode_length_in_time += self.time_delta
-           
-        # done = episode_end | self.ts_end
-        
-              
-        # move to next time index
-        # self.ts_idx += self.time_delta
-        
+                
         # calculate self.raw_next_state
         self.raw_next_state = self.get_obs()
         # add info dictionary 
@@ -227,14 +187,6 @@ class dc_gymenv_standalone(dc_gymenv):
     
     def __init__(self, env_config):
         
-        # adjust based on month
-        month = env_config.worker_index
-        start_pd_datetime = pd.to_datetime(f'{month:02d}/01/2022 00:00:00')
-        end_pd_datetime = start_pd_datetime + pd.Timedelta('30 days')
-        weather_ts, ci_ts, cpu_usage_ts = env_config['weather_ts'].loc[start_pd_datetime:end_pd_datetime,:], \
-                                        env_config['ci_ts'].loc[start_pd_datetime:end_pd_datetime,:], \
-                                        env_config['cpu_usage_ts'].loc[start_pd_datetime:end_pd_datetime,:]
-        
         super().__init__(
                        env_config['observation_variables'],
                        observation_space=env_config['observation_space'],
@@ -242,14 +194,10 @@ class dc_gymenv_standalone(dc_gymenv):
                        action_space=env_config['action_space'],
                        action_mapping=env_config['action_mapping'],
                        ranges=env_config['ranges'],
-                       weather_ts=weather_ts,
-                       ci_ts=ci_ts,
                        add_cpu_usage=env_config['add_cpu_usage'],
-                       time_delta=env_config['time_delta'],
                        min_temp=env_config['min_temp'],
                        max_temp=env_config['max_temp'],
                        action_definition=env_config['action_definition'],
-                       cpu_usage_ts= None if env_config['use_ls_cpu_load'] else cpu_usage_ts,
                        episode_length_in_time=env_config['episode_length_in_time']
         )
         

@@ -1,11 +1,43 @@
 import os
 import numpy as np
 import pandas as pd
-
 import gymnasium as gym
-
 from envs.dc_gym import dc_gymenv, dc_gymenv_standalone
 import utils.data_processor as data_processor
+from envs.carbon_ls import CarbonLoadEnv
+from utils.utils_cf import get_init_day, Workload_Manager
+from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
+from utils.utils_cf import get_init_day, Workload_Manager, CI_Manager
+
+def make_ls_env(month,
+                reward_method,
+                n_vars_energy : int = 4,
+                n_vars_battery : int = 1):
+    
+    env_config = {'reward_method':reward_method}
+    
+    return CarbonLoadEnv(n_vars_energy=n_vars_energy,
+                         n_vars_battery=n_vars_battery,
+                         env_config=env_config)
+
+def make_bat_fwd_env(month,
+                    max_bat_cap_Mw : float = 2.0,
+                    twenty_four_hr_episodes : bool = False,
+                    charging_rate : float = 0.5,
+                    reward_method : str = 'default_bat_reward'
+                    ):
+
+    init_day = get_init_day(month)
+    env_config= {'n_fwd_steps':4,
+                 'max_bat_cap':max_bat_cap_Mw,
+                 'charging_rate':charging_rate,
+                 '24hr_episodes':twenty_four_hr_episodes,
+                 'start_point':init_day,
+                 'dcload_max': 1.81, 
+                 'dcload_min': 0.6,
+                 'reward_method':reward_method}
+    bat_env = battery_env_fwd(env_config)
+    return bat_env
 
 def make_dc_pyeplus_env(month : int = 1,
                         location : str = 'NYIS',
@@ -118,27 +150,16 @@ def make_dc_pyeplus_env(month : int = 1,
     
     if not standalone_pyeplus:
         
-        # adjust based on month
-        start_pd_datetime = pd.to_datetime(f'{month:02d}/01/2022 00:00:00')
-        end_pd_datetime = start_pd_datetime + pd.Timedelta('30 days')
-        weather_ts, ci_ts, cpu_usage_ts = weather_ts.loc[start_pd_datetime:end_pd_datetime,:], \
-                                        ci_ts.loc[start_pd_datetime:end_pd_datetime,:], \
-                                        cpu_usage_ts.loc[start_pd_datetime:end_pd_datetime,:]
-        
         dc_env = dc_gymenv(observation_variables=observation_variables,
                         observation_space=observation_space,
                         action_variables=action_variables,
                         action_space=action_space,
                         action_mapping=action_mapping,
                         ranges=ranges,
-                        weather_ts=weather_ts,  # adjust based on month
-                        ci_ts=ci_ts,  # adjust based on month
                         add_cpu_usage=add_cpu_usage,
-                        time_delta=pd.Timedelta('15m'),
                         min_temp=min_temp,
                         max_temp=max_temp,
                         action_definition=action_definition,
-                        cpu_usage_ts= None if use_ls_cpu_load else cpu_usage_ts,  # adjust based on month
                         episode_length_in_time=episode_length_in_time,
                         reward_method=reward_method
                         )
@@ -154,11 +175,7 @@ def make_dc_pyeplus_env(month : int = 1,
                         'action_space':action_space,
                         'action_mapping' : action_mapping,
                         'ranges': ranges,
-                        'weather_ts':weather_ts,
-                        'ci_ts':ci_ts,
-                        'cpu_usage_ts' : cpu_usage_ts,
                         'add_cpu_usage':add_cpu_usage,
-                        'time_delta':pd.Timedelta('15m'),
                         'min_temp':min_temp,
                         'max_temp':max_temp,
                         'action_definition':action_definition,
@@ -169,10 +186,4 @@ def make_dc_pyeplus_env(month : int = 1,
         return dc_gymenv_standalone, env_config
     
     
-    
-    
-        
-        
-    
-
     

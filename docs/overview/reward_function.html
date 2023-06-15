@@ -174,7 +174,7 @@ A penalty is attributed to the load shifting agent if it fails to schedule all t
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Collaborative</p></td>
-<td><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;individual_reward_weight&#39;</span>: <span class="m">0</span>.0
+<td><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;individual_reward_weight&#39;</span>: <span class="m">0</span>.33
 </pre></div>
 </div>
 </td>
@@ -221,22 +221,28 @@ Add the new custom reward function to the <code class="code docutils literal not
 </div>
 <p>Some examples of custom rewards are listed below:</p>
 <p><em>Example 1</em></p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>def renewable_energy_reward<span class="o">(</span>params: dict<span class="o">)</span> -&gt; float:
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>def energy_PUE_reward<span class="o">(</span>params: dict<span class="o">)</span> -&gt; float:
     <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    Calculates a reward value based on the usage of renewable energy sources.</span>
+<span class="s2">    Calculates a reward value based on Power Usage Effectiveness (PUE).</span>
 
 <span class="s2">    Args:</span>
 <span class="s2">        params (dict): Dictionary containing parameters:</span>
-<span class="s2">            renewable_energy_ratio (float): Ratio of energy coming from renewable sources.</span>
 <span class="s2">            total_energy_consumption (float): Total energy consumption of the data center.</span>
+<span class="s2">            it_equipment_energy (float): Energy consumed by the IT equipment.</span>
 
 <span class="s2">    Returns:</span>
 <span class="s2">        float: Reward value.</span>
 <span class="s2">    &quot;&quot;&quot;</span>
-    <span class="nv">renewable_energy_ratio</span> <span class="o">=</span> params<span class="o">[</span><span class="s1">&#39;renewable_energy_ratio&#39;</span><span class="o">]</span>
     <span class="nv">total_energy_consumption</span> <span class="o">=</span> params<span class="o">[</span><span class="s1">&#39;total_energy_consumption&#39;</span><span class="o">]</span>
+    <span class="nv">it_equipment_energy</span> <span class="o">=</span> params<span class="o">[</span><span class="s1">&#39;it_equipment_energy&#39;</span><span class="o">]</span>
 
-    <span class="nv">reward</span> <span class="o">=</span> -1.0 * renewable_energy_ratio * total_energy_consumption
+    <span class="c1"># Calculate PUE</span>
+    <span class="nv">pue</span> <span class="o">=</span> total_energy_consumption / it_equipment_energy <span class="k">if</span> it_equipment_energy !<span class="o">=</span> <span class="m">0</span> <span class="k">else</span> float<span class="o">(</span><span class="s1">&#39;inf&#39;</span><span class="o">)</span>
+
+    <span class="c1"># We aim to get PUE as close to 1 as possible, hence we take the absolute difference between PUE and 1</span>
+    <span class="c1"># We use a negative sign since RL seeks to maximize reward, but we want to minimize PUE</span>
+    <span class="nv">reward</span> <span class="o">=</span> -abs<span class="o">(</span>pue - <span class="m">1</span><span class="o">)</span>
+
     <span class="k">return</span> reward
 
 <span class="nv">REWARD_METHOD_MAP</span> <span class="o">=</span> <span class="o">{</span>
@@ -245,7 +251,7 @@ Add the new custom reward function to the <code class="code docutils literal not
     <span class="s1">&#39;default_ls_reward&#39;</span> : default_ls_reward,
     <span class="c1"># Add custom reward methods here</span>
     <span class="s1">&#39;custom_agent_reward&#39;</span> : custom_agent_reward,
-    <span class="s1">&#39;renewable_energy_reward&#39;</span>: renewable_energy_reward,
+    <span class="s1">&#39;energy_PUE_reward&#39;</span>: energy_PUE_reward,
 <span class="o">}</span>
 </pre></div>
 </div>
