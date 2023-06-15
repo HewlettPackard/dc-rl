@@ -16,6 +16,21 @@ from utils.base_agents import BaseBatteryAgent, BaseLoadShiftingAgent, BaseHVACA
 
 class DCRL(MultiAgentEnv):
     def __init__(self, env_config=None):
+        '''
+        Args:
+            env_config (dict): Dictionary containing parameters:
+                agents: list of agent name (agent_ls, agent_dc, agent_bat)
+                location: location of the environment for paths
+                cintensity_file: path to the carbon intensity (CI) file
+                weather_file: path to the weather file
+                max_bat_cap_Mw: maximum battery capacity
+                individual_reward_weight: weight of the individual reward (1=full individual, 0=full collaborative, default=0.8)
+                flexible_load: flexible load ratio of the total workload (default = 0.1)
+                ls_reward: method to calculate the load shifting reward
+                dc_reward: method to calculate the dc reward
+                bat_reward: method to calculate the battery reward
+                worker_index: index of the worker. This parameter is added by RLLib.
+        '''
         # create agent ids
         self.agents = env_config['agents']
         self.location = env_config['location']
@@ -35,8 +50,8 @@ class DCRL(MultiAgentEnv):
 
         self._agent_ids = set(self.agents)
 
-        self.terminateds = set()
-        self.truncateds = set()
+        # self.terminateds = set()
+        # self.truncateds = set()
         
         ci_loc, wea_loc = obtain_paths(self.location)
         
@@ -82,16 +97,28 @@ class DCRL(MultiAgentEnv):
         self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file)
         self.t_m = Time_Manager(self.init_day)
 
+        # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
-        self.which_agent = None
+        # self.which_agent = None
 
         super().__init__()
 
     def reset(self, *, seed=None, options=None):
+        """
+        Reset the environment.
+
+        Args:
+            seed (int, optional): Random seed.
+            options (dict, optional): Environment options.
+
+        Returns:
+            states (dict): Dictionary of states.
+            infos (dict): Dictionary of infos.
+        """
+        # self.terminateds = set()
+        # self.truncateds = set()
+        # self.max_consumption = 0
         
-        self.terminateds = set()
-        self.truncateds = set()
-        self.max_consumption = 0
         self.ls_terminated = False
         self.dc_terminated = False
         self.bat_terminated = False
@@ -102,23 +129,35 @@ class DCRL(MultiAgentEnv):
         self.dc_reward = 0
         self.bat_reward = 0
 
-        workload, day_workload = self.workload_m.reset()
-        temp,n_temp = self.weather_m.reset()
+        # Reset the managers
+        t_i = self.t_m.reset() # Time manager
+
+        workload, day_workload = self.workload_m.reset() # Workload manager
+        temp, n_temp = self.weather_m.reset() # Weather manager
+        ci_i, ci_if = self.ci_m.reset() # CI manager. ci_i -> CI in the current timestep.
+        
+        # Set the external ambient temperature to data center environment
         self.dc_env.set_ambient_temp(temp)
+        
+        # Update the workload of the load shifting environment
         self.ls_env.update_workload(day_workload, workload)
+        
+        # Reset all the environments
         ls_s, self.ls_info = self.ls_env.reset()
         self.dc_state, self.dc_info = self.dc_env.reset()
         bat_s, self.bat_info = self.bat_env.reset()
-        
-        ci_i,ci_if = self.ci_m.reset()
-        t_i = self.t_m.reset()
-        
+         
+        # Update the shared observation space
         batSoC = bat_s[1]
-        self.ls_state = np.hstack((t_i, ls_s, ci_if, workload))
-        self.dc_state = np.hstack((t_i, self.dc_state, workload,ci_if[0], batSoC))
+        
+        # dc state -> [time (sine/cosine enconded), original dc observation, current workload, current normalized CI, battery SOC]
+        self.dc_state = np.hstack((t_i, self.dc_state, workload, ci_if[0], batSoC))
         var_to_LS_energy = get_energy_variables(self.dc_state)
         
-        self.ls_state = np.hstack((self.ls_state,var_to_LS_energy,batSoC))
+        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, current workload, energy variables from DC, battery SoC]
+        self.ls_state = np.hstack((t_i, ls_s, ci_if, workload, var_to_LS_energy, batSoC))
+        
+        # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
         self.bat_state = np.hstack((t_i, bat_s, ci_if))
 
         states = {}
@@ -185,8 +224,8 @@ class DCRL(MultiAgentEnv):
         self.dc_state, _, self.dc_terminated, self.dc_truncated, self.dc_info = self.dc_env.step(action)
         self.dc_state = np.hstack((t_i, self.dc_state, shifted_wkld, ci_if[0], batSoC))
 
-        if self.dc_info['IT POWER w'] > self.max_consumption:
-            self.max_consumption = self.dc_info['IT POWER w']
+        # if self.dc_info['IT POWER w'] > self.max_consumption:
+        #     self.max_consumption = self.dc_info['IT POWER w']
         obs_i =  self.dc_state 
         rew_i =  0
         terminated_i = self.dc_terminated

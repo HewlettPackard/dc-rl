@@ -67,15 +67,15 @@ def make_dc_pyeplus_env(month : int = 1,
     min_temp = 15.0
     max_temp = 21.6
     action_mapping = {
-        0: (-2),
-        1: (-1.5),
+        0: (-5),
+        1: (-2),
         2: (-1),
         3: (-0.5),
         4: (0),
         5: (0.5),
         6: (1),
-        7: (1.5),
-        8: (2)
+        7: (2),
+        8: (5)
     }
     action_space = gym.spaces.Discrete(len(action_mapping))
     
