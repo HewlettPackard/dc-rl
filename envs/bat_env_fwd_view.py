@@ -64,15 +64,15 @@ class BatteryEnvFwd(gym.Env):
                                                                   charging_rate=self.charging_rate)
         
         self.CO2_total = self.CO2_footprint(self.dcload, self.ci, action_instantaneous, self.discharge_energy)
-        self.reward = self.reward_method(params={'total_energy_with_battery':self.total_energy_with_battery,
-                                                 'norm_CI':self.ci_n,
-                                                 'a_t':action_instantaneous,
-                                                 'dcload_min':self.dcload_min,
-                                                 'dcload_max':self.dcload_max,
-                                                 'battery_current_load':self.battery.current_load,
-                                                 'max_bat_cap':self.max_bat_cap,
-                                                 'battery_current_load':self.battery.current_load,
-                                                 'max_bat_cap':self.max_bat_cap})
+        self.reward = self.reward_method(params={'total_energy_with_battery': self.total_energy_with_battery,
+                                                 'norm_CI': self.ci_n,
+                                                 'a_t': action_instantaneous,
+                                                 'dcload_min': self.dcload_min,
+                                                 'dcload_max': self.dcload_max,
+                                                 'battery_current_load': self.battery.current_load,
+                                                 'max_bat_cap': self.max_bat_cap,
+                                                 'battery_current_load': self.battery.current_load,
+                                                 'max_bat_cap': self.max_bat_cap})
         self.current_step += 1
         self.raw_obs = self._hist_data_collector(self.current_step)
         self.temp_state = self._process_obs(self.raw_obs)
@@ -102,8 +102,8 @@ class BatteryEnvFwd(gym.Env):
         self.ci = ci
         self.ci_n = ci_n
 
-    def get_dcload(self):
-        raise NotImplementedError
+    # def get_dcload(self):
+        # raise NotImplementedError
 
     def _process_obs(self, state):
         scaled_value = (state - self.observation_min) / self.delta
@@ -175,14 +175,13 @@ class BatteryEnvFwd(gym.Env):
     def cal_maxmin(self):
         self.dcload_max, self.dcload_min = self.max_dc_pw/4, 0.2/4  # /4 because we have 15 minutes time interval and we are using this to normalize MWH
 
-    
-    def update_dcload_ranges(self, current_dc_load):
-        current_dc_load = current_dc_load/4
-        if current_dc_load > self.dcload_max:
-            self.dcload_max = current_dc_load
-            print('max dcload updated to: ', self.dcload_max)
-        elif current_dc_load < self.dcload_min:
-            self.dcload_min = current_dc_load
-            print('min dcload updated to: ', self.dcload_min)
+    # def update_dcload_ranges(self, current_dc_load):
+    #     current_dc_load = current_dc_load/4
+    #     if current_dc_load > self.dcload_max:
+    #         self.dcload_max = current_dc_load
+    #         print('max dcload updated to: ', self.dcload_max)
+    #     elif current_dc_load < self.dcload_min:
+    #         self.dcload_min = current_dc_load
+    #         print('min dcload updated to: ', self.dcload_min)
         
         

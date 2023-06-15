@@ -131,10 +131,9 @@ class DCRL(MultiAgentEnv):
 
         # Reset the managers
         t_i = self.t_m.reset() # Time manager
-
         workload, day_workload = self.workload_m.reset() # Workload manager
-        temp, n_temp = self.weather_m.reset() # Weather manager
-        ci_i, ci_if = self.ci_m.reset() # CI manager. ci_i -> CI in the current timestep.
+        temp, norm_temp = self.weather_m.reset() # Weather manager
+        ci_i, ci_i_future = self.ci_m.reset() # CI manager. ci_i -> CI in the current timestep.
         
         # Set the external ambient temperature to data center environment
         self.dc_env.set_ambient_temp(temp)
@@ -151,17 +150,18 @@ class DCRL(MultiAgentEnv):
         batSoC = bat_s[1]
         
         # dc state -> [time (sine/cosine enconded), original dc observation, current workload, current normalized CI, battery SOC]
-        self.dc_state = np.hstack((t_i, self.dc_state, workload, ci_if[0], batSoC))
+        self.dc_state = np.hstack((t_i, self.dc_state, workload, ci_i_future[0], batSoC))
         var_to_LS_energy = get_energy_variables(self.dc_state)
         
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, current workload, energy variables from DC, battery SoC]
-        self.ls_state = np.hstack((t_i, ls_s, ci_if, workload, var_to_LS_energy, batSoC))
+        self.ls_state = np.hstack((t_i, ls_s, ci_i_future, workload, var_to_LS_energy, batSoC))
         
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
-        self.bat_state = np.hstack((t_i, bat_s, ci_if))
+        self.bat_state = np.hstack((t_i, bat_s, ci_i_future))
 
         states = {}
         infos = {}
+        # Update self.agents considering the agents defined in the environment config.
         if "agent_ls" in self.agents:
             states["agent_ls"] = self.ls_state
             infos["agent_ls"] = self.ls_info
@@ -174,113 +174,149 @@ class DCRL(MultiAgentEnv):
         return states, infos
 
     def step(self, action_dict: MultiAgentDict):
+        """
+        Step the environment.
+
+        Args:
+            action_dict (MultiAgentDict): Dictionary of actions of each agent defined in self.agents.
+  
+        Returns:
+            obs (dict): Dictionary of observations/states.
+            rews (dict): Dictionary of rewards.
+            terminated (dict): Dictionary of terminated flags.
+            truncated (dict): Dictionary of truncated flags.
+            infos (dict): Dictionary of infos.
+        """
         obs, rew, terminated, truncated, info = {}, {}, {}, {}, {}
         terminated["__all__"] = False
         truncated["__all__"] = False
 
-        workload, day_workload = self.workload_m.step()
-        ci_i, ci_if = self.ci_m.step()
+        # Step in the managers
         t_i = self.t_m.step()
-        temp, n_temp = self.weather_m.step()
+        workload, day_workload = self.workload_m.step()
+        temp, norm_temp = self.weather_m.step()
+        ci_i, ci_i_future = self.ci_m.step()
 
+        # Transform the actions if the algorithm uses continuous action space. Like RLLib with MADDPG.
         if self.actions_are_logits:
             for k, v in action_dict.items():
                 if isinstance(v, np.ndarray):
                     action_dict[k] = np.random.choice(np.arange(len(v)), p=v)
         
+        # Extract the action from the action dictionary.
+        # If the agent is declared, use the action from the action dictionary.
+        # If the agent is not declared, use the default action (do nothing) of the base agent.
         if "agent_ls" in self.agents:
             action = action_dict["agent_ls"]
         else:
             action = self.base_agents["agent_ls"].do_nothing_action()
             
-        i = "agent_ls"
-
+        # Now, update the load shifting environment/agent first.
+        # i = "agent_ls"
         self.ls_env.update_workload(day_workload, workload)
-        self.ls_state, self.ls_penalties, self.ls_terminated, self.ls_truncated, self.ls_info  = self.ls_env.step(action)
-        self.ls_state = np.hstack((t_i, self.ls_state, ci_if, workload))
+        
+        # Do a step
+        self.ls_state, self.ls_penalties, self.ls_terminated, self.ls_truncated, self.ls_info = self.ls_env.step(action)
     
-        rew_i =  self.ls_penalties
-        terminated_i = self.ls_terminated
-        truncated_i = self.ls_truncated
-        info_i = self.ls_info
+        # rew_i =  self.ls_penalties
+        # terminated_i = self.ls_terminated
+        # truncated_i = self.ls_truncated
+        # info_i = 
 
-        if "agent_ls" in self.agents:
-            rew["agent_ls"] = rew_i
-            terminated["agent_ls"] = terminated_i
-            truncated["agent_ls"] = truncated_i
-            info["agent_ls"] = info_i
+        # if "agent_ls" in self.agents:
+            # rew["agent_ls"] = rew_i
+            # terminated["agent_ls"] = terminated_i
+            # truncated["agent_ls"] = truncated_i
+            # info["agent_ls"] = self.ls_info
 
+        # Now, the data center environment/agent.
         if "agent_dc" in self.agents:
             action = action_dict["agent_dc"]
-
         else:
             action = self.base_agents["agent_dc"].do_nothing_action()
 
+        # Update the data center environment/agent.
         shifted_wkld = self.ls_info['load']
         self.dc_env.set_shifted_wklds(shifted_wkld)
+        
         batSoC = self.bat_state[1]
         self.dc_env.set_ambient_temp(temp)
         
+        # Do a step in the data center environment
         self.dc_state, _, self.dc_terminated, self.dc_truncated, self.dc_info = self.dc_env.step(action)
-        self.dc_state = np.hstack((t_i, self.dc_state, shifted_wkld, ci_if[0], batSoC))
-
+        
+    
         # if self.dc_info['IT POWER w'] > self.max_consumption:
         #     self.max_consumption = self.dc_info['IT POWER w']
-        obs_i =  self.dc_state 
-        rew_i =  0
-        terminated_i = self.dc_terminated
-        truncated_i = self.dc_truncated
-        info_i = self.dc_info
+        # obs_i =  self.dc_state 
+        # rew_i =  0
+        # terminated_i = 
+        # truncated_i = self.dc_truncated
+        # info_i = 
 
-        if "agent_dc" in self.agents:
-            obs["agent_dc"] = obs_i
-            rew["agent_dc"] = rew_i
-            terminated["agent_dc"] = terminated_i
-            truncated["agent_dc"] = truncated_i
-            info["agent_dc"] = info_i
+        # if "agent_dc" in self.agents:
+            # obs["agent_dc"] = obs_i
+            # rew["agent_dc"] = rew_i
+            # terminated["agent_dc"] = self.dc_terminated
+            # truncated["agent_dc"] = truncated_i
+            # info["agent_dc"] = self.dc_info
 
         if "agent_bat" in self.agents:
             action = action_dict["agent_bat"]
         else:
             action = self.base_agents["agent_bat"].do_nothing_action()
             
-        i = "agent_bat"
+        # Finally, the battery environment/agent is updated.
         self.bat_env.set_dcload(self.dc_info['Total Power kW']/1e3)
-        self.bat_state = self.bat_env.update_state()
-        self.bat_env.update_ci(ci_i, ci_if[0])
+        self.bat_state = self.bat_env.update_state() # The state is updated with DC load
+        self.bat_env.update_ci(ci_i, ci_i_future[0])
+        
+        # Make a step in the environment
         self.bat_state, self.bat_reward, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
+        
+        # Update the state of the bat state
         batSoC = self.bat_state[1]
-        self.bat_state = np.hstack((t_i, self.bat_state, ci_if))
-        obs_i = self.bat_state 
-        rew_i = self.bat_reward
-        terminated_i = self.bat_terminated
-        truncated_i = self.bat_truncated
-        info_i = self.bat_info
+        # self.bat_state = np.hstack((t_i, batSoC, ci_i_future))
+        self.bat_state = np.hstack((t_i, self.bat_state, ci_i_future))
+        # obs_bat = self.bat_state 
+        # rew_bat = self.bat_reward
+        # terminated_i = self.bat_terminated
+        # truncated_i = self.bat_truncated
+        # info_i = self.bat_info
         
-        self.dc_reward = -1*self.bat_info['total_energy_with_battery']/1e3 
+        self.dc_reward = -1.0 * self.bat_info['total_energy_with_battery'] / 1e3  # The raw reward of the DC is directly the total energy consumption in MWh.
 
-        var_to_LS_energy = get_energy_variables(self.dc_state)
+        # Update the shared variables
+        self.dc_state = np.hstack((t_i, self.dc_state, shifted_wkld, ci_i_future[0], batSoC))
         
-        self.ls_state = np.hstack((self.ls_state, var_to_LS_energy, batSoC))
+        # We need to update the LS state with the DC energy variables and the final battery SoC.
+        var_to_LS_energy = get_energy_variables(self.dc_state)
+        self.ls_state = np.hstack((t_i, self.ls_state, ci_i_future, workload, var_to_LS_energy, batSoC))
+        
+        
+        # If agent_ls is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_ls" in self.agents:
             obs['agent_ls'] = self.ls_state
-        
-        if "agent_bat" in self.agents:
-            obs["agent_bat"] = obs_i
-            rew["agent_bat"] = rew_i
-            terminated["agent_bat"] = terminated_i
-            truncated["agent_bat"] = truncated_i
-            info["agent_bat"] = info_i
-            rew["agent_bat"] = self.indv_reward * rew["agent_bat"] + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_penalties
-            terminated["agent_bat"] = self.dc_terminated
-
-        if "agent_ls" in self.agents:
             rew["agent_ls"] = self.indv_reward * (self.ls_penalties + self.bat_reward) + self.collab_reward * self.dc_reward
             terminated["agent_ls"] = self.dc_terminated
-
+            info["agent_ls"] = self.ls_info
+            # truncated["agent_ls"] = self.dc_truncated
+        
+        # If agent_dc is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_dc" in self.agents:
+            obs["agent_dc"] = self.dc_state
             obs["agent_dc"][-1] = batSoC
             rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_penalties + self.collab_reward * self.bat_reward
+            terminated["agent_dc"] = self.dc_terminated
+            info["agent_dc"] = self.dc_info
+            
+         # If agent_bat is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
+        if "agent_bat" in self.agents:
+            obs["agent_bat"] = self.bat_state
+            # truncated["agent_bat"] = truncated_i
+            rew["agent_bat"] = self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_penalties
+            terminated["agent_bat"] = self.bat_terminated
+            info["agent_bat"] = self.bat_info
 
         if self.dc_terminated:
             terminated["__all__"] = True
