@@ -217,17 +217,6 @@ class DCRL(MultiAgentEnv):
         
         # Do a step
         self.ls_state, self.ls_penalties, self.ls_terminated, self.ls_truncated, self.ls_info = self.ls_env.step(action)
-    
-        # rew_i =  self.ls_penalties
-        # terminated_i = self.ls_terminated
-        # truncated_i = self.ls_truncated
-        # info_i = 
-
-        # if "agent_ls" in self.agents:
-            # rew["agent_ls"] = rew_i
-            # terminated["agent_ls"] = terminated_i
-            # truncated["agent_ls"] = truncated_i
-            # info["agent_ls"] = self.ls_info
 
         # Now, the data center environment/agent.
         if "agent_dc" in self.agents:
@@ -243,46 +232,26 @@ class DCRL(MultiAgentEnv):
         self.dc_env.set_ambient_temp(temp)
         
         # Do a step in the data center environment
+        # By default, the reward is ignored. The reward is calculated after the battery env step with the total energy usage.
         self.dc_state, _, self.dc_terminated, self.dc_truncated, self.dc_info = self.dc_env.step(action)
-        
-    
-        # if self.dc_info['IT POWER w'] > self.max_consumption:
-        #     self.max_consumption = self.dc_info['IT POWER w']
-        # obs_i =  self.dc_state 
-        # rew_i =  0
-        # terminated_i = 
-        # truncated_i = self.dc_truncated
-        # info_i = 
 
-        # if "agent_dc" in self.agents:
-            # obs["agent_dc"] = obs_i
-            # rew["agent_dc"] = rew_i
-            # terminated["agent_dc"] = self.dc_terminated
-            # truncated["agent_dc"] = truncated_i
-            # info["agent_dc"] = self.dc_info
-
+        # Finally, the battery environment/agent.
         if "agent_bat" in self.agents:
             action = action_dict["agent_bat"]
         else:
             action = self.base_agents["agent_bat"].do_nothing_action()
             
-        # Finally, the battery environment/agent is updated.
-        self.bat_env.set_dcload(self.dc_info['Total Power kW']/1e3)
+        # The battery environment/agent is updated.
+        self.bat_env.set_dcload(self.dc_info['Total Power kW'] / 1e3) # The DC load is updated with the total power in MW.
         self.bat_state = self.bat_env.update_state() # The state is updated with DC load
-        self.bat_env.update_ci(ci_i, ci_i_future[0])
+        self.bat_env.update_ci(ci_i, ci_i_future[0]) # Update the CI with the current CI, and the normalized current CI.
         
         # Make a step in the environment
         self.bat_state, self.bat_reward, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
         
         # Update the state of the bat state
         batSoC = self.bat_state[1]
-        # self.bat_state = np.hstack((t_i, batSoC, ci_i_future))
         self.bat_state = np.hstack((t_i, self.bat_state, ci_i_future))
-        # obs_bat = self.bat_state 
-        # rew_bat = self.bat_reward
-        # terminated_i = self.bat_terminated
-        # truncated_i = self.bat_truncated
-        # info_i = self.bat_info
         
         self.dc_reward = -1.0 * self.bat_info['total_energy_with_battery'] / 1e3  # The raw reward of the DC is directly the total energy consumption in MWh.
 
@@ -293,19 +262,17 @@ class DCRL(MultiAgentEnv):
         var_to_LS_energy = get_energy_variables(self.dc_state)
         self.ls_state = np.hstack((t_i, self.ls_state, ci_i_future, workload, var_to_LS_energy, batSoC))
         
-        
         # If agent_ls is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_ls" in self.agents:
             obs['agent_ls'] = self.ls_state
+            # For the reward, we need to add to the load_shifting penalities, the battery reward, because include the CI reward.
             rew["agent_ls"] = self.indv_reward * (self.ls_penalties + self.bat_reward) + self.collab_reward * self.dc_reward
             terminated["agent_ls"] = terminal
             info["agent_ls"] = self.ls_info
-            # truncated["agent_ls"] = self.dc_truncated
         
         # If agent_dc is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_dc" in self.agents:
             obs["agent_dc"] = self.dc_state
-            obs["agent_dc"][-1] = batSoC
             rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_penalties + self.collab_reward * self.bat_reward
             terminated["agent_dc"] = terminal
             info["agent_dc"] = self.dc_info
@@ -313,7 +280,6 @@ class DCRL(MultiAgentEnv):
          # If agent_bat is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_bat" in self.agents:
             obs["agent_bat"] = self.bat_state
-            # truncated["agent_bat"] = truncated_i
             rew["agent_bat"] = self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_penalties
             terminated["agent_bat"] = terminal
             info["agent_bat"] = self.bat_info
