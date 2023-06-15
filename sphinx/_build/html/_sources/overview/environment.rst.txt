@@ -3,7 +3,7 @@ Environment
 ===========
 
 DCRL-Green provides a simulation framework for Data Centers and evaluates multi objective, collaborative MARL agents in this environment. 
-Along with the flexibility to adjust other external settings, such as the workload profile, the external weather pattern, and the grid carbon intensity (CI) as discussed in :ref:`Usage`, it provides customizable JSON object files for three main sections:
+Along with the flexibility to adjust other external settings, such as the workload profile, the external weather pattern, and the grid carbon intensity (CI) as discussed in :ref:`Usage`, it provides customizable a JSON object file for three main sections:
 
 1. DC Geometry (rows, racks, workload, CRAC characteristics)
 2. Server Characteristics (power consumption)
