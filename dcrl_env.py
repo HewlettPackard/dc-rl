@@ -31,6 +31,8 @@ class DCRL(MultiAgentEnv):
                 bat_reward: method to calculate the battery reward
                 worker_index: index of the worker. This parameter is added by RLLib.
         '''
+        super().__init__()
+
         # create agent ids
         self.agents = env_config['agents']
         self.location = env_config['location']
@@ -50,9 +52,6 @@ class DCRL(MultiAgentEnv):
 
         self._agent_ids = set(self.agents)
 
-        # self.terminateds = set()
-        # self.truncateds = set()
-        
         ci_loc, wea_loc = obtain_paths(self.location)
         
         ls_reward_method = 'default_ls_reward' if not 'ls_reward' in env_config.keys() else env_config['ls_reward']
@@ -64,13 +63,14 @@ class DCRL(MultiAgentEnv):
         self.bat_env = make_bat_fwd_env(month, max_bat_cap_Mw=self.max_bat_cap_Mw, reward_method=bat_reward_method)
 
         self._obs_space_in_preferred_format = True
-        self._action_space_in_preferred_format = True
         
         self.observation_space = gym.spaces.Dict({})
         self.action_space = gym.spaces.Dict({})
         self.base_agents = {}
         flexible_load = 0
         
+        # Create the observation/action space if the agent is used for training.
+        # Otherwise, create the base agent for the environment.
         if "agent_ls" in self.agents:
             self.observation_space["agent_ls"] = self.ls_env.observation_space
             self.action_space["agent_ls"] = self.ls_env.action_space
@@ -90,18 +90,16 @@ class DCRL(MultiAgentEnv):
         else:
             self.base_agents["agent_bat"] = BaseBatteryAgent()
 
-
+        # Create the managers: date/hour/time manager, workload manager, weather manager, and CI manager.
         self.init_day = get_init_day(month)
-        self.workload_m = Workload_Manager(flexible_workload_ratio=flexible_load, init_day=self.init_day)
-        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file)
-        self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file)
         self.t_m = Time_Manager(self.init_day)
+        self.workload_m = Workload_Manager(flexible_workload_ratio=flexible_load, init_day=self.init_day)
+        self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file)
+        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file)
 
         # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
-        # self.which_agent = None
 
-        super().__init__()
 
     def reset(self, *, seed=None, options=None):
         """
@@ -115,10 +113,7 @@ class DCRL(MultiAgentEnv):
             states (dict): Dictionary of states.
             infos (dict): Dictionary of infos.
         """
-        # self.terminateds = set()
-        # self.truncateds = set()
-        # self.max_consumption = 0
-        
+
         self.ls_terminated = False
         self.dc_terminated = False
         self.bat_terminated = False

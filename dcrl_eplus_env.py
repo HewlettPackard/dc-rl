@@ -15,6 +15,23 @@ from utils.utils_cf import (CI_Manager, Time_Manager, Weather_Manager,
     
 class DCRLeplus(MultiAgentEnv):
     def __init__(self, env_config=None):
+        '''
+        Args:
+            env_config (dict): Dictionary containing parameters:
+                agents: list of agent name (agent_ls, agent_dc, agent_bat)
+                location: location of the environment for paths
+                cintensity_file: path to the carbon intensity (CI) file
+                weather_file: path to the weather file
+                max_bat_cap_Mw: maximum battery capacity
+                individual_reward_weight: weight of the individual reward (1=full individual, 0=full collaborative, default=0.8)
+                flexible_load: flexible load ratio of the total workload (default = 0.1)
+                ls_reward: method to calculate the load shifting reward
+                dc_reward: method to calculate the dc reward
+                bat_reward: method to calculate the battery reward
+                worker_index: index of the worker. This parameter is added by RLLib.
+        '''
+        super().__init__()
+
         # create agent ids
         self.agents = env_config['agents']
         self.location = env_config['location']
@@ -25,22 +42,19 @@ class DCRLeplus(MultiAgentEnv):
         
         self.flexible_load = env_config['flexible_load']
         
-        ci_loc, wea_loc = obtain_paths(self.location)
-        
-        self._agent_ids = set(self.agents)
-
-        self.terminateds = set()
-        self.truncateds = set()
-        
-        ls_reward_method = 'default_ls_reward' if not 'ls_reward' in env_config.keys() else env_config['ls_reward']
-        dc_reward_method = 'default_dc_reward' if not 'dc_reward' in env_config.keys() else env_config['dc_reward']
-        bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
-
         # Assign month according to worker index, if available
         if hasattr(env_config, 'worker_index'):
             month = int((env_config.worker_index - 1) % 12)
         else:
             month = env_config.get('month', 0)
+            
+        self._agent_ids = set(self.agents)
+        
+        ci_loc, wea_loc = obtain_paths(self.location)
+        
+        ls_reward_method = 'default_ls_reward' if not 'ls_reward' in env_config.keys() else env_config['ls_reward']
+        dc_reward_method = 'default_dc_reward' if not 'dc_reward' in env_config.keys() else env_config['dc_reward']
+        bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
 
         self.ls_env = make_envs.make_ls_env(month, self.location, reward_method=ls_reward_method)
         self.dc_env = make_envs.make_dc_env(month, self.location, reward_method=dc_reward_method) 
@@ -52,6 +66,9 @@ class DCRLeplus(MultiAgentEnv):
         self.action_space = gym.spaces.Dict({})
         self.base_agents = {}
         flexible_load = 0
+        
+        # Create the observation/action space if the agent is used for training.
+        # Otherwise, create the base agent for the environment.
         if "agent_ls" in self.agents:
             self.observation_space["agent_ls"] = self.ls_env.observation_space
             self.action_space["agent_ls"] = self.ls_env.action_space
@@ -71,20 +88,28 @@ class DCRLeplus(MultiAgentEnv):
         else:
             self.base_agents["agent_bat"] = BaseBatteryAgent()
             
-        self._action_space_in_preferred_format = True
-
+        # Create the managers: date/hour/time manager, workload manager, and CI manager.
         self.init_day = get_init_day(month)
         self.t_m = Time_Manager(init_day=self.init_day)
-        
         self.workload_m = Workload_Manager(init_day=self.init_day, flexible_workload_ratio=flexible_load)
         self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file)
 
+        # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
-        self.which_agent = None
 
-        super().__init__()
 
     def reset(self, *, seed=None, options=None):
+        """
+        Reset the environment.
+
+        Args:
+            seed (int, optional): Random seed.
+            options (dict, optional): Environment options.
+
+        Returns:
+            states (dict): Dictionary of states.
+            infos (dict): Dictionary of infos.
+        """
         self.terminateds = set()
         self.truncateds = set()
 
@@ -98,6 +123,7 @@ class DCRLeplus(MultiAgentEnv):
         self.dc_reward = 0
         self.bat_reward = 0
 
+        # Reset the managers
         workload, day_workload = self.workload_m.reset()
         self.ls_env.update_workload(day_workload, workload)
         ls_s, self.ls_info = self.ls_env.reset()
