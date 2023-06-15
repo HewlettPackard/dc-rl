@@ -150,27 +150,16 @@ def make_dc_pyeplus_env(month : int = 1,
     
     if not standalone_pyeplus:
         
-        # adjust based on month
-        start_pd_datetime = pd.to_datetime(f'{month:02d}/01/2022 00:00:00')
-        end_pd_datetime = start_pd_datetime + pd.Timedelta('30 days')
-        weather_ts, ci_ts, cpu_usage_ts = weather_ts.loc[start_pd_datetime:end_pd_datetime,:], \
-                                        ci_ts.loc[start_pd_datetime:end_pd_datetime,:], \
-                                        cpu_usage_ts.loc[start_pd_datetime:end_pd_datetime,:]
-        
         dc_env = dc_gymenv(observation_variables=observation_variables,
                         observation_space=observation_space,
                         action_variables=action_variables,
                         action_space=action_space,
                         action_mapping=action_mapping,
                         ranges=ranges,
-                        weather_ts=weather_ts,  # adjust based on month
-                        ci_ts=ci_ts,  # adjust based on month
                         add_cpu_usage=add_cpu_usage,
-                        time_delta=pd.Timedelta('15m'),
                         min_temp=min_temp,
                         max_temp=max_temp,
                         action_definition=action_definition,
-                        cpu_usage_ts= None if use_ls_cpu_load else cpu_usage_ts,  # adjust based on month
                         episode_length_in_time=episode_length_in_time,
                         reward_method=reward_method
                         )
