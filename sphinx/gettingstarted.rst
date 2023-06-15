@@ -26,7 +26,7 @@ Run the following command to simulate the DC enivronment and optimize the agents
 2.2 Train with DCRLeplus Environment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-For execution using EnergyPlus model, launch the Sinergym environment before running the script (details can be found in :ref:`EnergyPlus enabled DC simulation (DCRLeplus)`)
+For execution using EnergyPlus model, launch the :code:`Sinergym` environment before running the script (details can be found in :ref:`EnergyPlus enabled DC simulation (DCRLeplus)`)
 
 .. code-block:: python
 
@@ -44,9 +44,9 @@ Example:
 
 .. code-block:: python
 
-    tensorboard --logdir results/latest_experiment
+    tensorboard --logdir ./results
 
-In this example, :code:`latest_experiment` is the default name of the experiment.
+In this example, :code:`test` is the default name of the experiment.
 
 
 A detailed description of the configurations are provided in the Usage section. The Default configurations in DCRL-green are as follows:
