@@ -1,16 +1,16 @@
 Agent,Observation,Type,Source,Description
 agent_ls,:code:`alarm`,int,Load Shifting Environment,Signal to indicate last hour of the day
 agent_ls,:code:`norm_load_left`,float,Load Shifting Environment,Normalized value of flexible load that is left to be assigned
-agent_dc,:code:`hvac_power`,,DC Environment,Facility Total HVAC Electricity Demand Rate(Whole Building)
-agent_dc,:code:`it_power`,,DC Environment,Facility Total Building Electricity Demand Rate(Whole Building)
-"agent_ls, agent_dc",:code:`ambient_temp`,,DC Environment,Normalized external weather temperature
-"agent_ls, agent_dc",:code:`zone_air_therm_cooling_stpt`,,DC Environment,Normalized HVAC temperature setpoint
-"agent_ls, agent_dc",:code:`zone_air_temp`,,DC Environment,Internal DC room temperature
-"agent_ls, agent_dc",:code:`cpu_usage`,,Load Shifting Environment,Normalized current state of the CPU usage
+agent_dc,:code:`hvac_power`,float,DC Environment,Facility Total HVAC Electricity Demand Rate(Whole Building)
+agent_dc,:code:`it_power`,float,DC Environment,Facility Total Building Electricity Demand Rate(Whole Building)
+"agent_ls, agent_dc",:code:`ambient_temp`,float,DC Environment,Normalized external weather temperature
+"agent_ls, agent_dc",:code:`zone_air_therm_cooling_stpt`,int,DC Environment,Normalized HVAC temperature setpoint
+"agent_ls, agent_dc",:code:`zone_air_temp`,float,DC Environment,Internal DC room temperature
+"agent_ls, agent_dc",:code:`cpu_usage`,float,Load Shifting Environment,Normalized current state of the CPU usage
 "agent_ls, agent_dc, agent_bat",:code:`batSoC`,float,Battery Environment,Battery State of charge
 "agent_ls, agent_dc, agent_bat",:code:`sine_time_hour`,float,Time Manager,Normalized sine form of the current hour
 "agent_ls, agent_dc, agent_bat",:code:`cos_time_hour`,float,Time Manager,Normalized cosine form of the current hour
 "agent_ls, agent_dc, agent_bat",:code:`sine_day_of_year`,float,Time Manager,Normalized sine form of the current day
 "agent_ls, agent_dc, agent_bat",:code:`cos_day_of_year`,float,Time Manager,Normalized cosine form of the current day
 "agent_ls, agent_dc, agent_bat",:code:`norm_carbon`,float,CI Manager,Normalized carbon intensity data for a period of N time steps
-"agent_ls, agent_dc, agent_bat",:code:`total_power`,,DC Environment,Total Energy Consumption
+"agent_ls, agent_dc, agent_bat",:code:`total_power`,float,DC Environment,Total Energy Consumption

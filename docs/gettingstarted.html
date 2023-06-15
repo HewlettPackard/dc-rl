@@ -21,6 +21,7 @@
         <script src="_static/doctools.js"></script>
         <script src="_static/clipboard.min.js"></script>
         <script src="_static/copybutton.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -109,7 +110,7 @@
 </section>
 <section id="train-with-dcrleplus-environment">
 <h3>2.2 Train with DCRLeplus Environment<a class="headerlink" href="#train-with-dcrleplus-environment" title="Permalink to this headline"></a></h3>
-<p>For execution using EnergyPlus model, launch the Sinergym environment before running the script (details can be found in <a class="reference internal" href="installation/energyPlus.html#energyplus-enabled-dc-simulation-dcrleplus"><span class="std std-ref">EnergyPlus enabled DC simulation (DCRLeplus)</span></a>)</p>
+<p>For execution using EnergyPlus model, launch the <code class="code docutils literal notranslate"><span class="pre">Sinergym</span></code> environment before running the script (details can be found in <a class="reference internal" href="installation/energyPlus.html#energyplus-enabled-dc-simulation-dcrleplus"><span class="std std-ref">EnergyPlus enabled DC simulation (DCRLeplus)</span></a>)</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">EPLUS</span><span class="o">=</span><span class="mi">1</span> <span class="n">python</span> <span class="n">train_ppo</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
@@ -123,10 +124,10 @@
 <h2>3. Monitor the results<a class="headerlink" href="#monitor-the-results" title="Permalink to this headline"></a></h2>
 <p>The training logs and the results of each trial are stored in the specified local directory, under a sub-folder called <code class="code docutils literal notranslate"><span class="pre">/results/</span></code> and can be visualized with TensorBoard by specifying the output directory of the results.</p>
 <p>Example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="n">results</span><span class="o">/</span><span class="n">latest_experiment</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="o">./</span><span class="n">results</span>
 </pre></div>
 </div>
-<p>In this example, <code class="code docutils literal notranslate"><span class="pre">latest_experiment</span></code> is the default name of the experiment.</p>
+<p>In this example, <code class="code docutils literal notranslate"><span class="pre">test</span></code> is the default name of the experiment.</p>
 <p>A detailed description of the configurations are provided in the Usage section. The Default configurations in DCRL-green are as follows:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -142,7 +143,7 @@
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Experiment name</p></td>
-<td><p>latest_experiment</p></td>
+<td><p>test</p></td>
 <td><p>Assigns a name for the experiment</p></td>
 </tr>
 <tr class="row-odd"><td><p>Location</p></td>
@@ -165,9 +166,17 @@
 <td><p>[“agents_ls” , “agents_dc” , “agents_bat”]</p></td>
 <td><p>List of agents (ls= load shifting, dc= DC cooling, bat= Battery controller) to train</p></td>
 </tr>
-<tr class="row-even"><td><p>Seed</p></td>
-<td><p>1</p></td>
-<td><p>Random seed for the experiment</p></td>
+<tr class="row-even"><td><p>max_bat_cap_Mw</p></td>
+<td><p>2</p></td>
+<td><p>Battery capacity</p></td>
+</tr>
+<tr class="row-odd"><td><p>individual_reward_weight</p></td>
+<td><p>0.8</p></td>
+<td><p><span class="math notranslate nohighlight">\(\eta\)</span> value for collaborative weight in rewards</p></td>
+</tr>
+<tr class="row-even"><td><p>flexible_load</p></td>
+<td><p>0.1</p></td>
+<td><p>Ratio of workload that is flexible</p></td>
 </tr>
 <tr class="row-odd"><td><p>Save model</p></td>
 <td><p>FALSE</p></td>
@@ -181,25 +190,25 @@
 <td><p>100_000_000_000</p></td>
 <td><p>total timesteps of the experiments</p></td>
 </tr>
-<tr class="row-even"><td><p>Number of workers</p></td>
+<tr class="row-even"><td><p>NUM_AGENTS</p></td>
+<td><p>3</p></td>
+<td><p>Number of agents</p></td>
+</tr>
+<tr class="row-odd"><td><p>NUM_WORKERS</p></td>
 <td><p>24</p></td>
 <td><p>Specifies the number of parallel environments, it must be in multiples of 12</p></td>
 </tr>
-<tr class="row-odd"><td><p>Batch size</p></td>
+<tr class="row-even"><td><p>Batch size</p></td>
 <td><p>128</p></td>
 <td><p>Provides the batch size to sample from the replay memory</p></td>
 </tr>
-<tr class="row-even"><td><p>Learning rate</p></td>
-<td><p>5.00E-06</p></td>
+<tr class="row-odd"><td><p>Learning rate</p></td>
+<td><p>1.E-06</p></td>
 <td><p>the learning rate of the optimizer</p></td>
 </tr>
-<tr class="row-odd"><td><p>Algorithm</p></td>
-<td></td>
+<tr class="row-even"><td><p>Algorithm</p></td>
+<td><p>PPO</p></td>
 <td><p>MARL algorithm to train the agents</p></td>
-</tr>
-<tr class="row-even"><td><p>Epmodel</p></td>
-<td></td>
-<td><p>Specifes the choice of the simulation model</p></td>
 </tr>
 </tbody>
 </table>
