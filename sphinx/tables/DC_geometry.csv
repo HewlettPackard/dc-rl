@@ -1,0 +1,16 @@
+Data Center Configuration Variables,Default Values,Description
+:code:`NUM_ROWS`,4,Number of rows with installed IT cabinets
+:code:`NUM_RACKS_PER_ROW`,5,Number of IT cabinets in each row
+:code:`RACK_SUPPLY_APPROACH_TEMP_LIST`,"[5.3, 5.3, 5.3, 5.3,
+5.0,5.0, 5.0, 5.0,
+5.0, 5.0, 5.0, 5.0,
+5.3, 5.3, 5.3, 5.3]","The spatial temperature gradient information
+estimated from CFD simulations to calculate
+server IT cabinet inlet temperature"
+:code:`RACK_RETURN_APPROACH_TEMP_LIST`,"[-3.7, -3.7, -3.7, -3.7,
+-2.5, -2.5, -2.5, -2.5,
+-2.5, -2.5, -2.5, -2.5,
+-3.7, -3.7, -3.7, -3.7]","The spatial temperature gradient information
+estimated from CFD simulations to calculate
+CRAC return temperature"
+:code:`CPUs_PER_RACK`,300,Maximum number of CPUs in a rack
