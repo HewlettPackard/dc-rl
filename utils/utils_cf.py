@@ -78,9 +78,10 @@ def sc_obs(current_hour, current_day):
 
 
 class Time_Manager():
-    def __init__(self, init_day=0):
+    def __init__(self, init_day=0, days_per_episode=30):
         self.init_day = init_day
         self.timestep_per_hour = 4
+        self.days_per_episode = days_per_episode
 
     def reset(self):
         self.day = self.init_day
@@ -92,7 +93,15 @@ class Time_Manager():
             self.hour=0
             self.day += 1
         self.hour += 1/self.timestep_per_hour
-        return sc_obs(self.hour, self.day)
+        return sc_obs(self.hour, self.day), self.isterminal()
+    
+    def isterminal(self):
+        done = False
+        if self.day > self.init_day+self.days_per_episode:
+            done = True
+        return done
+
+
 
 
 # Class to manage CPU workload data

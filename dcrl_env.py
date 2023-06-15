@@ -180,7 +180,7 @@ class DCRL(MultiAgentEnv):
 
         workload, day_workload = self.workload_m.step()
         ci_i, ci_if = self.ci_m.step()
-        t_i = self.t_m.step()
+        t_i, terminal = self.t_m.step()
         temp, n_temp = self.weather_m.step()
 
         if self.actions_are_logits:
@@ -206,8 +206,8 @@ class DCRL(MultiAgentEnv):
 
         if "agent_ls" in self.agents:
             rew["agent_ls"] = rew_i
-            terminated["agent_ls"] = terminated_i
-            truncated["agent_ls"] = truncated_i
+            terminated["agent_ls"] = terminal
+            truncated["agent_ls"] = terminal
             info["agent_ls"] = info_i
 
         if "agent_dc" in self.agents:
@@ -235,8 +235,8 @@ class DCRL(MultiAgentEnv):
         if "agent_dc" in self.agents:
             obs["agent_dc"] = obs_i
             rew["agent_dc"] = rew_i
-            terminated["agent_dc"] = terminated_i
-            truncated["agent_dc"] = truncated_i
+            terminated["agent_dc"] = terminal
+            truncated["agent_dc"] = terminal
             info["agent_dc"] = info_i
 
         if "agent_bat" in self.agents:
@@ -268,21 +268,20 @@ class DCRL(MultiAgentEnv):
         if "agent_bat" in self.agents:
             obs["agent_bat"] = obs_i
             rew["agent_bat"] = rew_i
-            terminated["agent_bat"] = terminated_i
-            truncated["agent_bat"] = truncated_i
+            truncated["agent_bat"] = terminal
             info["agent_bat"] = info_i
             rew["agent_bat"] = self.indv_reward * rew["agent_bat"] + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_penalties
-            terminated["agent_bat"] = self.dc_terminated
+            terminated["agent_bat"] = terminal
 
         if "agent_ls" in self.agents:
             rew["agent_ls"] = self.indv_reward * (self.ls_penalties + self.bat_reward) + self.collab_reward * self.dc_reward
-            terminated["agent_ls"] = self.dc_terminated
+            terminated["agent_ls"] = terminal
 
         if "agent_dc" in self.agents:
             obs["agent_dc"][-1] = batSoC
             rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_penalties + self.collab_reward * self.bat_reward
 
-        if self.dc_terminated:
+        if terminal:
             terminated["__all__"] = True
             truncated["__all__"] = True
             for agent in self.agents:

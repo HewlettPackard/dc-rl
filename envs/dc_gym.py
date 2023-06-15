@@ -69,9 +69,9 @@ class dc_gymenv(gym.Env):
         self.obs_max = []
         self.obs_min = []
         
-        self.ts_start_idx, self.ts_end_idx = self.weather_ts.index[0], self.weather_ts.index[-1]
-        self.ts_idx = self.ts_start_idx
-        self.ts_end = False
+        # self.ts_start_idx, self.ts_end_idx = self.weather_ts.index[0], self.weather_ts.index[-1]
+        # self.ts_idx = self.ts_start_idx
+        # self.ts_end = False
         self.time_delta = time_delta
         self.max_episode_length_in_time = episode_length_in_time
         self.curr_episode_length_in_time = pd.Timedelta('0m')
@@ -84,7 +84,6 @@ class dc_gymenv(gym.Env):
                                                 max_W_per_rack=DC_Config.MAX_W_PER_RACK,
                                                 DC_ITModel_config=DC_Config)
         
-        # TODO: Initialize these default values outside the gym environment
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_cooling_load, self.Compressor_load = 100, 1000, 1000, 100
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         self.cpu_load = 0.5
@@ -104,11 +103,11 @@ class dc_gymenv(gym.Env):
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_cooling_load, self.Compressor_load = 100, 1000, 1000, 100  
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         
-        if self.ts_end:
-            self.ts_idx = self.ts_start_idx
-            self.ts_end = False
-        else:
-            self.ts_idx += self.time_delta
+        # if self.ts_end:
+        #     self.ts_idx = self.ts_start_idx
+        #     self.ts_end = False
+        # else:
+        #     self.ts_idx += self.time_delta
         
         self.raw_curr_state = self.get_obs()
         
@@ -146,24 +145,22 @@ class dc_gymenv(gym.Env):
                 }
         )
         
-        # calculate done
-        self.ts_end = (self.ts_idx + self.time_delta) == self.ts_end_idx  
+        # # calculate done
+        # self.ts_end = (self.ts_idx + self.time_delta) == self.ts_end_idx  
 
-        if self.max_episode_length_in_time is not None:
-            episode_end = (self.curr_episode_length_in_time >= self.max_episode_length_in_time)
-        else:
-            episode_end = False
+        # if self.max_episode_length_in_time is not None:
+        #     episode_end = (self.curr_episode_length_in_time >= self.max_episode_length_in_time)
+        # else:
+        #     episode_end = False
             
-        if not episode_end:
-           self.curr_episode_length_in_time += self.time_delta
+        # if not episode_end:
+        #    self.curr_episode_length_in_time += self.time_delta
            
-        done = episode_end | self.ts_end
+        # done = episode_end | self.ts_end
         
-        # calculate truncated
-        truncated = False
-        
+              
         # move to next time index
-        self.ts_idx += self.time_delta
+        # self.ts_idx += self.time_delta
         
         # calculate self.raw_next_state
         self.raw_next_state = self.get_obs()
@@ -180,6 +177,9 @@ class dc_gymenv(gym.Env):
             '%HVAC/IT' : self.CT_Cooling_load/data_center_total_ITE_Load
         }
         
+        #Done and truncated are managed by the main class, implement individual function if needed
+        truncated = False
+        done = False 
         # return processed/unprocessed state to agent
         if self.scale_obs:
             return self.normalize(self.raw_next_state), self.reward, done, truncated, self.info

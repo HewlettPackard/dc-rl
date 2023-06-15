@@ -66,7 +66,7 @@ RESULTS_DIR = './results'
 if __name__ == '__main__':
 
     ray.init(ignore_reinit_error=True)
-    # ray.init(local_mode=True, ignore_reinit_error=True)
+    #ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(
         algorithm="PPO",

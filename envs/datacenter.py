@@ -70,7 +70,6 @@ class Rack():
             self.CPU_list.append(CPU(full_load_pwr = CPU_config['full_load_pwr'], idle_pwr = CPU_config['idle_pwr'], cpu_config = self.rack_config))
             self.current_rack_load += self.CPU_list[-1].full_load_pwr
             if self.current_rack_load>= max_W_per_rack:
-                print(f"Cannot assign more CPUs to current Rack. RACK Capacity {max_W_per_rack}W. Current Full Load {self.current_rack_load}W")
                 self.CPU_list.pop()
                 break
         

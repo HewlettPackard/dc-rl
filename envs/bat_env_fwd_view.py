@@ -43,8 +43,8 @@ class BatteryEnvFwd(gym.Env):
         
     def reset(self, *, seed=None, options=None):
         self.current_step = self.starting_point
-        self.raw_obs = self._hist_data_collector(self.current_step)
-        self.ep_len_intervals = 0
+        self.raw_obs = self._hist_data_collector()
+        #self.ep_len_intervals = 0
         self.dcload = 0
         self.temp_state = self._process_obs(self.raw_obs)
         return self.temp_state, {
@@ -73,18 +73,18 @@ class BatteryEnvFwd(gym.Env):
                                                  'max_bat_cap':self.max_bat_cap,
                                                  'battery_current_load':self.battery.current_load,
                                                  'max_bat_cap':self.max_bat_cap})
-        self.current_step += 1
-        self.raw_obs = self._hist_data_collector(self.current_step)
+        # self.current_step += 1
+        self.raw_obs = self._hist_data_collector()
         self.temp_state = self._process_obs(self.raw_obs)
-        self.ep_len_intervals += 1
-        self.dataset_end = self.current_step == self.end_point
-        if self.episodes_24hr:
-            done = self.dataset_end or (self.ep_len_intervals >= 24 * 4 * 7)
-        else:
-            done = self.dataset_end
+        #self.ep_len_intervals += 1
+        # self.dataset_end = self.current_step == self.end_point
+        # if self.episodes_24hr:
+        #     done = self.dataset_end or (self.ep_len_intervals >= 24 * 4 * 7)
+        # else:
+        #     done = self.dataset_end
 
-        if self.dataset_end:
-            self.current_step = self.starting_point
+        # if self.dataset_end:
+        #     self.current_step = self.starting_point
 
         self.info = {
             'action': action_id,
@@ -95,7 +95,9 @@ class BatteryEnvFwd(gym.Env):
             'step_reward': self.reward,
             'total_energy_with_battery': self.total_energy_with_battery
         }
+        #Done and truncated are managed by the main class, implement individual function if needed
         truncated = False
+        done = False 
         return self.temp_state, self.reward, done, truncated, self.info
 
     def update_ci(self, ci, ci_n):
@@ -119,7 +121,7 @@ class BatteryEnvFwd(gym.Env):
     def set_dcload(self, dc_load):
         self.dcload = dc_load
 
-    def _hist_data_collector(self, current_step):
+    def _hist_data_collector(self):
         raw_obs = np.array([self.dcload, self.battery.current_load])
         return raw_obs
 

@@ -11,7 +11,6 @@ class CarbonLoadEnv(gym.Env):
         flexible_workload_ratio=0.1,
         n_vars_energy=0,
         n_vars_battery=1,
-        training_days=366,
         test_mode=False,
         ):
         """Creates load shifting envrionemnt
@@ -23,7 +22,6 @@ class CarbonLoadEnv(gym.Env):
             flexible_workload_ratio (float, optional): Percentage of flexible workload. Defaults to 0.1.
             n_vars_energy (int, optional): Additional number of energy variables. Defaults to 0.
             n_vars_battery (int, optional): Additional number of variables from the battery. Defaults to 1.
-            training_days (int, optional): Maximun number of training days in a episode. Defaults to 366.
             test_mode (bool, optional): Used for evaluation of the model. Defaults to False.
         """
         assert flexible_workload_ratio < 0.9, "flexible_workload_ratio should be lower than 0.9"
@@ -46,7 +44,6 @@ class CarbonLoadEnv(gym.Env):
         self.reward_method = reward_creator.get_reward_method(env_config['reward_method'] 
                                                             if 'reward_method' in env_config.keys() 
                                                             else 'default_ls_reward')
-        self.max_step = training_days * 24 * 4
         self.global_total_steps = 0
         self.test_mode = test_mode
         self.time_steps_day = 96
@@ -92,8 +89,6 @@ class CarbonLoadEnv(gym.Env):
                 delta -= (total_wkl-1)
             self.storage_load -= delta
             self.workload += delta
-        if self.global_total_steps >= self.max_step:
-            done = True
     
         norm_load_left = round(self.storage_load / (self.day_storage_load + 1e-9), 3)
         info_load_left = 0
@@ -111,7 +106,10 @@ class CarbonLoadEnv(gym.Env):
                 "out_of_time": out_of_time}
         
         state = np.asarray(np.hstack(([alarm, norm_load_left])), dtype=np.float32)
+
+        #Done and truncated are managed by the main class, implement individual function if needed
         truncated = False
+        done = False
         
         return state, reward, done, truncated, info 
         
