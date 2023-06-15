@@ -9,6 +9,7 @@ DCRL-Green supports the two multi-agent training approaches: independent learnin
 and centralised learning approach such as MADDPG :cite:p:`lowe2020multiagent` that uses a centralised critic with decentralised execution.
 
 The following command can be used to run the MARL algorithm of choice:
+(For execution using EnergyPlus model, launch the :code:`Sinergym` environment before running the script (details can be found in :ref:`EnergyPlus enabled DC simulation (DCRLeplus)`))
 
 +--------+---------------------------+------------------------------------+
 | Name   |   DCRL Implementation     | DCRLeplus Implementation           |

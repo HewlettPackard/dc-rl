@@ -21,6 +21,7 @@
         <script src="../_static/doctools.js"></script>
         <script src="../_static/clipboard.min.js"></script>
         <script src="../_static/copybutton.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -52,7 +53,15 @@
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Overview</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Environment</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Environment</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#configure-the-dc-environment">Configure the DC Environment:</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#configure-dc-geometry">1. Configure DC Geometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-server-characteristics">2. Configure Server Characteristics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-hvac-characteristics">3. Configure HVAC Characteristics</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="agents.html">Agents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="observations.html">Observations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="actions.html">Actions</a></li>
@@ -90,6 +99,191 @@
              
   <section id="environment">
 <h1>Environment<a class="headerlink" href="#environment" title="Permalink to this headline"></a></h1>
+<p>DCRL-Green provides a simulation framework for Data Centers and evaluates multi objective, collaborative MARL agents in this environment.
+Along with the flexibility to adjust other external settings, such as the workload profile, the external weather pattern, and the grid carbon intensity (CI) as discussed in <a class="reference internal" href="../usage/index.html#usage"><span class="std std-ref">Usage</span></a>, it provides customizable JSON object files for three main sections:</p>
+<ol class="arabic simple">
+<li><p>DC Geometry (rows, racks, workload, CRAC characteristics)</p></li>
+<li><p>Server Characteristics (power consumption)</p></li>
+<li><p>HVAC Characteristics (cooling mechanisms)</p></li>
+</ol>
+<p>The model calculates Total IT power, CRAC Fan power, and CRAC Evaporator power, enabling real-time calculations for energy optimization.</p>
+<section id="configure-the-dc-environment">
+<h2>Configure the DC Environment:<a class="headerlink" href="#configure-the-dc-environment" title="Permalink to this headline"></a></h2>
+<p>Users can configure the simulation of the DC environment to suit their requirements. It may be configured by modifying the <code class="code docutils literal notranslate"><span class="pre">utils/dc_config.json</span></code> file in the <a class="reference external" href="https://github.com/HewlettPackard/dc-rl/blob/main/utils/dc_config.json">Github</a> repository.</p>
+<section id="configure-dc-geometry">
+<h3>1. Configure DC Geometry<a class="headerlink" href="#configure-dc-geometry" title="Permalink to this headline"></a></h3>
+<p>The following DC specifications could be modified under the <code class="code docutils literal notranslate"><span class="pre">data_center_configuration</span></code> subsection as follows:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Data Center Configuration Variables</p></th>
+<th class="head"><p>Default Values</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">NUM_ROWS</span></code></p></td>
+<td><p>4</p></td>
+<td><p>Number of rows with installed IT cabinets</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">NUM_RACKS_PER_ROW</span></code></p></td>
+<td><p>5</p></td>
+<td><p>Number of IT cabinets in each row</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">RACK_SUPPLY_APPROACH_TEMP_LIST</span></code></p></td>
+<td><p>[5.3, 5.3, 5.3, 5.3,
+5.0,5.0, 5.0, 5.0,
+5.0, 5.0, 5.0, 5.0,
+5.3, 5.3, 5.3, 5.3]</p></td>
+<td><p>The spatial temperature gradient information
+estimated from CFD simulations to calculate
+server IT cabinet inlet temperature</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">RACK_RETURN_APPROACH_TEMP_LIST</span></code></p></td>
+<td><p>[-3.7, -3.7, -3.7, -3.7,
+-2.5, -2.5, -2.5, -2.5,
+-2.5, -2.5, -2.5, -2.5,
+-3.7, -3.7, -3.7, -3.7]</p></td>
+<td><p>The spatial temperature gradient information
+estimated from CFD simulations to calculate
+CRAC return temperature</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">CPUs_PER_RACK</span></code></p></td>
+<td><p>300</p></td>
+<td><p>Maximum number of CPUs in a rack</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="configure-server-characteristics">
+<h3>2. Configure Server Characteristics<a class="headerlink" href="#configure-server-characteristics" title="Permalink to this headline"></a></h3>
+<p>The following DC specifications could be modified under the <code class="code docutils literal notranslate"><span class="pre">server_characteristics</span></code> subsection as follows:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Server Configuration Variables</p></th>
+<th class="head"><p>Default Values</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">CPU_POWER_RATIO_LB</span></code></p></td>
+<td><p>[0.22, 1.00]</p></td>
+<td><p>Range of CPU server power consumption (as a ratio
+of full load) from idle to full CPU utilization at the lowest
+allowed server inlet temperature</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">CPU_POWER_RATIO_UB</span></code></p></td>
+<td><p>[0.24, 1.02]</p></td>
+<td><p>Range of CPU server power consumption (as a ratio
+of full load) from idle to full CPU utilization at the highest
+allowed server inlet temperature</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">IT_FAN_AIRFLOW_RATIO_LB</span></code></p></td>
+<td><p>[0.0, 0.6]</p></td>
+<td><p>Range of IT fan power consumption (as a ratio of
+full load) from idle to full CPU utilization at the lowest
+allowed server inlet temperature</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">IT_FAN_AIRFLOW_RATIO_UB</span></code></p></td>
+<td><p>[0.7, 1.3]</p></td>
+<td><p>Range of IT fan power consumption (as a ratio of
+full load) from idle to full CPU utilization at the highest
+allowed server inlet temperature</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">IT_FAN_FULL_LOAD_V</span></code></p></td>
+<td><p>0.05</p></td>
+<td><p>IT fan full load flow velocity (<span class="math notranslate nohighlight">\(m^3\)</span> /s)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">ITFAN_REF_V_RATIO</span></code></p></td>
+<td><p>1</p></td>
+<td><p>IT fan full load flow velocity ratio</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">ITFAN_REF_P</span></code></p></td>
+<td><p>10</p></td>
+<td><p>IT fan full load power (w)</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">INLET_TEMP_RANGE</span></code></p></td>
+<td><p>[18, 27]</p></td>
+<td><p>Allowed inlet temperature range for server</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">DEFAULT_SERVER_POWER_CHARACTERISTICS</span></code></p></td>
+<td><p>[[170, 110],[120, 60],[870, 110],[650, 100], [420, 130],[160, 100],[300, 60],[530, 80],[670, 110],[660, 100],
+[670, 110],[190, 120],[170, 110],[170, 110],[220, 150],[280, 180],[110, 70],[170, 110],[170, 110],[170, 110]]</p></td>
+<td><p>Default server CPU idle and full load power characteristics
+(must be of same length as
+NUM_ROWS*NUM_RACKS_PER_ROW)</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="configure-hvac-characteristics">
+<h3>3. Configure HVAC Characteristics<a class="headerlink" href="#configure-hvac-characteristics" title="Permalink to this headline"></a></h3>
+<p>The following DC specifications could be modified under the <code class="code docutils literal notranslate"><span class="pre">hvac_configuration</span></code> subsection as follows:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>HVAC Configuration Variables</p></th>
+<th class="head"><p>Default values</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">C_AIR</span></code></p></td>
+<td><p>1006</p></td>
+<td><p>Specific thermal capacity of air <span class="math notranslate nohighlight">\(J/kg.K\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">RHO_AIR</span></code></p></td>
+<td><p>1.225</p></td>
+<td><p>Density of air <span class="math notranslate nohighlight">\(kg/m^3\)</span></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">CRAC_SUPPLY_AIR_FLOW_RATE_pu</span></code></p></td>
+<td><p>0.00005663</p></td>
+<td><p>Constant air flow rate of IT room
+CRAC fan <span class="math notranslate nohighlight">\(m^3/s\)</span></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">CRAC_REFRENCE_AIR_FLOW_RATE_pu</span></code></p></td>
+<td><p>0.00009438</p></td>
+<td><p>Air flow rate at which power data is
+available from manufacturer spec sheet
+for IT room CRAC fan</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">CRAC_FAN_REF_P</span></code></p></td>
+<td><p>150</p></td>
+<td><p>IT room CRAC fan power consumption (w)
+at reference air flow rate</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">CHILLER_COP</span></code></p></td>
+<td><p>6.0</p></td>
+<td><p>Chiller coefficient of performance</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">CT_FAN_REF_P</span></code></p></td>
+<td><p>1000</p></td>
+<td><p>Air flow rate at which power data is
+available from manufacturer spec sheet
+for cooling tower fan</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">CT_REFRENCE_AIR_FLOW_RATE</span></code></p></td>
+<td><p>2.8315</p></td>
+<td><p>Cooling tower fan power consumption (w)
+at reference air flow rate</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+</section>
 </section>
 
 
