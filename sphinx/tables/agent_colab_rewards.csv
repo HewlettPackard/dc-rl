@@ -1,0 +1,4 @@
+Agent ,Reward
+agent_ls,.. math:: \eta \cdot r_{ls} + (1-\eta) /2 \cdot r_{dc} + (1-\eta)/2 \cdot r_{bat}
+agent_dc,.. math:: (1-\eta) /2 \cdot r_{ls} + \eta \cdot r_{dc} + (1-\eta)/2 \cdot r_{bat}
+agent_bat,.. math:: (1-\eta) /2 \cdot r_{ls} + (1-\eta)/2 \cdot r_{dc} + \eta \cdot r_{bat}

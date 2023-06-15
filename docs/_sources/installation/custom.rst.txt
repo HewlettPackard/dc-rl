@@ -1,12 +1,14 @@
-=================================
-DCRL-Green's custom DC simulation
-================================= 
+========================================
+DCRL-Green's custom DC simulation (DCRL)
+========================================
 
 Dependencies
 ------------
 
 1. Linux OS (Ubuntu 20.04)
-2. Conda
+2. Conda_
+
+.. _Conda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
 
 First time setup
 ----------------

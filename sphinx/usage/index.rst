@@ -55,13 +55,15 @@ Users can upload CI dataset of choice in the repository, under :code:`dc-rl/data
 .. _eia: https://www.eia.gov/environment/emissions/state/
 
 .. note::
-   CI dataset should be saved in .csv format
+   CI dataset should be saved in .csv format and should contain CI data for one year (24*365)
 
 Example:
 
 .. code-block:: bash
 
    'cintensity_file': 'NYIS_NG_&_avgCI.csv'
+
+The above default dataset consists CI data for a period of one year starting from 1/1/2022 to 12/31/2022.
 
 Weather data
 ------------
@@ -84,13 +86,7 @@ Workload data
 This dataset provides hourly IT workload information. The default weather data in DCRL-Green was obtained from the Alibaba open source database :cite:p:`alibaba2018`. Users can upload IT workload dataset of choice in the repository, under :code:`dc-rl/data/Workload` and use the variable :code:`"workload_file"` to specify the filename.
 
 .. note::
-   Workload dataset should be saved in .csv format
-
-Example:
-
-.. code-block:: bash
-   
-   TODO
+   Workload dataset should be saved in .csv format and should contain data for one year (24*365)
    
 Agent configuration
 -------------------

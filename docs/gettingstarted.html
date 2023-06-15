@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Usage" href="usage/index.html" />
-    <link rel="prev" title="EnergyPlus enabled DC simulation" href="installation/energyPlus.html" /> 
+    <link rel="prev" title="EnergyPlus enabled DC simulation (DCRLeplus)" href="installation/energyPlus.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -52,9 +52,11 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#example">1. Example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#train-the-agents">2. Train the agents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#monitor-the-results">2.1 Monitor the results</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#train-with-dcrl-environment">2.1 Train with DCRL Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#train-with-dcrleplus-environment">2.2 Train with DCRLeplus Environment</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="#monitor-the-results">3. Monitor the results</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="usage/index.html">Usage</a></li>
@@ -99,15 +101,26 @@
 <section id="train-the-agents">
 <h2>2. Train the agents<a class="headerlink" href="#train-the-agents" title="Permalink to this headline"></a></h2>
 <p>Run the following command to simulate the DC enivronment and optimize the agents with default configurations:</p>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>For execution using EnergyPlus model, launch the Sinergym environment before running the script (details can be found in <a class="reference internal" href="installation/energyPlus.html#energyplus-enabled-dc-simulation"><span class="std std-ref">EnergyPlus enabled DC simulation</span></a>)</p>
-</div>
+<section id="train-with-dcrl-environment">
+<h3>2.1 Train with DCRL Environment<a class="headerlink" href="#train-with-dcrl-environment" title="Permalink to this headline"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">train_ppo</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
+</section>
+<section id="train-with-dcrleplus-environment">
+<h3>2.2 Train with DCRLeplus Environment<a class="headerlink" href="#train-with-dcrleplus-environment" title="Permalink to this headline"></a></h3>
+<p>For execution using EnergyPlus model, launch the Sinergym environment before running the script (details can be found in <a class="reference internal" href="installation/energyPlus.html#energyplus-enabled-dc-simulation-dcrleplus"><span class="std std-ref">EnergyPlus enabled DC simulation (DCRLeplus)</span></a>)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">EPLUS</span><span class="o">=</span><span class="mi">1</span> <span class="n">python</span> <span class="n">train_ppo</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="code docutils literal notranslate"><span class="pre">episode_reward_mean</span></code> will display nan values for the first few iterations until 1 episode is completed</p>
+</div>
+</section>
+</section>
 <section id="monitor-the-results">
-<h3>2.1 Monitor the results<a class="headerlink" href="#monitor-the-results" title="Permalink to this headline"></a></h3>
+<h2>3. Monitor the results<a class="headerlink" href="#monitor-the-results" title="Permalink to this headline"></a></h2>
 <p>The training logs and the results of each trial are stored in the specified local directory, under a sub-folder called <code class="code docutils literal notranslate"><span class="pre">/results/</span></code> and can be visualized with TensorBoard by specifying the output directory of the results.</p>
 <p>Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="n">results</span><span class="o">/</span><span class="n">latest_experiment</span>
@@ -192,13 +205,12 @@
 </table>
 </section>
 </section>
-</section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="installation/energyPlus.html" class="btn btn-neutral float-left" title="EnergyPlus enabled DC simulation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="installation/energyPlus.html" class="btn btn-neutral float-left" title="EnergyPlus enabled DC simulation (DCRLeplus)" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="usage/index.html" class="btn btn-neutral float-right" title="Usage" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
