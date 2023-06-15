@@ -59,6 +59,16 @@ class BatteryEnvFwd(gym.Env):
         }
 
     def step(self, action_id):
+        """ Step function
+        Args:
+            action_id (int): the action id
+        Returns:
+            obs (list): the observation
+            reward (float): the reward
+            done (bool): the done flag
+            info (dict): the info
+        
+        """
         action_instantaneous = self._action_to_direction[action_id]
         self.discharge_energy = self._simulate_battery_operation(self.battery, action_instantaneous,
                                                                   charging_rate=self.charging_rate)

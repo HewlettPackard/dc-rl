@@ -156,7 +156,7 @@ class DCRL(MultiAgentEnv):
 
         states = {}
         infos = {}
-        # Update self.agents considering the agents defined in the environment config.
+        # Update states and infos considering the agents defined in the environment config self.agents.
         if "agent_ls" in self.agents:
             states["agent_ls"] = self.ls_state
             infos["agent_ls"] = self.ls_info
@@ -166,6 +166,7 @@ class DCRL(MultiAgentEnv):
         if "agent_bat" in self.agents:
             states["agent_bat"] = self.bat_state
             infos["agent_bat"] = self.bat_info
+            
         return states, infos
 
     def step(self, action_dict: MultiAgentDict):
@@ -207,7 +208,6 @@ class DCRL(MultiAgentEnv):
             action = self.base_agents["agent_ls"].do_nothing_action()
             
         # Now, update the load shifting environment/agent first.
-        # i = "agent_ls"
         self.ls_env.update_workload(day_workload, workload)
         
         # Do a step
@@ -222,8 +222,6 @@ class DCRL(MultiAgentEnv):
         # Update the data center environment/agent.
         shifted_wkld = self.ls_info['load']
         self.dc_env.set_shifted_wklds(shifted_wkld)
-        
-        batSoC = self.bat_state[1]
         self.dc_env.set_ambient_temp(temp)
         
         # Do a step in the data center environment
@@ -241,7 +239,7 @@ class DCRL(MultiAgentEnv):
         self.bat_state = self.bat_env.update_state() # The state is updated with DC load
         self.bat_env.update_ci(ci_i, ci_i_future[0]) # Update the CI with the current CI, and the normalized current CI.
         
-        # Make a step in the environment
+        # Do a step in the battery environment
         self.bat_state, self.bat_reward, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
         
         # Update the state of the bat state

@@ -118,7 +118,7 @@ class dc_gymenv(gym.Env):
         
         crac_setpoint_delta = self.action_mapping[action]
         self.raw_curr_stpt += crac_setpoint_delta
-        self.raw_curr_stpt = max(min(self.raw_curr_stpt,self.max_temp), self.min_temp)
+        self.raw_curr_stpt = max(min(self.raw_curr_stpt, self.max_temp), self.min_temp)
     
         ITE_load_pct_list = [self.cpu_load*100 for i in range(DC_Config.NUM_RACKS)] 
         
@@ -127,7 +127,7 @@ class dc_gymenv(gym.Env):
             
         avg_CRAC_return_temp = DataCenter.calculate_avg_CRAC_return_temp(rack_return_approach_temp_list=DC_Config.RACK_RETURN_APPROACH_TEMP_LIST,
                                                                      rackwise_outlet_temp=self.rackwise_outlet_temp)
-        data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr)+sum(self.rackwise_itfan_pwr)
+        data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
         
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
                                                                          avg_CRAC_return_temp=avg_CRAC_return_temp,
@@ -168,7 +168,7 @@ class dc_gymenv(gym.Env):
         self.info = {
             'IT POWER w' : data_center_total_ITE_Load,
             'HVAC POWER w' : self.CT_Cooling_load,
-            'Total Power kW' : (data_center_total_ITE_Load + self.CT_Cooling_load)/1000,
+            'Total Power kW' : (data_center_total_ITE_Load + self.CT_Cooling_load) / 1e3,
             'crac_setpoint_delta' : crac_setpoint_delta,
             'ambient_temp' : self.ambient_temp,
             'cpu_load' : self.cpu_load,
