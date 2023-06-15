@@ -1,0 +1,16 @@
+HVAC Configuration Variables,Default values,Description
+:code:`C_AIR`,1006,Specific thermal capacity of air :math:`J/kg.K`
+:code:`RHO_AIR`,1.225,Density of air :math:`kg/m^3`
+:code:`CRAC_SUPPLY_AIR_FLOW_RATE_pu`,0.00005663,"Constant air flow rate of IT room
+CRAC fan :math:`m^3/s`"
+:code:`CRAC_REFRENCE_AIR_FLOW_RATE_pu`,0.00009438,"Air flow rate at which power data is
+available from manufacturer spec sheet
+for IT room CRAC fan"
+:code:`CRAC_FAN_REF_P`,150,"IT room CRAC fan power consumption (w)
+at reference air flow rate"
+:code:`CHILLER_COP`,6.0,Chiller coefficient of performance
+:code:`CT_FAN_REF_P`,1000,"Air flow rate at which power data is
+available from manufacturer spec sheet
+for cooling tower fan"
+:code:`CT_REFRENCE_AIR_FLOW_RATE`,2.8315,"Cooling tower fan power consumption (w)
+at reference air flow rate"
