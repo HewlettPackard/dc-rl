@@ -18,7 +18,7 @@ Users can configure the simulation of the DC environment to suit their requireme
 
 .. _Github: https://github.com/HewlettPackard/dc-rl/blob/main/utils/dc_config.json
 
-.. figure:: ../images/data_center_view_2.png
+.. figure:: ../images/Labeled_dc_view_2.png
    :scale: 20 %
    :alt:  Data Center View in 6Sigma DCX from a given configuration file
    :align: center
