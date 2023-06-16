@@ -1,5 +1,5 @@
 import os
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import gymnasium as gym
 import numpy as np
@@ -7,30 +7,24 @@ import ray
 from ray.rllib.env.external_env import ExternalEnv
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
+from ray.rllib.env import EnvContext
 from utils import make_envs
 from utils.base_agents import (BaseBatteryAgent, BaseHVACAgent,
                                BaseLoadShiftingAgent)
 from utils.utils_cf import (CI_Manager, Time_Manager, Weather_Manager,
                             Workload_Manager, get_init_day, obtain_paths)
-    
+from dcrl_env import EnvConfig
+
 class DCRLeplus(MultiAgentEnv):
-    def __init__(self, env_config=None):
+    def __init__(self, env_config: Union[dict, EnvContext] = {}):
         '''
         Args:
-            env_config (dict): Dictionary containing parameters:
-                agents: list of agent name (agent_ls, agent_dc, agent_bat)
-                location: location of the environment for paths
-                cintensity_file: path to the carbon intensity (CI) file
-                weather_file: path to the weather file
-                max_bat_cap_Mw: maximum battery capacity
-                individual_reward_weight: weight of the individual reward (1=full individual, 0=full collaborative, default=0.8)
-                flexible_load: flexible load ratio of the total workload (default = 0.1)
-                ls_reward: method to calculate the load shifting reward
-                dc_reward: method to calculate the dc reward
-                bat_reward: method to calculate the battery reward
-                worker_index: index of the worker. This parameter is added by RLLib.
+            env_config (dict): Dictionary containing parameters as defined in EnvConfig
         '''
         super().__init__()
+
+        # Initialize the environment config
+        env_config = EnvConfig(env_config)
 
         # create agent ids
         self.agents = env_config['agents']
