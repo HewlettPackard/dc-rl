@@ -43,30 +43,30 @@ RACK_RETURN_APPROACH_TEMP_LIST = [
 
 # Specify the CPU Config for each cpu/server in each rack 
 # The full load power and the idle power may be populated using spec sheets from common servers in use
-SERVERS_PER_RACK = 300  # This value may be overridden internally if total rack load exceeds MAX_W_PER_RACK
+CPUS_PER_RACK = 300  # This value may be overridden internally if total rack load exceeds MAX_W_PER_RACK
 
 # This list should be of length NUM_RACKS
 RACK_CPU_CONFIG : list[list[dict]] = [
-    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :120, 'idle_pwr':60} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :870, 'idle_pwr':110} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :650, 'idle_pwr':100} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :420, 'idle_pwr':130} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :160, 'idle_pwr':100} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :300, 'idle_pwr':60} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :530, 'idle_pwr':80} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :670, 'idle_pwr':110} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :660, 'idle_pwr':100} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :670, 'idle_pwr':110} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :190, 'idle_pwr':120} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :220, 'idle_pwr':150} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :280, 'idle_pwr':180} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :110, 'idle_pwr':70} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(SERVERS_PER_RACK)],
-    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(SERVERS_PER_RACK)]
+    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :120, 'idle_pwr':60} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :870, 'idle_pwr':110} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :650, 'idle_pwr':100} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :420, 'idle_pwr':130} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :160, 'idle_pwr':100} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :300, 'idle_pwr':60} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :530, 'idle_pwr':80} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :670, 'idle_pwr':110} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :660, 'idle_pwr':100} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :670, 'idle_pwr':110} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :190, 'idle_pwr':120} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :220, 'idle_pwr':150} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :280, 'idle_pwr':180} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :110, 'idle_pwr':70} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(CPUS_PER_RACK)],
+    [{'full_load_pwr' :170, 'idle_pwr':110} for _ in range(CPUS_PER_RACK)]
 ]
 
 

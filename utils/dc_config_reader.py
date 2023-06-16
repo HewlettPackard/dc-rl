@@ -44,7 +44,7 @@ RACK_SUPPLY_APPROACH_TEMP_LIST = json_obj['data_center_configuration']['RACK_SUP
 RACK_RETURN_APPROACH_TEMP_LIST = json_obj['data_center_configuration']['RACK_RETURN_APPROACH_TEMP_LIST']
 
 # how many servers are assigned in each rack. The actual number of servers per rack may be limited while
-SERVERS_PER_RACK = json_obj['data_center_configuration']['SERVERS_PER_RACK']  
+CPUS_PER_RACK = json_obj['data_center_configuration']['CPUS_PER_RACK']  
 
 ##################################################################
 #################### SERVER CONFIGURATION ########################
@@ -61,7 +61,7 @@ DEFAULT_SERVER_POWER_CHARACTERISTICS = json_obj['server_characteristics']['DEFAU
 # This list should be of length NUM_RACKS; Here DEFAULT_SERVER_POWER_CHARACTERISTICS is of same length as NUM_RACKS
 assert len(DEFAULT_SERVER_POWER_CHARACTERISTICS) == NUM_RACKS, "DEFAULT_SERVER_POWER_CHARACTERISTICS should be of length as NUM_RACKS"
 RACK_CPU_CONFIG = [[{'full_load_pwr' : j[0],
-                     'idle_pwr': j[-1]} for _ in range(SERVERS_PER_RACK)] for j in DEFAULT_SERVER_POWER_CHARACTERISTICS]
+                     'idle_pwr': j[-1]} for _ in range(CPUS_PER_RACK)] for j in DEFAULT_SERVER_POWER_CHARACTERISTICS]
 
 # A default value of HP_PROLIANT server for standalone testing
 HP_PROLIANT = json_obj["server_characteristics"]['HP_PROLIANT']
