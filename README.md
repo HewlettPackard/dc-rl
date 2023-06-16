@@ -1,6 +1,6 @@
 # DCRL-Green
 
-This repository contains the datasets and code for the paper DCRL_Green: Sustainable Data Center Environment and Benchmark for Multi-Agent Reinforcement Learning.
+This repository contains the datasets and code for the paper DCRL-Green: Sustainable Data Center Environment and Benchmark for Multi-Agent Reinforcement Learning.
 
 <p align="center">
   <img src="https://github.com/HewlettPackard/dc-rl/blob/main/sphinx/images/DCRL-sim1.png" align="centre" width="500" />
@@ -8,6 +8,17 @@ This repository contains the datasets and code for the paper DCRL_Green: Sustain
 
 ## Introduction
 DCRL-green is a framework for testing multi-agent Reinforcement Learning (MARL) algorithm that optimizes data centers for multiple objectives of carbon footprint reduction, energy consumption, and energy cost. It uses OpenAI Gym standard and supports modeling and control of three different types of problems: Carbon aware flexible load shifting, Data center HVAC cooling energy optimization and carbon aware battery auxiliary supply.
+
+Main contributions of DCRL-Green:
+
+- the first OpenAI framework, in our knowledge, focused on carbon footprint reduction for data centers
+- modular design meaning users can utilize pre-defined modules for load shifting, energy and battery or build their own 
+- scalable architecture that allows multiple different types of modules and connections between them
+- robust data center model that provides in-depth customization to fit users' needs 
+- provides pre-defined reward functions as well as interface to create custom reward functions 
+- built-in mechanisms for reward shaping focused on degree of cooperation between the agents and level of prioritization of carbon footprint reduction versus energy cost
+- custom reward shaping through custom reward functions 
+- build-in MARL algorithms, with ability to incorporate user-specified custom agents 
 
 Currently, we provide two versions for the data center dynamics. 
 
@@ -110,7 +121,7 @@ Note that this will use ```PPO``` agents; for ```MADDPG``` use the ```train_madd
 If you want to run the DCRL-Green framework in background mode use the following command:
 
 ```bash
-$ hohup python PYTHON_SCRIPT > OUTPUT_FILE  &
+$ hohup python PYTHON_SCRIPT > OUTPUT_FILE.txt  &
 ```
 where ```PYTHON_SCRIPT``` is the script you want to run (e.g., ```train_ppo.py```) and ```OUTPUT_FILE``` is the name of the file that will contain the output (e.g. ```latest_experiment_output.txt```).
 
