@@ -24,8 +24,8 @@ from custom_sinergym.utils.common import *
 from custom_sinergym.utils.config import Config
 from custom_sinergym.utils.logger import Logger
 
-LOG_LEVEL_MAIN = 'INFO'
-LOG_LEVEL_EPLS = 'FATAL'
+LOG_LEVEL_MAIN = 'CRITICAL'
+LOG_LEVEL_EPLS = 'CRITICAL'
 LOG_FMT = "[%(asctime)s] %(name)s %(levelname)s:%(message)s"
 
 
