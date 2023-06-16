@@ -13,7 +13,17 @@ def make_ls_env(month,
                 reward_method,
                 n_vars_energy : int = 4,
                 n_vars_battery : int = 1):
-    
+    """Method to build the Load shifting environment
+
+    Args:
+        month (int): Month of the year in which the agent is training.
+        reward_method (string): Method used to calculate the rewards.
+        n_vars_energy (int, optional): Number of variables from the Energy environment. Defaults to 4.
+        n_vars_battery (int, optional): Number of variables from the Battery environment. Defaults to 1.
+
+    Returns:
+        CarbonLoadEnv: Load Shifting environment
+    """
     env_config = {'reward_method':reward_method}
     
     return CarbonLoadEnv(n_vars_energy=n_vars_energy,
@@ -34,7 +44,7 @@ def make_bat_fwd_env(month,
         reward_method (str, optional): Method used to calculate the rewards. Defaults to 'default_bat_reward'.
 
     Returns:
-        _type_: _description_
+        battery_env_fwd: Batery environment.
     """
     init_day = get_init_day(month)
     env_config= {'n_fwd_steps':4,
