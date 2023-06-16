@@ -13,14 +13,29 @@ def default_ls_reward(params: dict) -> float:
     Returns:
         float: Reward value.
     """
-    norm_load_left = params['norm_load_left']
-    out_of_time = params['out_of_time']
-    penalty = params['penalty']
+    # Energy part of the reward
+    total_energy_with_battery = params['bat_total_energy_with_battery_KWh']
+    norm_CI = params['norm_CI']
+    dcload_min = params['bat_dcload_min']
+    dcload_max = params['bat_dcload_max']
     
+    # Penalty part of the reward
+    norm_load_left = params['ls_norm_load_left']
+    out_of_time = params['ls_penalty_flag']
+    penalty = 1e3
+    
+    # Calculate the reward associted to the energy consumption
+    norm_net_dc_load = (total_energy_with_battery / 1e3 - dcload_min) / (dcload_max - dcload_min)
+    footprint = -1.0 * norm_CI * norm_net_dc_load
+    
+    # Obtain the penalty if there is load at the end of the day
     if out_of_time:
-        reward = -norm_load_left*penalty
+        penalty = -norm_load_left*penalty
     else:
-        reward = 0
+        penalty = 0
+    
+    # Add the rewards
+    reward = footprint + penalty
     return reward
 
 
@@ -38,11 +53,11 @@ def default_dc_reward(params: dict) -> float:
     Returns:
         float: Reward value.
     """
-    data_center_total_ITE_Load = params['data_center_total_ITE_Load']
-    CT_Cooling_load = params['CT_Cooling_load']
-    energy_lb,  energy_ub = params['energy_lb'], params['energy_ub']
+    data_center_total_ITE_Load = params['dc_ITE_total_power_kW']
+    CT_Cooling_load = params['dc_HVAC_total_power_kW']
+    energy_lb,  energy_ub = params['dc_power_lb_kW'], params['dc_power_ub_kW']
     
-    return - 1.0 * ((data_center_total_ITE_Load + CT_Cooling_load)-energy_lb)/(energy_ub-energy_lb)
+    return - 1.0 * ((data_center_total_ITE_Load + CT_Cooling_load) - energy_lb) / (energy_ub - energy_lb)
 
 
 def default_bat_reward(params: dict) -> float:
@@ -53,22 +68,16 @@ def default_bat_reward(params: dict) -> float:
         params (dict): Dictionary containing parameters:
             total_energy_with_battery (float): Total energy with battery.
             norm_CI (float): Normalized Carbon Intensity.
-            a_t (float): Action at time t.
             dcload_min (float): Minimum DC load.
             dcload_max (float): Maximum DC load.
-            battery_current_load (float): Current load of the battery.
-            max_bat_cap (float): Maximum battery capacity.
 
     Returns:
         float: Reward value.
     """
-    total_energy_with_battery = params['total_energy_with_battery']
+    total_energy_with_battery = params['bat_total_energy_with_battery_KWh']
     norm_CI = params['norm_CI']
-    a_t = params['a_t']
-    dcload_min = params['dcload_min']
-    dcload_max = params['dcload_max']
-    battery_current_load = params['battery_current_load']
-    max_bat_cap = params['max_bat_cap']
+    dcload_min = params['bat_dcload_min']
+    dcload_max = params['bat_dcload_max']
     
     norm_net_dc_load = (total_energy_with_battery / 1e3 - dcload_min) / (dcload_max - dcload_min)
     rew_footprint = -1.0 * norm_CI * norm_net_dc_load
@@ -140,7 +149,7 @@ def tou_reward(params: dict) -> float:
     # Obtain the price of electricity at the current hour
     current_price = tou[params['hour']]
     # Obtain the energy usage
-    energy_usage = params['energy_usage']
+    energy_usage = params['bat_total_energy_with_battery_KWh']
     
     # The reward is negative as the agent's objective is to minimize energy cost
     tou_reward = -1.0 * energy_usage * current_price
@@ -160,8 +169,9 @@ def renewable_energy_reward(params: dict) -> float:
     Returns:
         float: Reward value.
     """
-    renewable_energy_ratio = params['renewable_energy_ratio']
-    total_energy_consumption = params['total_energy_consumption']
+    assert params.get('renewable_energy_ratio') is not None, 'renewable_energy_ratio is not defined. This parameter should be included using some external dataset and added to the reward_info dictionary'
+    renewable_energy_ratio = params['renewable_energy_ratio'] # This parameter should be included using some external dataset
+    total_energy_consumption = params['bat_total_energy_with_battery_KWh']
     factor = 1.0 # factor to scale the weight of the renewable energy usage
 
     # Reward = maximize renewable energy usage - minimize total energy consumption
@@ -181,10 +191,10 @@ def energy_efficiency_reward(params: dict) -> float:
     Returns:
         float: Reward value.
     """
-    it_equipment_energy = params['it_equipment_energy']  
-    total_energy_consumption = params['total_energy_consumption']  
+    it_equipment_power = params['dc_ITE_total_power_kW']  
+    total_power_consumption = params['dc_total_power_kW']  
     
-    reward = it_equipment_energy / total_energy_consumption
+    reward = it_equipment_power / total_power_consumption
     return reward
 
 
@@ -200,11 +210,11 @@ def energy_PUE_reward(params: dict) -> float:
     Returns:
         float: Reward value.
     """
-    total_energy_consumption = params['total_energy_consumption']  
-    it_equipment_energy = params['it_equipment_energy']  
+    total_power_consumption = params['dc_total_power_kW']  
+    it_equipment_power = params['dc_ITE_total_power_kW']  
     
     # Calculate PUE
-    pue = total_energy_consumption / it_equipment_energy if it_equipment_energy != 0 else float('inf')
+    pue = total_power_consumption / it_equipment_power if it_equipment_power != 0 else float('inf')
     
     # We aim to get PUE as close to 1 as possible, hence we take the absolute difference between PUE and 1
     # We use a negative sign since RL seeks to maximize reward, but we want to minimize PUE
@@ -225,7 +235,8 @@ def temperature_efficiency_reward(params: dict) -> float:
     Returns:
         float: Reward value.
     """
-    current_temperature = params['current_temperature'] 
+    assert params.get('optimal_temperature_range') is not None, 'optimal_temperature_range is not defined. This parameter should be added to the reward_info dictionary'
+    current_temperature = params['dc_int_temperature'] 
     optimal_temperature_range = params['optimal_temperature_range']
     min_temp, max_temp = optimal_temperature_range
     

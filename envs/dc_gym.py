@@ -22,7 +22,6 @@ class dc_gymenv(gym.Env):
                        action_definition : dict,
                        seed : int = 123,
                        episode_length_in_time : pd.Timedelta = None,  # can be 1 week in minutes eg pd.Timedelta('7days')
-                       reward_method : str = 'default_dc_reward'
                        ):
         """Creates the data center environment
 
@@ -42,7 +41,6 @@ class dc_gymenv(gym.Env):
             action_definition (dict): A mapping of the action name to the default or initialized value. Specified in utils.make_pyeplus_env.py
             episode_length_in_time (pd.Timedelta, optional): The maximum length after which the done flag should be True. Defaults to None. 
                                                             Setting none causes done to be True after data set is exausted.
-            reward_method (str, optional) : Default or custom reward function to be used for evaluating the reward
         """
         
         self.observation_variables = observation_variables
@@ -57,9 +55,7 @@ class dc_gymenv(gym.Env):
         self.scale_obs = False
         self.obs_max = []
         self.obs_min = []
-        
-        self.reward_method = reward_creator.get_reward_method(reward_method=reward_method)
-        
+                
         # similar to reset
         self.dc = DataCenter.DataCenter_ITModel(num_racks=DC_Config.NUM_RACKS,
                                                 rack_supply_approach_temp_list=DC_Config.RACK_SUPPLY_APPROACH_TEMP_LIST,
@@ -129,7 +125,8 @@ class dc_gymenv(gym.Env):
             self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=self.raw_curr_stpt)
             
         avg_CRAC_return_temp = DataCenter.calculate_avg_CRAC_return_temp(rack_return_approach_temp_list=DC_Config.RACK_RETURN_APPROACH_TEMP_LIST,
-                                                                     rackwise_outlet_temp=self.rackwise_outlet_temp)
+                                                                         rackwise_outlet_temp=self.rackwise_outlet_temp)
+        
         data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
         
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
@@ -139,28 +136,21 @@ class dc_gymenv(gym.Env):
                                                                          DC_Config=DC_Config)
         
         # calculate reward
-        self.reward = self.reward_method(
-            params = {
-                'data_center_total_ITE_Load' : data_center_total_ITE_Load,
-                'CT_Cooling_load' : self.CT_Cooling_load,
-                'energy_lb' : 40000,
-                'energy_ub' : 160000
-                }
-        )
+        self.reward = 0
                 
         # calculate self.raw_next_state
         self.raw_next_state = self.get_obs()
         # add info dictionary 
         self.info = {
-            'IT POWER w' : data_center_total_ITE_Load,
-            'HVAC POWER w' : self.CT_Cooling_load,
-            'Total Power kW' : (data_center_total_ITE_Load + self.CT_Cooling_load) / 1e3,
-            'crac_setpoint_delta' : crac_setpoint_delta,
-            'ambient_temp' : self.ambient_temp,
-            'cpu_load' : self.cpu_load,
-            'raw_action' : crac_setpoint_delta,
-            'setpoint' : self.raw_curr_stpt,
-            '%HVAC/IT' : self.CT_Cooling_load/data_center_total_ITE_Load
+            'dc_ITE_total_power_kW': data_center_total_ITE_Load / 1e3,
+            'dc_HVAC_total_power_kW': self.CT_Cooling_load / 1e3,
+            'dc_total_power_kW': (data_center_total_ITE_Load + self.CT_Cooling_load) / 1e3,
+            'dc_power_lb_kW': 1000,
+            'dc_power_ub_kW': 7000,
+            'dc_crac_setpoint_delta': crac_setpoint_delta,
+            'dc_crac_setpoint': self.raw_curr_stpt,
+            'dc_cpu_workload_percent': self.cpu_load,
+            'dc_int_temperature': np.mean(self.rackwise_outlet_temp),
         }
         
         #Done and truncated are managed by the main class, implement individual function if needed

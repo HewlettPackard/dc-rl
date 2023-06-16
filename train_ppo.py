@@ -57,13 +57,14 @@ CONFIG = (
             shuffle_sequences=True
         )
         .callbacks(CustomCallbacks)
-        .resources(num_cpus_per_worker=1, num_gpus=0)
+        .resources(num_cpus_per_worker=2, num_gpus=0)
     )
 
 NAME = "test"
 RESULTS_DIR = './results'
 
 if __name__ == '__main__':
+    os.environ["RAY_DEDUP_LOGS"] = "0"
 
     ray.init(ignore_reinit_error=True)
     #ray.init(local_mode=True, ignore_reinit_error=True)

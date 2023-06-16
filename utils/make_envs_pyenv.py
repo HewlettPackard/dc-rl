@@ -10,30 +10,26 @@ from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
 from utils.utils_cf import get_init_day, Workload_Manager, CI_Manager
 
 def make_ls_env(month,
-                reward_method,
                 n_vars_energy : int = 4,
                 n_vars_battery : int = 1):
     """Method to build the Load shifting environment
 
     Args:
         month (int): Month of the year in which the agent is training.
-        reward_method (string): Method used to calculate the rewards.
         n_vars_energy (int, optional): Number of variables from the Energy environment. Defaults to 4.
         n_vars_battery (int, optional): Number of variables from the Battery environment. Defaults to 1.
 
     Returns:
         CarbonLoadEnv: Load Shifting environment
     """
-    env_config = {'reward_method':reward_method}
     
     return CarbonLoadEnv(n_vars_energy=n_vars_energy,
-                         n_vars_battery=n_vars_battery,
-                         env_config=env_config)
+                         n_vars_battery=n_vars_battery
+                         )
 
 def make_bat_fwd_env(month,
                     max_bat_cap_Mw : float = 2.0,
                     charging_rate : float = 0.5,
-                    reward_method : str = 'default_bat_reward'
                     ):
     """Method to build the Battery environment.
 
@@ -52,8 +48,7 @@ def make_bat_fwd_env(month,
                  'charging_rate':charging_rate,
                  'start_point':init_day,
                  'dcload_max': 1.81, 
-                 'dcload_min': 0.6,
-                 'reward_method':reward_method}
+                 'dcload_min': 0.6}
     bat_env = battery_env_fwd(env_config)
     return bat_env
 
@@ -68,7 +63,6 @@ def make_dc_pyeplus_env(month : int = 1,
                         use_ls_cpu_load : bool = False,
                         standalone_pyeplus : bool = False,
                         num_sin_cos_vars : int = 4,
-                        reward_method : str = 'default_dc_reward'
                         ):
     """Method that creates the data center environment with the timeline, location, proper data files, gym specifications and auxiliary methods
 
@@ -178,8 +172,7 @@ def make_dc_pyeplus_env(month : int = 1,
                         min_temp=min_temp,
                         max_temp=max_temp,
                         action_definition=action_definition,
-                        episode_length_in_time=episode_length_in_time,
-                        reward_method=reward_method
+                        episode_length_in_time=episode_length_in_time
                         )
         
         dc_env.NormalizeObservation()

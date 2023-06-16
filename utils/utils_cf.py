@@ -174,7 +174,7 @@ class Time_Manager():
             self.hour=0
             self.day += 1
         self.hour += 1/self.timestep_per_hour
-        return sc_obs(self.hour, self.day), self.isterminal()
+        return self.day, self.hour, sc_obs(self.hour, self.day), self.isterminal()
     
     def isterminal(self):
         """Function to identify terminal state
