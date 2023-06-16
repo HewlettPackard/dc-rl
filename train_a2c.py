@@ -10,7 +10,7 @@ from dcrl_env import DCRL
 
 # Data collection config
 TIMESTEP_PER_HOUR = 4
-COLLECTED_DAYS = 1
+COLLECTED_DAYS = 7
 NUM_AGENTS = 3
 NUM_WORKERS = 24
 

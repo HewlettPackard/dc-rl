@@ -73,17 +73,15 @@ class BatteryEnvFwd(gym.Env):
         }
 
     def step(self, action_id):
-        """
-        Makes an environment step in`BatteryEnvFwd.
-
+        """ Step function
         Args:
-            action_id (int): Action to take.
-
+            action_id (int): the action id
         Returns:
-            observations (List[float]): Current state of the environmment
-            reward (float): reward value.
-            done (bool): A boolean value signaling the if the episode has ended.
-            info (dict): A dictionary that containing additional information about the environment state
+            obs (list): the observation
+            reward (float): the reward
+            done (bool): the done flag
+            info (dict): the info
+        
         """
         action_instantaneous = self._action_to_direction[action_id]
         self.discharge_energy = self._simulate_battery_operation(self.battery, action_instantaneous,

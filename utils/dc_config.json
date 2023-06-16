@@ -15,7 +15,7 @@
                                             -2.5, -2.5, -2.5, -2.5,
                                             -3.7, -3.7, -3.7, -3.7
                                             ],
-        "SERVERS_PER_RACK" : 300                                                                                                                                                       
+        "CPUS_PER_RACK" : 300                                                                                                                                                       
     },
     "hvac_configuration" : 
     {

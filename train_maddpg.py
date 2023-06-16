@@ -8,6 +8,12 @@ from train import train
 from dcrl_eplus_env import DCRLeplus
 from dcrl_env import DCRL
 
+# Data collection config
+TIMESTEP_PER_HOUR = 4
+COLLECTED_DAYS = 7
+NUM_AGENTS = 3
+NUM_WORKERS = 24
+
 CONFIG = (
         MADDPGConfigStable()
         .environment(
@@ -40,11 +46,12 @@ CONFIG = (
             }
         )
         .framework("tf")
-        .rollouts(num_rollout_workers=24)
+        .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
             gamma=0.99, 
             lr=1e-7,
             model={'fcnet_hiddens':[128, 64, 16], 'fcnet_activation': 'relu'},
+            train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
             use_local_critic=False,
         )
         .callbacks(CustomCallbacks)

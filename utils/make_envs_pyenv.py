@@ -146,11 +146,11 @@ def make_dc_pyeplus_env(month : int = 1,
     ################################################################################
     ############################## Time Series Data ################################
     ################################################################################
-    weather_ts, ci_ts, cpu_usage_ts =  data_processor.dfs_creator(weather_filename = weather_filename,
-                                                                  carbon_intensity_filename = carbon_intensity_filename,
-                                                                  workload_filename = workload_filename,
-                                                                  start_date_time = '01/01/2022 00:00:00',
-                                                                  end_date_time = '01/01/2023 00:00:00',)
+    # weather_ts, ci_ts, cpu_usage_ts =  data_processor.dfs_creator(weather_filename = weather_filename,
+    #                                                               carbon_intensity_filename = carbon_intensity_filename,
+    #                                                               workload_filename = workload_filename,
+    #                                                               start_date_time = '01/01/2022 00:00:00',
+    #                                                               end_date_time = '01/01/2023 00:00:00',)
     
     ################################################################################
     ############################## Create the Environment ##########################

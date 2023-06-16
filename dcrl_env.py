@@ -1,31 +1,73 @@
 import os
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
+
 import gymnasium as gym
 import numpy as np
+from ray.rllib.env import EnvContext
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
+
 from utils.make_envs_pyenv import make_dc_pyeplus_env, make_bat_fwd_env, make_ls_env
 from utils.utils_cf import get_init_day, Time_Manager, Workload_Manager, CI_Manager, Weather_Manager, obtain_paths, get_energy_variables
 from utils.base_agents import BaseBatteryAgent, BaseLoadShiftingAgent, BaseHVACAgent
 
+class EnvConfig(dict):
+
+    # Default configuration for this environment. New parameters should be
+    # added here
+    DEFAULT_CONFIG = {
+        # Agents active
+        'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+
+        # Datafiles
+        'location': 'ny',
+        'cintensity_file': 'NYIS_NG_&_avgCI.csv',
+        'weather_file': 'USA_NY_New.York-Kennedy.epw',
+
+        # Maximum battery capacity
+        'max_bat_cap_Mw': 2,
+        
+        # weight of the individual reward (1=full individual, 0=full collaborative, default=0.8)
+        'individual_reward_weight': 0.8,
+        
+        # flexible load ratio of the total workload
+        'flexible_load': 0.1,
+        
+        # Specify reward methods. These are defined in utils/reward_creator.
+        'ls_reward': 'default_ls_reward',
+        'dc_reward': 'default_dc_reward',
+        'bat_reward': 'default_bat_reward',
+
+        # Set this to True if an agent (like MADDPG) returns continuous actions,
+        "actions_are_logits": False
+    }
+
+    def __init__(self, raw_config: Union[dict, EnvContext]):
+        dict.__init__(self, self.DEFAULT_CONFIG.copy())
+
+        # Override defaults with the passed config
+        for key, val in raw_config.items():
+            self[key] = val
+
+        # Copy over RLLib's EnvContext parameters
+        if isinstance(raw_config, EnvContext):
+            self.worker_index = raw_config.worker_index
+            self.num_workers = raw_config.num_workers
+            self.recreated_worker = raw_config.recreated_worker
+            self.vector_index = raw_config.vector_index
+
+
 class DCRL(MultiAgentEnv):
-    def __init__(self, env_config=None):
+    def __init__(self, env_config: Union[dict, EnvContext] = {}):
         '''
         Args:
-            env_config (dict): Dictionary containing parameters:
-                agents: list of agent name (agent_ls, agent_dc, agent_bat)
-                location: location of the environment for paths
-                cintensity_file: path to the carbon intensity (CI) file
-                weather_file: path to the weather file
-                max_bat_cap_Mw: maximum battery capacity
-                individual_reward_weight: weight of the individual reward (1=full individual, 0=full collaborative, default=0.8)
-                flexible_load: flexible load ratio of the total workload (default = 0.1)
-                ls_reward: method to calculate the load shifting reward
-                dc_reward: method to calculate the dc reward
-                bat_reward: method to calculate the battery reward
-                worker_index: index of the worker. This parameter is added by RLLib.
+            env_config (dict): Dictionary containing parameters as defined in 
+                            EnvConfig above
         '''
         super().__init__()
+
+        # Initialize the environment config
+        env_config = EnvConfig(env_config)
 
         # create agent ids
         self.agents = env_config['agents']
@@ -150,7 +192,7 @@ class DCRL(MultiAgentEnv):
 
         states = {}
         infos = {}
-        # Update self.agents considering the agents defined in the environment config.
+        # Update states and infos considering the agents defined in the environment config self.agents.
         if "agent_ls" in self.agents:
             states["agent_ls"] = self.ls_state
             infos["agent_ls"] = self.ls_info
@@ -160,6 +202,7 @@ class DCRL(MultiAgentEnv):
         if "agent_bat" in self.agents:
             states["agent_bat"] = self.bat_state
             infos["agent_bat"] = self.bat_info
+            
         return states, infos
 
     def step(self, action_dict: MultiAgentDict):
@@ -201,7 +244,6 @@ class DCRL(MultiAgentEnv):
             action = self.base_agents["agent_ls"].do_nothing_action()
             
         # Now, update the load shifting environment/agent first.
-        # i = "agent_ls"
         self.ls_env.update_workload(day_workload, workload)
         
         # Do a step
@@ -216,8 +258,6 @@ class DCRL(MultiAgentEnv):
         # Update the data center environment/agent.
         shifted_wkld = self.ls_info['load']
         self.dc_env.set_shifted_wklds(shifted_wkld)
-        
-        batSoC = self.bat_state[1]
         self.dc_env.set_ambient_temp(temp)
         
         # Do a step in the data center environment
@@ -235,7 +275,7 @@ class DCRL(MultiAgentEnv):
         self.bat_state = self.bat_env.update_state() # The state is updated with DC load
         self.bat_env.update_ci(ci_i, ci_i_future[0]) # Update the CI with the current CI, and the normalized current CI.
         
-        # Make a step in the environment
+        # Do a step in the battery environment
         self.bat_state, self.bat_reward, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
         
         # Update the state of the bat state
@@ -284,31 +324,13 @@ class DCRL(MultiAgentEnv):
 
 if __name__ == '__main__':
 
-    env = DCRL(
-        env_config={
-            # Agents active
-            'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+    env = DCRL()
 
-            # Datafiles
-            'location': 'ny',
-            'cintensity_file': 'NYIS_NG_&_avgCI.csv',
-            'weather_file': 'USA_NY_New.York-Kennedy.epw',
-
-            # Battery capacity
-            'max_bat_cap_Mw': 2,
-            
-            # Collaborative weight in the reward
-            'individual_reward_weight': 0.8,
-            
-            # Flexible load ratio
-            'flexible_load': 0.1,
-            
-            # Specify reward methods
-            'ls_reward': 'default_ls_reward',
-            'dc_reward': 'default_dc_reward',
-            'bat_reward': 'default_bat_reward'
-            }
-    )
+    # Set seeds for reproducibility    
+    np.random.seed(0)
+    env.ls_env.action_space.seed(0)
+    env.dc_env.action_space.seed(0)
+    env.bat_env.action_space.seed(0)
 
     done = False
     env.reset()

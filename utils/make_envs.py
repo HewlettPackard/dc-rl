@@ -70,7 +70,7 @@ def make_dc_env(month, location, reward_method='default_dc_reward'):
     years = 1
     start_year = 1989
     start_date = pd.to_datetime(f'1989-{(month+1):02d}-01')
-    end_date = start_date + pd.DateOffset(days=30)
+    end_date = start_date + pd.DateOffset(days=31)
     end_day = end_date.day
     end_month = end_date.month
     end_year = end_date.year
