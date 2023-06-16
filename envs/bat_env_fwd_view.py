@@ -5,14 +5,20 @@ from utils import reward_creator
 
 class BatteryEnvFwd(gym.Env):
     def __init__(self, env_config) -> None:
+        """Creates battery envrionemnt
+
+        Args:
+            env_config (dict): Customizable environment confing.
+                n_fwd_steps(int): Number of forward forecast steps available
+                max_bat_cap(float): Maximun battery capacity in MW
+                charging_rate(float): Rate of charge of the battery
+                reward_metod(function): Method used to calculate the reward
+        """
         super(BatteryEnvFwd, self).__init__()
         n_fwd_steps = env_config['n_fwd_steps']
         max_bat_cap = env_config['max_bat_cap']
         charging_rate = env_config['charging_rate']
-        self.episodes_24hr = env_config['24hr_episodes']
-        self.starting_point = int(env_config['start_point'])
         self.reward_method = reward_creator.get_reward_method(env_config['reward_method'] if 'reward_method' in env_config.keys() else 'default_bat_reward')
-        self.end_point = self.starting_point + 30 * 96
         self.observation_space = gym.spaces.Box(low=np.float32(-2 * np.ones(1 + 1 + 4 + n_fwd_steps)),
                                                 high=np.float32(2 * np.ones(1 + 1 + 4 + n_fwd_steps)))
         self.max_dc_pw = 7.24
@@ -41,9 +47,18 @@ class BatteryEnvFwd(gym.Env):
         self.dcload_min = env_config['dcload_min']
         
     def reset(self, *, seed=None, options=None):
-        self.current_step = self.starting_point
+        """
+        Reset `BatteryEnvFwd` to initial state.
+
+        Args:
+            seed (int, optional): Random seed.
+            options (dict, optional): Environment options.
+
+        Returns:
+            temp_state (List[float]): Current state of the environmment
+            info (dict): A dictionary that containing additional information about the environment state
+        """
         self.raw_obs = self._hist_data_collector()
-        #self.ep_len_intervals = 0
         self.dcload = 0
         self.temp_state = self._process_obs(self.raw_obs)
         return self.temp_state, {
@@ -58,6 +73,18 @@ class BatteryEnvFwd(gym.Env):
         }
 
     def step(self, action_id):
+        """
+        Makes an environment step in`BatteryEnvFwd.
+
+        Args:
+            action_id (int): Action to take.
+
+        Returns:
+            observations (List[float]): Current state of the environmment
+            reward (float): reward value.
+            done (bool): A boolean value signaling the if the episode has ended.
+            info (dict): A dictionary that containing additional information about the environment state
+        """
         action_instantaneous = self._action_to_direction[action_id]
         self.discharge_energy = self._simulate_battery_operation(self.battery, action_instantaneous,
                                                                   charging_rate=self.charging_rate)
@@ -90,28 +117,73 @@ class BatteryEnvFwd(gym.Env):
         return self.temp_state, self.reward, done, truncated, self.info
 
     def update_ci(self, ci, ci_n):
+        """Sets internal CIs values.
+        """
         self.ci = ci
         self.ci_n = ci_n
 
     def _process_obs(self, state):
+        """Normalizes observations
+
+        Args:
+            state (List[float]): Current environment state.
+
+        Returns:
+            normalized_observations (List[float])
+        """
         scaled_value = (state - self.observation_min) / self.delta
         return scaled_value
 
     def _process_action(self, action_id):
+        """Maps agent actions to actoniable action for the model
+
+        Args:
+            action_id (int): Action to take.
+
+        Returns:
+            normalized_observations (string)
+        """
         return self._action_to_direction[action_id]
 
     def update_state(self):
+        """Updates obsevation with current DC energy consumption
+
+        Returns:
+            normalized_observations (string)
+        """
         self.temp_state[0] = self.dcload
         return self.temp_state
 
     def set_dcload(self, dc_load):
+        """Set the current DC energy consumption
+
+        Args:
+            dc_load float: DC energy consumption.
+
+        """
         self.dcload = dc_load
 
     def _hist_data_collector(self):
+        """Generates the observation for the agent
+
+        Returns:
+            raw_obs (List[Float]): Current state observation
+        """
+
         raw_obs = np.array([self.dcload, self.battery.current_load])
         return raw_obs
 
     def _simulate_battery_operation(self, battery, battery_action, charging_rate=None):
+        """Simulates battery operation
+
+        Args:
+            battery (Class): Battery model.
+            battery_action (string): Desired action.
+            charging_rate (string): Battery charging rate.
+
+        Returns:
+            discharge_energy (float): Output energy.
+        """
         discharge_energy = 0
         if battery_action == 'charge':
             self.var_to_dc = battery.charge(battery.capacity, self.charging_rate_modifier(battery) * 15 / 60)
@@ -126,6 +198,17 @@ class BatteryEnvFwd(gym.Env):
         return discharge_energy
 
     def CO2_footprint(self, dc_load, ci, a_t, discharge_energy):
+        """Calculates carbon footprint
+
+        Args:
+            dc_load (float): Total energy consumption of the DC.
+            ci (float): Carbon intensity at current time step.
+            a_t (string): Agent's action.
+            discharge_energy (float): Amount of energy to be discharged
+
+        Returns:
+            CO2_footprint (float): Carbon footprint produced at the current time step
+        """
         if a_t == 'charge':
             self.total_energy_with_battery = dc_load * 1e3 * 0.25 + self.battery.charging_load * 1e3
             self.battery.charging_load = 0  # *Added*
@@ -159,8 +242,5 @@ class BatteryEnvFwd(gym.Env):
         discharging_rate = 0.3
 
         return discharging_rate
-
-    def cal_maxmin(self):
-        self.dcload_max, self.dcload_min = self.max_dc_pw/4, 0.2/4  # /4 because we have 15 minutes time interval and we are using this to normalize MWH
         
         

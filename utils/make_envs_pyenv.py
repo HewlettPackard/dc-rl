@@ -22,16 +22,24 @@ def make_ls_env(month,
 
 def make_bat_fwd_env(month,
                     max_bat_cap_Mw : float = 2.0,
-                    twenty_four_hr_episodes : bool = False,
                     charging_rate : float = 0.5,
                     reward_method : str = 'default_bat_reward'
                     ):
+    """Method to build the Battery environment.
 
+    Args:
+        month (int): Month of the year in which the agent is training.
+        max_bat_cap_Mw (float, optional): Max battery capacity. Defaults to 2.0.
+        charging_rate (float, optional): Charging rate of the battery. Defaults to 0.5.
+        reward_method (str, optional): Method used to calculate the rewards. Defaults to 'default_bat_reward'.
+
+    Returns:
+        _type_: _description_
+    """
     init_day = get_init_day(month)
     env_config= {'n_fwd_steps':4,
                  'max_bat_cap':max_bat_cap_Mw,
                  'charging_rate':charging_rate,
-                 '24hr_episodes':twenty_four_hr_episodes,
                  'start_point':init_day,
                  'dcload_max': 1.81, 
                  'dcload_min': 0.6,

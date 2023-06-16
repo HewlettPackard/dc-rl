@@ -81,6 +81,19 @@ class dc_gymenv(gym.Env):
         super().__init__()
     
     def reset(self, *, seed=None, options=None):
+
+        """
+        Reset `dc_gymenv` to initial state.
+
+        Args:
+            seed (int, optional): Random seed.
+            options (dict, optional): Environment options.
+
+        Returns:
+            raw_curr_state (List[float]): Current state of the environmment
+            {} (dict): A dictionary that containing additional information about the environment state
+        """
+
         super().reset(seed=self.seed)
 
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_cooling_load, self.Compressor_load = 100, 1000, 1000, 100  
@@ -92,6 +105,19 @@ class dc_gymenv(gym.Env):
             return self.normalize(self.raw_curr_state), {}  
         
     def step(self, action):
+
+        """
+        Makes an environment step in`dc_gymenv.
+
+        Args:
+            action_id (int): Action to take.
+
+        Returns:
+            observations (List[float]): Current state of the environmment
+            reward (float): reward value.
+            done (bool): A boolean value signaling the if the episode has ended.
+            info (dict): A dictionary that containing additional information about the environment state
+        """
         
         crac_setpoint_delta = self.action_mapping[action]
         self.raw_curr_stpt += crac_setpoint_delta
@@ -145,6 +171,9 @@ class dc_gymenv(gym.Env):
             return self.normalize(self.raw_next_state), self.reward, done, truncated, self.info
 
     def NormalizeObservation(self,):
+        """
+        Obtains the value for normalizing the observation.
+        """
         self.scale_obs = True
         for obs_var in self.observation_variables:
             self.obs_min.append(self.ranges[obs_var][0])
@@ -155,9 +184,18 @@ class dc_gymenv(gym.Env):
         self.obs_delta = self.obs_max - self.obs_min
 
     def normalize(self,obs):
+        """
+        Normalizes the observation.
+        """
         return (obs-self.obs_min)/self.obs_delta
 
     def get_obs(self):
+        """
+        Returns the observation at the current time step.
+
+        Returns:
+            observation (List[float]): Current state of the environmment.
+        """
         zone_air_therm_cooling_stpt = 20  # in C, default for reset state
         if self.raw_curr_stpt is not None:
             zone_air_therm_cooling_stpt = self.raw_curr_stpt
@@ -175,12 +213,21 @@ class dc_gymenv(gym.Env):
         return [self.ambient_temp, zone_air_therm_cooling_stpt,zone_air_temp,hvac_power,it_power]
 
     def set_shifted_wklds(self, cpu_load):
+        """
+        Updates the current CPU workload.
+        """
         self.cpu_load = cpu_load
     
     def set_ambient_temp(self, ambient_temp):
+        """
+        Updates the external temperature.
+        """
         self.ambient_temp = ambient_temp
         
     def set_bat_SoC(self, bat_SoC):
+        """
+        Updates the battery state of charge.
+        """
         self.bat_SoC = bat_SoC
         
 class dc_gymenv_standalone(dc_gymenv):
