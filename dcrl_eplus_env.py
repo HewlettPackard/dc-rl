@@ -4,16 +4,17 @@ from typing import Optional, Tuple, Union
 import gymnasium as gym
 import numpy as np
 import ray
+from dcrl_env import EnvConfig
+from ray.rllib.env import EnvContext
 from ray.rllib.env.external_env import ExternalEnv
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
-from ray.rllib.env import EnvContext
-from utils import make_envs
+from utils import make_envs, reward_creator
 from utils.base_agents import (BaseBatteryAgent, BaseHVACAgent,
                                BaseLoadShiftingAgent)
 from utils.utils_cf import (CI_Manager, Time_Manager, Weather_Manager,
                             Workload_Manager, get_init_day, obtain_paths)
-from dcrl_env import EnvConfig
+
 
 class DCRLeplus(MultiAgentEnv):
     def __init__(self, env_config: Union[dict, EnvContext] = {}):
@@ -47,12 +48,17 @@ class DCRLeplus(MultiAgentEnv):
         ci_loc, wea_loc = obtain_paths(self.location)
         
         ls_reward_method = 'default_ls_reward' if not 'ls_reward' in env_config.keys() else env_config['ls_reward']
-        dc_reward_method = 'default_dc_reward' if not 'dc_reward' in env_config.keys() else env_config['dc_reward']
-        bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
+        self.ls_reward_method = reward_creator.get_reward_method(ls_reward_method)
 
-        self.ls_env = make_envs.make_ls_env(month, self.location, reward_method=ls_reward_method)
-        self.dc_env = make_envs.make_dc_env(month, self.location, reward_method=dc_reward_method) 
-        self.bat_env = make_envs.make_bat_fwd_env(month, self.location, reward_method=bat_reward_method)
+        dc_reward_method =  'default_dc_reward' if not 'dc_reward' in env_config.keys() else env_config['dc_reward']
+        self.dc_reward_method = reward_creator.get_reward_method(dc_reward_method)
+        
+        bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
+        self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
+        
+        self.ls_env = make_envs.make_ls_env(month, self.location)
+        self.dc_env = make_envs.make_dc_env(month, self.location) 
+        self.bat_env = make_envs.make_bat_fwd_env(month, self.location)
 
         self._obs_space_in_preferred_format = True
         
@@ -176,7 +182,7 @@ class DCRLeplus(MultiAgentEnv):
         truncated["__all__"] = False
 
         # Step in the managers
-        t_i, terminal = self.t_m.step()
+        day, hour, t_i, terminal = self.t_m.step()
         workload, day_workload = self.workload_m.step()
         ci_i, ci_i_future = self.ci_m.step()
 
@@ -198,7 +204,7 @@ class DCRLeplus(MultiAgentEnv):
         self.ls_env.update_workload(day_workload, workload)
         
         # Do a step
-        self.ls_state, self.ls_penalties, self.ls_terminated, self.ls_truncated, self.ls_info = self.ls_env.step(action)
+        self.ls_state, _, self.ls_terminated, self.ls_truncated, self.ls_info = self.ls_env.step(action)
 
          # Now, the data center environment/agent.
         if "agent_dc" in self.agents:
@@ -207,7 +213,7 @@ class DCRLeplus(MultiAgentEnv):
             action = self.base_agents["agent_dc"].do_nothing_action()
 
         # Update the data center environment/agent.
-        shifted_wkld = self.ls_info['load']
+        shifted_wkld = self.ls_info['ls_shifted_workload']
         self.dc_env.set_shifted_wklds(shifted_wkld)
 
         # Do a step in the data center environment
@@ -223,18 +229,16 @@ class DCRLeplus(MultiAgentEnv):
         else:
             action = self.base_agents["agent_bat"].do_nothing_action()
             
-        self.bat_env.set_dcload(self.dc_info['DC_load']/1e3)  # The DC load is updated with the total power in MW.
+        self.bat_env.set_dcload(self.dc_info['dc_ITE_total_power_kW']/1e3)  # The DC load is updated with the total power in MW.
         self.bat_state = self.bat_env.update_state()  # The state is updated with DC load
         self.bat_env.update_ci(ci_i, ci_i_future[0])  # Update the CI with the current CI, and the normalized current CI.
         
         # Do a step in the battery environment
-        self.bat_state, self.bat_reward, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
+        self.bat_state, _, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
         
         # Update the state of the bat state
         batSoC = self.bat_state[1]
         self.bat_state = np.hstack((t_i, self.bat_state, ci_i_future))
-
-        self.dc_reward = -1.0 * self.bat_info['total_energy_with_battery'] / 1e3  # The raw reward of the DC is directly the total energy consumption in MWh.
 
         # Update the shared variables
         self.dc_state[-3:] = [shifted_wkld, ci_i_future[0], batSoC]
@@ -243,25 +247,31 @@ class DCRLeplus(MultiAgentEnv):
         var_to_LS_energy = [self.dc_state[i] for i in [4, 5, 6, 8]]
         self.ls_state = np.hstack((t_i, self.ls_state, ci_i_future, workload, var_to_LS_energy, batSoC))
         
+        # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
+        # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
+        info_dict = {**self.bat_info, **self.ls_info, **self.dc_info}
+        add_info = {"day": day, "hour": hour, "day_workload": day_workload, "norm_CI": ci_i_future[0]}
+        reward_params = {**info_dict, **add_info}
+        self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
+        
         # If agent_ls is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_ls" in self.agents:
             obs['agent_ls'] = self.ls_state
-            # For the reward, we need to add to the load_shifting penalities, the battery reward, because include the CI reward.
-            rew["agent_ls"] = self.indv_reward * (self.ls_penalties + self.bat_reward) + self.collab_reward * self.dc_reward
+            rew["agent_ls"] = self.indv_reward * self.ls_reward + self.collab_reward * self.bat_reward + self.collab_reward * self.dc_reward
             terminated["agent_ls"] = terminal
             info["agent_ls"] = self.ls_info
 
         # If agent_dc is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_dc" in self.agents:
             obs["agent_dc"] = self.dc_state 
-            rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_penalties + self.collab_reward * self.bat_reward
+            rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_reward + self.collab_reward * self.bat_reward
             terminated["agent_dc"] = terminal
             info["agent_dc"] = self.dc_info
 
          # If agent_bat is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_bat" in self.agents:
             obs["agent_bat"] =  self.bat_state
-            rew["agent_bat"] = self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_penalties
+            rew["agent_bat"] = self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_reward
             terminated["agent_bat"] = terminal
             info["agent_bat"] = self.bat_info
 
@@ -273,6 +283,12 @@ class DCRLeplus(MultiAgentEnv):
                 
         return obs, rew, terminated, truncated, info
 
+    def calculate_reward(self, params):
+        ls_reward = self.ls_reward_method(params)
+        dc_reward = self.dc_reward_method(params)
+        bat_reward = self.bat_reward_method(params)
+        return ls_reward, dc_reward, bat_reward
+    
 if __name__ == '__main__':
 
     env = DCRLeplus()

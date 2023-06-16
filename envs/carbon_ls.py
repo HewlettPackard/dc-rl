@@ -41,9 +41,7 @@ class CarbonLoadEnv(gym.Env):
                 dtype=np.float32,
             )
 
-        self.reward_method = reward_creator.get_reward_method(env_config['reward_method'] 
-                                                            if 'reward_method' in env_config.keys() 
-                                                            else 'default_ls_reward')
+
         self.global_total_steps = 0
         self.test_mode = test_mode
         self.time_steps_day = 96
@@ -81,6 +79,7 @@ class CarbonLoadEnv(gym.Env):
         else:
             residue = 1e9
         delta = 0
+        original_workload = self.workload
         if (action == 0 and self.storage_load > 0) or self.storage_load + self.load_to_assign > residue:
             delta = self.load_to_assign
             delta = min(self.storage_load, delta)
@@ -97,13 +96,14 @@ class CarbonLoadEnv(gym.Env):
             if self.storage_load > 0:
                 out_of_time = True
                 info_load_left = self.storage_load
-        reward = self.reward_method(params={'norm_load_left':norm_load_left,
-                                            'out_of_time':out_of_time,
-                                            'penalty': 1e3})
-        info = {"load": self.workload, 
-                "action": action, 
-                "info_load_left": info_load_left,
-                "out_of_time": out_of_time}
+        reward = 0 
+        
+        info = {"ls_original_workload": original_workload,
+                "ls_shifted_workload": self.workload, 
+                "ls_action": action, 
+                "ls_norm_load_left": norm_load_left,
+                "ls_unasigned_day_load_left": info_load_left,
+                "ls_penalty_flag": out_of_time}
         
         state = np.asarray(np.hstack(([alarm, norm_load_left])), dtype=np.float32)
 

@@ -11,7 +11,6 @@ class BatteryEnvFwd(gym.Env):
         charging_rate = env_config['charging_rate']
         self.episodes_24hr = env_config['24hr_episodes']
         self.starting_point = int(env_config['start_point'])
-        self.reward_method = reward_creator.get_reward_method(env_config['reward_method'] if 'reward_method' in env_config.keys() else 'default_bat_reward')
         self.end_point = self.starting_point + 30 * 96
         self.observation_space = gym.spaces.Box(low=np.float32(-2 * np.ones(1 + 1 + 4 + n_fwd_steps)),
                                                 high=np.float32(2 * np.ones(1 + 1 + 4 + n_fwd_steps)))
@@ -73,26 +72,23 @@ class BatteryEnvFwd(gym.Env):
                                                                   charging_rate=self.charging_rate)
         
         self.CO2_total = self.CO2_footprint(self.dcload, self.ci, action_instantaneous, self.discharge_energy)
-        self.reward = self.reward_method(params={'total_energy_with_battery':self.total_energy_with_battery,
-                                                 'norm_CI':self.ci_n,
-                                                 'a_t':action_instantaneous,
-                                                 'dcload_min':self.dcload_min,
-                                                 'dcload_max':self.dcload_max,
-                                                 'battery_current_load':self.battery.current_load,
-                                                 'max_bat_cap':self.max_bat_cap,
-                                                 'battery_current_load':self.battery.current_load,
-                                                 'max_bat_cap':self.max_bat_cap})
 
         self.raw_obs = self._hist_data_collector()
         self.temp_state = self._process_obs(self.raw_obs)
+        
+        self.reward = 0
+
         self.info = {
-            'action': action_id,
-            'battery SOC': self.battery.current_load,
-            'CO2_footprint': self.CO2_total,
-            'avg_CI': self.ci,
-            'avg_dc_power_mw': self.raw_obs[0],
-            'step_reward': self.reward,
-            'total_energy_with_battery': self.total_energy_with_battery
+            'bat_action': action_id,
+            'bat_SOC': self.battery.current_load,
+            'bat_CO2_footprint': self.CO2_total,
+            'bat_avg_CI': self.ci,
+            'bat_total_energy_without_battery_KWh': self.dcload * 1e3 * 0.25,
+            'bat_total_energy_with_battery_KWh': self.total_energy_with_battery,
+            'bat_max_bat_cap': self.max_bat_cap,
+            'bat_a_t': action_instantaneous,
+            'bat_dcload_min': self.dcload_min,
+            'bat_dcload_max': self.dcload_max,
         }
         #Done and truncated are managed by the main class, implement individual function if needed
         truncated = False

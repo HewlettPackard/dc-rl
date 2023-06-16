@@ -539,7 +539,25 @@ class EplusEnv(gym.Env):
             'action': action,
             'raw_action': raw_action})
         
+        # 'Site Outdoor Air Drybulb Temperature(Environment)',
+        # 'Zone Thermostat Cooling Setpoint Temperature(West Zone)',
+        # 'Zone Air Temperature(West Zone)',
+        # 'Facility Total HVAC Electricity Demand Rate(Whole Building)',
+        # 'Facility Total Electricity Demand Rate(Whole Building)',
+        # 'Facility Total Building Electricity Demand Rate(Whole Building)'
+                    
         info['DC_load'] = self.obs_dict['Facility Total Electricity Demand Rate(Whole Building)']/1e3
+        info.update({'dc_ITE_total_power_kW': self.obs_dict['Facility Total Building Electricity Demand Rate(Whole Building)'] / 1e3,
+                     'dc_HVAC_total_power_kW': self.obs_dict['Facility Total HVAC Electricity Demand Rate(Whole Building)'] / 1e3,
+                     'dc_total_power_kW': self.obs_dict['Facility Total Electricity Demand Rate(Whole Building)'] / 1e3,
+                     'dc_power_lb_kW': 800,
+                     'dc_power_ub_kW': 5000,
+                     'dc_crac_setpoint_delta': action_,
+                     'dc_crac_setpoint': self.obs_dict['Zone Thermostat Cooling Setpoint Temperature(West Zone)'],
+                     'dc_cpu_workload_percent': self.shifted_wklds,
+                     'dc_int_temperature': self.obs_dict['Zone Air Temperature(West Zone)'],
+                     'outside_temp': self.obs_dict['Site Outdoor Air Drybulb Temperature(Environment)'],
+        })
 
         self.temp_state = obs
         

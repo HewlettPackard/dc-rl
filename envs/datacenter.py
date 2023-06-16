@@ -114,8 +114,6 @@ class DataCenter_ITModel():
         self.total_datacenter_full_load()
         
         
-        
-            
     def compute_datacenter_IT_load_outlet_temp(self,ITE_load_pct_list, CRAC_setpoint):  # the outward facing method that will be called repeatedly
         
         rackwise_cpu_pwr = [] 
