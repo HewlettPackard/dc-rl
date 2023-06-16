@@ -13,3 +13,4 @@ The following sections include instructions to install the DC simulation framewo
 
    custom
    energyPlus
+   installationtips

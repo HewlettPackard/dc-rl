@@ -8,8 +8,8 @@
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
       <link rel="stylesheet" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
       <link rel="stylesheet" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
@@ -55,6 +55,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="energyPlus.html">EnergyPlus enabled DC simulation (DCRLeplus)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="installationtips.html">Usefull tips for the installation</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
@@ -101,21 +102,21 @@
 <section id="first-time-setup">
 <h2>First time setup<a class="headerlink" href="#first-time-setup" title="Permalink to this headline"></a></h2>
 <p>Clone the latest DCRL-Green version from github using:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone https://github.com/HewlettPackard/dc-rl.git
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/HewlettPackard/dc-rl.git
 </pre></div>
 </div>
 <p>If using SSH, execute:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git clone git@github.com:HewlettPackard/dc-rl.git
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:HewlettPackard/dc-rl.git
 </pre></div>
 </div>
 <p>Change the current working directory to the dc-rl folder:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span> dc-rl
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>dc-rl
 </pre></div>
 </div>
 <p>Create a conda environment and install dependencies:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda create -n dcrl <span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
-conda activate dcrl
-pip install -r requirements.txt
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>dcrl<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
+conda<span class="w"> </span>activate<span class="w"> </span>dcrl
+pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
 </pre></div>
 </div>
 </section>

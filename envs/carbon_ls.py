@@ -50,6 +50,13 @@ class CarbonLoadEnv(gym.Env):
         self.workload = 0
 
     def reset(self):
+        """
+        Reset `CarbonLoadEnv` to initial state.
+
+        Returns:
+            observations (List[float]): Current state of the environmment
+            info (dict): A dictionary that containing additional information about the environment state
+        """
         self.global_total_steps = 0
         self.storage_load = self.day_workload
         self.day_storage_load = self.storage_load
@@ -63,6 +70,18 @@ class CarbonLoadEnv(gym.Env):
         return state, info
 
     def step(self, action):
+        """
+        Makes an environment step in`CarbonLoadEnv.
+
+        Args:
+            action (int): Action to take.
+
+        Returns:
+            observations (List[float]): Current state of the environmment
+            reward (float): reward value.
+            done (bool): A boolean value signaling the if the episode has ended.
+            info (dict): A dictionary that containing additional information about the environment state
+        """
         self.current_hour += 0.25
         if self.day_workload > 0:
             self.storage_load = self.day_workload
@@ -114,5 +133,12 @@ class CarbonLoadEnv(gym.Env):
         return state, reward, done, truncated, info 
         
     def update_workload(self, day_workload, workload):
+        """
+        Makes an environment step in`BatteryEnvFwd.
+
+        Args:
+            day_workload (float): Total amout of daily flexible workload.
+            workload (float): Workload assigned at the current time step
+        """
         self.day_workload = day_workload
         self.workload = workload

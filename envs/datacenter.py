@@ -3,8 +3,15 @@ import numpy as np
 
 class CPU():
 
-    def __init__(self, full_load_pwr = None, idle_pwr = None, cpu_config = None):  # [1] pg 62
-        
+    def __init__(self, full_load_pwr = None, idle_pwr = None, cpu_config = None): 
+        """CPU class in charge of the energy consumption and termal calculations of the individuals CPUs
+            in a Rack.
+
+        Args:
+            full_load_pwr (float, optional): Power at full capacity.
+            idle_pwr (float, optional): Power while idle.
+            cpu_config (config): Configuration for the DC.
+        """
         self.cpu_config = cpu_config
         
         self.full_load_pwr = full_load_pwr  if not None else self.cpu_config.HP_PROLIANT[0]
@@ -41,6 +48,15 @@ class CPU():
         self.ratio_shift_max_itfan = self.cpu_config.IT_FAN_AIRFLOW_RATIO_LB[1] - self.cpu_config.IT_FAN_AIRFLOW_RATIO_LB[0]      
 
     def compute_instantaneous_cpu_pwr(self, inlet_temp, ITE_load_pct):
+        """Calculate the power consumption of the CPUs at the current step
+
+        Args:
+            inlet_temp (float): Room temperature
+            ITE_load_pct (float): Current CPU usage
+
+        Returns:
+            cpu_power (float): Current CPU power usage
+        """
         assert ((inlet_temp>self.cpu_config.INLET_TEMP_RANGE[0]) & (inlet_temp<self.cpu_config.INLET_TEMP_RANGE[1])), f"Server Inlet Temp Outside 18C - 27C range. Current Val {inlet_temp}"
         base_cpu_power_ratio = (self.m_cpu+0.05)*inlet_temp + self.c_cpu
         cpu_power_ratio_at_inlet_temp = base_cpu_power_ratio + self.ratio_shift_max_cpu*(ITE_load_pct/100)
@@ -49,6 +65,15 @@ class CPU():
         return cpu_power
     
     def compute_instantaneous_fan_pwr(self, inlet_temp, ITE_load_pct):
+        """Calculate the power consumption of the Fans of the IT equipment at the current step
+
+        Args:
+            inlet_temp (float): Room temperature
+            ITE_load_pct (float): Current CPU usage
+
+        Returns:
+            cpu_power (float): Current Fans power usage
+        """
         assert ((inlet_temp>self.cpu_config.INLET_TEMP_RANGE[0]) & (inlet_temp<self.cpu_config.INLET_TEMP_RANGE[1])), f"Server Inlet Temp Outside 18C - 27C range. Current Val {inlet_temp}"
         base_itfan_v_ratio = self.m_itfan*inlet_temp + self.c_itfan
         itfan_v_ratio_at_inlet_temp = base_itfan_v_ratio + self.ratio_shift_max_itfan*(ITE_load_pct/100)
@@ -61,6 +86,13 @@ class CPU():
 class Rack():
 
     def __init__(self, CPU_config_list, max_W_per_rack = 10000,rack_config = None):  # [3] Table 2 Mid-tier data center
+        """Defines the rack as a collection of CPUs
+
+        Args:
+            CPU_config_list (config): CPU configuration
+            max_W_per_rack (int): Maximun power allowed for a whole rack. Defaults to 10000.
+            rack_config (config): Rack configuration. Defaults to None.
+        """
         
         self.rack_config = rack_config
         
@@ -74,7 +106,15 @@ class Rack():
                 break
         
     def compute_instantaneous_pwr(self,inlet_temp, ITE_load_pct):
+        """Calculate the power consumption of the whole rack at the current step
 
+        Args:
+            inlet_temp (float): Room temperature
+            ITE_load_pct (float): Current CPU usage
+
+        Returns:
+            cpu_power (float): Current CPU power usage
+        """
         tot_cpu_pwr = []
         tot_itfan_pwr = []
         for CPU_item in self.CPU_list:

@@ -12,6 +12,16 @@ from utils.utils_cf import get_init_day, Workload_Manager, CI_Manager
 def make_ls_env(month,
                 n_vars_energy : int = 4,
                 n_vars_battery : int = 1):
+    """Method to build the Load shifting environment
+
+    Args:
+        month (int): Month of the year in which the agent is training.
+        n_vars_energy (int, optional): Number of variables from the Energy environment. Defaults to 4.
+        n_vars_battery (int, optional): Number of variables from the Battery environment. Defaults to 1.
+
+    Returns:
+        CarbonLoadEnv: Load Shifting environment
+    """
     
     return CarbonLoadEnv(n_vars_energy=n_vars_energy,
                          n_vars_battery=n_vars_battery
@@ -19,15 +29,23 @@ def make_ls_env(month,
 
 def make_bat_fwd_env(month,
                     max_bat_cap_Mw : float = 2.0,
-                    twenty_four_hr_episodes : bool = False,
                     charging_rate : float = 0.5,
                     ):
+    """Method to build the Battery environment.
 
+    Args:
+        month (int): Month of the year in which the agent is training.
+        max_bat_cap_Mw (float, optional): Max battery capacity. Defaults to 2.0.
+        charging_rate (float, optional): Charging rate of the battery. Defaults to 0.5.
+        reward_method (str, optional): Method used to calculate the rewards. Defaults to 'default_bat_reward'.
+
+    Returns:
+        battery_env_fwd: Batery environment.
+    """
     init_day = get_init_day(month)
     env_config= {'n_fwd_steps':4,
                  'max_bat_cap':max_bat_cap_Mw,
                  'charging_rate':charging_rate,
-                 '24hr_episodes':twenty_four_hr_episodes,
                  'start_point':init_day,
                  'dcload_max': 1.81, 
                  'dcload_min': 0.6}
