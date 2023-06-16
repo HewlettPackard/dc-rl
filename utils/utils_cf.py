@@ -9,6 +9,17 @@ PATH = os.path.split(os.path.dirname(file_path))[0]
 
 
 def obtain_paths(location):
+    """Obtain the correct name for the data files
+
+    Args:
+        location (string): Location identifier
+
+    Raises:
+        ValueError: If location identifier is not defined
+
+    Returns:
+        List[string]: Naming for the data files
+    """
     if "ny" in location.lower():
         return ['NYIS', 'USA_NY_New.York-Kennedy.epw']
     elif "az" in location.lower():
@@ -19,11 +30,29 @@ def obtain_paths(location):
         raise ValueError("Location not found")
 
 def get_energy_variables(state):
+    """Obtain energy variables from the energy observation
+
+    Args:
+        state (List[float]): agent_dc observation
+
+    Returns:
+        List[float]: Subset of the agent_dc observation
+    """
     energy_vars = np.hstack((state[4:7],(state[7]+state[8])/2))
     return energy_vars
 
 class CoherentNoise:
+    """Class to add coherent noise to the data.
+    """
     def __init__(self, base, weight, desired_std_dev=0.1, scale=1):
+        """Initialize CoherentNoise class
+
+        Args:
+            base (List[float]): Base data
+            weight (float): Weight of the noise to be added
+            desired_std_dev (float, optional): Desired standard deviation. Defaults to 0.1.
+            scale (int, optional): Scale. Defaults to 1.
+        """
         self.base = base
         self.weight = weight
         self.desired_std_dev = desired_std_dev
@@ -38,6 +67,14 @@ class CoherentNoise:
 
 # Function to get the initial index of the day of a given month from a time-stamped dataset
 def get_init_day(start_month=0):
+    """Obtain the initial day of the year to start the episode on
+
+    Args:
+        start_month (int, optional): Starting month. Defaults to 0.
+
+    Returns:
+        int: Day of the year corresponding to the first day of the month
+    """
     assert 0 <= start_month <= 11, "start_month should be between 0 and 11 (inclusive, 0-based, 0=January, 11=December)."
 
     # Read the CSV file and parse dates from the 'timestamp' column
@@ -55,13 +92,40 @@ def get_init_day(start_month=0):
 
 # Function to normalize a value v given a minimum and a maximum
 def normalize(v, min_v, max_v):
+    """Function to normalize values
+
+    Args:
+        v (float): Value to be normalized
+        min_v (float): Lower limit
+        max_v (float): Upper limit
+
+    Returns:
+        float: Normalized value
+    """
     return (v - min_v)/(max_v - min_v)
 
 def standarize(v):
+    """Function to standarize a list of values
+
+    Args:
+        v (float): Values to be normalized
+
+    Returns:
+        float: Normalized values
+    """
     return (v - np.mean(v))/np.std(v)
 
 # Function to generate cosine and sine values for a given hour and day
 def sc_obs(current_hour, current_day):
+    """Generate sine and cosine of the hour and day
+
+    Args:
+        current_hour (int): Current hour of the day
+        current_day (int): Current day of the year
+
+    Returns:
+        List[float]: Sine and cosine of the hour and day
+    """
     # Normalize and round the current hour and day
     two_pi = np.pi * 2
 
@@ -79,16 +143,33 @@ def sc_obs(current_hour, current_day):
 
 class Time_Manager():
     def __init__(self, init_day=0, days_per_episode=30):
+        """Class to manage the time dimenssion over an episode
+
+        Args:
+            init_day (int, optional): Day to start from. Defaults to 0.
+            days_per_episode (int, optional): Number of days that an episode would last. Defaults to 30.
+        """
         self.init_day = init_day
         self.timestep_per_hour = 4
         self.days_per_episode = days_per_episode
 
     def reset(self):
+        """Reset time manager to initial day
+
+        Returns:
+            List[float]: Hour and day in sine and cosine form
+        """
         self.day = self.init_day
         self.hour = 0
         return sc_obs(self.hour, self.day)
         
     def step(self):
+        """Step function for the time maneger
+
+        Returns:
+            List[float]: Current hour and day in sine and cosine form.
+            bool: Signal if the episode has reach the end.
+        """
         if self.hour >= 24:
             self.hour=0
             self.day += 1
@@ -96,6 +177,11 @@ class Time_Manager():
         return sc_obs(self.hour, self.day), self.isterminal()
     
     def isterminal(self):
+        """Function to identify terminal state
+
+        Returns:
+            bool: Signals if a state is terminal or not
+        """
         done = False
         if self.day > self.init_day+self.days_per_episode:
             done = True
@@ -107,6 +193,16 @@ class Time_Manager():
 # Class to manage CPU workload data
 class Workload_Manager():
     def __init__(self, filename='', init_day=0, future_steps=4, weight=0.001, desired_std_dev=0.025, flexible_workload_ratio=0.1):
+        """Manager of the DC workload
+
+        Args:
+            filename (str, optional): Filename of the CPU data. Defaults to ''.
+            init_day (int, optional): Initial day of the episode. Defaults to 0.
+            future_steps (int, optional): Number of steps of the workload forecast. Defaults to 4.
+            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
+            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
+            flexible_workload_ratio (float, optional): Ratio of the flexible workload amount. Defaults to 0.1.
+        """
         assert 0 <= flexible_workload_ratio <= 1, "flexible_workload_ratio should be between 0 and 1 (inclusive)."
 
         # Load CPU data from a CSV file
@@ -139,10 +235,21 @@ class Workload_Manager():
 
     # Function to return all workload data
     def get_total_wkl(self):
+        """Get current workload
+
+        Returns:
+            List[float]: CPU data
+        """
         return np.array(self.cpu_smooth)
 
     # Function to reset the time step and return the workload at the first time step
     def reset(self):
+        """Reset Workload_Manager
+
+        Returns:
+            float: CPU workload at current time step
+            float: Amount of daily flexible workload
+        """
         self.time_step = self.init_day*self.time_steps_day
         self.init_time_step = self.time_step
         
@@ -157,6 +264,12 @@ class Workload_Manager():
         
     # Function to advance the time step and return the workload at the new time step
     def step(self):
+        """Step function for the Workload_Manager
+
+        Returns:
+            float: CPU workload at current time step
+            float: Amount of daily flexible workload
+        """
         self.time_step += 1
         data_load = 0
         if self.time_step % self.time_steps_day == 0 and self.time_step != self.init_time_step:
@@ -172,6 +285,16 @@ class Workload_Manager():
 # Class to manage carbon intensity data
 class CI_Manager():
     def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5):
+        """Manager of the carbon intesity data
+
+        Args:
+            filename (str, optional): Filename of the CPU data. Defaults to ''.
+            location (str, optional): Location identifier. Defaults to 'NYIS'.
+            init_day (int, optional): Initial day of the episode. Defaults to 0.
+            future_steps (int, optional): Number of steps of the CI forecast. Defaults to 4.
+            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
+            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
+        """
         # Load carbon intensity data from a CSV file
         # One year data=24*365=8760
         if filename == '':
@@ -206,9 +329,20 @@ class CI_Manager():
 
     # Function to return all carbon intensity data
     def get_total_ci(self):
+        """Function to obtain the total carbon intensity
+
+        Returns:
+            List[float]: Total carbon intesity
+        """
         return self.carbon_smooth
 
     def reset(self):
+        """Reset CI_Manager
+
+        Returns:
+            float: Carbon intensity at current time step
+            float: Normalized carbon intensity at current time step and it's forecast
+        """
         self.time_step = self.init_day*self.time_steps_day
         
         # Add noise to the carbon data using the CoherentNoise
@@ -226,6 +360,12 @@ class CI_Manager():
     
     # Function to advance the time step and return the carbon intensity at the new time step
     def step(self):
+        """Step CI_Manager
+
+        Returns:
+            float: Carbon intensity at current time step
+            float: Normalized carbon intensity at current time step and it's forecast
+        """
         self.time_step +=1
         
         # If it tries to read further, restart from the initial index
@@ -245,6 +385,16 @@ class CI_Manager():
 # https://climate.onebuilding.org/
 class Weather_Manager():
     def __init__(self, filename='', location='NY', init_day=0, weight=0.01, desired_std_dev=0.5, temp_column=6):
+        """Manager of the weather data.
+
+        Args:
+            filename (str, optional): Filename of the weather data. Defaults to ''.
+            location (str, optional): Location identifier. Defaults to 'NY'.
+            init_day (int, optional): Initial day of the year. Defaults to 0.
+            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
+            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
+            temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.
+        """
         # Load weather data from a CSV file
         if filename == '':
             temperature_data = pd.read_csv(PATH+f'/data/Weather/{location}', skiprows=8, header=None).values[:,temp_column]
@@ -277,10 +427,21 @@ class Weather_Manager():
 
     # Function to return all weather data
     def get_total_weather(self):
+        """Obtain the weather data in a List form
+
+        Returns:
+            List[form]: Total temperature data
+        """
         return self.temperature_data
 
     # Function to reset the time step and return the weather at the first time step
     def reset(self):
+        """Reset Weather_Manager
+
+        Returns:
+            float: Temperature a current step
+            float: Normalized temperature a current step
+        """
         self.time_step = self.init_day*self.time_steps_day
         
         # Add noise to the temperature data using the CoherentNoise
@@ -293,6 +454,12 @@ class Weather_Manager():
     
     # Function to advance the time step and return the weather at the new time step
     def step(self):
+        """Step on the Weather_Manager
+
+        Returns:
+            float: Temperature a current step
+            float: Normalized temperature a current step
+        """
         self.time_step += 1
         
         # If it tries to read further, restart from the initial index
