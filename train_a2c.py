@@ -52,7 +52,7 @@ CONFIG = (
             model={'fcnet_hiddens': [128, 64, 16], 'fcnet_activation': 'relu'}, 
         )
         .callbacks(CustomCallbacks)
-        .resources(num_cpus_per_worker=2, num_gpus=0)
+        .resources(num_cpus_per_worker=1, num_gpus=0)
     )
 
 NAME = "test"

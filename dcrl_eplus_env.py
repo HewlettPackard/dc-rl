@@ -56,9 +56,9 @@ class DCRLeplus(MultiAgentEnv):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        self.ls_env = make_envs.make_ls_env(month, self.location)
+        self.ls_env = make_envs.make_ls_env(month)
         self.dc_env = make_envs.make_dc_env(month, self.location) 
-        self.bat_env = make_envs.make_bat_fwd_env(month, self.location)
+        self.bat_env = make_envs.make_bat_fwd_env(month)
 
         self._obs_space_in_preferred_format = True
         

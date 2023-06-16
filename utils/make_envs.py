@@ -10,13 +10,12 @@ from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
 from envs.carbon_ls import CarbonLoadEnv
 from utils.utils_cf import get_init_day, Workload_Manager, CI_Manager
 
-def make_dc_env(month, location, reward_method='default_dc_reward'):
+def make_dc_env(month, location):
     """Method to build the energy model using EnergyPlus
 
     Args:
         month (int): Month of the year in which the agent is training.
         location ('string'): Location from we are taking the weather data from.
-        reward_method (str, optional): Reward method used. Defaults to 'default_dc_reward'.
 
     Returns:
         datacenter_env: Energy environment
@@ -156,12 +155,11 @@ def make_dc_env(month, location, reward_method='default_dc_reward'):
     dc_env = tinyMultiObsWrapper(dc_env, n=3, add_sincos=True)
     return dc_env
 
-def make_ls_env(month, n_vars_energy=4, n_vars_battery=1, reward_method='default_ls_reward'):
+def make_ls_env(month, n_vars_energy=4, n_vars_battery=1):
     """Method to build the Load shifting environment
 
     Args:
         month (int): Month of the year in which the agent is training.
-        reward_method (string): Method used to calculate the rewards.
         n_vars_energy (int, optional): Number of variables from the Energy environment. Defaults to 4.
         n_vars_battery (int, optional): Number of variables from the Battery environment. Defaults to 1.
 
@@ -170,17 +168,15 @@ def make_ls_env(month, n_vars_energy=4, n_vars_battery=1, reward_method='default
     """
 
     total_wkl = Workload_Manager().get_total_wkl()
-    env_config = {'reward_method':reward_method}
     
-    return CarbonLoadEnv(env_config=env_config, n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery)
+    return CarbonLoadEnv(n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery)
 
-def make_bat_fwd_env(month, reward_method='default_bat_reward'):
+def make_bat_fwd_env(month):
 
     """Method to build the Battery environment.
 
     Args:
         month (int): Month of the year in which the agent is training.
-        reward_method (str, optional): Method used to calculate the rewards. Defaults to 'default_bat_reward'.
 
     Returns:
         battery_env_fwd: Batery environment.
@@ -189,6 +185,6 @@ def make_bat_fwd_env(month, reward_method='default_bat_reward'):
     init_day = get_init_day(month)
     env_config = {'n_fwd_steps':4, 'max_bat_cap':2, 'charging_rate':0.5, '24hr_episodes':True,
                 'start_point':init_day, 'dcload_max': 1.2, 'dcload_min': 0.05, 
-                'reward_method':reward_method}
+                }
     bat_env = battery_env_fwd(env_config)
     return bat_env
