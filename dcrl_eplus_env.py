@@ -278,3 +278,40 @@ class DCRLeplus(MultiAgentEnv):
                 truncated[agent] = True
                 
         return obs, rew, terminated, truncated, info
+
+if __name__ == '__main__':
+
+    env = DCRLeplus()
+
+    # Set seeds for reproducibility    
+    np.random.seed(0)
+    env.ls_env.action_space.seed(0)
+    env.dc_env.action_space.seed(0)
+    env.bat_env.action_space.seed(0)
+
+    done = False
+    env.reset()
+    step = 0
+    reward_ls = reward_dc = reward_bat = 0
+    
+    while not done:
+        action_dict = {
+            'agent_ls': env.ls_env.action_space.sample(),
+            'agent_dc': np.int64(env.dc_env.action_space.sample()),
+            'agent_bat': env.bat_env.action_space.sample()
+        }
+
+        _, rewards, terminated, _, _ = env.step(action_dict)
+        done = terminated['__all__']
+        
+        reward_ls += rewards['agent_ls']
+        reward_dc += rewards['agent_dc']
+        reward_bat += rewards['agent_bat']
+
+        print(f"Step {step}, rewards = ", rewards)
+        step += 1
+    
+    print("End of episode.")
+    print("Load shifting agent reward = ", reward_ls)
+    print("DC agent reward = ", reward_dc)
+    print("Battery agent reward = ", reward_bat)

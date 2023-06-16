@@ -287,26 +287,11 @@ if __name__ == '__main__':
             # Agents active
             'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
 
-            # Datafiles
-            'location': 'ny',
-            'cintensity_file': 'NYIS_NG_&_avgCI.csv',
-            'weather_file': 'USA_NY_New.York-Kennedy.epw',
-
-            # Battery capacity
-            'max_bat_cap_Mw': 2,
-            
-            # Collaborative weight in the reward
-            'individual_reward_weight': 0.8,
-            
-            # Flexible load ratio
-            'flexible_load': 0.1,
-            
-            # Specify reward methods
-            'ls_reward': 'default_ls_reward',
-            'dc_reward': 'default_dc_reward',
-            'bat_reward': 'default_bat_reward'
-            }
-    )
+    # Set seeds for reproducibility    
+    np.random.seed(0)
+    env.ls_env.action_space.seed(0)
+    env.dc_env.action_space.seed(0)
+    env.bat_env.action_space.seed(0)
 
     done = False
     env.reset()
