@@ -3,17 +3,19 @@ from typing import Optional, Tuple, Union
 
 import gymnasium as gym
 import numpy as np
+
 from ray.rllib.env import EnvContext
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
+
 from utils import reward_creator
 from utils.base_agents import (BaseBatteryAgent, BaseHVACAgent,
                                BaseLoadShiftingAgent)
 from utils.make_envs_pyenv import (make_bat_fwd_env, make_dc_pyeplus_env,
                                    make_ls_env)
-from utils.utils_cf import (CI_Manager, Time_Manager, Weather_Manager,
-                            Workload_Manager, get_energy_variables,
-                            get_init_day, obtain_paths)
+from utils.managers import (CI_Manager, Time_Manager, Weather_Manager,
+                            Workload_Manager)
+from utils.utils_cf import get_energy_variables, get_init_day, obtain_paths
 
 
 class EnvConfig(dict):
@@ -28,6 +30,7 @@ class EnvConfig(dict):
         'location': 'ny',
         'cintensity_file': 'NYIS_NG_&_avgCI.csv',
         'weather_file': 'USA_NY_New.York-Kennedy.epw',
+        'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
 
         # Maximum battery capacity
         'max_bat_cap_Mw': 2,
@@ -74,11 +77,14 @@ class DCRL(MultiAgentEnv):
         # Initialize the environment config
         env_config = EnvConfig(env_config)
 
-        # create agent ids
+        # create environments and agents
         self.agents = env_config['agents']
         self.location = env_config['location']
+        
         self.ci_file = env_config['cintensity_file']
         self.weather_file = env_config['weather_file']
+        self.workload_file = env_config['workload_file']
+        
         self.max_bat_cap_Mw = env_config['max_bat_cap_Mw']
         self.indv_reward = env_config['individual_reward_weight']
         self.collab_reward = (1 - self.indv_reward) / 2
@@ -139,7 +145,7 @@ class DCRL(MultiAgentEnv):
         # Create the managers: date/hour/time manager, workload manager, weather manager, and CI manager.
         self.init_day = get_init_day(month)
         self.t_m = Time_Manager(self.init_day)
-        self.workload_m = Workload_Manager(flexible_workload_ratio=flexible_load, init_day=self.init_day)
+        self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=flexible_load, init_day=self.init_day)
         self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file)
         self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file)
 

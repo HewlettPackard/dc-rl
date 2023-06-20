@@ -3,10 +3,10 @@ import os
 import ray
 from ray.rllib.algorithms.ppo import PPOConfig
 
-from utils.rllib_callbacks import CustomCallbacks
 from train import train
 from dcrl_eplus_env import DCRLeplus
 from dcrl_env import DCRL
+from utils.rllib_callbacks import CustomCallbacks
 
 
 # Data collection config
@@ -27,6 +27,7 @@ CONFIG = (
                 'location': 'ny',
                 'cintensity_file': 'NYIS_NG_&_avgCI.csv',
                 'weather_file': 'USA_NY_New.York-Kennedy.epw',
+                'workload_file': 'Alibaba_CPU_Data_Hourly_2.csv',
 
                 # Battery capacity
                 'max_bat_cap_Mw': 2,

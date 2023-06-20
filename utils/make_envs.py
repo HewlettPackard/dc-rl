@@ -1,14 +1,20 @@
 import random
 import string
+
 import gymnasium as gym
 import numpy as np
 import pandas as pd
+
 import custom_sinergym
 from custom_sinergym.utils.rewards import myLinearRewardwCost
-from custom_sinergym.utils.wrappers import NormalizeObservation, tinyMultiObsWrapper
+from custom_sinergym.utils.wrappers import (NormalizeObservation,
+                                            tinyMultiObsWrapper)
+
 from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
 from envs.carbon_ls import CarbonLoadEnv
-from utils.utils_cf import get_init_day, Workload_Manager, CI_Manager
+from utils.managers import CI_Manager, Workload_Manager
+from utils.utils_cf import get_init_day
+
 
 def make_dc_env(month, location):
     """Method to build the energy model using EnergyPlus
