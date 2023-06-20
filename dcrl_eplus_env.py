@@ -4,16 +4,18 @@ from typing import Optional, Tuple, Union
 import gymnasium as gym
 import numpy as np
 import ray
+
 from dcrl_env import EnvConfig
 from ray.rllib.env import EnvContext
 from ray.rllib.env.external_env import ExternalEnv
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
+
 from utils import make_envs, reward_creator
 from utils.base_agents import (BaseBatteryAgent, BaseHVACAgent,
                                BaseLoadShiftingAgent)
-from utils.utils_cf import (CI_Manager, Time_Manager, Weather_Manager,
-                            Workload_Manager, get_init_day, obtain_paths)
+from utils.managers import CI_Manager, Time_Manager, Workload_Manager
+from utils.utils_cf import get_init_day, obtain_paths
 
 
 class DCRLeplus(MultiAgentEnv):
@@ -27,11 +29,14 @@ class DCRLeplus(MultiAgentEnv):
         # Initialize the environment config
         env_config = EnvConfig(env_config)
 
-        # create agent ids
+        # create environments and agents
         self.agents = env_config['agents']
         self.location = env_config['location']
+        
         self.ci_file = env_config['cintensity_file']
         self.weather_file = env_config['weather_file']
+        self.workload_file = env_config['workload_file']
+
         self.indv_reward = env_config['individual_reward_weight']
         self.collab_reward = (1 - self.indv_reward) / 2
         
@@ -91,7 +96,7 @@ class DCRLeplus(MultiAgentEnv):
         # Create the managers: date/hour/time manager, workload manager, and CI manager.
         self.init_day = get_init_day(month)
         self.t_m = Time_Manager(init_day=self.init_day)
-        self.workload_m = Workload_Manager(init_day=self.init_day, flexible_workload_ratio=flexible_load)
+        self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=flexible_load, init_day=self.init_day)
         self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file)
 
         # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
