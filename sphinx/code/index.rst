@@ -9,4 +9,5 @@ The code is available in the Github_ repository.
 .. toctree::
    :maxdepth: 1
 
+   folder_structure
    modules

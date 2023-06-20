@@ -49,7 +49,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/index.html">Code</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
 </ul>
 
@@ -86,7 +86,7 @@
 <span class="kn">from</span> <span class="nn">ray.rllib.algorithms</span> <span class="kn">import</span> <span class="n">Algorithm</span>
 <span class="kn">from</span> <span class="nn">ray.tune.registry</span> <span class="kn">import</span> <span class="n">get_trainable_cls</span>
 
-<div class="viewcode-block" id="create_wrapped_trainable"><a class="viewcode-back" href="../create_trainable.html#create_trainable.create_wrapped_trainable">[docs]</a><span class="k">def</span> <span class="nf">create_wrapped_trainable</span><span class="p">(</span><span class="n">alg</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Algorithm</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Algorithm</span><span class="p">:</span>
+<div class="viewcode-block" id="create_wrapped_trainable"><a class="viewcode-back" href="../code/create_trainable.html#create_trainable.create_wrapped_trainable">[docs]</a><span class="k">def</span> <span class="nf">create_wrapped_trainable</span><span class="p">(</span><span class="n">alg</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Algorithm</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Algorithm</span><span class="p">:</span>
     
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">alg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">base_algorithm</span> <span class="o">=</span> <span class="n">get_trainable_cls</span><span class="p">(</span><span class="n">alg</span><span class="p">)</span>

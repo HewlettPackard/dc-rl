@@ -34,5 +34,5 @@ Main contributions of DCRL-Green:
    gettingstarted
    usage/index
    overview/index
-   code
+   code/index
    references
