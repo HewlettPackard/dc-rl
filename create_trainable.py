@@ -7,7 +7,20 @@ from ray.rllib.algorithms import Algorithm
 from ray.tune.registry import get_trainable_cls
 
 def create_wrapped_trainable(alg: Union[str, Algorithm]) -> Algorithm:
-    
+    """
+    Create a wrapped trainable algorithm that prints out training progress in an orderly fashion.
+
+    Args:
+        alg (Union[str, Algorithm]): The trainable instance or string id of a registered algorithm.
+
+    Returns:
+        Algorithm: An instance of the wrapped trainable algorithm.
+
+    Raises:
+        TypeError: If `alg` is not an instance of `str` or `Algorithm`.
+
+    """
+
     if isinstance(alg, str):
         base_algorithm = get_trainable_cls(alg)
     elif issubclass(alg, Algorithm):
@@ -29,6 +42,18 @@ def create_wrapped_trainable(alg: Union[str, Algorithm]) -> Algorithm:
             ]
 
         def flatten(self, d: Dict, res: Dict = {}, flattened_key: str = '') -> Dict:
+            """
+            Flatten a nested dictionary into a dictionary with a single level of keys.
+
+            Args:
+                d (Dict): The nested dictionary to flatten.
+                res (Dict): A dictionary to contain the flattened dictionary.
+                flattened_key (str): A prefix string to be added to all resulting flattened keys.
+
+            Returns:
+                Dict: A dictionary with flattened keys.
+
+            """
             for key, val in d.items():
                 if isinstance(val, dict):
                     self.flatten(val, res, flattened_key + key + '/' )
@@ -40,7 +65,17 @@ def create_wrapped_trainable(alg: Union[str, Algorithm]) -> Algorithm:
             return res
 
         def display_results(self, results: ResultDict) -> None:
+            """
+            Display the specified results in a human-readable format.
 
+            Args:
+                self (WrappedTrainable): The current instance of the wrapped trainable algorithm.
+                results (ResultDict): The results to display.
+
+            Returns:
+                None.
+
+            """
             display = []
             results = self.flatten(results)
 

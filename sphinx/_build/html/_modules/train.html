@@ -49,7 +49,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/index.html">Code</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
 </ul>
 
@@ -87,7 +87,7 @@
 
 <span class="kn">from</span> <span class="nn">create_trainable</span> <span class="kn">import</span> <span class="n">create_wrapped_trainable</span>
 
-<div class="viewcode-block" id="train"><a class="viewcode-back" href="../train.html#train.train">[docs]</a><span class="k">def</span> <span class="nf">train</span><span class="p">(</span>
+<div class="viewcode-block" id="train"><a class="viewcode-back" href="../code/train.html#train.train">[docs]</a><span class="k">def</span> <span class="nf">train</span><span class="p">(</span>
     <span class="n">algorithm</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Algorithm</span><span class="p">],</span> 
     <span class="n">config</span><span class="p">:</span> <span class="n">AlgorithmConfig</span><span class="p">,</span>
     <span class="n">results_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;./results&#39;</span><span class="p">,</span>
@@ -136,7 +136,8 @@
     <span class="n">config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">overrides</span><span class="p">)</span>
 
     <span class="n">trained</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="k">while</span> <span class="n">trained</span> <span class="o">&lt;</span> <span class="mi">10</span><span class="p">:</span>
+    <span class="n">num_runs</span> <span class="o">=</span> <span class="mi">10</span>
+    <span class="k">while</span> <span class="n">trained</span> <span class="o">&lt;</span> <span class="n">num_runs</span><span class="p">:</span>
         <span class="n">tune</span><span class="o">.</span><span class="n">Tuner</span><span class="p">(</span>
             <span class="n">create_wrapped_trainable</span><span class="p">(</span><span class="n">algorithm</span><span class="p">),</span>
             <span class="n">param_space</span><span class="o">=</span><span class="n">config</span><span class="p">,</span>

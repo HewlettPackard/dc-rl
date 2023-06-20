@@ -3,7 +3,6 @@ import os
 import gymnasium as gym
 import numpy as np
 import pandas as pd
-import utils.data_processor as data_processor
 
 from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
 from envs.carbon_ls import CarbonLoadEnv
@@ -149,14 +148,6 @@ def make_dc_pyeplus_env(month : int = 1,
         'batterySoC': [0.0, max_bat_cap_Mw*1e6]
         
     }
-    ################################################################################
-    ############################## Time Series Data ################################
-    ################################################################################
-    # weather_ts, ci_ts, cpu_usage_ts =  data_processor.dfs_creator(weather_filename = weather_filename,
-    #                                                               carbon_intensity_filename = carbon_intensity_filename,
-    #                                                               workload_filename = workload_filename,
-    #                                                               start_date_time = '01/01/2022 00:00:00',
-    #                                                               end_date_time = '01/01/2023 00:00:00',)
     
     ################################################################################
     ############################## Create the Environment ##########################

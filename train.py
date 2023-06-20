@@ -56,7 +56,8 @@ def train(
     config.update(overrides)
 
     trained = 0
-    while trained < 10:
+    num_runs = 10
+    while trained < num_runs:
         tune.Tuner(
             create_wrapped_trainable(algorithm),
             param_space=config,

@@ -289,6 +289,18 @@ class DCRLeplus(MultiAgentEnv):
         return obs, rew, terminated, truncated, info
 
     def calculate_reward(self, params):
+        """
+        Calculate the individual reward for each agent.
+
+        Args:
+            params (dict): Dictionary of parameters to calculate the reward.
+
+        Returns:
+            ls_reward (float): Individual reward for the load shifting agent.
+            dc_reward (float): Individual reward for the data center agent.
+            bat_reward (float): Individual reward for the battery agent.
+        """
+        
         ls_reward = self.ls_reward_method(params)
         dc_reward = self.dc_reward_method(params)
         bat_reward = self.bat_reward_method(params)
