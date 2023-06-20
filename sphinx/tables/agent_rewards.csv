@@ -1,4 +1,4 @@
-Agent,Reward
+Agent,Default Reward
 agent_ls,.. math:: r_{ls}~ =~  -(Penalty \cdot UL)-(CI \cdot Total EC) 
 agent_dc,.. math:: r_{dc} ~=~ -( Total EC) 
 agent_bat,.. math:: r_{bat}~ =~ -(CI \cdot  Total EC) 
