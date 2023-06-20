@@ -1,5 +1,5 @@
-dc-rl
-=====
+Class and member documentation
+==============================
 
 .. toctree::
    :maxdepth: 4

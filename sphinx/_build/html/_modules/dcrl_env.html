@@ -49,7 +49,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../code/index.html">Code</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
 </ul>
 
@@ -83,20 +83,22 @@
 
 <span class="kn">import</span> <span class="nn">gymnasium</span> <span class="k">as</span> <span class="nn">gym</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
 <span class="kn">from</span> <span class="nn">ray.rllib.env</span> <span class="kn">import</span> <span class="n">EnvContext</span>
 <span class="kn">from</span> <span class="nn">ray.rllib.env.multi_agent_env</span> <span class="kn">import</span> <span class="n">MultiAgentEnv</span>
 <span class="kn">from</span> <span class="nn">ray.rllib.utils.typing</span> <span class="kn">import</span> <span class="n">MultiAgentDict</span>
+
 <span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">reward_creator</span>
 <span class="kn">from</span> <span class="nn">utils.base_agents</span> <span class="kn">import</span> <span class="p">(</span><span class="n">BaseBatteryAgent</span><span class="p">,</span> <span class="n">BaseHVACAgent</span><span class="p">,</span>
                                <span class="n">BaseLoadShiftingAgent</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">utils.make_envs_pyenv</span> <span class="kn">import</span> <span class="p">(</span><span class="n">make_bat_fwd_env</span><span class="p">,</span> <span class="n">make_dc_pyeplus_env</span><span class="p">,</span>
                                    <span class="n">make_ls_env</span><span class="p">)</span>
-<span class="kn">from</span> <span class="nn">utils.utils_cf</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CI_Manager</span><span class="p">,</span> <span class="n">Time_Manager</span><span class="p">,</span> <span class="n">Weather_Manager</span><span class="p">,</span>
-                            <span class="n">Workload_Manager</span><span class="p">,</span> <span class="n">get_energy_variables</span><span class="p">,</span>
-                            <span class="n">get_init_day</span><span class="p">,</span> <span class="n">obtain_paths</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">utils.managers</span> <span class="kn">import</span> <span class="p">(</span><span class="n">CI_Manager</span><span class="p">,</span> <span class="n">Time_Manager</span><span class="p">,</span> <span class="n">Weather_Manager</span><span class="p">,</span>
+                            <span class="n">Workload_Manager</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">utils.utils_cf</span> <span class="kn">import</span> <span class="n">get_energy_variables</span><span class="p">,</span> <span class="n">get_init_day</span><span class="p">,</span> <span class="n">obtain_paths</span>
 
 
-<div class="viewcode-block" id="EnvConfig"><a class="viewcode-back" href="../dcrl_env.html#dcrl_env.EnvConfig">[docs]</a><span class="k">class</span> <span class="nc">EnvConfig</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
+<div class="viewcode-block" id="EnvConfig"><a class="viewcode-back" href="../code/dcrl_env.html#dcrl_env.EnvConfig">[docs]</a><span class="k">class</span> <span class="nc">EnvConfig</span><span class="p">(</span><span class="nb">dict</span><span class="p">):</span>
 
     <span class="c1"># Default configuration for this environment. New parameters should be</span>
     <span class="c1"># added here</span>
@@ -108,6 +110,7 @@
         <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;ny&#39;</span><span class="p">,</span>
         <span class="s1">&#39;cintensity_file&#39;</span><span class="p">:</span> <span class="s1">&#39;NYIS_NG_&amp;_avgCI.csv&#39;</span><span class="p">,</span>
         <span class="s1">&#39;weather_file&#39;</span><span class="p">:</span> <span class="s1">&#39;USA_NY_New.York-Kennedy.epw&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;workload_file&#39;</span><span class="p">:</span> <span class="s1">&#39;Alibaba_CPU_Data_Hourly_1.csv&#39;</span><span class="p">,</span>
 
         <span class="c1"># Maximum battery capacity</span>
         <span class="s1">&#39;max_bat_cap_Mw&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
@@ -142,7 +145,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">vector_index</span> <span class="o">=</span> <span class="n">raw_config</span><span class="o">.</span><span class="n">vector_index</span></div>
 
 
-<div class="viewcode-block" id="DCRL"><a class="viewcode-back" href="../dcrl_env.html#dcrl_env.DCRL">[docs]</a><span class="k">class</span> <span class="nc">DCRL</span><span class="p">(</span><span class="n">MultiAgentEnv</span><span class="p">):</span>
+<div class="viewcode-block" id="DCRL"><a class="viewcode-back" href="../code/dcrl_env.html#dcrl_env.DCRL">[docs]</a><span class="k">class</span> <span class="nc">DCRL</span><span class="p">(</span><span class="n">MultiAgentEnv</span><span class="p">):</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_config</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="n">EnvContext</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Args:</span>
@@ -154,11 +157,14 @@
         <span class="c1"># Initialize the environment config</span>
         <span class="n">env_config</span> <span class="o">=</span> <span class="n">EnvConfig</span><span class="p">(</span><span class="n">env_config</span><span class="p">)</span>
 
-        <span class="c1"># create agent ids</span>
+        <span class="c1"># create environments and agents</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">agents</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;agents&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;location&#39;</span><span class="p">]</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">ci_file</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;cintensity_file&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weather_file</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;weather_file&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workload_file</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;workload_file&#39;</span><span class="p">]</span>
+        
         <span class="bp">self</span><span class="o">.</span><span class="n">max_bat_cap_Mw</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;max_bat_cap_Mw&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">indv_reward</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;individual_reward_weight&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">collab_reward</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">indv_reward</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
@@ -219,7 +225,7 @@
         <span class="c1"># Create the managers: date/hour/time manager, workload manager, weather manager, and CI manager.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span> <span class="o">=</span> <span class="n">get_init_day</span><span class="p">(</span><span class="n">month</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">t_m</span> <span class="o">=</span> <span class="n">Time_Manager</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">init_day</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">workload_m</span> <span class="o">=</span> <span class="n">Workload_Manager</span><span class="p">(</span><span class="n">flexible_workload_ratio</span><span class="o">=</span><span class="n">flexible_load</span><span class="p">,</span> <span class="n">init_day</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">init_day</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workload_m</span> <span class="o">=</span> <span class="n">Workload_Manager</span><span class="p">(</span><span class="n">workload_filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">workload_file</span><span class="p">,</span> <span class="n">flexible_workload_ratio</span><span class="o">=</span><span class="n">flexible_load</span><span class="p">,</span> <span class="n">init_day</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">init_day</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">weather_m</span> <span class="o">=</span> <span class="n">Weather_Manager</span><span class="p">(</span><span class="n">init_day</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">init_day</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">wea_loc</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weather_file</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">ci_m</span> <span class="o">=</span> <span class="n">CI_Manager</span><span class="p">(</span><span class="n">init_day</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">init_day</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">ci_loc</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ci_file</span><span class="p">)</span>
 
@@ -227,7 +233,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">actions_are_logits</span> <span class="o">=</span> <span class="n">env_config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;actions_are_logits&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="DCRL.reset"><a class="viewcode-back" href="../dcrl_env.html#dcrl_env.DCRL.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="DCRL.reset"><a class="viewcode-back" href="../code/dcrl_env.html#dcrl_env.DCRL.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Reset the environment.</span>
 
@@ -295,7 +301,7 @@
             
         <span class="k">return</span> <span class="n">states</span><span class="p">,</span> <span class="n">infos</span></div>
 
-<div class="viewcode-block" id="DCRL.step"><a class="viewcode-back" href="../dcrl_env.html#dcrl_env.DCRL.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_dict</span><span class="p">:</span> <span class="n">MultiAgentDict</span><span class="p">):</span>
+<div class="viewcode-block" id="DCRL.step"><a class="viewcode-back" href="../code/dcrl_env.html#dcrl_env.DCRL.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_dict</span><span class="p">:</span> <span class="n">MultiAgentDict</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Step the environment.</span>
 
@@ -417,7 +423,7 @@
                 
         <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="n">rew</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span></div>
 
-<div class="viewcode-block" id="DCRL.calculate_reward"><a class="viewcode-back" href="../dcrl_env.html#dcrl_env.DCRL.calculate_reward">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<div class="viewcode-block" id="DCRL.calculate_reward"><a class="viewcode-back" href="../code/dcrl_env.html#dcrl_env.DCRL.calculate_reward">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
         <span class="n">ls_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ls_reward_method</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
         <span class="n">dc_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dc_reward_method</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
         <span class="n">bat_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bat_reward_method</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>

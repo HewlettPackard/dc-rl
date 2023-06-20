@@ -119,7 +119,7 @@ Some examples of custom rewards are listed below:
 To use this custom reward function, the reward function must be declared in the :code:`REWARD_METHOD_MAP`.
 In this case, by default, the reward function is already declared as :code:`'energy_PUE_reward' : energy_PUE_reward,`.
 Therefore, to use the reward function as a reward function of an agent (i.e., agent dc, the agent that modifies the HVAC setpoint), in the algorithm definition (i.e., :code:`train_ppo.py`),
- the reward definition of the dc agent must be declared as :code:`dc_reward:energy_PUE_reward` within the env_config dictionary.
+the reward definition of the dc agent must be declared as :code:`dc_reward:energy_PUE_reward` within the env_config dictionary.
 
 Other reward function definitions can be found here:
 *Example 2*
@@ -176,7 +176,7 @@ Other reward function definitions can be found here:
 
         return tou_reward
 
-*Example 3:
+*Example 3*
 
 .. code-block:: bash
 
