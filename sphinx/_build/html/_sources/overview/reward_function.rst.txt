@@ -78,7 +78,7 @@ Add the new custom reward function to the :code:`REWARD_METHOD_MAP` dictionary.
     }
 
 
-A dictionary of environment parameters (:code:`reward_params`) is available to users in :code:`dcrl_envpy.py` or :code:`dcrl_eplus_env.py`.
+A dictionary of environment parameters (:code:`reward_params`) is available to users in :code:`dcrl_env.py` or :code:`dcrl_eplus_env.py`.
 This dictionary consists of the information dictionary of each environment, and some other global variables such as time, day, carbon intensity, outside temperature, etc.
 If another user wants to add another parameter, the parameter must be added in the dictionary :code:`reward_params`. Using that, that variable will be visible in the reward function.
 Within the dictionary, the following environment parameters are available to users:

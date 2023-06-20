@@ -227,7 +227,7 @@ Add the new custom reward function to the <code class="code docutils literal not
 <span class="o">}</span>
 </pre></div>
 </div>
-<p>A dictionary of environment parameters (<code class="code docutils literal notranslate"><span class="pre">reward_params</span></code>) is available to users in <code class="code docutils literal notranslate"><span class="pre">dcrl_envpy.py</span></code> or <code class="code docutils literal notranslate"><span class="pre">dcrl_eplus_env.py</span></code>.
+<p>A dictionary of environment parameters (<code class="code docutils literal notranslate"><span class="pre">reward_params</span></code>) is available to users in <code class="code docutils literal notranslate"><span class="pre">dcrl_env.py</span></code> or <code class="code docutils literal notranslate"><span class="pre">dcrl_eplus_env.py</span></code>.
 This dictionary consists of the information dictionary of each environment, and some other global variables such as time, day, carbon intensity, outside temperature, etc.
 If another user wants to add another parameter, the parameter must be added in the dictionary <code class="code docutils literal notranslate"><span class="pre">reward_params</span></code>. Using that, that variable will be visible in the reward function.
 Within the dictionary, the following environment parameters are available to users:</p>
