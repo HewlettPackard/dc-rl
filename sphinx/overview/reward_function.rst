@@ -121,6 +121,26 @@ In this case, by default, the reward function is already declared as :code:`'ene
 Therefore, to use the reward function as a reward function of an agent (i.e., agent dc, the agent that modifies the HVAC setpoint), in the algorithm definition (i.e., :code:`train_ppo.py`),
 the reward definition of the dc agent must be declared as :code:`dc_reward:energy_PUE_reward` within the env_config dictionary.
 
+The following piece of code show how to declare the :code:`'energy_PUE_reward'` as reward function for the dc agent:
+
+.. code-block:: bash
+
+    CONFIG = (
+        PPOConfig()
+        .environment(
+            env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
+            env_config={
+                # Agents active
+                'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+                
+                # Other configurations ....
+                
+                # Specify reward methods
+                'ls_reward': 'default_ls_reward',
+                **'dc_reward': 'energy_PUE_reward',**
+                'bat_reward': 'default_bat_reward'
+            }
+
 Other reward function definitions can be found here:
 *Example 2*
 
