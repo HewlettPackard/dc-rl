@@ -1,0 +1,777 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>custom_sinergym.utils.config &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">custom_sinergym.utils.config</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for custom_sinergym.utils.config</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Class and utilities for set up extra configuration in experiments with Sinergym (extra params, weather_variability, building model modification and files management)&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">xml.etree.cElementTree</span> <span class="k">as</span> <span class="nn">ElementTree</span>
+<span class="kn">from</span> <span class="nn">copy</span> <span class="kn">import</span> <span class="n">deepcopy</span>
+<span class="kn">from</span> <span class="nn">shutil</span> <span class="kn">import</span> <span class="n">rmtree</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span>
+<span class="kn">from</span> <span class="nn">opyplus</span> <span class="kn">import</span> <span class="n">Epm</span><span class="p">,</span> <span class="n">Idd</span><span class="p">,</span> <span class="n">WeatherData</span>
+<span class="kn">from</span> <span class="nn">opyplus.epm.record</span> <span class="kn">import</span> <span class="n">Record</span>
+
+<span class="kn">from</span> <span class="nn">custom_sinergym.utils.common</span> <span class="kn">import</span> <span class="p">(</span><span class="n">get_delta_seconds</span><span class="p">,</span> <span class="n">get_record_keys</span><span class="p">,</span>
+                                   <span class="n">prepare_batch_from_records</span><span class="p">,</span> <span class="n">to_idf</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">custom_sinergym.utils.constants</span> <span class="kn">import</span> <span class="n">CWD</span><span class="p">,</span> <span class="n">PKG_DATA_PATH</span><span class="p">,</span> <span class="n">WEEKDAY_ENCODING</span><span class="p">,</span> <span class="n">YEAR</span>
+
+
+<div class="viewcode-block" id="Config"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config">[docs]</a><span class="k">class</span> <span class="nc">Config</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Config object to manage extra configuration in Sinergym experiments.</span>
+
+<span class="sd">        :param _idf_path: IDF path origin for apply extra configuration.</span>
+<span class="sd">        :param _weather_path: EPW path origin for apply weather to simulation.</span>
+<span class="sd">        :param _ddy_path: DDY path origin for get DesignDays and weather Location</span>
+<span class="sd">        :param experiment_path: Path for Sinergym experiment output</span>
+<span class="sd">        :param episode_path: Path for Sinergym specific episode (before first simulator reset this param is None)</span>
+<span class="sd">        :param max_ep_store: Number of episodes directories will be stored in experiment_path</span>
+<span class="sd">        :param config: Dict config with extra configuration which is required to modify IDF model (may be None)</span>
+<span class="sd">        :param _idd: IDD opyplus object to set up Epm</span>
+<span class="sd">        :param building: opyplus Epm object with IDF model</span>
+<span class="sd">        :param ddy_model: opyplus Epm object with DDY model</span>
+<span class="sd">        :param weather_data: opyplus WeatherData object with EPW data</span>
+<span class="sd">        :param action_definition: Dict with action definition to automatic building model preparation.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">idf_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">weather_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">variables</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]],</span>
+            <span class="n">env_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">max_ep_store</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
+            <span class="n">seed</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">action_definition</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]],</span>
+            <span class="n">extra_config</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idf_path</span> <span class="o">=</span> <span class="n">idf_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_weather_path</span> <span class="o">=</span> <span class="n">weather_path</span>
+        <span class="c1"># RDD file name is deducible using idf name (only change .idf by .rdd)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rdd_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">PKG_DATA_PATH</span><span class="p">,</span>
+            <span class="s1">&#39;variables&#39;</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_idf_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.idf&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span>
+            <span class="s1">&#39;.rdd&#39;</span><span class="p">)</span>
+        <span class="c1"># DDY path is deducible using weather_path (only change .epw by .ddy)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ddy_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weather_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.epw&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;.ddy&#39;</span>
+        
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiment_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_experiment_working_dir</span><span class="p">(</span><span class="n">env_name</span><span class="p">,</span> <span class="n">seed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">episode_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_ep_store</span> <span class="o">=</span> <span class="n">max_ep_store</span>
+
+        <span class="c1"># Set config and action definition as config attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">extra_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_definition</span> <span class="o">=</span> <span class="n">action_definition</span>
+
+        <span class="c1"># Variables XML Tree (empty at the beginning)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="n">variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables_tree</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">Element</span><span class="p">(</span><span class="s1">&#39;BCVTB-variables&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Opyplus objects</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_idd</span> <span class="o">=</span> <span class="n">Idd</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;EPLUS_PATH&#39;</span><span class="p">],</span> <span class="s1">&#39;Energy+.idd&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">building</span> <span class="o">=</span> <span class="n">Epm</span><span class="o">.</span><span class="n">from_idf</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_idf_path</span><span class="p">,</span>
+            <span class="n">idd_or_version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_idd</span><span class="p">,</span>
+            <span class="n">check_length</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ddy_model</span> <span class="o">=</span> <span class="n">Epm</span><span class="o">.</span><span class="n">from_idf</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ddy_path</span><span class="p">,</span>
+            <span class="n">idd_or_version</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_idd</span><span class="p">,</span>
+            <span class="n">check_length</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weather_data</span> <span class="o">=</span> <span class="n">WeatherData</span><span class="o">.</span><span class="n">from_epw</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_weather_path</span><span class="p">)</span>
+
+        <span class="c1"># Extract idf zone names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">idf_zone_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">idf_zone</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">Zone</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">idf_zone_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">idf_zone</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+        <span class="c1"># Extract rdd observation variables names</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">pandas</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rdd_path</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">rdd_variable_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">name</span><span class="p">:</span> <span class="n">name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39; [&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">data</span><span class="p">[</span><span class="s1">&#39;Variable Name [Units]&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()))</span>
+        <span class="n">rdd_variable_types</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;Var Type (reported time step)&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">rdd_variable_names</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
+            <span class="n">rdd_variable_types</span><span class="p">),</span> <span class="s1">&#39;RDD file: Number of variable names and variables types column should be the same.&#39;</span>
+        <span class="c1"># self.rdd_variables is a dict with keys as name of the variable and</span>
+        <span class="c1"># body as variable type (Zone or HVAC)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rdd_variables</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">variable_name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rdd_variable_names</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rdd_variables</span><span class="p">[</span><span class="n">variable_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">rdd_variable_types</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+        <span class="c1"># Extract schedulers available in building model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedulers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_schedulers</span><span class="p">()</span>
+
+        <span class="c1"># Check observation variables definition</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_observation_variables</span><span class="p">()</span>
+        <span class="c1"># Check config definition</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_eplus_config</span><span class="p">()</span>
+
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#            IDF, variables and Building model adaptation                      #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+
+<div class="viewcode-block" id="Config.adapt_idf_to_epw"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config.adapt_idf_to_epw">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_idf_to_epw</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                         <span class="n">summerday</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Ann Clg .4% Condns DB=&gt;MWB&#39;</span><span class="p">,</span>
+                         <span class="n">winterday</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Ann Htg 99.6% Condns DB&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Given a summer day name and winter day name from DDY file, this method modify IDF Location and DesingDay&#39;s in order to adapt IDF to EPW.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            summerday (str): Design day for summer day specifically (DDY has several of them).</span>
+<span class="sd">            winterday (str): Design day for winter day specifically (DDY has several of them).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">old_location</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">site_location</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">old_designdays</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">SizingPeriod_DesignDay</span>
+
+        <span class="c1"># Adding the new location and designdays based on ddy file</span>
+        <span class="c1"># LOCATION</span>
+        <span class="n">new_location</span> <span class="o">=</span> <span class="n">prepare_batch_from_records</span><span class="p">(</span>
+            <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ddy_model</span><span class="o">.</span><span class="n">site_location</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+        <span class="c1"># DESIGNDAYS</span>
+        <span class="n">winter_designday</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ddy_model</span><span class="o">.</span><span class="n">SizingPeriod_DesignDay</span><span class="o">.</span><span class="n">one</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">designday</span><span class="p">:</span> <span class="n">winterday</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">designday</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+        <span class="n">summer_designday</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ddy_model</span><span class="o">.</span><span class="n">SizingPeriod_DesignDay</span><span class="o">.</span><span class="n">one</span><span class="p">(</span>
+            <span class="k">lambda</span> <span class="n">designday</span><span class="p">:</span> <span class="n">summerday</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">designday</span><span class="o">.</span><span class="n">name</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+        <span class="n">new_designdays</span> <span class="o">=</span> <span class="n">prepare_batch_from_records</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">winter_designday</span><span class="p">,</span> <span class="n">summer_designday</span><span class="p">])</span>
+
+        <span class="c1"># Deleting the old location and old DesignDays from Epm</span>
+        <span class="n">old_location</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="n">old_designdays</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+
+        <span class="c1"># Added New Location and DesignDays to Epm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">site_location</span><span class="o">.</span><span class="n">batch_add</span><span class="p">(</span><span class="n">new_location</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">SizingPeriod_DesignDay</span><span class="o">.</span><span class="n">batch_add</span><span class="p">(</span><span class="n">new_designdays</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Config.adapt_variables_to_cfg_and_idf"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config.adapt_variables_to_cfg_and_idf">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_variables_to_cfg_and_idf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method adds to XML variable tree all observation and action variables information. In addition, it modifies IDF Output:Variable in order to adapt to new observation variables set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># OBSERVATION VARIABLES</span>
+        <span class="n">output_variables</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables_tree</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ElementTree</span><span class="o">.</span><span class="n">Comment</span><span class="p">(</span>
+            <span class="s1">&#39;Observation variables: Received from EnergyPlus&#39;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">obs_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]:</span>
+            <span class="c1"># obs_var = &quot;&lt;variable_name&gt;(&lt;variable_zone&gt;)&quot;</span>
+            <span class="n">var_elements</span> <span class="o">=</span> <span class="n">obs_var</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)</span>
+            <span class="n">var_name</span> <span class="o">=</span> <span class="n">var_elements</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">var_zone</span> <span class="o">=</span> <span class="n">var_elements</span><span class="p">[</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># Add obs name and zone to XML variables tree</span>
+            <span class="n">new_xml_obs</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">variables_tree</span><span class="p">,</span> <span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;EnergyPlus&#39;</span><span class="p">)</span>
+            <span class="n">ElementTree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                <span class="n">new_xml_obs</span><span class="p">,</span>
+                <span class="s1">&#39;EnergyPlus&#39;</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">var_zone</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">var_name</span><span class="p">)</span>
+
+            <span class="c1"># Add IDF record Output:Variable</span>
+            <span class="k">if</span> <span class="n">var_zone</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;Environment&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span>
+            <span class="p">)</span> <span class="ow">or</span> <span class="n">var_zone</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;Whole Building&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                <span class="n">var_zone</span> <span class="o">=</span> <span class="s1">&#39;*&#39;</span>
+            <span class="n">output_variables</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="nb">dict</span><span class="p">(</span>
+                    <span class="n">key_value</span><span class="o">=</span><span class="n">var_zone</span><span class="p">,</span>
+                    <span class="n">variable_name</span><span class="o">=</span><span class="n">var_name</span><span class="p">,</span>
+                    <span class="n">reporting_frequency</span><span class="o">=</span><span class="s1">&#39;timestep&#39;</span><span class="p">))</span>
+
+        <span class="c1"># Delete default Output:Variables and added observation_variables</span>
+        <span class="c1"># specified</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">output_variable</span><span class="o">.</span><span class="n">delete</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">output_variable</span><span class="o">.</span><span class="n">batch_add</span><span class="p">(</span><span class="n">output_variables</span><span class="p">)</span>
+
+        <span class="c1"># ACTION VARIABLES</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables_tree</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">ElementTree</span><span class="o">.</span><span class="n">Comment</span><span class="p">(</span><span class="s1">&#39;Action variables: Sent to EnergyPlus&#39;</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">act_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]:</span>
+
+            <span class="n">new_xml_variable</span> <span class="o">=</span> <span class="n">ElementTree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">variables_tree</span><span class="p">,</span> <span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="n">source</span><span class="o">=</span><span class="s1">&#39;Ptolemy&#39;</span><span class="p">)</span>
+            <span class="n">ElementTree</span><span class="o">.</span><span class="n">SubElement</span><span class="p">(</span>
+                <span class="n">new_xml_variable</span><span class="p">,</span>
+                <span class="s1">&#39;EnergyPlus&#39;</span><span class="p">,</span>
+                <span class="n">schedule</span><span class="o">=</span><span class="n">act_var</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Config.set_external_interface"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config.set_external_interface">[docs]</a>    <span class="k">def</span> <span class="nf">set_external_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set an empty external interface with Ptolemy server if is not in the current building</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># If no ExternalInterface object found</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">ExternalInterface</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="c1"># Create PtolemyServer interface in building</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">ExternalInterface</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+                <span class="n">name_of_external_interface</span><span class="o">=</span><span class="s1">&#39;PtolemyServer&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Config.apply_extra_conf"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config.apply_extra_conf">[docs]</a>    <span class="k">def</span> <span class="nf">apply_extra_conf</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set extra configuration in building model</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="c1"># Timesteps processed in a simulation hour</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;timesteps_per_hour&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">timestep</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">number_of_timesteps_per_hour</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;timesteps_per_hour&#39;</span><span class="p">]</span>
+
+            <span class="c1"># Runperiod datetimes --&gt; Tuple(start_day, start_month, start_year,</span>
+            <span class="c1"># end_day, end_month, end_year)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;runperiod&#39;</span><span class="p">):</span>
+                <span class="n">runperiod</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">RunPeriod</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_day_of_month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;runperiod&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;runperiod&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;runperiod&#39;</span><span class="p">][</span><span class="mi">2</span><span class="p">])</span>
+                <span class="n">runperiod</span><span class="o">.</span><span class="n">end_day_of_month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;runperiod&#39;</span><span class="p">][</span><span class="mi">3</span><span class="p">])</span>
+                <span class="n">runperiod</span><span class="o">.</span><span class="n">end_month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;runperiod&#39;</span><span class="p">][</span><span class="mi">4</span><span class="p">])</span>
+                <span class="n">runperiod</span><span class="o">.</span><span class="n">end_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s1">&#39;runperiod&#39;</span><span class="p">][</span><span class="mi">5</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Config.adapt_idf_to_action_definition"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config.adapt_idf_to_action_definition">[docs]</a>    <span class="k">def</span> <span class="nf">adapt_idf_to_action_definition</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpret action definition and apply changes in IDF in order to control schedulers specified.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_definition</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Iterate in schedulers to control in action definition</span>
+            <span class="k">for</span> <span class="n">original_sch_name</span><span class="p">,</span> <span class="n">new_sch</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_definition</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># Search original scheduler information in building model</span>
+                <span class="n">original_sch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedulers</span><span class="p">[</span><span class="n">original_sch_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()]</span>
+                <span class="c1"># Add external interface to IDF</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">ExternalInterface_Schedule</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="n">new_sch</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span>
+                    <span class="n">schedule_type_limits_name</span><span class="o">=</span><span class="n">original_sch</span><span class="p">[</span><span class="s1">&#39;Type&#39;</span><span class="p">],</span>
+                    <span class="n">initial_value</span><span class="o">=</span><span class="n">new_sch</span><span class="p">[</span><span class="s1">&#39;initial_value&#39;</span><span class="p">])</span>
+                <span class="c1"># Look for scheduler elements where appear and substitute for new</span>
+                <span class="c1"># one name</span>
+                <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">element</span> <span class="ow">in</span> <span class="n">original_sch</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">element</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+                        <span class="n">table_name</span> <span class="o">=</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;object_type&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span>
+                            <span class="s1">&#39;:&#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+                        <span class="n">record</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">_tables</span><span class="p">[</span><span class="n">table_name</span><span class="p">]</span><span class="o">.</span><span class="n">one</span><span class="p">(</span>
+                            <span class="k">lambda</span> <span class="n">record</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">element</span><span class="p">[</span><span class="s1">&#39;object_name&#39;</span><span class="p">])</span>
+                        <span class="n">record</span><span class="p">[</span><span class="n">element</span><span class="p">[</span><span class="s1">&#39;object_field_name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">new_sch</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Config.save_variables_cfg"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config.save_variables_cfg">[docs]</a>    <span class="k">def</span> <span class="nf">save_variables_cfg</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method saves current XML variables tree model into a variables.cfg file.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            RuntimeError: If this method is used without an episode_path generated (see reset method in simulator), this exception is raised.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Path to the new saved variables.cfg used by BCVTB for Energyplus communication.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">episode_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+            <span class="n">episode_cfg_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">episode_path</span> <span class="o">+</span> \
+                <span class="s1">&#39;/variables.cfg&#39;</span>
+
+            <span class="n">ElementTree</span><span class="o">.</span><span class="n">indent</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables_tree</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">episode_cfg_path</span><span class="p">,</span> <span class="s2">&quot;wb&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
+                    <span class="s1">&#39;&lt;?xml version=&quot;1.0&quot; encoding=&quot;ISO-8859-1&quot;?&gt;</span><span class="se">\n</span><span class="s1">&lt;!DOCTYPE BCVTB-variables SYSTEM &quot;variables.dtd&quot;&gt;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf8&#39;</span><span class="p">))</span>
+                <span class="n">ElementTree</span><span class="o">.</span><span class="n">ElementTree</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables_tree</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">episode_cfg_path</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s1">&#39;[Simulator Config] Episode path should be set before saving variables.cfg.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Config.save_building_model"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config.save_building_model">[docs]</a>    <span class="k">def</span> <span class="nf">save_building_model</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Take current building model and save as IDF in current env_working_dir episode folder.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Path of IDF file stored (episode folder).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># If no path specified, then use idf_path to save it.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">episode_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">episode_idf_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">episode_path</span><span class="p">,</span>
+                                            <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_idf_path</span><span class="p">))</span>
+            <span class="c1"># self.building.save(episode_idf_path)</span>
+            <span class="n">to_idf</span><span class="p">(</span><span class="n">building</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="p">,</span> <span class="n">file_path</span><span class="o">=</span><span class="n">episode_idf_path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">episode_idf_path</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s1">&#39;[Simulator Config] Episode path should be set before saving building model.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Config.get_schedulers"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config.get_schedulers">[docs]</a>    <span class="k">def</span> <span class="nf">get_schedulers</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract all schedulers available in the building model to be controlled.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, Any]: Python Dictionary: For each scheduler found, it shows type value and where this scheduler is present (Object name, Object field and Object type).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">schedule_tables</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">schedule_compact</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">schedule_year</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">schedule_table</span> <span class="ow">in</span> <span class="n">schedule_tables</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">schedule</span> <span class="ow">in</span> <span class="n">schedule_table</span><span class="p">:</span>
+                <span class="n">object_index</span> <span class="o">=</span> <span class="mi">1</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">schedule</span><span class="o">.</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+                <span class="n">result</span><span class="p">[</span><span class="n">schedule</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;Type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">schedule</span><span class="o">.</span><span class="n">schedule_type_limits_name</span><span class="o">.</span><span class="n">name</span>
+                <span class="c1"># Extract objects where scheduler is present as value field</span>
+                <span class="k">for</span> <span class="n">table</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">table</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;Schedule:Compact&#39;</span> <span class="ow">and</span> <span class="n">table</span><span class="o">.</span><span class="n">get_name</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;Schedule:Year&#39;</span><span class="p">:</span>
+                        <span class="k">for</span> <span class="n">record</span> <span class="ow">in</span> <span class="n">table</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">record</span><span class="p">):</span>
+                                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">Record</span><span class="p">):</span>
+                                    <span class="k">if</span> <span class="p">(</span><span class="n">value</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">_dev_descriptor</span><span class="o">.</span><span class="n">table_name</span> <span class="o">==</span> <span class="s1">&#39;Schedule:Compact&#39;</span> <span class="ow">or</span> <span class="n">value</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">_dev_descriptor</span><span class="o">.</span><span class="n">table_name</span> <span class="o">==</span>
+                                            <span class="s1">&#39;Schedule:Year&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">value</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">schedule</span><span class="o">.</span><span class="n">name</span><span class="p">:</span>
+                                        <span class="n">result</span><span class="p">[</span><span class="n">schedule</span><span class="o">.</span><span class="n">name</span><span class="p">][</span><span class="s1">&#39;Object&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">object_index</span><span class="p">)]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;object_name&#39;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                                                               <span class="s1">&#39;object_field_name&#39;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">_dev_descriptor</span><span class="o">.</span><span class="n">_field_descriptors</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">ref</span><span class="p">,</span>
+                                                                                               <span class="s1">&#39;object_type&#39;</span><span class="p">:</span> <span class="n">record</span><span class="o">.</span><span class="n">_table</span><span class="o">.</span><span class="n">_dev_descriptor</span><span class="o">.</span><span class="n">table_name</span><span class="p">}</span>
+                                        <span class="n">object_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#                        EPW and Weather Data management                       #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+
+<div class="viewcode-block" id="Config.apply_weather_variability"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config.apply_weather_variability">[docs]</a>    <span class="k">def</span> <span class="nf">apply_weather_variability</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">columns</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;drybulb&#39;</span><span class="p">],</span>
+            <span class="n">variation</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Modify weather data using Ornstein-Uhlenbeck process.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            columns (List[str], optional): List of columns to be affected. Defaults to [&#39;drybulb&#39;].</span>
+<span class="sd">            variation (Optional[Tuple[float, float, float]], optional): Tuple with the sigma, mean and tau for OU process. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: New EPW file path generated in simulator working path in that episode or current EPW path if variation is not defined.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">variation</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weather_path</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># deepcopy for weather_data</span>
+            <span class="n">weather_data_mod</span> <span class="o">=</span> <span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weather_data</span><span class="p">)</span>
+            <span class="c1"># Get dataframe with weather series</span>
+            <span class="n">df</span> <span class="o">=</span> <span class="n">weather_data_mod</span><span class="o">.</span><span class="n">get_weather_series</span><span class="p">()</span>
+
+            <span class="n">sigma</span> <span class="o">=</span> <span class="n">variation</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># Standard deviation.</span>
+            <span class="n">mu</span> <span class="o">=</span> <span class="n">variation</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Mean.</span>
+            <span class="n">tau</span> <span class="o">=</span> <span class="n">variation</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>  <span class="c1"># Time constant.</span>
+
+            <span class="n">T</span> <span class="o">=</span> <span class="mf">1.</span>  <span class="c1"># Total time.</span>
+            <span class="c1"># All the columns are going to have the same num of rows since they are</span>
+            <span class="c1"># in the same dataframe</span>
+            <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">columns</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span>
+            <span class="n">dt</span> <span class="o">=</span> <span class="n">T</span> <span class="o">/</span> <span class="n">n</span>
+            <span class="c1"># t = np.linspace(0., T, n)  # Vector of times.</span>
+
+            <span class="n">sigma_bis</span> <span class="o">=</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.</span> <span class="o">/</span> <span class="n">tau</span><span class="p">)</span>
+            <span class="n">sqrtdt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">dt</span><span class="p">)</span>
+
+            <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+            <span class="c1"># Create noise</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">x</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">dt</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> <span class="n">mu</span><span class="p">)</span> <span class="o">/</span> <span class="n">tau</span><span class="p">)</span> <span class="o">+</span> \
+                    <span class="n">sigma_bis</span> <span class="o">*</span> <span class="n">sqrtdt</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">()</span>
+
+            <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
+                <span class="c1"># Add noise</span>
+                <span class="n">df</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">+=</span> <span class="n">x</span>
+
+            <span class="c1"># Save new weather data</span>
+            <span class="n">weather_data_mod</span><span class="o">.</span><span class="n">set_weather_series</span><span class="p">(</span><span class="n">df</span><span class="p">)</span>
+
+            <span class="n">filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_weather_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">filename</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.epw&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">filename</span> <span class="o">+=</span> <span class="s1">&#39;_Random_</span><span class="si">%s</span><span class="s1">_</span><span class="si">%s</span><span class="s1">_</span><span class="si">%s</span><span class="s1">.epw&#39;</span> <span class="o">%</span> <span class="p">(</span>
+                <span class="nb">str</span><span class="p">(</span><span class="n">sigma</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">mu</span><span class="p">),</span> <span class="nb">str</span><span class="p">(</span><span class="n">tau</span><span class="p">))</span>
+            <span class="n">episode_weather_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">episode_path</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="o">+</span> <span class="n">filename</span>
+            <span class="n">weather_data_mod</span><span class="o">.</span><span class="n">to_epw</span><span class="p">(</span><span class="n">episode_weather_path</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">episode_weather_path</span></div>
+
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#                        Model and Config Functionality                        #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+
+    <span class="k">def</span> <span class="nf">_get_eplus_run_info</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method read the building model from config and finds the running start month, start day, start year, end month, end day, end year, start weekday and the number of steps in a hour simulation. If any value is Unknown, then value will be 0. If step per hour is &lt; 1, then default value will be 4.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[int, int, int, int, int, int, int, int]: A tuple with: the start month, start day, start year, end month, end day, end year, start weekday and number of steps in a hour simulation.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get runperiod object inner IDF</span>
+        <span class="n">runperiod</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">RunPeriod</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="c1"># Extract information about runperiod</span>
+        <span class="n">start_month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="mi">0</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_month</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_month</span><span class="p">)</span>
+        <span class="n">start_day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="mi">0</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_day_of_month</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_day_of_month</span><span class="p">)</span>
+        <span class="n">start_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">YEAR</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_year</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_year</span><span class="p">)</span>
+        <span class="n">end_month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="mi">0</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_month</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_month</span><span class="p">)</span>
+        <span class="n">end_day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="mi">0</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_day_of_month</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_day_of_month</span><span class="p">)</span>
+        <span class="n">end_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">YEAR</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_year</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_year</span><span class="p">)</span>
+        <span class="n">start_weekday</span> <span class="o">=</span> <span class="n">WEEKDAY_ENCODING</span><span class="p">[</span><span class="n">runperiod</span><span class="o">.</span><span class="n">day_of_week_for_start_day</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span>
+        <span class="p">)]</span>
+        <span class="n">n_steps_per_hour</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">timestep</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">number_of_timesteps_per_hour</span>
+        <span class="k">if</span> <span class="n">n_steps_per_hour</span> <span class="o">&lt;</span> <span class="mi">1</span> <span class="ow">or</span> <span class="n">n_steps_per_hour</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+            <span class="n">n_steps_per_hour</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># default value</span>
+
+        <span class="k">return</span> <span class="p">(</span>
+            <span class="n">start_month</span><span class="p">,</span>
+            <span class="n">start_day</span><span class="p">,</span>
+            <span class="n">start_year</span><span class="p">,</span>
+            <span class="n">end_month</span><span class="p">,</span>
+            <span class="n">end_day</span><span class="p">,</span>
+            <span class="n">end_year</span><span class="p">,</span>
+            <span class="n">start_weekday</span><span class="p">,</span>
+            <span class="n">n_steps_per_hour</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_one_epi_len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Gets the length of one episode (an EnergyPlus process run to the end) depending on the config of simulation.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: The simulation time step in which the simulation ends.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Get runperiod object inner IDF</span>
+        <span class="n">runperiod</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">building</span><span class="o">.</span><span class="n">RunPeriod</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">start_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">YEAR</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_year</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_year</span><span class="p">)</span>
+        <span class="n">start_month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="mi">0</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_month</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_month</span><span class="p">)</span>
+        <span class="n">start_day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="mi">0</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_day_of_month</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">begin_day_of_month</span><span class="p">)</span>
+        <span class="n">end_year</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="n">YEAR</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_year</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_year</span><span class="p">)</span>
+        <span class="n">end_month</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="mi">0</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_month</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_month</span><span class="p">)</span>
+        <span class="n">end_day</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span>
+            <span class="mi">0</span> <span class="k">if</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_day_of_month</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">runperiod</span><span class="o">.</span><span class="n">end_day_of_month</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">get_delta_seconds</span><span class="p">(</span>
+            <span class="n">start_year</span><span class="p">,</span>
+            <span class="n">start_month</span><span class="p">,</span>
+            <span class="n">start_day</span><span class="p">,</span>
+            <span class="n">end_year</span><span class="p">,</span>
+            <span class="n">end_month</span><span class="p">,</span>
+            <span class="n">end_day</span><span class="p">)</span>
+
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#                  Working Folder for Simulation Management                    #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+
+<div class="viewcode-block" id="Config.set_experiment_working_dir"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config.set_experiment_working_dir">[docs]</a>    <span class="k">def</span> <span class="nf">set_experiment_working_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">random_number</span><span class="p">:</span><span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set experiment working dir path like config attribute for current simulation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env_name (str): simulation env name to define a name in directory</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Experiment path for directory created.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Generate experiment dir path</span>
+        <span class="n">experiment_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_working_folder</span><span class="p">(</span>
+            <span class="n">directory_path</span><span class="o">=</span><span class="n">CWD</span><span class="p">,</span>
+            <span class="n">base_name</span><span class="o">=</span><span class="s1">&#39;-</span><span class="si">%s</span><span class="s1">-res&#39;</span> <span class="o">%</span>
+            <span class="p">(</span><span class="n">env_name</span><span class="o">+</span><span class="n">random_number</span><span class="p">))</span>
+        <span class="c1"># Create dir</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">experiment_path</span><span class="p">)</span>
+        <span class="c1"># set path like config attribute</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiment_path</span> <span class="o">=</span> <span class="n">experiment_path</span>
+        <span class="k">return</span> <span class="n">experiment_path</span></div>
+
+<div class="viewcode-block" id="Config.set_episode_working_dir"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.config.Config.set_episode_working_dir">[docs]</a>    <span class="k">def</span> <span class="nf">set_episode_working_dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set episode working dir path like config attribute for current simulation execution.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            Exception: If experiment path (parent folder) has not be created previously.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Episode path for directory created.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Generate episode dir path if experiment dir path has been created</span>
+        <span class="c1"># previously</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_path</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">episode_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_working_folder</span><span class="p">(</span>
+                <span class="n">directory_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">experiment_path</span><span class="p">,</span>
+                <span class="n">base_name</span><span class="o">=</span><span class="s1">&#39;-sub_run&#39;</span><span class="p">)</span>
+            <span class="c1"># Create directoy</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">episode_path</span><span class="p">)</span>
+            <span class="c1"># set path like config attribute</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">episode_path</span> <span class="o">=</span> <span class="n">episode_path</span>
+
+            <span class="c1"># Remove redundant past working directories</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rm_past_history_dir</span><span class="p">(</span><span class="n">episode_path</span><span class="p">,</span> <span class="s1">&#39;-sub_run&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">episode_path</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_working_folder</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">directory_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;-run&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a working folder path from path_folder using base_name, returning the absolute result path.</span>
+<span class="sd">           Assumes folders in parent_dir have suffix &lt;env_name&gt;-run{run_number}. Finds the highest run number and sets the output folder to that number + 1.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path_folder (str): Path when working dir will be created.</span>
+<span class="sd">            base_name (str, optional): Base name used to name the new folder inner path_folder. Defaults to &#39;-run&#39;.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            str: Path to the working directory.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Create de rute if not exists</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">directory_path</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">experiment_id</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># Iterate all elements inner path</span>
+        <span class="k">for</span> <span class="n">folder_name</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">directory_path</span><span class="p">):</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory_path</span><span class="p">,</span> <span class="n">folder_name</span><span class="p">)):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Detect if there is another directory with the same base_name</span>
+                <span class="c1"># and get number at final of the name</span>
+                <span class="n">folder_name</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">folder_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">base_name</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="k">if</span> <span class="n">folder_name</span> <span class="o">&gt;</span> <span class="n">experiment_id</span><span class="p">:</span>
+                    <span class="n">experiment_id</span> <span class="o">=</span> <span class="n">folder_name</span>
+            <span class="k">except</span> <span class="ne">BaseException</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="c1"># experiment_id number will be +1 from last name found out.</span>
+        <span class="n">experiment_id</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="n">working_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">directory_path</span><span class="p">,</span> <span class="s1">&#39;Eplus-env&#39;</span><span class="p">)</span>
+        <span class="n">working_dir</span> <span class="o">=</span> <span class="n">working_dir</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="si">%s%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">base_name</span><span class="p">,</span> <span class="n">experiment_id</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">working_dir</span>
+
+    <span class="k">def</span> <span class="nf">_rm_past_history_dir</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">episode_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">base_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Removes the past simulation results from episode</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            episode_path (str): path for the current episide output</span>
+<span class="sd">            base_name (str): base name for detect episode output id</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">cur_dir_name</span><span class="p">,</span> <span class="n">cur_dir_id</span> <span class="o">=</span> <span class="n">episode_path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">base_name</span><span class="p">)</span>
+        <span class="n">cur_dir_id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">cur_dir_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">cur_dir_id</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_ep_store</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">rm_dir_id</span> <span class="o">=</span> <span class="n">cur_dir_id</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_ep_store</span>
+            <span class="n">rm_dir_full_name</span> <span class="o">=</span> <span class="n">cur_dir_name</span> <span class="o">+</span> <span class="n">base_name</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">rm_dir_id</span><span class="p">)</span>
+            <span class="n">rmtree</span><span class="p">(</span><span class="n">rm_dir_full_name</span><span class="p">)</span>
+
+    <span class="o">@</span> <span class="nb">property</span>
+    <span class="k">def</span> <span class="nf">start_year</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the EnergyPlus simulation year.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            int: Simulation year.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="n">YEAR</span>
+
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#                             Config class checker                             #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+
+    <span class="k">def</span> <span class="nf">_check_eplus_config</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Check Eplus Environment config definition is correct.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># EXTRA CONFIG</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">config_key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="c1"># Check config parameters values</span>
+                <span class="c1"># Timesteps</span>
+                <span class="k">if</span> <span class="n">config_key</span> <span class="o">==</span> <span class="s1">&#39;timesteps_per_hour&#39;</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">config_key</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Extra Config: timestep_per_hour must be a positive int value.&#39;</span>
+                <span class="c1"># Runperiod</span>
+                <span class="k">elif</span> <span class="n">config_key</span> <span class="o">==</span> <span class="s1">&#39;runperiod&#39;</span><span class="p">:</span>
+                    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">config_key</span><span class="p">],</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="n">config_key</span><span class="p">])</span> <span class="o">==</span> <span class="mi">6</span><span class="p">,</span> <span class="s1">&#39;Extra Config: Runperiod specified in extra configuration has an incorrect format (tuple with 6 elements).&#39;</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+                    <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span>
+                        <span class="sa">F</span><span class="s1">&#39;Extra Config: Key name specified in config called [</span><span class="si">{</span><span class="n">config_key</span><span class="si">}</span><span class="s1">] has no support in Sinergym.&#39;</span><span class="p">)</span>
+        <span class="c1"># ACTION DEFINITION</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_definition</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">original_sch_name</span><span class="p">,</span> <span class="n">new_sch</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_definition</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="c1"># Check action definition format</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">original_sch_name</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s1">&#39;Action definition: Keys must be str.&#39;</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">new_sch</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s1">&#39;Action definition: New scheduler definition must be a dict.&#39;</span>
+                <span class="k">assert</span> <span class="nb">set</span><span class="p">(</span>
+                    <span class="n">new_sch</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">==</span> <span class="nb">set</span><span class="p">(</span>
+                    <span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;initial_value&#39;</span><span class="p">]),</span> <span class="s1">&#39;Action definition: keys in new scheduler definition must be name and initial_value.&#39;</span>
+                <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+                    <span class="n">new_sch</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">),</span> <span class="s1">&#39;Action definition: Name field in new scheduler must be a str element.&#39;</span>
+                <span class="c1"># Check action definition component is in schedulers available</span>
+                <span class="c1"># in building model</span>
+                <span class="k">assert</span> <span class="n">original_sch_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedulers</span><span class="o">.</span><span class="n">keys</span><span class="p">(</span>
+                <span class="p">),</span> <span class="s1">&#39;Action definition: Object called </span><span class="si">{}</span><span class="s1"> is not an existing component in building model.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">original_sch_name</span><span class="p">)</span>
+                <span class="c1"># Check new variable is present in action variables</span>
+                <span class="k">assert</span> <span class="n">new_sch</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">],</span> <span class="s1">&#39;Action definition: </span><span class="si">{}</span><span class="s1"> external variable should be in action variables.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">new_sch</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">_check_observation_variables</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method checks whether observation variables are available in building model definition (Checking variable type definition too).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">obs_var</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]:</span>
+            <span class="c1"># Name of the observation variable and element (Zone or HVAC</span>
+            <span class="c1"># element name)</span>
+            <span class="n">obs_name</span> <span class="o">=</span> <span class="n">obs_var</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">obs_element_name</span> <span class="o">=</span> <span class="n">obs_var</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;(&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+            <span class="c1"># Check observarion variables names</span>
+            <span class="k">assert</span> <span class="n">obs_name</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rdd_variables</span><span class="o">.</span><span class="n">keys</span><span class="p">(</span>
+            <span class="p">)),</span> <span class="s1">&#39;Observation variables: Variable called </span><span class="si">{}</span><span class="s1"> in observation variables is not valid for IDF building model&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">obs_name</span><span class="p">)</span>
+            <span class="c1"># Check observation variables about zones (if variable type is</span>
+            <span class="c1"># Zone)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdd_variables</span><span class="p">[</span><span class="n">obs_name</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Zone&#39;</span><span class="p">:</span>
+                <span class="c1"># Check that obs zone is not Environment or Whole building tag</span>
+                <span class="k">if</span> <span class="n">obs_element_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;Environment&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span>
+                <span class="p">)</span> <span class="ow">and</span> <span class="n">obs_element_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;Whole Building&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                    <span class="c1"># zones names with people 1 or lights 1, etc. The second name</span>
+                    <span class="c1"># is ignored, only check that zone is a substr from obs</span>
+                    <span class="c1"># zone</span>
+                    <span class="k">assert</span> <span class="nb">any</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">zone</span><span class="p">:</span> <span class="n">zone</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">obs_element_name</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">idf_zone_names</span><span class="p">))</span>
+                               <span class="p">),</span> <span class="s1">&#39;Observation variables: Zone called </span><span class="si">{}</span><span class="s1"> in observation variables does not exist in IDF building model.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">obs_element_name</span><span class="p">)</span>
+            <span class="c1"># Check observation variables about HVAC</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">rdd_variables</span><span class="p">[</span><span class="n">obs_name</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;HVAC&#39;</span><span class="p">:</span>
+                <span class="k">pass</span></div>
+
+                <span class="c1"># ---------------------------------------------------------------------------- #</span>
+                <span class="c1">#                                    OTHERS                                    #</span>
+                <span class="c1"># ---------------------------------------------------------------------------- #</span>
+
+                <span class="c1"># def _set_thermostat_zone_control(self,</span>
+                <span class="c1">#                                  zone_control: Record,</span>
+                <span class="c1">#                                  controller_type: str,</span>
+                <span class="c1">#                                  controller: Dict[str,</span>
+                <span class="c1">#                                                   Any]) -&gt; None:</span>
+                <span class="c1">#     &quot;&quot;&quot;Modify Thermostat:ZoneControl object from IDF model in order to set a new controller</span>
+
+                <span class="c1">#     Args:</span>
+                <span class="c1">#         zone_control (Record): Zone Control to be modified.</span>
+                <span class="c1">#         controller_type (str): Controller type you want to change.</span>
+                <span class="c1">#         controller (Dict[str, Any]): controller to set in Zone Control.</span>
+                <span class="c1">#     &quot;&quot;&quot;</span>
+                <span class="c1">#     # We iterate all record fields searching</span>
+                <span class="c1">#     # controller_type value</span>
+                <span class="c1">#     for i in range(len(get_record_keys(zone_control))):</span>
+                <span class="c1">#         if isinstance(zone_control[i], str):</span>
+                <span class="c1">#             if zone_control[i].lower() == controller_type.lower():</span>
+                <span class="c1">#                 # Then, the next field will be always the DualSetpoint</span>
+                <span class="c1">#                 # thermostat name, so we change it</span>
+                <span class="c1">#                 zone_control[i + 1] = controller[&#39;name&#39;]</span>
+                <span class="c1">#                 # We do not need to search more fields in that record</span>
+                <span class="c1">#                 # specifically, so break it</span>
+                <span class="c1">#                 break</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
