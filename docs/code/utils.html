@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>utils package &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Train and Evaluate Statistics" href="../train_evaluate/index.html" />
+    <link rel="prev" title="train_ppo module" href="train_ppo.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="folder_structure.html">Folder Structure</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="modules.html">Class and member documentation</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="create_trainable.html">create_trainable module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.html">data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dcrl_env.html">dcrl_env module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dcrl_eplus_env.html">dcrl_eplus_env module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="envs.html">envs package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="evaluate_model.html">evaluate_model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="maddpg.html">maddpg module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train.html">train module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train_a2c.html">train_a2c module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train_maddpg.html">train_maddpg module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train_ppo.html">train_ppo module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-utils.base_agents">utils.base_agents module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-utils.dc_config">utils.dc_config module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-utils.dc_config_reader">utils.dc_config_reader module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-utils.helper_methods">utils.helper_methods module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-utils.make_envs">utils.make_envs module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-utils.make_envs_pyenv">utils.make_envs_pyenv module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-utils.managers">utils.managers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-utils.reward_creator">utils.reward_creator module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-utils.rllib_callbacks">utils.rllib_callbacks module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-utils.utils_cf">utils.utils_cf module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution_guidelines.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Code</a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Class and member documentation</a></li>
+      <li class="breadcrumb-item active">utils package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/code/utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="utils-package">
+<h1>utils package<a class="headerlink" href="#utils-package" title="Permalink to this headline"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-utils.base_agents">
+<span id="utils-base-agents-module"></span><h2>utils.base_agents module<a class="headerlink" href="#module-utils.base_agents" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.base_agents.BaseBatteryAgent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.base_agents.</span></span><span class="sig-name descname"><span class="pre">BaseBatteryAgent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseBatteryAgent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseBatteryAgent" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for battery agents.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.base_agents.BaseBatteryAgent.do_nothing_action">
+<span class="sig-name descname"><span class="pre">do_nothing_action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseBatteryAgent.do_nothing_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseBatteryAgent.do_nothing_action" title="Permalink to this definition"></a></dt>
+<dd><p>Return the do nothing action.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The action (do nothing) to be taken.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>action (int)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.base_agents.BaseHVACAgent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.base_agents.</span></span><span class="sig-name descname"><span class="pre">BaseHVACAgent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseHVACAgent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseHVACAgent" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for HVAC agents.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.base_agents.BaseHVACAgent.do_nothing_action">
+<span class="sig-name descname"><span class="pre">do_nothing_action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseHVACAgent.do_nothing_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseHVACAgent.do_nothing_action" title="Permalink to this definition"></a></dt>
+<dd><p>Return the do nothing action.</p>
+<blockquote>
+<div><p>action (int): The action (do nothing) to be taken.</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.base_agents.BaseLoadShiftingAgent">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.base_agents.</span></span><span class="sig-name descname"><span class="pre">BaseLoadShiftingAgent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseLoadShiftingAgent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseLoadShiftingAgent" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Base class for load shifting agents.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.base_agents.BaseLoadShiftingAgent.do_nothing_action">
+<span class="sig-name descname"><span class="pre">do_nothing_action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseLoadShiftingAgent.do_nothing_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseLoadShiftingAgent.do_nothing_action" title="Permalink to this definition"></a></dt>
+<dd><p>Return the do nothing action.</p>
+<blockquote>
+<div><p>action (int): The action (do nothing) to be taken.</p>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-utils.dc_config">
+<span id="utils-dc-config-module"></span><h2>utils.dc_config module<a class="headerlink" href="#module-utils.dc_config" title="Permalink to this headline"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="utils.dc_config.CT_REFRENCE_AIR_FLOW_RATE">
+<span class="sig-prename descclassname"><span class="pre">utils.dc_config.</span></span><span class="sig-name descname"><span class="pre">CT_REFRENCE_AIR_FLOW_RATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.8315243039169418</span></em><a class="headerlink" href="#utils.dc_config.CT_REFRENCE_AIR_FLOW_RATE" title="Permalink to this definition"></a></dt>
+<dd><p>References:
+[1]: Postema, Björn Frits. “Energy-efficient data centres: model-based analysis of power-performance trade-offs.” (2018).
+[2]: Raghunathan, S., &amp; Vk, M. (2014). Power management using dynamic power state transitions and dynamic voltage frequency scaling controls in virtualized server clusters. Turkish Journal of Electrical Engineering and Computer Sciences, 24(4). doi: 10.3906/elk-1403-264
+[3]: Sun, Kaiyu, et al. “Prototype energy models for data centers.” Energy and Buildings 231 (2021): 110603.
+[4]: Breen, Thomas J., et al. “From chip to cooling tower data center modeling: Part I influence of server inlet temperature and temperature rise across cabinet.” 2010 12th IEEE Intersociety Conference on Thermal and Thermomechanical Phenomena in Electronic Systems. IEEE, 2010.
+[5]: <a class="reference external" href="https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water">https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water</a>.</p>
+</dd></dl>
+
+</section>
+<section id="module-utils.dc_config_reader">
+<span id="utils-dc-config-reader-module"></span><h2>utils.dc_config_reader module<a class="headerlink" href="#module-utils.dc_config_reader" title="Permalink to this headline"></a></h2>
+<dl class="py data">
+<dt class="sig sig-object py" id="utils.dc_config_reader.CT_REFRENCE_AIR_FLOW_RATE">
+<span class="sig-prename descclassname"><span class="pre">utils.dc_config_reader.</span></span><span class="sig-name descname"><span class="pre">CT_REFRENCE_AIR_FLOW_RATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.8315</span></em><a class="headerlink" href="#utils.dc_config_reader.CT_REFRENCE_AIR_FLOW_RATE" title="Permalink to this definition"></a></dt>
+<dd><p>References:
+[1]: Postema, Björn Frits. “Energy-efficient data centres: model-based analysis of power-performance trade-offs.” (2018).
+[2]: Raghunathan, S., &amp; Vk, M. (2014). Power management using dynamic power state transitions and dynamic voltage frequency scaling controls in virtualized server clusters. Turkish Journal of Electrical Engineering and Computer Sciences, 24(4). doi: 10.3906/elk-1403-264
+[3]: Sun, Kaiyu, et al. “Prototype energy models for data centers.” Energy and Buildings 231 (2021): 110603.
+[4]: Breen, Thomas J., et al. “From chip to cooling tower data center modeling: Part I influence of server inlet temperature and temperature rise across cabinet.” 2010 12th IEEE Intersociety Conference on Thermal and Thermomechanical Phenomena in Electronic Systems. IEEE, 2010.
+[5]: <a class="reference external" href="https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water">https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water</a>.</p>
+</dd></dl>
+
+</section>
+<section id="module-utils.helper_methods">
+<span id="utils-helper-methods-module"></span><h2>utils.helper_methods module<a class="headerlink" href="#module-utils.helper_methods" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.helper_methods.f2c">
+<span class="sig-prename descclassname"><span class="pre">utils.helper_methods.</span></span><span class="sig-name descname"><span class="pre">f2c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/helper_methods.html#f2c"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.helper_methods.f2c" title="Permalink to this definition"></a></dt>
+<dd><p>Converts temperature in Fahrenheit to Celsius using the formula (5/9)*(t-23).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>t</strong> (<em>float</em>) – Temperature in Fahrenheit.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Temperature in Celsius.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.helper_methods.pyeplus_callback">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.helper_methods.</span></span><span class="sig-name descname"><span class="pre">pyeplus_callback</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">legacy_callbacks_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">callable</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/helper_methods.html#pyeplus_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.helper_methods.pyeplus_callback" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ray.rllib.algorithms.callbacks.DefaultCallbacks</span></code></p>
+<p>Custom callbacks class that extends the DefaultCallbacks class.</p>
+<p>Defines callback methods that are triggered at various points of the training process.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.helper_methods.pyeplus_callback.on_episode_end">
+<span class="sig-name descname"><span class="pre">on_episode_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_index</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/helper_methods.html#pyeplus_callback.on_episode_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.helper_methods.pyeplus_callback.on_episode_end" title="Permalink to this definition"></a></dt>
+<dd><p>Method that is called at the end of each episode in the training process.</p>
+<p>Calculates some metrics based on the user_data variables updated during the episode.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>worker</strong> (<em>Worker</em>) – The worker object that is being used in the training process.</p></li>
+<li><p><strong>base_env</strong> (<em>BaseEnv</em>) – The base environment that is being used in the training process.</p></li>
+<li><p><strong>policies</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Policy</em><em>]</em>) – The policies that are being used in the training process.</p></li>
+<li><p><strong>episode</strong> (<em>MultiAgentEpisode</em>) – The episode object that is being processed.</p></li>
+<li><p><strong>env_index</strong> (<em>int</em>) – The index of the environment within the worker task.</p></li>
+<li><p><strong>**kwargs</strong> – additional arguments that can be passed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.helper_methods.pyeplus_callback.on_episode_start">
+<span class="sig-name descname"><span class="pre">on_episode_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_index</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/helper_methods.html#pyeplus_callback.on_episode_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.helper_methods.pyeplus_callback.on_episode_start" title="Permalink to this definition"></a></dt>
+<dd><p>Method that is called at the beginning of each episode in the training process.</p>
+<p>Initializes some user_data variables to be used later on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>worker</strong> (<em>Worker</em>) – The worker object that is being used in the training process.</p></li>
+<li><p><strong>base_env</strong> (<em>BaseEnv</em>) – The base environment that is being used in the training process.</p></li>
+<li><p><strong>policies</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Policy</em><em>]</em>) – The policies that are being used in the training process.</p></li>
+<li><p><strong>episode</strong> (<em>MultiAgentEpisode</em>) – The episode object that is being processed.</p></li>
+<li><p><strong>env_index</strong> (<em>int</em>) – The index of the environment within the worker task.</p></li>
+<li><p><strong>**kwargs</strong> – additional arguments that can be passed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.helper_methods.pyeplus_callback.on_episode_step">
+<span class="sig-name descname"><span class="pre">on_episode_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_index</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/helper_methods.html#pyeplus_callback.on_episode_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.helper_methods.pyeplus_callback.on_episode_step" title="Permalink to this definition"></a></dt>
+<dd><p>Method that is called at each step of each episode in the training process.</p>
+<p>Updates some user_data variables to be used later on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>worker</strong> (<em>Worker</em>) – The worker object that is being used in the training process.</p></li>
+<li><p><strong>base_env</strong> (<em>BaseEnv</em>) – The base environment that is being used in the training process.</p></li>
+<li><p><strong>episode</strong> (<em>MultiAgentEpisode</em>) – The episode object that is being processed.</p></li>
+<li><p><strong>env_index</strong> (<em>int</em>) – The index of the environment within the worker task.</p></li>
+<li><p><strong>**kwargs</strong> – additional arguments that can be passed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-utils.make_envs">
+<span id="utils-make-envs-module"></span><h2>utils.make_envs module<a class="headerlink" href="#module-utils.make_envs" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.make_envs.make_bat_fwd_env">
+<span class="sig-prename descclassname"><span class="pre">utils.make_envs.</span></span><span class="sig-name descname"><span class="pre">make_bat_fwd_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">month</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/make_envs.html#make_bat_fwd_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.make_envs.make_bat_fwd_env" title="Permalink to this definition"></a></dt>
+<dd><p>Method to build the Battery environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>month</strong> (<em>int</em>) – Month of the year in which the agent is training.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Batery environment.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>battery_env_fwd</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.make_envs.make_dc_env">
+<span class="sig-prename descclassname"><span class="pre">utils.make_envs.</span></span><span class="sig-name descname"><span class="pre">make_dc_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/make_envs.html#make_dc_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.make_envs.make_dc_env" title="Permalink to this definition"></a></dt>
+<dd><p>Method to build the energy model using EnergyPlus</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>month</strong> (<em>int</em>) – Month of the year in which the agent is training.</p></li>
+<li><p><strong>location</strong> (<em>'string'</em>) – Location from we are taking the weather data from.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Energy environment</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>datacenter_env</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.make_envs.make_ls_env">
+<span class="sig-prename descclassname"><span class="pre">utils.make_envs.</span></span><span class="sig-name descname"><span class="pre">make_ls_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_battery</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/make_envs.html#make_ls_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.make_envs.make_ls_env" title="Permalink to this definition"></a></dt>
+<dd><p>Method to build the Load shifting environment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>month</strong> (<em>int</em>) – Month of the year in which the agent is training.</p></li>
+<li><p><strong>n_vars_energy</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of variables from the Energy environment. Defaults to 4.</p></li>
+<li><p><strong>n_vars_battery</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of variables from the Battery environment. Defaults to 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Load Shifting environment</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="envs.html#envs.carbon_ls.CarbonLoadEnv" title="envs.carbon_ls.CarbonLoadEnv">CarbonLoadEnv</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-utils.make_envs_pyenv">
+<span id="utils-make-envs-pyenv-module"></span><h2>utils.make_envs_pyenv module<a class="headerlink" href="#module-utils.make_envs_pyenv" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.make_envs_pyenv.make_bat_fwd_env">
+<span class="sig-prename descclassname"><span class="pre">utils.make_envs_pyenv.</span></span><span class="sig-name descname"><span class="pre">make_bat_fwd_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bat_cap_Mw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">charging_rate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/make_envs_pyenv.html#make_bat_fwd_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.make_envs_pyenv.make_bat_fwd_env" title="Permalink to this definition"></a></dt>
+<dd><p>Method to build the Battery environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>month</strong> (<em>int</em>) – Month of the year in which the agent is training.</p></li>
+<li><p><strong>max_bat_cap_Mw</strong> (<em>float</em><em>, </em><em>optional</em>) – Max battery capacity. Defaults to 2.0.</p></li>
+<li><p><strong>charging_rate</strong> (<em>float</em><em>, </em><em>optional</em>) – Charging rate of the battery. Defaults to 0.5.</p></li>
+<li><p><strong>reward_method</strong> (<em>str</em><em>, </em><em>optional</em>) – Method used to calculate the rewards. Defaults to ‘default_bat_reward’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Batery environment.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>battery_env_fwd</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.make_envs_pyenv.make_dc_pyeplus_env">
+<span class="sig-prename descclassname"><span class="pre">utils.make_envs_pyenv.</span></span><span class="sig-name descname"><span class="pre">make_dc_pyeplus_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">month</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'NYIS'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weather_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'USA_NY_New.York-Kennedy.epw'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workload_filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Alibaba_CPU_Data_Hourly_1.csv'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bat_cap_Mw</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">2.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_cpu_usage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_CI</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode_length_in_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas._libs.tslibs.timedeltas.Timedelta</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_ls_cpu_load</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">standalone_pyeplus</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_sin_cos_vars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/make_envs_pyenv.html#make_dc_pyeplus_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.make_envs_pyenv.make_dc_pyeplus_env" title="Permalink to this definition"></a></dt>
+<dd><p>Method that creates the data center environment with the timeline, location, proper data files, gym specifications and auxiliary methods</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>month</strong> (<em>int</em><em>, </em><em>optional</em>) – The month of the year for which the Environment uses the weather and Carbon Intensity data. Defaults to 1.</p></li>
+<li><p><strong>location</strong> (<em>str</em><em>, </em><em>optional</em>) – The geographical location in a standard format for which Carbon Intensity files are accessed. Supported options are
+‘NYIS’, ‘AZPS’, ‘BPAT’. Defaults to ‘NYIS’.</p></li>
+<li><p><strong>weather_filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename that stores the weather data. Files should be stored under ./data/Weather. Currently supports .epw file only.  Defaults to
+‘USA_NY_New.York-Kennedy.epw’.</p></li>
+<li><p><strong>workload_filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename that stores the default CPU workload data. Files should be stored under ./data/Workload. Defaults to
+‘Alibaba_CPU_Data_Hourly_1.csv’.</p></li>
+<li><p><strong>max_bat_cap_Mw</strong> (<em>float</em><em>, </em><em>optional</em>) – The battery capacity in Megawatts for the installed battery. Defaults to 2.0.</p></li>
+<li><p><strong>add_cpu_usage</strong> (<em>bool</em><em>, </em><em>optional</em>) – Boolean Flag to indicate whether cpu usage is part of the environment statespace. Defaults to True.</p></li>
+<li><p><strong>add_CI</strong> (<em>bool</em><em>, </em><em>optional</em>) – Boolean Flag to indicate whether Carbon Intensity is part of the environment statespace. Defaults to True.</p></li>
+<li><p><strong>episode_length_in_time</strong> (<em>pd.Timedelta</em><em>, </em><em>optional</em>) – Length of an episode in terms of pandas time-delta object. Defaults to None.</p></li>
+<li><p><strong>use_ls_cpu_load</strong> (<em>bool</em><em>, </em><em>optional</em>) – Use the cpu workload value from a separate Load Shifting agent. This turns of reading default cpu data. Defaults to False.</p></li>
+<li><p><strong>standalone_pyeplus</strong> (<em>bool</em><em>, </em><em>optional</em>) – Boolean Flag to indicate whether the data center environment is being tested in a standalone manner or not. Defaults to False.</p></li>
+<li><p><strong>num_sin_cos_vars</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of sin and cosine variable that will be added externally from the centralized data source</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The environment instantiated with the particular month.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="envs.html#envs.dc_gym.dc_gymenv" title="envs.dc_gym.dc_gymenv">envs.dc_gym.dc_gymenv</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.make_envs_pyenv.make_ls_env">
+<span class="sig-prename descclassname"><span class="pre">utils.make_envs_pyenv.</span></span><span class="sig-name descname"><span class="pre">make_ls_env</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">month</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_energy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_battery</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/make_envs_pyenv.html#make_ls_env"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.make_envs_pyenv.make_ls_env" title="Permalink to this definition"></a></dt>
+<dd><p>Method to build the Load shifting environment</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>month</strong> (<em>int</em>) – Month of the year in which the agent is training.</p></li>
+<li><p><strong>n_vars_energy</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of variables from the Energy environment. Defaults to 4.</p></li>
+<li><p><strong>n_vars_battery</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of variables from the Battery environment. Defaults to 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Load Shifting environment</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="envs.html#envs.carbon_ls.CarbonLoadEnv" title="envs.carbon_ls.CarbonLoadEnv">CarbonLoadEnv</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-utils.managers">
+<span id="utils-managers-module"></span><h2>utils.managers module<a class="headerlink" href="#module-utils.managers" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.managers.CI_Manager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">CI_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NYIS'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CI_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CI_Manager" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.CI_Manager.get_total_ci">
+<span class="sig-name descname"><span class="pre">get_total_ci</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CI_Manager.get_total_ci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CI_Manager.get_total_ci" title="Permalink to this definition"></a></dt>
+<dd><p>Function to obtain the total carbon intensity</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Total carbon intesity</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.CI_Manager.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CI_Manager.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CI_Manager.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Reset CI_Manager</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Carbon intensity at current time step
+float: Normalized carbon intensity at current time step and it’s forecast</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.CI_Manager.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CI_Manager.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CI_Manager.step" title="Permalink to this definition"></a></dt>
+<dd><p>Step CI_Manager</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Carbon intensity at current time step
+float: Normalized carbon intensity at current time step and it’s forecast</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.managers.CoherentNoise">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">CoherentNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CoherentNoise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CoherentNoise" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to add coherent noise to the data.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.CoherentNoise.generate">
+<span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CoherentNoise.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CoherentNoise.generate" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.managers.Time_Manager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">Time_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">days_per_episode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Time_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Time_Manager" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Time_Manager.isterminal">
+<span class="sig-name descname"><span class="pre">isterminal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Time_Manager.isterminal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Time_Manager.isterminal" title="Permalink to this definition"></a></dt>
+<dd><p>Function to identify terminal state</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Signals if a state is terminal or not</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>bool</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Time_Manager.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Time_Manager.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Time_Manager.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Reset time manager to initial day</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Hour and day in sine and cosine form</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Time_Manager.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Time_Manager.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Time_Manager.step" title="Permalink to this definition"></a></dt>
+<dd><p>Step function for the time maneger</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Current hour and day in sine and cosine form.
+bool: Signal if the episode has reach the end.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.managers.Weather_Manager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">Weather_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NY'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Weather_Manager.get_total_weather">
+<span class="sig-name descname"><span class="pre">get_total_weather</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager.get_total_weather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager.get_total_weather" title="Permalink to this definition"></a></dt>
+<dd><p>Obtain the weather data in a List form</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Total temperature data</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[form]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Weather_Manager.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Reset Weather_Manager</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Temperature a current step
+float: Normalized temperature a current step</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Weather_Manager.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager.step" title="Permalink to this definition"></a></dt>
+<dd><p>Step on the Weather_Manager</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Temperature a current step
+float: Normalized temperature a current step</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.managers.Workload_Manager">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">Workload_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workload_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.025</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexible_workload_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Workload_Manager.get_total_wkl">
+<span class="sig-name descname"><span class="pre">get_total_wkl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager.get_total_wkl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager.get_total_wkl" title="Permalink to this definition"></a></dt>
+<dd><p>Get current workload</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>CPU data</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Workload_Manager.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Reset Workload_Manager</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>CPU workload at current time step
+float: Amount of daily flexible workload</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Workload_Manager.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager.step" title="Permalink to this definition"></a></dt>
+<dd><p>Step function for the Workload_Manager</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>CPU workload at current time step
+float: Amount of daily flexible workload</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.managers.normalize">
+<span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.normalize" title="Permalink to this definition"></a></dt>
+<dd><p>Function to normalize values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>v</strong> (<em>float</em>) – Value to be normalized</p></li>
+<li><p><strong>min_v</strong> (<em>float</em>) – Lower limit</p></li>
+<li><p><strong>max_v</strong> (<em>float</em>) – Upper limit</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Normalized value</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.managers.sc_obs">
+<span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">sc_obs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_hour</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_day</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#sc_obs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.sc_obs" title="Permalink to this definition"></a></dt>
+<dd><p>Generate sine and cosine of the hour and day</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>current_hour</strong> (<em>int</em>) – Current hour of the day</p></li>
+<li><p><strong>current_day</strong> (<em>int</em>) – Current day of the year</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Sine and cosine of the hour and day</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.managers.standarize">
+<span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">standarize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#standarize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.standarize" title="Permalink to this definition"></a></dt>
+<dd><p>Function to standarize a list of values</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>v</strong> (<em>float</em>) – Values to be normalized</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Normalized values</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-utils.reward_creator">
+<span id="utils-reward-creator-module"></span><h2>utils.reward_creator module<a class="headerlink" href="#module-utils.reward_creator" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.custom_agent_reward">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">custom_agent_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/reward_creator.html#custom_agent_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.custom_agent_reward" title="Permalink to this definition"></a></dt>
+<dd><p>A template for creating a custom agent reward function.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – Dictionary containing custom parameters for reward calculation.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Custom reward value. Currently returns 0.0 as a placeholder.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.default_bat_reward">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">default_bat_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/reward_creator.html#default_bat_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.default_bat_reward" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates a reward value based on the battery usage.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – Dictionary containing parameters:
+total_energy_with_battery (float): Total energy with battery.
+norm_CI (float): Normalized Carbon Intensity.
+dcload_min (float): Minimum DC load.
+dcload_max (float): Maximum DC load.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reward value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.default_dc_reward">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">default_dc_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/reward_creator.html#default_dc_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.default_dc_reward" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates a reward value based on the data center’s total ITE Load and CT Cooling load.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – Dictionary containing parameters:
+data_center_total_ITE_Load (float): Total ITE Load of the data center.
+CT_Cooling_load (float): CT Cooling load of the data center.
+energy_lb (float): Lower bound of the energy.
+energy_ub (float): Upper bound of the energy.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reward value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.default_ls_reward">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">default_ls_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/reward_creator.html#default_ls_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.default_ls_reward" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates a reward value based on normalized load shifting.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – Dictionary containing parameters:
+norm_load_left (float): Normalized load left.
+out_of_time (bool): Indicator (alarm) whether the agent is in the last hour of the day.
+penalty (float): Penalty value.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reward value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.energy_PUE_reward">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">energy_PUE_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/reward_creator.html#energy_PUE_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.energy_PUE_reward" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates a reward value based on Power Usage Effectiveness (PUE).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – Dictionary containing parameters:
+total_energy_consumption (float): Total energy consumption of the data center.
+it_equipment_energy (float): Energy consumed by the IT equipment.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reward value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.energy_efficiency_reward">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">energy_efficiency_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/reward_creator.html#energy_efficiency_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.energy_efficiency_reward" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates a reward value based on energy efficiency.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – Dictionary containing parameters:
+ITE_load (float): The amount of energy spent on computation (useful work).
+total_energy_consumption (float): Total energy consumption of the data center.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reward value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.get_reward_method">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">get_reward_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reward_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default_dc_reward'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/reward_creator.html#get_reward_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.get_reward_method" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.renewable_energy_reward">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">renewable_energy_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/reward_creator.html#renewable_energy_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.renewable_energy_reward" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates a reward value based on the usage of renewable energy sources.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – Dictionary containing parameters:
+renewable_energy_ratio (float): Ratio of energy coming from renewable sources.
+total_energy_consumption (float): Total energy consumption of the data center.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reward value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.temperature_efficiency_reward">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">temperature_efficiency_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/reward_creator.html#temperature_efficiency_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.temperature_efficiency_reward" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates a reward value based on the efficiency of cooling in the data center.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – Dictionary containing parameters:
+current_temperature (float): Current temperature in the data center.
+optimal_temperature_range (tuple): Tuple containing the minimum and maximum optimal temperatures for the data center.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reward value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.tou_reward">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">tou_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/reward_creator.html#tou_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.tou_reward" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates a reward value based on the Time of Use (ToU) of energy.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>params</strong> (<em>dict</em>) – Dictionary containing parameters:
+energy_usage (float): The energy usage of the agent.
+hour (int): The current hour of the day (24-hour format).</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reward value.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-utils.rllib_callbacks">
+<span id="utils-rllib-callbacks-module"></span><h2>utils.rllib_callbacks module<a class="headerlink" href="#module-utils.rllib_callbacks" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="utils.rllib_callbacks.CustomCallbacks">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.rllib_callbacks.</span></span><span class="sig-name descname"><span class="pre">CustomCallbacks</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">legacy_callbacks_dict</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">callable</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/rllib_callbacks.html#CustomCallbacks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.rllib_callbacks.CustomCallbacks" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ray.rllib.algorithms.callbacks.DefaultCallbacks</span></code></p>
+<p>CustomCallbacks class that extends the DefaultCallbacks class and overrides its methods to customize the
+behavior of the callbacks during the RL training process.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.rllib_callbacks.CustomCallbacks.on_episode_end">
+<span class="sig-name descname"><span class="pre">on_episode_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_index</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/utils/rllib_callbacks.html#CustomCallbacks.on_episode_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.rllib_callbacks.CustomCallbacks.on_episode_end" title="Permalink to this definition"></a></dt>
+<dd><p>Method that is called at the end of each episode in the training process. It calculates some metrics based
+on the updated user_data variables.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>worker</strong> (<em>Worker</em>) – The worker object that is being used in the training process.</p></li>
+<li><p><strong>base_env</strong> (<em>BaseEnv</em>) – The base environment that is being used in the training process.</p></li>
+<li><p><strong>policies</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Policy</em><em>]</em>) – The policies that are being used in the training process.</p></li>
+<li><p><strong>episode</strong> (<em>MultiAgentEpisode</em>) – The episode object that is being processed.</p></li>
+<li><p><strong>env_index</strong> (<em>int</em>) – The index of the environment within the worker task.</p></li>
+<li><p><strong>**kwargs</strong> – additional arguments that can be passed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.rllib_callbacks.CustomCallbacks.on_episode_start">
+<span class="sig-name descname"><span class="pre">on_episode_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_index</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/utils/rllib_callbacks.html#CustomCallbacks.on_episode_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.rllib_callbacks.CustomCallbacks.on_episode_start" title="Permalink to this definition"></a></dt>
+<dd><p>Method that is called at the beginning of each episode in the training process. It sets some user_data
+variables to be used later on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>worker</strong> (<em>Worker</em>) – The worker object that is being used in the training process.</p></li>
+<li><p><strong>base_env</strong> (<em>BaseEnv</em>) – The base environment that is being used in the training process.</p></li>
+<li><p><strong>policies</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Policy</em><em>]</em>) – The policies that are being used in the training process.</p></li>
+<li><p><strong>episode</strong> (<em>MultiAgentEpisode</em>) – The episode object that is being processed.</p></li>
+<li><p><strong>env_index</strong> (<em>int</em>) – The index of the environment within the worker task.</p></li>
+<li><p><strong>**kwargs</strong> – additional arguments that can be passed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.rllib_callbacks.CustomCallbacks.on_episode_step">
+<span class="sig-name descname"><span class="pre">on_episode_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_index</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/utils/rllib_callbacks.html#CustomCallbacks.on_episode_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.rllib_callbacks.CustomCallbacks.on_episode_step" title="Permalink to this definition"></a></dt>
+<dd><p>Method that is called at each step of each episode in the training process. It updates some user_data
+variables to be used later on.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>worker</strong> (<em>Worker</em>) – The worker object that is being used in the training process.</p></li>
+<li><p><strong>base_env</strong> (<em>BaseEnv</em>) – The base environment that is being used in the training process.</p></li>
+<li><p><strong>episode</strong> (<em>MultiAgentEpisode</em>) – The episode object that is being processed.</p></li>
+<li><p><strong>env_index</strong> (<em>int</em>) – The index of the environment within the worker task.</p></li>
+<li><p><strong>**kwargs</strong> – additional arguments that can be passed.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-utils.utils_cf">
+<span id="utils-utils-cf-module"></span><h2>utils.utils_cf module<a class="headerlink" href="#module-utils.utils_cf" title="Permalink to this headline"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils_cf.get_energy_variables">
+<span class="sig-prename descclassname"><span class="pre">utils.utils_cf.</span></span><span class="sig-name descname"><span class="pre">get_energy_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/utils_cf.html#get_energy_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.utils_cf.get_energy_variables" title="Permalink to this definition"></a></dt>
+<dd><p>Obtain energy variables from the energy observation</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>state</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – agent_dc observation</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Subset of the agent_dc observation</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>List[float]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils_cf.get_init_day">
+<span class="sig-prename descclassname"><span class="pre">utils.utils_cf.</span></span><span class="sig-name descname"><span class="pre">get_init_day</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_month</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/utils_cf.html#get_init_day"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.utils_cf.get_init_day" title="Permalink to this definition"></a></dt>
+<dd><p>Obtain the initial day of the year to start the episode on</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>start_month</strong> (<em>int</em><em>, </em><em>optional</em>) – Starting month. Defaults to 0.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Day of the year corresponding to the first day of the month</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="utils.utils_cf.obtain_paths">
+<span class="sig-prename descclassname"><span class="pre">utils.utils_cf.</span></span><span class="sig-name descname"><span class="pre">obtain_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/utils_cf.html#obtain_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.utils_cf.obtain_paths" title="Permalink to this definition"></a></dt>
+<dd><p>Obtain the correct name for the data files</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>location</strong> (<em>string</em>) – Location identifier</p>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If location identifier is not defined</p>
+</dd>
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Naming for the data files</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>List[string]</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-utils" title="Permalink to this headline"></a></h2>
+<p>Includes common utilities, controllers, rewards, wrappers and custom callbacks.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="train_ppo.html" class="btn btn-neutral float-left" title="train_ppo module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../train_evaluate/index.html" class="btn btn-neutral float-right" title="Train and Evaluate Statistics" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

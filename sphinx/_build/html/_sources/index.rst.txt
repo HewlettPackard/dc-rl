@@ -35,4 +35,6 @@ Main contributions of DCRL-Green:
    usage/index
    overview/index
    code/index
+   train_evaluate/index
+   contribution_guidelines
    references
