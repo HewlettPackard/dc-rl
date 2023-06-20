@@ -8,9 +8,7 @@ Agents,"[""agents_ls"" , ""agents_dc"" , ""agents_bat""]","List of agents (ls= l
 max_bat_cap_Mw,2,Battery capacity
 individual_reward_weight,0.8,:math:`\eta` value for collaborative weight in rewards
 flexible_load,0.1,Ratio of workload that is flexible
-Save model,FALSE,Indicates option to store the training checkpoints
 gamma,0.99,Represents the discount factor
-Total timesteps,100_000_000_000,total timesteps of the experiments
 NUM_AGENTS ,3,Number of agents
 NUM_WORKERS ,24,"Specifies the number of parallel environments, it must be in multiples of 12"
 Batch size,6912,Provides the batch size to sample from the replay memory

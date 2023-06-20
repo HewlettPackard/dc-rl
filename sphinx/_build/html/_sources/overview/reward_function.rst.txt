@@ -71,6 +71,12 @@ Add the new custom reward function to the :code:`REWARD_METHOD_MAP` dictionary.
         
     }
 
+A dictionary of environment parameters is made available to the users. Based on the custom objective and requirements, a combination of these parameters can be utilised in defining the rewards.
+
+.. csv-table::
+   :file: ../tables/reward_params.csv
+   :header-rows: 1
+
 Some examples of custom rewards are listed below:
 
 *Example 1*
