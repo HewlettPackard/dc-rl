@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>envs.datacenter &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code/index.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution_guidelines.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">envs.datacenter</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for envs.datacenter</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<div class="viewcode-block" id="CPU"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.CPU">[docs]</a><span class="k">class</span> <span class="nc">CPU</span><span class="p">():</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">full_load_pwr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">idle_pwr</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">cpu_config</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span> 
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;CPU class in charge of the energy consumption and termal calculations of the individuals CPUs</span>
+<span class="sd">            in a Rack.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            full_load_pwr (float, optional): Power at full capacity.</span>
+<span class="sd">            idle_pwr (float, optional): Power while idle.</span>
+<span class="sd">            cpu_config (config): Configuration for the DC.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span> <span class="o">=</span> <span class="n">cpu_config</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">full_load_pwr</span> <span class="o">=</span> <span class="n">full_load_pwr</span>  <span class="k">if</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">HP_PROLIANT</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">idle_pwr</span> <span class="o">=</span> <span class="n">idle_pwr</span> <span class="k">if</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">HP_PROLIANT</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_cpu</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_cpu</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_itfan</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_itfan</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpu_curve1</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">itfan_curve2</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_fan</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># needed later for calculating outlet temperature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_DC_full_load</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="CPU.cpu_curve1"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.CPU.cpu_curve1">[docs]</a>    <span class="k">def</span> <span class="nf">cpu_curve1</span><span class="p">(</span><span class="bp">self</span><span class="p">,):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        initialize the  cpu power ratio curve at different IT workload ratios as a function of inlet temperatures [3]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># curve parameters at lowest temperature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_cpu</span>  <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">CPU_POWER_RATIO_UB</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">CPU_POWER_RATIO_LB</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">INLET_TEMP_RANGE</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">INLET_TEMP_RANGE</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_cpu</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">CPU_POWER_RATIO_UB</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_cpu</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">INLET_TEMP_RANGE</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># max vertical shift in power ratio curve at a given point for 100% change in ITE input load pct</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ratio_shift_max_cpu</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">CPU_POWER_RATIO_LB</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">CPU_POWER_RATIO_LB</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="CPU.itfan_curve2"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.CPU.itfan_curve2">[docs]</a>    <span class="k">def</span> <span class="nf">itfan_curve2</span><span class="p">(</span><span class="bp">self</span><span class="p">,):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        initialize the itfan velocity ratio curve at different IT workload ratios as a function of inlet temperatures [3]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># curve parameters at lowest temperature</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m_itfan</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">IT_FAN_AIRFLOW_RATIO_UB</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">IT_FAN_AIRFLOW_RATIO_LB</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">INLET_TEMP_RANGE</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">INLET_TEMP_RANGE</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">c_itfan</span> <span class="o">=</span>  <span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">IT_FAN_AIRFLOW_RATIO_UB</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_itfan</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">INLET_TEMP_RANGE</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="c1"># max vertical shift in power ratio curve at a given point for 100% change in ITE input load pct</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ratio_shift_max_itfan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">IT_FAN_AIRFLOW_RATIO_LB</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">IT_FAN_AIRFLOW_RATIO_LB</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>      </div>
+
+<div class="viewcode-block" id="CPU.compute_instantaneous_cpu_pwr"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.CPU.compute_instantaneous_cpu_pwr">[docs]</a>    <span class="k">def</span> <span class="nf">compute_instantaneous_cpu_pwr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlet_temp</span><span class="p">,</span> <span class="n">ITE_load_pct</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the power consumption of the CPUs at the current step</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inlet_temp (float): Room temperature</span>
+<span class="sd">            ITE_load_pct (float): Current CPU usage</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            cpu_power (float): Current CPU power usage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">((</span><span class="n">inlet_temp</span><span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">INLET_TEMP_RANGE</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">inlet_temp</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">INLET_TEMP_RANGE</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="sa">f</span><span class="s2">&quot;Server Inlet Temp Outside 18C - 27C range. Current Val </span><span class="si">{</span><span class="n">inlet_temp</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">base_cpu_power_ratio</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m_cpu</span><span class="o">+</span><span class="mf">0.05</span><span class="p">)</span><span class="o">*</span><span class="n">inlet_temp</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_cpu</span>
+        <span class="n">cpu_power_ratio_at_inlet_temp</span> <span class="o">=</span> <span class="n">base_cpu_power_ratio</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratio_shift_max_cpu</span><span class="o">*</span><span class="p">(</span><span class="n">ITE_load_pct</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">cpu_power</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">idle_pwr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">full_load_pwr</span><span class="o">*</span><span class="n">cpu_power_ratio_at_inlet_temp</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">cpu_power</span></div>
+    
+<div class="viewcode-block" id="CPU.compute_instantaneous_fan_pwr"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.CPU.compute_instantaneous_fan_pwr">[docs]</a>    <span class="k">def</span> <span class="nf">compute_instantaneous_fan_pwr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlet_temp</span><span class="p">,</span> <span class="n">ITE_load_pct</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the power consumption of the Fans of the IT equipment at the current step</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inlet_temp (float): Room temperature</span>
+<span class="sd">            ITE_load_pct (float): Current CPU usage</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            cpu_power (float): Current Fans power usage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="p">((</span><span class="n">inlet_temp</span><span class="o">&gt;</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">INLET_TEMP_RANGE</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">inlet_temp</span><span class="o">&lt;</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">INLET_TEMP_RANGE</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="sa">f</span><span class="s2">&quot;Server Inlet Temp Outside 18C - 27C range. Current Val </span><span class="si">{</span><span class="n">inlet_temp</span><span class="si">}</span><span class="s2">&quot;</span>
+        <span class="n">base_itfan_v_ratio</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">m_itfan</span><span class="o">*</span><span class="n">inlet_temp</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">c_itfan</span>
+        <span class="n">itfan_v_ratio_at_inlet_temp</span> <span class="o">=</span> <span class="n">base_itfan_v_ratio</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">ratio_shift_max_itfan</span><span class="o">*</span><span class="p">(</span><span class="n">ITE_load_pct</span><span class="o">/</span><span class="mi">100</span><span class="p">)</span>
+        <span class="n">itfan_pwr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">ITFAN_REF_P</span> <span class="o">*</span> <span class="p">(</span><span class="n">itfan_v_ratio_at_inlet_temp</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">ITFAN_REF_V_RATIO</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span>  <span class="c1"># [4] Eqn (3)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">v_fan</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_config</span><span class="o">.</span><span class="n">IT_FAN_FULL_LOAD_V</span><span class="o">*</span><span class="n">itfan_v_ratio_at_inlet_temp</span>
+
+        <span class="k">return</span> <span class="n">itfan_pwr</span></div></div>
+    
+<div class="viewcode-block" id="Rack"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.Rack">[docs]</a><span class="k">class</span> <span class="nc">Rack</span><span class="p">():</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">CPU_config_list</span><span class="p">,</span> <span class="n">max_W_per_rack</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span><span class="n">rack_config</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>  <span class="c1"># [3] Table 2 Mid-tier data center</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Defines the rack as a collection of CPUs</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            CPU_config_list (config): CPU configuration</span>
+<span class="sd">            max_W_per_rack (int): Maximun power allowed for a whole rack. Defaults to 10000.</span>
+<span class="sd">            rack_config (config): Rack configuration. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">rack_config</span> <span class="o">=</span> <span class="n">rack_config</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">CPU_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_rack_load</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">CPU_config</span> <span class="ow">in</span> <span class="n">CPU_config_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">CPU_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CPU</span><span class="p">(</span><span class="n">full_load_pwr</span> <span class="o">=</span> <span class="n">CPU_config</span><span class="p">[</span><span class="s1">&#39;full_load_pwr&#39;</span><span class="p">],</span> <span class="n">idle_pwr</span> <span class="o">=</span> <span class="n">CPU_config</span><span class="p">[</span><span class="s1">&#39;idle_pwr&#39;</span><span class="p">],</span> <span class="n">cpu_config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rack_config</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_rack_load</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPU_list</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">full_load_pwr</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_rack_load</span><span class="o">&gt;=</span> <span class="n">max_W_per_rack</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">CPU_list</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                <span class="k">break</span>
+        
+<div class="viewcode-block" id="Rack.compute_instantaneous_pwr"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.Rack.compute_instantaneous_pwr">[docs]</a>    <span class="k">def</span> <span class="nf">compute_instantaneous_pwr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">inlet_temp</span><span class="p">,</span> <span class="n">ITE_load_pct</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the power consumption of the whole rack at the current step</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            inlet_temp (float): Room temperature</span>
+<span class="sd">            ITE_load_pct (float): Current CPU usage</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            cpu_power (float): Current CPU power usage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">tot_cpu_pwr</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">tot_itfan_pwr</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">CPU_item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPU_list</span><span class="p">:</span>
+            <span class="n">tot_cpu_pwr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CPU_item</span><span class="o">.</span><span class="n">compute_instantaneous_cpu_pwr</span><span class="p">(</span><span class="n">inlet_temp</span><span class="p">,</span> <span class="n">ITE_load_pct</span><span class="p">))</span>
+            <span class="n">tot_itfan_pwr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">CPU_item</span><span class="o">.</span><span class="n">compute_instantaneous_fan_pwr</span><span class="p">(</span><span class="n">inlet_temp</span><span class="p">,</span> <span class="n">ITE_load_pct</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tot_cpu_pwr</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">tot_itfan_pwr</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="Rack.get_average_rack_fan_v"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.Rack.get_average_rack_fan_v">[docs]</a>    <span class="k">def</span> <span class="nf">get_average_rack_fan_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the average fan velocity for each rack</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (float): Average fan flow rate for the rack</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">fan_v</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">cpu_item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">CPU_list</span><span class="p">:</span>
+            <span class="n">fan_v</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">cpu_item</span><span class="o">.</span><span class="n">v_fan</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">fan_v</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="Rack.get_current_rack_load"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.Rack.get_current_rack_load">[docs]</a>    <span class="k">def</span> <span class="nf">get_current_rack_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the total power consumption of the rack</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Total power consumption of the rack</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_rack_load</span></div></div>
+    
+<div class="viewcode-block" id="DataCenter_ITModel"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.DataCenter_ITModel">[docs]</a><span class="k">class</span> <span class="nc">DataCenter_ITModel</span><span class="p">():</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_racks</span><span class="p">,</span> <span class="n">rack_supply_approach_temp_list</span><span class="p">,</span> <span class="n">rack_CPU_config</span><span class="p">,</span> <span class="n">max_W_per_rack</span> <span class="o">=</span> <span class="mi">10000</span><span class="p">,</span> <span class="n">DC_ITModel_config</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates the DC from a giving DC configuration</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            num_racks (int): Number of racks in the DC</span>
+<span class="sd">            rack_supply_approach_temp_list (list[float]): models the supply approach temperature for each rack based on geometry and estimated from CFD</span>
+<span class="sd">            rack_CPU_config (list[list[dict]]): A list of lists where each list is associated with a rack. </span>
+<span class="sd">            It is a list of dictionaries with their full load and idle load values in W</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DC_ITModel_config</span> <span class="o">=</span> <span class="n">DC_ITModel_config</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">racks_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rack_supply_approach_temp_list</span> <span class="o">=</span> <span class="n">rack_supply_approach_temp_list</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rack_CPU_config</span> <span class="o">=</span> <span class="n">rack_CPU_config</span>
+        
+        <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">CPU_config_list</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">num_racks</span><span class="p">),</span><span class="bp">self</span><span class="o">.</span><span class="n">rack_CPU_config</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">racks_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Rack</span><span class="p">(</span><span class="n">CPU_config_list</span><span class="p">,</span> <span class="n">max_W_per_rack</span> <span class="o">=</span> <span class="n">max_W_per_rack</span><span class="p">,</span> <span class="n">rack_config</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">DC_ITModel_config</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_datacenter_full_load</span><span class="p">()</span>
+        
+        
+<div class="viewcode-block" id="DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp">[docs]</a>    <span class="k">def</span> <span class="nf">compute_datacenter_IT_load_outlet_temp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">ITE_load_pct_list</span><span class="p">,</span> <span class="n">CRAC_setpoint</span><span class="p">):</span>
+<span class="w">        </span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the average outlet temperature of all the racks</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            ITE_load_pct_list (List[float]): CPU load for each rack</span>
+<span class="sd">            CRAC_setpoint (float): CRAC setpoint</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            rackwise_cpu_pwr (List[float]): Rackwise CPU power usage</span>
+<span class="sd">            rackwise_itfan_pwr (List[float]):  Rackwise IT fan power usage</span>
+<span class="sd">            rackwise_outlet_temp (List[float]): Rackwise outlet temperature</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">rackwise_cpu_pwr</span> <span class="o">=</span> <span class="p">[]</span> 
+        <span class="n">rackwise_itfan_pwr</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">rackwise_outlet_temp</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="k">for</span> <span class="n">rack</span><span class="p">,</span> <span class="n">rack_supply_approach_temp</span><span class="p">,</span> <span class="n">ITE_load_pct</span> \
+                                <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">racks_list</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">rack_supply_approach_temp_list</span><span class="p">,</span> <span class="n">ITE_load_pct_list</span><span class="p">):</span>
+            
+            <span class="n">rack_inlet_temp</span> <span class="o">=</span> <span class="n">rack_supply_approach_temp</span> <span class="o">+</span> <span class="n">CRAC_setpoint</span>
+            <span class="n">rack_cpu_power</span><span class="p">,</span> <span class="n">rack_itfan_power</span> <span class="o">=</span> <span class="n">rack</span><span class="o">.</span><span class="n">compute_instantaneous_pwr</span><span class="p">(</span><span class="n">rack_inlet_temp</span><span class="p">,</span><span class="n">ITE_load_pct</span><span class="p">)</span>
+            <span class="n">rackwise_cpu_pwr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rack_cpu_power</span><span class="p">)</span>
+            <span class="n">rackwise_itfan_pwr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">rack_itfan_power</span><span class="p">)</span>
+            <span class="n">rackwise_outlet_temp</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">rack_inlet_temp</span> <span class="o">+</span> <span class="p">(</span><span class="n">rack_cpu_power</span><span class="o">+</span><span class="n">rack_itfan_power</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DC_ITModel_config</span><span class="o">.</span><span class="n">C_AIR</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">DC_ITModel_config</span><span class="o">.</span><span class="n">RHO_AIR</span><span class="o">*</span><span class="n">rack</span><span class="o">.</span><span class="n">get_average_rack_fan_v</span><span class="p">()))</span><span class="o">*</span><span class="mf">0.75</span><span class="p">)</span>
+            
+        <span class="k">return</span> <span class="n">rackwise_cpu_pwr</span><span class="p">,</span> <span class="n">rackwise_itfan_pwr</span><span class="p">,</span> <span class="n">rackwise_outlet_temp</span></div>
+    
+<div class="viewcode-block" id="DataCenter_ITModel.total_datacenter_full_load"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.DataCenter_ITModel.total_datacenter_full_load">[docs]</a>    <span class="k">def</span> <span class="nf">total_datacenter_full_load</span><span class="p">(</span><span class="bp">self</span><span class="p">,):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the total DC IT(IT CPU POWER + IT FAN POWER) power consumption</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="p">[</span><span class="n">rack_item</span><span class="o">.</span><span class="n">get_current_rack_load</span><span class="p">()</span> <span class="k">for</span> <span class="n">rack_item</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">racks_list</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_DC_full_load</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">x</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="calculate_HVAC_power"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.calculate_HVAC_power">[docs]</a><span class="k">def</span> <span class="nf">calculate_HVAC_power</span><span class="p">(</span><span class="n">CRAC_setpoint</span><span class="p">,</span> <span class="n">avg_CRAC_return_temp</span><span class="p">,</span> <span class="n">ambient_temp</span><span class="p">,</span><span class="n">data_center_full_load</span><span class="p">,</span> <span class="n">DC_Config</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the HVAV power attributes</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            CRAC_Setpoint (float): The control action</span>
+<span class="sd">            avg_CRAC_return_temp (float): The average of the temperatures from all the Racks + their corresponding return approach temperature (Delta)</span>
+<span class="sd">            ambient_temp (float): outside air temperature</span>
+<span class="sd">            data_center_full_load (float): total data center capacity</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CRAC_Fan_load (float): CRAC fan power</span>
+<span class="sd">            CT_Fan_pwr (float):  Cooling tower fan power</span>
+<span class="sd">            CRAC_cooling_load (float): CRAC cooling load</span>
+<span class="sd">            Compressor_load (float): Chiller compressor load</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+    <span class="n">m_sys</span> <span class="o">=</span> <span class="n">DC_Config</span><span class="o">.</span><span class="n">RHO_AIR</span> <span class="o">*</span> <span class="n">DC_Config</span><span class="o">.</span><span class="n">CRAC_SUPPLY_AIR_FLOW_RATE_pu</span> <span class="o">*</span> <span class="n">data_center_full_load</span>
+    <span class="n">CRAC_cooling_load</span> <span class="o">=</span> <span class="n">m_sys</span><span class="o">*</span><span class="n">DC_Config</span><span class="o">.</span><span class="n">C_AIR</span><span class="o">*</span><span class="p">(</span><span class="n">avg_CRAC_return_temp</span><span class="o">-</span><span class="n">CRAC_setpoint</span><span class="p">)</span> 
+    <span class="n">CRAC_Fan_load</span> <span class="o">=</span> <span class="n">DC_Config</span><span class="o">.</span><span class="n">CRAC_FAN_REF_P</span><span class="o">*</span><span class="p">(</span><span class="n">DC_Config</span><span class="o">.</span><span class="n">CRAC_SUPPLY_AIR_FLOW_RATE_pu</span><span class="o">/</span><span class="n">DC_Config</span><span class="o">.</span><span class="n">CRAC_REFRENCE_AIR_FLOW_RATE_pu</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span>  
+    <span class="n">Compressor_load</span> <span class="o">=</span> <span class="n">CRAC_cooling_load</span><span class="o">/</span><span class="n">DC_Config</span><span class="o">.</span><span class="n">CHILLER_COP</span> 
+    <span class="k">if</span> <span class="n">ambient_temp</span> <span class="o">&lt;</span> <span class="mi">5</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">CRAC_Fan_load</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">CRAC_cooling_load</span><span class="p">,</span> <span class="n">Compressor_load</span>
+    <span class="n">Cooling_tower_air_delta</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">50</span> <span class="o">-</span> <span class="p">(</span><span class="n">ambient_temp</span><span class="o">-</span><span class="n">CRAC_setpoint</span><span class="p">),</span> <span class="mi">5</span><span class="p">)</span>  
+    <span class="n">m_air</span> <span class="o">=</span> <span class="n">CRAC_cooling_load</span><span class="o">/</span><span class="p">(</span><span class="n">DC_Config</span><span class="o">.</span><span class="n">C_AIR</span><span class="o">*</span><span class="n">Cooling_tower_air_delta</span><span class="p">)</span> 
+    <span class="n">v_air</span> <span class="o">=</span> <span class="n">m_air</span><span class="o">/</span><span class="n">DC_Config</span><span class="o">.</span><span class="n">RHO_AIR</span>
+    <span class="n">CT_Fan_pwr</span> <span class="o">=</span> <span class="n">DC_Config</span><span class="o">.</span><span class="n">CT_FAN_REF_P</span><span class="o">*</span><span class="p">(</span><span class="n">v_air</span><span class="o">/</span><span class="n">DC_Config</span><span class="o">.</span><span class="n">CT_REFRENCE_AIR_FLOW_RATE</span><span class="p">)</span><span class="o">**</span><span class="mi">3</span>  
+    
+    <span class="k">return</span> <span class="n">CRAC_Fan_load</span><span class="p">,</span> <span class="n">CT_Fan_pwr</span><span class="o">*</span><span class="mf">1.05</span><span class="p">,</span> <span class="n">CRAC_cooling_load</span><span class="p">,</span> <span class="n">Compressor_load</span> </div>
+
+
+<div class="viewcode-block" id="calculate_avg_CRAC_return_temp"><a class="viewcode-back" href="../../code/envs.html#envs.datacenter.calculate_avg_CRAC_return_temp">[docs]</a><span class="k">def</span> <span class="nf">calculate_avg_CRAC_return_temp</span><span class="p">(</span><span class="n">rack_return_approach_temp_list</span><span class="p">,</span><span class="n">rackwise_outlet_temp</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculate the CRAC return air temperature</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            rack_return_approach_temp_list (List[float]): The delta change in temperature from each rack to the CRAC unit</span>
+<span class="sd">            rackwise_outlet_temp (float): The outlet temperature of each rack</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            (float): CRAC return air temperature</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">rack_return_approach_temp_list</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">i</span> <span class="o">+</span> <span class="n">j</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">rack_return_approach_temp_list</span><span class="p">,</span><span class="n">rackwise_outlet_temp</span><span class="p">)])</span><span class="o">/</span><span class="n">n</span>  <span class="c1"># CRAC return is averaged across racks</span></div>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">References:</span>
+<span class="sd">[1]: Postema, Björn Frits. &quot;Energy-efficient data centres: model-based analysis of power-performance trade-offs.&quot; (2018).</span>
+<span class="sd">[2]: Raghunathan, S., &amp; Vk, M. (2014). Power management using dynamic power state transitions and dynamic voltage frequency</span>
+<span class="sd">     scaling controls in virtualized server clusters. Turkish Journal of Electrical Engineering and Computer Sciences, 24(4). doi: 10.3906/elk-1403-264</span>
+<span class="sd">[3]: Sun, Kaiyu, et al. &quot;Prototype energy models for data centers.&quot; Energy and Buildings 231 (2021): 110603.</span>
+<span class="sd">[4]: Breen, Thomas J., et al. &quot;From chip to cooling tower data center modeling: Part I influence of server inlet temperature and temperature </span>
+<span class="sd">     rise across cabinet.&quot; 2010 12th IEEE Intersociety Conference on Thermal and Thermomechanical Phenomena in Electronic Systems. IEEE, 2010.</span>
+<span class="sd">[5]: https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>utils.managers &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code/index.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution_guidelines.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">utils.managers</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for utils.managers</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span>
+<span class="n">PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">file_path</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+
+<div class="viewcode-block" id="CoherentNoise"><a class="viewcode-back" href="../../code/utils.html#utils.managers.CoherentNoise">[docs]</a><span class="k">class</span> <span class="nc">CoherentNoise</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to add coherent noise to the data.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">desired_std_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize CoherentNoise class</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base (List[float]): Base data</span>
+<span class="sd">            weight (float): Weight of the noise to be added</span>
+<span class="sd">            desired_std_dev (float, optional): Desired standard deviation. Defaults to 0.1.</span>
+<span class="sd">            scale (int, optional): Scale. Defaults to 1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">=</span> <span class="n">base</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">=</span> <span class="n">weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">desired_std_dev</span> <span class="o">=</span> <span class="n">desired_std_dev</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scale</span> <span class="o">=</span> <span class="n">scale</span>
+
+<div class="viewcode-block" id="CoherentNoise.generate"><a class="viewcode-back" href="../../code/utils.html#utils.managers.CoherentNoise.generate">[docs]</a>    <span class="k">def</span> <span class="nf">generate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_steps</span><span class="p">):</span>
+        <span class="n">steps</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_steps</span><span class="p">)</span>
+        <span class="n">random_walk</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weight</span> <span class="o">*</span> <span class="n">steps</span><span class="p">)</span>
+        <span class="n">random_walk_scaled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">base</span> <span class="o">+</span> <span class="p">(</span><span class="n">random_walk</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">random_walk</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">desired_std_dev</span>
+        <span class="k">return</span> <span class="n">random_walk_scaled</span></div></div>
+
+
+<span class="c1"># Function to normalize a value v given a minimum and a maximum</span>
+<div class="viewcode-block" id="normalize"><a class="viewcode-back" href="../../code/utils.html#utils.managers.normalize">[docs]</a><span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">v</span><span class="p">,</span> <span class="n">min_v</span><span class="p">,</span> <span class="n">max_v</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to normalize values</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        v (float): Value to be normalized</span>
+<span class="sd">        min_v (float): Lower limit</span>
+<span class="sd">        max_v (float): Upper limit</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Normalized value</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">v</span> <span class="o">-</span> <span class="n">min_v</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">max_v</span> <span class="o">-</span> <span class="n">min_v</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="standarize"><a class="viewcode-back" href="../../code/utils.html#utils.managers.standarize">[docs]</a><span class="k">def</span> <span class="nf">standarize</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Function to standarize a list of values</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        v (float): Values to be normalized</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Normalized values</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">v</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">v</span><span class="p">))</span><span class="o">/</span><span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">v</span><span class="p">)</span></div>
+
+<span class="c1"># Function to generate cosine and sine values for a given hour and day</span>
+<div class="viewcode-block" id="sc_obs"><a class="viewcode-back" href="../../code/utils.html#utils.managers.sc_obs">[docs]</a><span class="k">def</span> <span class="nf">sc_obs</span><span class="p">(</span><span class="n">current_hour</span><span class="p">,</span> <span class="n">current_day</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Generate sine and cosine of the hour and day</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        current_hour (int): Current hour of the day</span>
+<span class="sd">        current_day (int): Current day of the year</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        List[float]: Sine and cosine of the hour and day</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Normalize and round the current hour and day</span>
+    <span class="n">two_pi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="mi">2</span>
+
+    <span class="n">norm_hour</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">current_hour</span><span class="o">/</span><span class="mi">24</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">two_pi</span>
+    <span class="n">norm_day</span> <span class="o">=</span> <span class="nb">round</span><span class="p">((</span><span class="n">current_day</span><span class="p">)</span><span class="o">/</span><span class="mi">365</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="o">*</span> <span class="n">two_pi</span>
+    
+    <span class="c1"># Calculate cosine and sine values for the current hour and day</span>
+    <span class="n">cos_hour</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">norm_hour</span><span class="p">)</span><span class="o">*</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span>
+    <span class="n">sin_hour</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">norm_hour</span><span class="p">)</span><span class="o">*</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span>
+    <span class="n">cos_day</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">norm_day</span><span class="p">)</span><span class="o">*</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span>
+    <span class="n">sin_day</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">norm_day</span><span class="p">)</span><span class="o">*</span><span class="mf">0.5</span> <span class="o">+</span> <span class="mf">0.5</span>
+    
+    <span class="k">return</span> <span class="p">[</span><span class="n">cos_hour</span><span class="p">,</span> <span class="n">sin_hour</span><span class="p">,</span> <span class="n">cos_day</span><span class="p">,</span> <span class="n">sin_day</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="Time_Manager"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Time_Manager">[docs]</a><span class="k">class</span> <span class="nc">Time_Manager</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_day</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">days_per_episode</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Class to manage the time dimenssion over an episode</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            init_day (int, optional): Day to start from. Defaults to 0.</span>
+<span class="sd">            days_per_episode (int, optional): Number of days that an episode would last. Defaults to 30.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span> <span class="o">=</span> <span class="n">init_day</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timestep_per_hour</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">days_per_episode</span> <span class="o">=</span> <span class="n">days_per_episode</span>
+
+<div class="viewcode-block" id="Time_Manager.reset"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Time_Manager.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset time manager to initial day</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[float]: Hour and day in sine and cosine form</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">day</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hour</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="n">sc_obs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">)</span></div>
+        
+<div class="viewcode-block" id="Time_Manager.step"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Time_Manager.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Step function for the time maneger</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[float]: Current hour and day in sine and cosine form.</span>
+<span class="sd">            bool: Signal if the episode has reach the end.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">hour</span> <span class="o">&gt;=</span> <span class="mi">24</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">hour</span><span class="o">=</span><span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">day</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">hour</span> <span class="o">+=</span> <span class="mi">1</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">timestep_per_hour</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="n">sc_obs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">hour</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">isterminal</span><span class="p">()</span></div>
+    
+<div class="viewcode-block" id="Time_Manager.isterminal"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Time_Manager.isterminal">[docs]</a>    <span class="k">def</span> <span class="nf">isterminal</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to identify terminal state</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            bool: Signals if a state is terminal or not</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">day</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">days_per_episode</span><span class="p">:</span>
+            <span class="n">done</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">done</span></div></div>
+
+
+<span class="c1"># Class to manage CPU workload data</span>
+<div class="viewcode-block" id="Workload_Manager"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Workload_Manager">[docs]</a><span class="k">class</span> <span class="nc">Workload_Manager</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workload_filename</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">init_day</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">future_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">desired_std_dev</span><span class="o">=</span><span class="mf">0.025</span><span class="p">,</span> <span class="n">flexible_workload_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Manager of the DC workload</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            workload_filename (str, optional): Filename of the CPU data. Defaults to &#39;&#39;. Should be a .csv file containing the CPU hourly normalized workload data between 0 and 1. Should contains &#39;cpu_load&#39; column.</span>
+<span class="sd">            init_day (int, optional): Initial day of the episode. Defaults to 0.</span>
+<span class="sd">            future_steps (int, optional): Number of steps of the workload forecast. Defaults to 4.</span>
+<span class="sd">            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.</span>
+<span class="sd">            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.</span>
+<span class="sd">            flexible_workload_ratio (float, optional): Ratio of the flexible workload amount. Defaults to 0.1.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">flexible_workload_ratio</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;flexible_workload_ratio should be between 0 and 1 (inclusive).&quot;</span>
+
+        <span class="c1"># Load CPU data from a CSV file</span>
+        <span class="c1"># One year data=24*365=8760</span>
+        <span class="k">if</span> <span class="n">workload_filename</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">cpu_data_list</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PATH</span><span class="o">+</span><span class="s1">&#39;/data/Workload/Alibaba_CPU_Data_Hourly_1.csv&#39;</span><span class="p">)[</span><span class="s1">&#39;cpu_load&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">8760</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">cpu_data_list</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PATH</span><span class="o">+</span><span class="sa">f</span><span class="s1">&#39;/data/Workload/</span><span class="si">{</span><span class="n">workload_filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)[</span><span class="s1">&#39;cpu_load&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">8760</span><span class="p">]</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">cpu_data_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">8760</span><span class="p">,</span> <span class="s2">&quot;The number of data points in the workload data is not one year data=24*365=8760.&quot;</span>
+
+        <span class="n">cpu_data_list</span> <span class="o">=</span> <span class="n">cpu_data_list</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">future_steps</span> <span class="o">=</span> <span class="n">future_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timestep_per_hour</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestep_per_hour</span><span class="o">*</span><span class="mi">24</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flexible_workload_ratio</span> <span class="o">=</span> <span class="n">flexible_workload_ratio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span> <span class="o">=</span> <span class="n">init_day</span>
+
+        <span class="c1"># Interpolate the CPU data to increase the number of data points</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cpu_data_list</span><span class="p">))</span>
+        <span class="n">xcpu_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">cpu_data_list</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">cpu_data_list</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">timestep_per_hour</span><span class="p">)</span>  
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">xcpu_new</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">cpu_data_list</span><span class="p">)</span>
+        
+        <span class="c1"># Save a copy of the original data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+                
+        <span class="c1"># Initialize CoherentNoise process</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coherent_noise</span> <span class="o">=</span> <span class="n">CoherentNoise</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">original_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span> <span class="n">desired_std_dev</span><span class="o">=</span><span class="n">desired_std_dev</span><span class="p">)</span>
+
+    <span class="c1"># Function to return all workload data</span>
+<div class="viewcode-block" id="Workload_Manager.get_total_wkl"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Workload_Manager.get_total_wkl">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_wkl</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get current workload</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[float]: CPU data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span><span class="p">)</span></div>
+
+    <span class="c1"># Function to reset the time step and return the workload at the first time step</span>
+<div class="viewcode-block" id="Workload_Manager.reset"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Workload_Manager.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset Workload_Manager</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: CPU workload at current time step</span>
+<span class="sd">            float: Amount of daily flexible workload</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_time_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span>
+        
+        <span class="c1"># Add noise to the workload data using the CoherentNoise </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_data</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">coherent_noise</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_data</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span> <span class="o">*</span> <span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">flexible_workload_ratio</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">flexible_workload_ratio</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span></div>
+        
+    <span class="c1"># Function to advance the time step and return the workload at the new time step</span>
+<div class="viewcode-block" id="Workload_Manager.step"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Workload_Manager.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Step function for the Workload_Manager</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: CPU workload at current time step</span>
+<span class="sd">            float: Amount of daily flexible workload</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">data_load</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_time_step</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span><span class="p">]</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">flexible_workload_ratio</span><span class="p">)</span>
+            <span class="n">data_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span>
+        
+        <span class="c1"># If it tries to read further, restart from the inital day</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_time_step</span>
+        <span class="c1"># assert self.time_step &lt; len(self.cpu_smooth), f&#39;Episode length: {self.time_step} is longer than the provide cpu_smooth: {len(self.cpu_smooth)}&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cpu_smooth</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">],</span> <span class="n">data_load</span></div></div>
+
+
+<span class="c1"># Class to manage carbon intensity data</span>
+<div class="viewcode-block" id="CI_Manager"><a class="viewcode-back" href="../../code/utils.html#utils.managers.CI_Manager">[docs]</a><span class="k">class</span> <span class="nc">CI_Manager</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;NYIS&#39;</span><span class="p">,</span> <span class="n">init_day</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">future_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">desired_std_dev</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Manager of the carbon intesity data</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str, optional): Filename of the CPU data. Defaults to &#39;&#39;.</span>
+<span class="sd">            location (str, optional): Location identifier. Defaults to &#39;NYIS&#39;.</span>
+<span class="sd">            init_day (int, optional): Initial day of the episode. Defaults to 0.</span>
+<span class="sd">            future_steps (int, optional): Number of steps of the CI forecast. Defaults to 4.</span>
+<span class="sd">            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.</span>
+<span class="sd">            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Load carbon intensity data from a CSV file</span>
+        <span class="c1"># One year data=24*365=8760</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">carbon_data_list</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PATH</span><span class="o">+</span><span class="sa">f</span><span class="s2">&quot;/data/CarbonIntensity/</span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2">_NG_&amp;_avgCI.csv&quot;</span><span class="p">)[</span><span class="s1">&#39;avg_CI&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">8760</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">carbon_data_list</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PATH</span><span class="o">+</span><span class="sa">f</span><span class="s2">&quot;/data/CarbonIntensity/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)[</span><span class="s1">&#39;avg_CI&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[:</span><span class="mi">8760</span><span class="p">]</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">carbon_data_list</span><span class="p">)</span> <span class="o">==</span> <span class="mi">8760</span><span class="p">,</span> <span class="s2">&quot;The number of data points in the carbon intensity data is not one year data=24*365=8760.&quot;</span>
+        
+        <span class="n">carbon_data_list</span> <span class="o">=</span> <span class="n">carbon_data_list</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span> <span class="o">=</span> <span class="n">init_day</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">timestep_per_hour</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestep_per_hour</span><span class="o">*</span><span class="mi">24</span>
+        
+        <span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">carbon_data_list</span><span class="p">))</span>
+        <span class="n">xcarbon_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">carbon_data_list</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">carbon_data_list</span><span class="p">)</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">timestep_per_hour</span><span class="p">)</span>
+        
+        <span class="c1"># Interpolate the carbon data to increase the number of data points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">xcarbon_new</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">carbon_data_list</span><span class="p">)</span>
+        
+        <span class="c1"># Save a copy of the original data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1"># Initialize CoherentNoise process</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coherent_noise</span> <span class="o">=</span> <span class="n">CoherentNoise</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">original_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span> <span class="n">desired_std_dev</span><span class="o">=</span><span class="n">desired_std_dev</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">future_steps</span> <span class="o">=</span> <span class="n">future_steps</span>
+        
+
+    <span class="c1"># Function to return all carbon intensity data</span>
+<div class="viewcode-block" id="CI_Manager.get_total_ci"><a class="viewcode-back" href="../../code/utils.html#utils.managers.CI_Manager.get_total_ci">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Function to obtain the total carbon intensity</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[float]: Total carbon intesity</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span></div>
+
+<div class="viewcode-block" id="CI_Manager.reset"><a class="viewcode-back" href="../../code/utils.html#utils.managers.CI_Manager.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset CI_Manager</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Carbon intensity at current time step</span>
+<span class="sd">            float: Normalized carbon intensity at current time step and it&#39;s forecast</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span>
+        
+        <span class="c1"># Add noise to the carbon data using the CoherentNoise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_data</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">coherent_noise</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_data</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_ci</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_ci</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span><span class="p">)</span>
+        <span class="c1"># self.norm_carbon = normalize(self.carbon_smooth, self.min_ci, self.max_ci)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_carbon</span> <span class="o">=</span> <span class="n">standarize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_carbon</span> <span class="o">=</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">norm_carbon</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_carbon</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">future_steps</span><span class="p">]</span></div>
+    
+    <span class="c1"># Function to advance the time step and return the carbon intensity at the new time step</span>
+<div class="viewcode-block" id="CI_Manager.step"><a class="viewcode-back" href="../../code/utils.html#utils.managers.CI_Manager.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Step CI_Manager</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Carbon intensity at current time step</span>
+<span class="sd">            float: Normalized carbon intensity at current time step and it&#39;s forecast</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">+=</span><span class="mi">1</span>
+        
+        <span class="c1"># If it tries to read further, restart from the initial index</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span>
+            
+        <span class="c1"># assert self.time_step &lt; len(self.carbon_smooth), &#39;Eposide length is longer than the provide CI_data&#39;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">future_steps</span> <span class="o">&gt;</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_carbon</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">]</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">future_steps</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_carbon</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">future_steps</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">carbon_smooth</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">],</span> <span class="n">data</span></div></div>
+
+
+<span class="c1"># Class to manage weather data</span>
+<span class="c1"># Where to obtain other weather files:</span>
+<span class="c1"># https://climate.onebuilding.org/</span>
+<div class="viewcode-block" id="Weather_Manager"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Weather_Manager">[docs]</a><span class="k">class</span> <span class="nc">Weather_Manager</span><span class="p">():</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;NY&#39;</span><span class="p">,</span> <span class="n">init_day</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">desired_std_dev</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">temp_column</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Manager of the weather data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str, optional): Filename of the weather data. Defaults to &#39;&#39;.</span>
+<span class="sd">            location (str, optional): Location identifier. Defaults to &#39;NY&#39;.</span>
+<span class="sd">            init_day (int, optional): Initial day of the year. Defaults to 0.</span>
+<span class="sd">            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.</span>
+<span class="sd">            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.</span>
+<span class="sd">            temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Load weather data from a CSV file</span>
+        <span class="k">if</span> <span class="n">filename</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="n">temperature_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PATH</span><span class="o">+</span><span class="sa">f</span><span class="s1">&#39;/data/Weather/</span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">[:,</span><span class="n">temp_column</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">temperature_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PATH</span><span class="o">+</span><span class="sa">f</span><span class="s1">&#39;/data/Weather/</span><span class="si">{</span><span class="n">filename</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">header</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">[:,</span><span class="n">temp_column</span><span class="p">]</span>
+        
+        <span class="n">temperature_data</span> <span class="o">=</span> <span class="n">temperature_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span> <span class="o">=</span> <span class="n">init_day</span>
+        <span class="c1"># One year data=24*365=8760</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">temperature_data</span><span class="p">))</span>
+        <span class="n">xtemperature_new</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">temperature_data</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">temperature_data</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">min_temp</span> <span class="o">=</span> <span class="o">-</span><span class="mi">10</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_temp</span> <span class="o">=</span> <span class="mi">40</span>
+        
+        <span class="c1"># Interpolate the carbon data to increase the number of data points</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temperature_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">xtemperature_new</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">temperature_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_temp_data</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_temp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_temp</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="mi">0</span>
+        
+        <span class="c1"># Save a copy of the original data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">original_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        
+        <span class="c1"># Initialize CoherentNoise process</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coherent_noise</span> <span class="o">=</span> <span class="n">CoherentNoise</span><span class="p">(</span><span class="n">base</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">original_data</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">weight</span><span class="o">=</span><span class="n">weight</span><span class="p">,</span> <span class="n">desired_std_dev</span><span class="o">=</span><span class="n">desired_std_dev</span><span class="p">)</span>
+                
+        <span class="bp">self</span><span class="o">.</span><span class="n">timestep_per_hour</span> <span class="o">=</span> <span class="mi">4</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">timestep_per_hour</span><span class="o">*</span><span class="mi">24</span>
+
+    <span class="c1"># Function to return all weather data</span>
+<div class="viewcode-block" id="Weather_Manager.get_total_weather"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Weather_Manager.get_total_weather">[docs]</a>    <span class="k">def</span> <span class="nf">get_total_weather</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtain the weather data in a List form</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[form]: Total temperature data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature_data</span></div>
+
+    <span class="c1"># Function to reset the time step and return the weather at the first time step</span>
+<div class="viewcode-block" id="Weather_Manager.reset"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Weather_Manager.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset Weather_Manager</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Temperature a current step</span>
+<span class="sd">            float: Normalized temperature a current step</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span>
+        
+        <span class="c1"># Add noise to the temperature data using the CoherentNoise</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temperature_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">original_data</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">coherent_noise</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">original_data</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">temperature_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_temp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_temp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">norm_temp_data</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature_data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">min_temp</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_temp</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_temp_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">]</span></div>
+    
+    <span class="c1"># Function to advance the time step and return the weather at the new time step</span>
+<div class="viewcode-block" id="Weather_Manager.step"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Weather_Manager.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Step on the Weather_Manager</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            float: Temperature a current step</span>
+<span class="sd">            float: Normalized temperature a current step</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">+=</span> <span class="mi">1</span>
+        
+        <span class="c1"># If it tries to read further, restart from the initial index</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">temperature_data</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time_step</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">init_day</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span>
+            
+        <span class="c1"># assert self.time_step &lt; len(self.temperature_data), &#39;Episode length is longer than the provide Temperature_data&#39;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">temperature_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">norm_temp_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">time_step</span><span class="p">]</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -5,10 +5,14 @@ Class and member documentation
    :maxdepth: 4
 
    create_trainable
+   data
    dcrl_env
    dcrl_eplus_env
+   envs
+   evaluate_model
    maddpg
    train
    train_a2c
    train_maddpg
    train_ppo
+   utils

@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>utils.reward_creator &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code/index.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution_guidelines.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">utils.reward_creator</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for utils.reward_creator</h1><div class="highlight"><pre>
+<span></span><span class="c1"># File where the rewards are defined</span>
+
+<div class="viewcode-block" id="default_ls_reward"><a class="viewcode-back" href="../../code/utils.html#utils.reward_creator.default_ls_reward">[docs]</a><span class="k">def</span> <span class="nf">default_ls_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a reward value based on normalized load shifting.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params (dict): Dictionary containing parameters:</span>
+<span class="sd">            norm_load_left (float): Normalized load left.</span>
+<span class="sd">            out_of_time (bool): Indicator (alarm) whether the agent is in the last hour of the day.</span>
+<span class="sd">            penalty (float): Penalty value.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Reward value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Energy part of the reward</span>
+    <span class="n">total_energy_with_battery</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;bat_total_energy_with_battery_KWh&#39;</span><span class="p">]</span>
+    <span class="n">norm_CI</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;norm_CI&#39;</span><span class="p">]</span>
+    <span class="n">dcload_min</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;bat_dcload_min&#39;</span><span class="p">]</span>
+    <span class="n">dcload_max</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;bat_dcload_max&#39;</span><span class="p">]</span>
+    
+    <span class="c1"># Penalty part of the reward</span>
+    <span class="n">norm_load_left</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;ls_norm_load_left&#39;</span><span class="p">]</span>
+    <span class="n">out_of_time</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;ls_penalty_flag&#39;</span><span class="p">]</span>
+    <span class="n">penalty</span> <span class="o">=</span> <span class="mf">1e3</span>
+    
+    <span class="c1"># Calculate the reward associted to the energy consumption</span>
+    <span class="n">norm_net_dc_load</span> <span class="o">=</span> <span class="p">(</span><span class="n">total_energy_with_battery</span> <span class="o">/</span> <span class="mf">1e3</span> <span class="o">-</span> <span class="n">dcload_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">dcload_max</span> <span class="o">-</span> <span class="n">dcload_min</span><span class="p">)</span>
+    <span class="n">footprint</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">norm_CI</span> <span class="o">*</span> <span class="n">norm_net_dc_load</span>
+    
+    <span class="c1"># Obtain the penalty if there is load at the end of the day</span>
+    <span class="k">if</span> <span class="n">out_of_time</span><span class="p">:</span>
+        <span class="n">penalty</span> <span class="o">=</span> <span class="o">-</span><span class="n">norm_load_left</span><span class="o">*</span><span class="n">penalty</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">penalty</span> <span class="o">=</span> <span class="mi">0</span>
+    
+    <span class="c1"># Add the rewards</span>
+    <span class="n">reward</span> <span class="o">=</span> <span class="n">footprint</span> <span class="o">+</span> <span class="n">penalty</span>
+    <span class="k">return</span> <span class="n">reward</span></div>
+
+
+<div class="viewcode-block" id="default_dc_reward"><a class="viewcode-back" href="../../code/utils.html#utils.reward_creator.default_dc_reward">[docs]</a><span class="k">def</span> <span class="nf">default_dc_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a reward value based on the data center&#39;s total ITE Load and CT Cooling load.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params (dict): Dictionary containing parameters:</span>
+<span class="sd">            data_center_total_ITE_Load (float): Total ITE Load of the data center.</span>
+<span class="sd">            CT_Cooling_load (float): CT Cooling load of the data center.</span>
+<span class="sd">            energy_lb (float): Lower bound of the energy.</span>
+<span class="sd">            energy_ub (float): Upper bound of the energy.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Reward value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data_center_total_ITE_Load</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_ITE_total_power_kW&#39;</span><span class="p">]</span>
+    <span class="n">CT_Cooling_load</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_HVAC_total_power_kW&#39;</span><span class="p">]</span>
+    <span class="n">energy_lb</span><span class="p">,</span>  <span class="n">energy_ub</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_power_lb_kW&#39;</span><span class="p">],</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_power_ub_kW&#39;</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="o">-</span> <span class="mf">1.0</span> <span class="o">*</span> <span class="p">((</span><span class="n">data_center_total_ITE_Load</span> <span class="o">+</span> <span class="n">CT_Cooling_load</span><span class="p">)</span> <span class="o">-</span> <span class="n">energy_lb</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">energy_ub</span> <span class="o">-</span> <span class="n">energy_lb</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="default_bat_reward"><a class="viewcode-back" href="../../code/utils.html#utils.reward_creator.default_bat_reward">[docs]</a><span class="k">def</span> <span class="nf">default_bat_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a reward value based on the battery usage.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params (dict): Dictionary containing parameters:</span>
+<span class="sd">            total_energy_with_battery (float): Total energy with battery.</span>
+<span class="sd">            norm_CI (float): Normalized Carbon Intensity.</span>
+<span class="sd">            dcload_min (float): Minimum DC load.</span>
+<span class="sd">            dcload_max (float): Maximum DC load.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Reward value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">total_energy_with_battery</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;bat_total_energy_with_battery_KWh&#39;</span><span class="p">]</span>
+    <span class="n">norm_CI</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;norm_CI&#39;</span><span class="p">]</span>
+    <span class="n">dcload_min</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;bat_dcload_min&#39;</span><span class="p">]</span>
+    <span class="n">dcload_max</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;bat_dcload_max&#39;</span><span class="p">]</span>
+    
+    <span class="n">norm_net_dc_load</span> <span class="o">=</span> <span class="p">(</span><span class="n">total_energy_with_battery</span> <span class="o">/</span> <span class="mf">1e3</span> <span class="o">-</span> <span class="n">dcload_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">dcload_max</span> <span class="o">-</span> <span class="n">dcload_min</span><span class="p">)</span>
+    <span class="n">rew_footprint</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">norm_CI</span> <span class="o">*</span> <span class="n">norm_net_dc_load</span>
+
+    <span class="k">return</span> <span class="n">rew_footprint</span></div>
+
+
+<div class="viewcode-block" id="custom_agent_reward"><a class="viewcode-back" href="../../code/utils.html#utils.reward_creator.custom_agent_reward">[docs]</a><span class="k">def</span> <span class="nf">custom_agent_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    A template for creating a custom agent reward function.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params (dict): Dictionary containing custom parameters for reward calculation.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Custom reward value. Currently returns 0.0 as a placeholder.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># read reward input parameters from dict object</span>
+    <span class="c1"># custom reward calculations </span>
+    <span class="n">custom_reward</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="c1"># update with custom reward shaping </span>
+    <span class="k">return</span> <span class="n">custom_reward</span></div>
+
+<span class="c1"># Example of ToU reward based on energy usage and price of electricity</span>
+<span class="c1"># ToU reward is based on the ToU (Time of Use) of the agent, which is the amount of the energy time</span>
+<span class="c1"># the agent spends on the grid times the price of the electricity.</span>
+<span class="c1"># This example suppose that inside the params there are the following keys:</span>
+<span class="c1">#   - &#39;energy_usage&#39;: the energy usage of the agent</span>
+<span class="c1">#   - &#39;hour&#39;: the hour of the day</span>
+<div class="viewcode-block" id="tou_reward"><a class="viewcode-back" href="../../code/utils.html#utils.reward_creator.tou_reward">[docs]</a><span class="k">def</span> <span class="nf">tou_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a reward value based on the Time of Use (ToU) of energy.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params (dict): Dictionary containing parameters:</span>
+<span class="sd">            energy_usage (float): The energy usage of the agent.</span>
+<span class="sd">            hour (int): The current hour of the day (24-hour format).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Reward value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="c1"># ToU dict: {Hour, price}</span>
+    <span class="n">tou</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+           <span class="mi">1</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+           <span class="mi">2</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+           <span class="mi">3</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+           <span class="mi">4</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+           <span class="mi">5</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+           <span class="mi">6</span><span class="p">:</span> <span class="mf">0.41</span><span class="p">,</span>
+           <span class="mi">7</span><span class="p">:</span> <span class="mf">0.41</span><span class="p">,</span>
+           <span class="mi">8</span><span class="p">:</span> <span class="mf">0.41</span><span class="p">,</span>
+           <span class="mi">9</span><span class="p">:</span> <span class="mf">0.41</span><span class="p">,</span>
+           <span class="mi">10</span><span class="p">:</span> <span class="mf">0.41</span><span class="p">,</span>
+           <span class="mi">11</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
+           <span class="mi">12</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
+           <span class="mi">13</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
+           <span class="mi">14</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
+           <span class="mi">15</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
+           <span class="mi">16</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
+           <span class="mi">17</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
+           <span class="mi">18</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
+           <span class="mi">19</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
+           <span class="mi">20</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
+           <span class="mi">21</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
+           <span class="mi">22</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+           <span class="mi">23</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
+           <span class="p">}</span>
+    
+    <span class="c1"># Obtain the price of electricity at the current hour</span>
+    <span class="n">current_price</span> <span class="o">=</span> <span class="n">tou</span><span class="p">[</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;hour&#39;</span><span class="p">]]</span>
+    <span class="c1"># Obtain the energy usage</span>
+    <span class="n">energy_usage</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;bat_total_energy_with_battery_KWh&#39;</span><span class="p">]</span>
+    
+    <span class="c1"># The reward is negative as the agent&#39;s objective is to minimize energy cost</span>
+    <span class="n">tou_reward</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">energy_usage</span> <span class="o">*</span> <span class="n">current_price</span>
+
+    <span class="k">return</span> <span class="n">tou_reward</span></div>
+
+
+<div class="viewcode-block" id="renewable_energy_reward"><a class="viewcode-back" href="../../code/utils.html#utils.reward_creator.renewable_energy_reward">[docs]</a><span class="k">def</span> <span class="nf">renewable_energy_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a reward value based on the usage of renewable energy sources.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params (dict): Dictionary containing parameters:</span>
+<span class="sd">            renewable_energy_ratio (float): Ratio of energy coming from renewable sources.</span>
+<span class="sd">            total_energy_consumption (float): Total energy consumption of the data center.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Reward value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;renewable_energy_ratio&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;renewable_energy_ratio is not defined. This parameter should be included using some external dataset and added to the reward_info dictionary&#39;</span>
+    <span class="n">renewable_energy_ratio</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;renewable_energy_ratio&#39;</span><span class="p">]</span> <span class="c1"># This parameter should be included using some external dataset</span>
+    <span class="n">total_energy_consumption</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;bat_total_energy_with_battery_KWh&#39;</span><span class="p">]</span>
+    <span class="n">factor</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="c1"># factor to scale the weight of the renewable energy usage</span>
+
+    <span class="c1"># Reward = maximize renewable energy usage - minimize total energy consumption</span>
+    <span class="n">reward</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">renewable_energy_ratio</span>  <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">total_energy_consumption</span>
+    <span class="k">return</span> <span class="n">reward</span></div>
+
+
+<div class="viewcode-block" id="energy_efficiency_reward"><a class="viewcode-back" href="../../code/utils.html#utils.reward_creator.energy_efficiency_reward">[docs]</a><span class="k">def</span> <span class="nf">energy_efficiency_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a reward value based on energy efficiency.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params (dict): Dictionary containing parameters:</span>
+<span class="sd">            ITE_load (float): The amount of energy spent on computation (useful work).</span>
+<span class="sd">            total_energy_consumption (float): Total energy consumption of the data center.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Reward value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">it_equipment_power</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_ITE_total_power_kW&#39;</span><span class="p">]</span>  
+    <span class="n">total_power_consumption</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_total_power_kW&#39;</span><span class="p">]</span>  
+    
+    <span class="n">reward</span> <span class="o">=</span> <span class="n">it_equipment_power</span> <span class="o">/</span> <span class="n">total_power_consumption</span>
+    <span class="k">return</span> <span class="n">reward</span></div>
+
+
+<div class="viewcode-block" id="energy_PUE_reward"><a class="viewcode-back" href="../../code/utils.html#utils.reward_creator.energy_PUE_reward">[docs]</a><span class="k">def</span> <span class="nf">energy_PUE_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a reward value based on Power Usage Effectiveness (PUE).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params (dict): Dictionary containing parameters:</span>
+<span class="sd">            total_energy_consumption (float): Total energy consumption of the data center.</span>
+<span class="sd">            it_equipment_energy (float): Energy consumed by the IT equipment.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Reward value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">total_power_consumption</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_total_power_kW&#39;</span><span class="p">]</span>  
+    <span class="n">it_equipment_power</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_ITE_total_power_kW&#39;</span><span class="p">]</span>  
+    
+    <span class="c1"># Calculate PUE</span>
+    <span class="n">pue</span> <span class="o">=</span> <span class="n">total_power_consumption</span> <span class="o">/</span> <span class="n">it_equipment_power</span> <span class="k">if</span> <span class="n">it_equipment_power</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
+    
+    <span class="c1"># We aim to get PUE as close to 1 as possible, hence we take the absolute difference between PUE and 1</span>
+    <span class="c1"># We use a negative sign since RL seeks to maximize reward, but we want to minimize PUE</span>
+    <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">pue</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+    
+    <span class="k">return</span> <span class="n">reward</span></div>
+
+
+<div class="viewcode-block" id="temperature_efficiency_reward"><a class="viewcode-back" href="../../code/utils.html#utils.reward_creator.temperature_efficiency_reward">[docs]</a><span class="k">def</span> <span class="nf">temperature_efficiency_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates a reward value based on the efficiency of cooling in the data center.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        params (dict): Dictionary containing parameters:</span>
+<span class="sd">            current_temperature (float): Current temperature in the data center.</span>
+<span class="sd">            optimal_temperature_range (tuple): Tuple containing the minimum and maximum optimal temperatures for the data center.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        float: Reward value.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;optimal_temperature_range&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;optimal_temperature_range is not defined. This parameter should be added to the reward_info dictionary&#39;</span>
+    <span class="n">current_temperature</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_int_temperature&#39;</span><span class="p">]</span> 
+    <span class="n">optimal_temperature_range</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;optimal_temperature_range&#39;</span><span class="p">]</span>
+    <span class="n">min_temp</span><span class="p">,</span> <span class="n">max_temp</span> <span class="o">=</span> <span class="n">optimal_temperature_range</span>
+    
+    <span class="k">if</span> <span class="n">min_temp</span> <span class="o">&lt;=</span> <span class="n">current_temperature</span> <span class="o">&lt;=</span> <span class="n">max_temp</span><span class="p">:</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">current_temperature</span> <span class="o">&lt;</span> <span class="n">min_temp</span><span class="p">:</span>
+            <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">current_temperature</span> <span class="o">-</span> <span class="n">min_temp</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">current_temperature</span> <span class="o">-</span> <span class="n">max_temp</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">reward</span></div>
+
+
+<span class="c1"># Other reward methods can be added here.</span>
+
+<span class="n">REWARD_METHOD_MAP</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;default_dc_reward&#39;</span> <span class="p">:</span> <span class="n">default_dc_reward</span><span class="p">,</span>
+    <span class="s1">&#39;default_bat_reward&#39;</span><span class="p">:</span> <span class="n">default_bat_reward</span><span class="p">,</span>
+    <span class="s1">&#39;default_ls_reward&#39;</span> <span class="p">:</span> <span class="n">default_ls_reward</span><span class="p">,</span>
+    <span class="c1"># Add custom reward methods here</span>
+    <span class="s1">&#39;custom_agent_reward&#39;</span> <span class="p">:</span> <span class="n">custom_agent_reward</span><span class="p">,</span>
+    <span class="s1">&#39;tou_reward&#39;</span> <span class="p">:</span> <span class="n">tou_reward</span><span class="p">,</span>
+    <span class="s1">&#39;renewable_energy_reward&#39;</span> <span class="p">:</span> <span class="n">renewable_energy_reward</span><span class="p">,</span>
+    <span class="s1">&#39;energy_efficiency_reward&#39;</span> <span class="p">:</span> <span class="n">energy_efficiency_reward</span><span class="p">,</span>
+    <span class="s1">&#39;energy_PUE_reward&#39;</span> <span class="p">:</span> <span class="n">energy_PUE_reward</span><span class="p">,</span>
+    <span class="s1">&#39;temperature_efficiency_reward&#39;</span> <span class="p">:</span> <span class="n">temperature_efficiency_reward</span><span class="p">,</span>
+<span class="p">}</span>
+
+<div class="viewcode-block" id="get_reward_method"><a class="viewcode-back" href="../../code/utils.html#utils.reward_creator.get_reward_method">[docs]</a><span class="k">def</span> <span class="nf">get_reward_method</span><span class="p">(</span><span class="n">reward_method</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;default_dc_reward&#39;</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="n">reward_method</span> <span class="ow">in</span> <span class="n">REWARD_METHOD_MAP</span><span class="o">.</span><span class="n">keys</span><span class="p">(),</span> <span class="sa">f</span><span class="s2">&quot;Specified Reward Method </span><span class="si">{</span><span class="n">reward_method</span><span class="si">}</span><span class="s2"> not in REWARD_METHOD_MAP&quot;</span>
+    
+    <span class="k">return</span> <span class="n">REWARD_METHOD_MAP</span><span class="p">[</span><span class="n">reward_method</span><span class="p">]</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
