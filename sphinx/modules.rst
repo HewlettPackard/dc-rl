@@ -5,7 +5,6 @@ dc-rl
    :maxdepth: 4
 
    create_trainable
-   custom_sinergym
    dcrl_env
    dcrl_eplus_env
    maddpg
