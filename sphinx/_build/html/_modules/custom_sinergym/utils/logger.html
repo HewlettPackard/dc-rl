@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>custom_sinergym.utils.logger &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">custom_sinergym.utils.logger</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for custom_sinergym.utils.logger</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Sinergym Loggers&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="Logger"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.logger.Logger">[docs]</a><span class="k">class</span> <span class="nc">Logger</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Sinergym terminal logger for simulation executions.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Logger.getLogger"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.logger.Logger.getLogger">[docs]</a>    <span class="k">def</span> <span class="nf">getLogger</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">level</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">formatter</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">logging</span><span class="o">.</span><span class="n">Logger</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return Sinergym logger for the progress output in terminal.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name (str): logger name</span>
+<span class="sd">            level (str): logger level</span>
+<span class="sd">            formatter (str): logger formatter</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            logging.logger</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">consoleHandler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">(</span><span class="n">stream</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="p">)</span>
+        <span class="n">consoleHandler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">consoleHandler</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">logger</span></div></div>
+
+
+<div class="viewcode-block" id="CSVLogger"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.logger.CSVLogger">[docs]</a><span class="k">class</span> <span class="nc">CSVLogger</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;CSV Logger for agent interaction with environment.</span>
+
+<span class="sd">        :param monitor_header: CSV header for sub_run_N/monitor.csv which record interaction step by step.</span>
+<span class="sd">        :param progress_header: CSV header for res_N/progress.csv which record main data episode by episode.</span>
+<span class="sd">        :param log_file: log_file path for monitor.csv, there will be one CSV per episode.</span>
+<span class="sd">        :param log_progress_file: log_file path for progress.csv, there will be only one CSV per whole simulation.</span>
+<span class="sd">        :param flag: This flag is used to activate (True) or deactivate (False) Logger in real time.</span>
+<span class="sd">        :param steps_data, rewards, powers, etc: These arrays are used to record steps data to elaborate main data for progress.csv later.</span>
+<span class="sd">        :param total_timesteps: Current episode timesteps executed.</span>
+<span class="sd">        :param total_time_elapsed: Current episode time elapsed (simulation seconds).</span>
+<span class="sd">        :param comfort_violation_timesteps: Current episode timesteps whose comfort_penalty!=0.</span>
+<span class="sd">        :param steps_data: It is a array of str&#39;s. Each element belong to a step data.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">monitor_header</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">progress_header</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">log_progress_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+            <span class="n">log_file</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+            <span class="n">flag</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor_header</span> <span class="o">=</span> <span class="n">monitor_header</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">progress_header</span> <span class="o">=</span> <span class="n">progress_header</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_file</span> <span class="o">=</span> <span class="n">log_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">log_progress_file</span> <span class="o">=</span> <span class="n">log_progress_file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag</span> <span class="o">=</span> <span class="n">flag</span>
+
+        <span class="c1"># episode data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps_data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_header</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps_data_normalized</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_header</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;rewards&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;powers&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;comfort_penalties&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;abs_comfort&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;power_penalties&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;total_timesteps&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;total_time_elapsed&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;comfort_violation_timesteps&#39;</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">_create_row_content</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">obs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+            <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span>
+            <span class="n">reward</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+            <span class="n">terminated</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+            <span class="n">info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Assemble the array data to log in the new row</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obs (List[Any]): Observation from step.</span>
+<span class="sd">            action (Union[int, np.ndarray, List[Any]]): Action done in step.</span>
+<span class="sd">            reward (float): Reward returned in step.</span>
+<span class="sd">            terminated (bool): terminated flag in step.</span>
+<span class="sd">            info (Optional[Dict[str, Any]]): Extra info collected in step.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List: Row content created in order to being logged.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">action</span><span class="p">)</span> <span class="o">==</span> <span class="p">():</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="p">[</span><span class="n">action</span><span class="p">]</span>
+            
+        <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># In a reset</span>
+            <span class="k">return</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">action</span><span class="p">)</span> <span class="o">+</span> \
+                <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">terminated</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span>
+                <span class="n">info</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">]]</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">obs</span><span class="p">)</span> <span class="o">+</span> <span class="nb">list</span><span class="p">(</span><span class="n">action</span><span class="p">)</span> <span class="o">+</span> <span class="p">[</span>
+                <span class="n">info</span><span class="p">[</span><span class="s1">&#39;time_elapsed&#39;</span><span class="p">],</span>
+                <span class="n">reward</span><span class="p">,</span>
+                <span class="n">info</span><span class="p">[</span><span class="s1">&#39;total_power_no_units&#39;</span><span class="p">],</span>
+                <span class="n">info</span><span class="p">[</span><span class="s1">&#39;comfort_penalty&#39;</span><span class="p">],</span>
+                <span class="n">info</span><span class="p">[</span><span class="s1">&#39;abs_comfort&#39;</span><span class="p">],</span>
+                <span class="n">terminated</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_store_step_information</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">obs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+            <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span>
+            <span class="n">reward</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+            <span class="n">terminated</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+            <span class="n">info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Store relevant data to episode summary in progress.csv.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obs (List[Any]): Observation from step.</span>
+<span class="sd">            action (Union[int, np.ndarray, List[Any]]): Action done in step.</span>
+<span class="sd">            reward (Optional[float]): Reward returned in step.</span>
+<span class="sd">            terminated (bool): terminated flag in step.</span>
+<span class="sd">            info (Optional[Dict[str, Any]]): Extra info collected in step.</span>
+
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">reward</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;rewards&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">reward</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;total_power&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;powers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;total_power&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;comfort_penalty&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;comfort_penalties&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">info</span><span class="p">[</span><span class="s1">&#39;comfort_penalty&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;total_power_no_units&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;power_penalties&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="n">info</span><span class="p">[</span><span class="s1">&#39;total_power_no_units&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;abs_comfort&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;abs_comfort&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="s1">&#39;abs_comfort&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;comfort_penalty&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;comfort_violation_timesteps&#39;</span><span class="p">]</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;total_timesteps&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;timestep&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;total_time_elapsed&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">info</span><span class="p">[</span><span class="s1">&#39;time_elapsed&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_reset_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset relevant data to next episode summary in progress.csv.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps_data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_header</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">steps_data_normalized</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_header</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;,&#39;</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;rewards&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;powers&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;comfort_penalties&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;abs_comfort&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;power_penalties&#39;</span><span class="p">:</span> <span class="p">[],</span>
+            <span class="s1">&#39;total_timesteps&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;total_time_elapsed&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;comfort_violation_timesteps&#39;</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">}</span>
+
+<div class="viewcode-block" id="CSVLogger.log_step"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.logger.CSVLogger.log_step">[docs]</a>    <span class="k">def</span> <span class="nf">log_step</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">obs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+            <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span>
+            <span class="n">reward</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+            <span class="n">terminated</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+            <span class="n">info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log step information and store it in steps_data attribute.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obs (List[Any]): Observation from step.</span>
+<span class="sd">            action (Union[int, np.ndarray, List[Any]]): Action done in step.</span>
+<span class="sd">            reward (float): Reward returned in step.</span>
+<span class="sd">            terminated (bool): terminated flag in step.</span>
+<span class="sd">            info (Dict[str, Any]): Extra info collected in step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">steps_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_create_row_content</span><span class="p">(</span>
+                    <span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">info</span><span class="p">))</span>
+            <span class="c1"># Store step information for episode</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_store_step_information</span><span class="p">(</span>
+                <span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CSVLogger.log_step_normalize"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.logger.CSVLogger.log_step_normalize">[docs]</a>    <span class="k">def</span> <span class="nf">log_step_normalize</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">obs</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+            <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]],</span>
+            <span class="n">reward</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+            <span class="n">terminated</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span>
+            <span class="n">info</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log step information and store it in steps_data attribute.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            obs (List[Any]): Observation from step.</span>
+<span class="sd">            action (Union[int, np.ndarray, List[Any]]): Action done in step.</span>
+<span class="sd">            reward (Optional[float]): Reward returned in step.</span>
+<span class="sd">            terminated (bool): terminated flag in step.</span>
+<span class="sd">            info (Optional[Dict[str, Any]]): Extra info collected in step.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">steps_data_normalized</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_create_row_content</span><span class="p">(</span>
+                    <span class="n">obs</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">info</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="CSVLogger.log_episode"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.logger.CSVLogger.log_episode">[docs]</a>    <span class="k">def</span> <span class="nf">log_episode</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">episode</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Log episode main information using steps_data param.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            episode (int): Current simulation episode number.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag</span><span class="p">:</span>
+            <span class="c1"># statistics metrics for whole episode</span>
+            <span class="n">ep_mean_reward</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;rewards&#39;</span><span class="p">])</span>
+            <span class="n">ep_cumulative_reward</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;rewards&#39;</span><span class="p">])</span>
+            <span class="n">ep_cumulative_power</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;powers&#39;</span><span class="p">])</span>
+            <span class="n">ep_mean_power</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;powers&#39;</span><span class="p">])</span>
+            <span class="n">ep_cumulative_comfort_penalty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;comfort_penalties&#39;</span><span class="p">])</span>
+            <span class="n">ep_mean_comfort_penalty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;comfort_penalties&#39;</span><span class="p">])</span>
+            <span class="n">ep_cumulative_power_penalty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;power_penalties&#39;</span><span class="p">])</span>
+            <span class="n">ep_mean_power_penalty</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;power_penalties&#39;</span><span class="p">])</span>
+            <span class="n">ep_mean_abs_comfort</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;abs_comfort&#39;</span><span class="p">])</span>
+            <span class="n">ep_std_abs_comfort</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;abs_comfort&#39;</span><span class="p">])</span>
+            <span class="n">ep_cumulative_abs_comfort</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;abs_comfort&#39;</span><span class="p">])</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">comfort_violation</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;comfort_violation_timesteps&#39;</span><span class="p">]</span> <span class="o">/</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;total_timesteps&#39;</span><span class="p">]</span> <span class="o">*</span>
+                    <span class="mi">100</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+                <span class="n">comfort_violation</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+
+            <span class="c1"># write steps_info in monitor.csv</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_obj</span><span class="p">:</span>
+                <span class="c1"># Create a writer object from csv module</span>
+                <span class="n">csv_writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">file_obj</span><span class="p">)</span>
+                <span class="c1"># Add contents of list as last row in the csv file</span>
+                <span class="n">csv_writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steps_data</span><span class="p">)</span>
+
+            <span class="c1"># Write normalize steps_info in monitor_normalized.csv</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steps_data_normalized</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_file</span><span class="p">[:</span><span class="o">-</span><span class="mi">4</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;_normalized.csv&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_obj</span><span class="p">:</span>
+                    <span class="c1"># Create a writer object from csv module</span>
+                    <span class="n">csv_writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">file_obj</span><span class="p">)</span>
+                    <span class="c1"># Add contents of list as last row in the csv file</span>
+                    <span class="n">csv_writer</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">steps_data_normalized</span><span class="p">)</span>
+
+            <span class="c1"># Create CSV file with header if it&#39;s required for progress.csv</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_progress_file</span><span class="p">):</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_progress_file</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_obj</span><span class="p">:</span>
+                    <span class="n">file_obj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">progress_header</span><span class="p">)</span>
+
+            <span class="c1"># building episode row</span>
+            <span class="n">row_contents</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">episode</span><span class="p">,</span>
+                <span class="n">ep_cumulative_reward</span><span class="p">,</span>
+                <span class="n">ep_mean_reward</span><span class="p">,</span>
+                <span class="n">ep_cumulative_power</span><span class="p">,</span>
+                <span class="n">ep_mean_power</span><span class="p">,</span>
+                <span class="n">ep_cumulative_comfort_penalty</span><span class="p">,</span>
+                <span class="n">ep_mean_comfort_penalty</span><span class="p">,</span>
+                <span class="n">ep_cumulative_power_penalty</span><span class="p">,</span>
+                <span class="n">ep_mean_power_penalty</span><span class="p">,</span>
+                <span class="n">comfort_violation</span><span class="p">,</span>
+                <span class="n">ep_mean_abs_comfort</span><span class="p">,</span>
+                <span class="n">ep_std_abs_comfort</span><span class="p">,</span>
+                <span class="n">ep_cumulative_abs_comfort</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;total_timesteps&#39;</span><span class="p">],</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">episode_data</span><span class="p">[</span><span class="s1">&#39;total_time_elapsed&#39;</span><span class="p">]]</span>
+
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_progress_file</span><span class="p">,</span> <span class="s1">&#39;a+&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_obj</span><span class="p">:</span>
+                <span class="c1"># Create a writer object from csv module</span>
+                <span class="n">csv_writer</span> <span class="o">=</span> <span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">file_obj</span><span class="p">)</span>
+                <span class="c1"># Add contents of list as last row in the csv file</span>
+                <span class="n">csv_writer</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="n">row_contents</span><span class="p">)</span>
+
+            <span class="c1"># Reset episode information</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_reset_logger</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="CSVLogger.set_log_file"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.logger.CSVLogger.set_log_file">[docs]</a>    <span class="k">def</span> <span class="nf">set_log_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_log_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Change log_file path for monitor.csv when an episode ends.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            new_log_file (str): New log path depending on simulation.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">log_file</span> <span class="o">=</span> <span class="n">new_log_file</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">log_file</span><span class="p">:</span>
+                <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">log_file</span><span class="p">,</span> <span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file_obj</span><span class="p">:</span>
+                    <span class="n">file_obj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_header</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="CSVLogger.activate_flag"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.logger.CSVLogger.activate_flag">[docs]</a>    <span class="k">def</span> <span class="nf">activate_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Activate Sinergym CSV logger</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="CSVLogger.deactivate_flag"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.logger.CSVLogger.deactivate_flag">[docs]</a>    <span class="k">def</span> <span class="nf">deactivate_flag</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deactivate Sinergym CSV logger</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
