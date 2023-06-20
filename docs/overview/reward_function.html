@@ -227,7 +227,10 @@ Add the new custom reward function to the <code class="code docutils literal not
 <span class="o">}</span>
 </pre></div>
 </div>
-<p>A dictionary of environment parameters is made available to the users. Based on the custom objective and requirements, a combination of these parameters can be utilised in defining the rewards.</p>
+<p>A dictionary of environment parameters (<code class="code docutils literal notranslate"><span class="pre">reward_params</span></code>) is available to users in <code class="code docutils literal notranslate"><span class="pre">dcrl_envpy.py</span></code> or <code class="code docutils literal notranslate"><span class="pre">dcrl_eplus_env.py</span></code>.
+This dictionary consists of the information dictionary of each environment, and some other global variables such as time, day, carbon intensity, outside temperature, etc.
+If another user wants to add another parameter, the parameter must be added in the dictionary <code class="code docutils literal notranslate"><span class="pre">reward_params</span></code>. Using that, that variable will be visible in the reward function.
+Within the dictionary, the following environment parameters are available to users:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 33%" />
@@ -363,6 +366,7 @@ Add the new custom reward function to the <code class="code docutils literal not
 </tr>
 </tbody>
 </table>
+<p>Depending on the objective and customized requirements, the user can use a combination of these parameters to define their customized rewards, or use other reward functions already provided.</p>
 <p>Some examples of custom rewards are listed below:</p>
 <p><em>Example 1</em></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>def<span class="w"> </span>energy_PUE_reward<span class="o">(</span>params:<span class="w"> </span>dict<span class="o">)</span><span class="w"> </span>-&gt;<span class="w"> </span>float:
@@ -395,6 +399,24 @@ Add the new custom reward function to the <code class="code docutils literal not
 In this case, by default, the reward function is already declared as <code class="code docutils literal notranslate"><span class="pre">'energy_PUE_reward'</span> <span class="pre">:</span> <span class="pre">energy_PUE_reward,</span></code>.
 Therefore, to use the reward function as a reward function of an agent (i.e., agent dc, the agent that modifies the HVAC setpoint), in the algorithm definition (i.e., <code class="code docutils literal notranslate"><span class="pre">train_ppo.py</span></code>),
 the reward definition of the dc agent must be declared as <code class="code docutils literal notranslate"><span class="pre">dc_reward:energy_PUE_reward</span></code> within the env_config dictionary.</p>
+<p>The following piece of code show how to declare the <code class="code docutils literal notranslate"><span class="pre">'energy_PUE_reward'</span></code> as reward function for the dc agent:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CONFIG</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">(</span>
+<span class="w">    </span>PPOConfig<span class="o">()</span>
+<span class="w">    </span>.environment<span class="o">(</span>
+<span class="w">        </span><span class="nv">env</span><span class="o">=</span>DCRL<span class="w"> </span><span class="k">if</span><span class="w"> </span>not<span class="w"> </span>os.getenv<span class="o">(</span><span class="s1">&#39;EPLUS&#39;</span><span class="o">)</span><span class="w"> </span><span class="k">else</span><span class="w"> </span>DCRLeplus,
+<span class="w">        </span><span class="nv">env_config</span><span class="o">={</span>
+<span class="w">            </span><span class="c1"># Agents active</span>
+<span class="w">            </span><span class="s1">&#39;agents&#39;</span>:<span class="w"> </span><span class="o">[</span><span class="s1">&#39;agent_ls&#39;</span>,<span class="w"> </span><span class="s1">&#39;agent_dc&#39;</span>,<span class="w"> </span><span class="s1">&#39;agent_bat&#39;</span><span class="o">]</span>,
+
+<span class="w">            </span><span class="c1"># Other configurations ....</span>
+
+<span class="w">            </span><span class="c1"># Specify reward methods</span>
+<span class="w">            </span><span class="s1">&#39;ls_reward&#39;</span>:<span class="w"> </span><span class="s1">&#39;default_ls_reward&#39;</span>,
+<span class="w">            </span>**<span class="s1">&#39;dc_reward&#39;</span>:<span class="w"> </span><span class="s1">&#39;energy_PUE_reward&#39;</span>,**
+<span class="w">            </span><span class="s1">&#39;bat_reward&#39;</span>:<span class="w"> </span><span class="s1">&#39;default_bat_reward&#39;</span>
+<span class="w">        </span><span class="o">}</span>
+</pre></div>
+</div>
 <p>Other reward function definitions can be found here:
 <em>Example 2</em></p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>def<span class="w"> </span>tou_reward<span class="o">(</span>params:<span class="w"> </span>dict<span class="o">)</span><span class="w"> </span>-&gt;<span class="w"> </span>float:
