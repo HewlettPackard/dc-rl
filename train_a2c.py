@@ -46,8 +46,7 @@ CONFIG = (
         .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
             gamma=0.99, 
-            lr=1e-6,
-            use_gae=True, 
+            lr=5e-6,
             train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
             model={'fcnet_hiddens': [128, 64, 16], 'fcnet_activation': 'relu'}, 
         )

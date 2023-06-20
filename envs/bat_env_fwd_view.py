@@ -217,6 +217,14 @@ class BatteryEnvFwd(gym.Env):
         return CO2_footprint
 
     def charging_rate_modifier(self, battery):
+        """Calculates the battery state depeding charging rate
+
+        Args:
+            battery (batt.Battery2): Battery model
+
+        Returns:
+            charging_rate (float): Battery charging rate
+        """
         # https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range
         curr_load = battery.current_load
         bat_max, bat_min = battery.capacity, 0
@@ -227,6 +235,14 @@ class BatteryEnvFwd(gym.Env):
         return charging_rate
 
     def discharging_rate_modifier(self, battery):
+        """Calculates the battery state depeding discharging rate
+
+        Args:
+            battery (batt.Battery2): Battery model
+
+        Returns:
+            discharging_rate (float): Battery discharging rate
+        """
         # https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range
         curr_load = battery.current_load
         bat_max, bat_min = battery.capacity, 0
