@@ -55,18 +55,21 @@ def train(
     config = config.to_dict()
     config.update(overrides)
 
-    tune.Tuner(
-        create_wrapped_trainable(algorithm),
-        param_space=config,
-        run_config=air.RunConfig(
-            verbose=0,
-            local_dir=results_dir,
-            name=name,
-            checkpoint_config=ray.air.CheckpointConfig(
-                checkpoint_frequency=5,
-                num_to_keep=5,
-                checkpoint_score_attribute="episode_reward_mean",
-                checkpoint_score_order="max"
-            ),
-        )
-    ).fit()
+    trained = 0
+    while trained < 10:
+        tune.Tuner(
+            create_wrapped_trainable(algorithm),
+            param_space=config,
+            run_config=air.RunConfig(stop={"timesteps_total": 10_000_000},
+                verbose=0,
+                local_dir=results_dir,
+                name=name,
+                checkpoint_config=ray.air.CheckpointConfig(
+                    checkpoint_frequency=5,
+                    num_to_keep=5,
+                    checkpoint_score_attribute="episode_reward_mean",
+                    checkpoint_score_order="max"
+                ),
+            )
+        ).fit()
+        trained += 1
