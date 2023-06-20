@@ -124,6 +124,10 @@ class Rack():
         return np.array(tot_cpu_pwr).sum(), np.array(tot_itfan_pwr).sum()
     
     def get_average_rack_fan_v(self,):
+        """Calculate the average fan velocity for each rack
+        Returns:
+            (float): Average fan flow rate for the rack
+        """
         fan_v = []
         for cpu_item in self.CPU_list:
             fan_v.append(cpu_item.v_fan)
@@ -131,14 +135,20 @@ class Rack():
         return np.array(fan_v).sum()
     
     def get_current_rack_load(self,):
+        """Returns the total power consumption of the rack
+
+        Returns:
+            float: Total power consumption of the rack
+        """
         return self.current_rack_load
     
 class DataCenter_ITModel():
 
     def __init__(self, num_racks, rack_supply_approach_temp_list, rack_CPU_config, max_W_per_rack = 10000, DC_ITModel_config = None) -> None:
-        """
+        """Creates the DC from a giving DC configuration
+
         Args:
-            num_racks (int): _description_
+            num_racks (int): Number of racks in the DC
             rack_supply_approach_temp_list (list[float]): models the supply approach temperature for each rack based on geometry and estimated from CFD
             rack_CPU_config (list[list[dict]]): A list of lists where each list is associated with a rack. 
             It is a list of dictionaries with their full load and idle load values in W
@@ -154,8 +164,20 @@ class DataCenter_ITModel():
         self.total_datacenter_full_load()
         
         
-    def compute_datacenter_IT_load_outlet_temp(self,ITE_load_pct_list, CRAC_setpoint):  # the outward facing method that will be called repeatedly
+    def compute_datacenter_IT_load_outlet_temp(self,ITE_load_pct_list, CRAC_setpoint):
         
+        """Calculate the average outlet temperature of all the racks
+
+        Args:
+            ITE_load_pct_list (List[float]): CPU load for each rack
+            CRAC_setpoint (float): CRAC setpoint
+
+        Returns:
+            rackwise_cpu_pwr (List[float]): Rackwise CPU power usage
+            rackwise_itfan_pwr (List[float]):  Rackwise IT fan power usage
+            rackwise_outlet_temp (List[float]): Rackwise outlet temperature
+        """
+
         rackwise_cpu_pwr = [] 
         rackwise_itfan_pwr = []
         rackwise_outlet_temp = []
@@ -172,37 +194,51 @@ class DataCenter_ITModel():
         return rackwise_cpu_pwr, rackwise_itfan_pwr, rackwise_outlet_temp
     
     def total_datacenter_full_load(self,):
+        """Calculate the total DC IT(IT CPU POWER + IT FAN POWER) power consumption
+        """
         x = [rack_item.get_current_rack_load() for rack_item in self.racks_list]
         self.total_DC_full_load = sum(x)
 
 
 def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp,data_center_full_load, DC_Config):
-    """
-    CRAC_Setpoint : The control action
-    avg_CRAC_return_temp : The average of the temperatures from all the Racks + their corresponding return approach temperature (Delta)
-    ambient_temp : outside air temperature
-    data_center_full_load : total data center capacity
-    """
-    
+    """Calculate the HVAV power attributes
+
+        Args:
+            CRAC_Setpoint (float): The control action
+            avg_CRAC_return_temp (float): The average of the temperatures from all the Racks + their corresponding return approach temperature (Delta)
+            ambient_temp (float): outside air temperature
+            data_center_full_load (float): total data center capacity
+
+        Returns:
+            CRAC_Fan_load (float): CRAC fan power
+            CT_Fan_pwr (float):  Cooling tower fan power
+            CRAC_cooling_load (float): CRAC cooling load
+            Compressor_load (float): Chiller compressor load
+        """
+
     m_sys = DC_Config.RHO_AIR * DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu * data_center_full_load
-    CRAC_cooling_load = m_sys*DC_Config.C_AIR*(avg_CRAC_return_temp-CRAC_setpoint)  # [3] Eqn (5); unit is in watt ie J/s
-    CRAC_Fan_load = DC_Config.CRAC_FAN_REF_P*(DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu/DC_Config.CRAC_REFRENCE_AIR_FLOW_RATE_pu)**3  # [4]
-    
-    Compressor_load = CRAC_cooling_load/DC_Config.CHILLER_COP  # [4]
-    
-    # air mass flow rate of cooling tower; we are assuming fixed delta T for air heating at the cooling tower
+    CRAC_cooling_load = m_sys*DC_Config.C_AIR*(avg_CRAC_return_temp-CRAC_setpoint) 
+    CRAC_Fan_load = DC_Config.CRAC_FAN_REF_P*(DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu/DC_Config.CRAC_REFRENCE_AIR_FLOW_RATE_pu)**3  
+    Compressor_load = CRAC_cooling_load/DC_Config.CHILLER_COP 
     if ambient_temp < 5:
         return CRAC_Fan_load, 0.0, CRAC_cooling_load, Compressor_load
-    Cooling_tower_air_delta = max(50 - (ambient_temp-CRAC_setpoint), 5)  # TODO: See how we may modify this to make it a more correct function of ambient temperature
-    m_air = CRAC_cooling_load/(DC_Config.C_AIR*Cooling_tower_air_delta)  # [4]
+    Cooling_tower_air_delta = max(50 - (ambient_temp-CRAC_setpoint), 5)  
+    m_air = CRAC_cooling_load/(DC_Config.C_AIR*Cooling_tower_air_delta) 
     v_air = m_air/DC_Config.RHO_AIR
+    CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(v_air/DC_Config.CT_REFRENCE_AIR_FLOW_RATE)**3  
     
-    CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(v_air/DC_Config.CT_REFRENCE_AIR_FLOW_RATE)**3  # [4]
-    
-    return CRAC_Fan_load, CT_Fan_pwr*1.05, CRAC_cooling_load, Compressor_load  # we are assuming this is a standalone data center with 5% overhead for other stuffs
+    return CRAC_Fan_load, CT_Fan_pwr*1.05, CRAC_cooling_load, Compressor_load 
 
 
 def calculate_avg_CRAC_return_temp(rack_return_approach_temp_list,rackwise_outlet_temp):
+    """Calculate the CRAC return air temperature
+
+        Args:
+            rack_return_approach_temp_list (List[float]): The delta change in temperature from each rack to the CRAC unit
+            rackwise_outlet_temp (float): The outlet temperature of each rack
+        Returns:
+            (float): CRAC return air temperature
+        """
     n = len(rack_return_approach_temp_list)
     return sum([i + j for i,j in zip(rack_return_approach_temp_list,rackwise_outlet_temp)])/n  # CRAC return is averaged across racks
 
