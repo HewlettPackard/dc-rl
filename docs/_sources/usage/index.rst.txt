@@ -16,7 +16,7 @@ The following command can be used to run the MARL algorithm of choice:
 +========+===========================+====================================+
 | IPPO   | .. code-block:: bash      | .. code-block:: bash               |
 |        |                           |                                    |
-|        |    python train_PPO.py    |   EPLUS=1 python train_ppo.py      |
+|        |    python train_ppo.py    |   EPLUS=1 python train_ppo.py      |
 +--------+---------------------------+------------------------------------+
 | IA2C   | .. code-block:: bash      | .. code-block:: bash               |
 |        |                           |                                    |
@@ -24,7 +24,7 @@ The following command can be used to run the MARL algorithm of choice:
 +--------+---------------------------+------------------------------------+
 | MADDPG | .. code-block:: bash      | .. code-block:: bash               |
 |        |                           |                                    |
-|        |    python train_MADDPG.py |    EPLUS=1  python train_MADDPG.py |
+|        |    python train_maddpg.py |    EPLUS=1  python train_maddpg.py |
 +--------+---------------------------+------------------------------------+
 
 .. note::

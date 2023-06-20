@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>custom_sinergym.utils.rewards &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">custom_sinergym.utils.rewards</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for custom_sinergym.utils.rewards</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Implementation of reward functions.&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span> <span class="nn">datetime</span> <span class="kn">import</span> <span class="n">datetime</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">exp</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">from</span> <span class="nn">gymnasium</span> <span class="kn">import</span> <span class="n">Env</span>
+
+
+<div class="viewcode-block" id="BaseReward"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.rewards.BaseReward">[docs]</a><span class="k">class</span> <span class="nc">BaseReward</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Base reward class.</span>
+
+<span class="sd">        All reward functions should inherit from this class.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env (Env): Gym environment.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="n">env</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Method for calculating the reward function.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
+            <span class="s2">&quot;Reward class must have a `__call__` method.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="myLinearRewardwCost"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.rewards.myLinearRewardwCost">[docs]</a><span class="k">class</span> <span class="nc">myLinearRewardwCost</span><span class="p">(</span><span class="n">BaseReward</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Env</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">myLinearRewardwCost</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tou_prices</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span> 
+                            <span class="mi">1</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span> 
+                            <span class="mi">2</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span> 
+                            <span class="mi">3</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span> 
+                            <span class="mi">4</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span> 
+                            <span class="mi">5</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span> 
+                            <span class="mi">6</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span> 
+                            <span class="mi">7</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span> 
+                            <span class="mi">8</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span> 
+                            <span class="mi">9</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
+                            <span class="mi">10</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
+                            <span class="mi">11</span><span class="p">:</span> <span class="mf">0.38</span><span class="p">,</span>
+                            <span class="mi">12</span><span class="p">:</span> <span class="mf">0.38</span><span class="p">,</span>
+                            <span class="mi">13</span><span class="p">:</span> <span class="mf">0.38</span><span class="p">,</span>
+                            <span class="mi">14</span><span class="p">:</span> <span class="mf">0.49</span><span class="p">,</span>
+                            <span class="mi">15</span><span class="p">:</span> <span class="mf">0.49</span><span class="p">,</span>
+                            <span class="mi">16</span><span class="p">:</span> <span class="mf">0.49</span><span class="p">,</span>
+                            <span class="mi">17</span><span class="p">:</span> <span class="mf">0.49</span><span class="p">,</span>
+                            <span class="mi">18</span><span class="p">:</span> <span class="mf">0.49</span><span class="p">,</span>
+                            <span class="mi">19</span><span class="p">:</span> <span class="mf">0.49</span><span class="p">,</span>
+                            <span class="mi">20</span><span class="p">:</span> <span class="mf">0.38</span><span class="p">,</span>
+                            <span class="mi">21</span><span class="p">:</span> <span class="mf">0.38</span><span class="p">,</span>
+                            <span class="mi">22</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
+                            <span class="mi">23</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">}</span>
+        
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the reward function.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[float, Dict[str, Any]]: Reward value and dictionary with their individual components.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Current observation</span>
+        <span class="n">obs_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">obs_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Energy term mean and std [143527.3, 38481.004]</span>
+        <span class="c1"># reward_energy = - (obs_dict[&#39;Facility Total Electricity Demand Rate(Whole Building)&#39;] - 1.45e5) / (3.8e4)</span>
+        <span class="n">reward_energy</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Facility Total Electricity Demand Rate(Whole Building)&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1.15e6</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">3.5e5</span><span class="p">)</span>
+
+        <span class="n">reward</span> <span class="o">=</span> <span class="n">reward_energy</span> <span class="c1">#* self.tou_prices[obs_dict[&#39;sinhour&#39;]]</span>
+        
+        <span class="n">reward_terms</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;reward_energy&#39;</span><span class="p">:</span> <span class="n">reward</span><span class="p">,</span>
+            <span class="s1">&#39;total_energy&#39;</span><span class="p">:</span> <span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Facility Total Electricity Demand Rate(Whole Building)&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;reward_comfort&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;abs_comfort&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;temperatures&#39;</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">reward</span><span class="p">,</span> <span class="n">reward_terms</span></div>
+    
+<div class="viewcode-block" id="myLinearReward"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.rewards.myLinearReward">[docs]</a><span class="k">class</span> <span class="nc">myLinearReward</span><span class="p">(</span><span class="n">BaseReward</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Env</span><span class="p">,</span>
+        <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">myLinearReward</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+        
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the reward function.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[float, Dict[str, Any]]: Reward value and dictionary with their individual components.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Current observation</span>
+        <span class="n">obs_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">obs_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Energy term mean and std [143527.3, 38481.004]</span>
+        <span class="n">reward_energy</span> <span class="o">=</span> <span class="o">-</span> <span class="p">(</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Facility Total Electricity Demand Rate(Whole Building)&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1.45e5</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">3.8e4</span><span class="p">)</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="n">reward_energy</span> 
+        
+        <span class="n">reward_terms</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;reward_energy&#39;</span><span class="p">:</span> <span class="n">reward</span><span class="p">,</span>
+            <span class="s1">&#39;total_energy&#39;</span><span class="p">:</span> <span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Facility Total Electricity Demand Rate(Whole Building)&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;reward_comfort&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;abs_comfort&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;temperatures&#39;</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">reward</span><span class="p">,</span> <span class="n">reward_terms</span></div>
+
+
+<div class="viewcode-block" id="LinearReward"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.rewards.LinearReward">[docs]</a><span class="k">class</span> <span class="nc">LinearReward</span><span class="p">(</span><span class="n">BaseReward</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Env</span><span class="p">,</span>
+        <span class="n">temperature_variable</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span>
+        <span class="n">energy_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">range_comfort_winter</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">range_comfort_summer</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">summer_start</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">summer_final</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
+        <span class="n">energy_weight</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">lambda_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+        <span class="n">lambda_temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Linear reward function.</span>
+
+<span class="sd">        It considers the energy consumption and the absolute difference to temperature comfort.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            R = - W * lambda_E * power - (1 - W) * lambda_T * (max(T - T_{low}, 0) + max(T_{up} - T, 0))</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env (Env): Gym environment.</span>
+<span class="sd">            temperature_variable (Union[str, list]): Name(s) of the temperature variable(s).</span>
+<span class="sd">            energy_variable (str): Name of the energy/power variable.</span>
+<span class="sd">            range_comfort_winter (Tuple[int,int]): Temperature comfort range for cold season. Depends on environment you are using.</span>
+<span class="sd">            range_comfort_summer (Tuple[int,int]): Temperature comfort range for hot season. Depends on environment you are using.</span>
+<span class="sd">            summer_start (Tuple[int,int]): Summer session tuple with month and day start. Defaults to (6,1).</span>
+<span class="sd">            summer_final (Tuple[int,int]): Summer session tuple with month and day end. defaults to (9,30).</span>
+<span class="sd">            energy_weight (float, optional): Weight given to the energy term. Defaults to 0.5.</span>
+<span class="sd">            lambda_energy (float, optional): Constant for removing dimensions from power(1/W). Defaults to 1e-4.</span>
+<span class="sd">            lambda_temperature (float, optional): Constant for removing dimensions from temperature(1/C). Defaults to 1.0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">LinearReward</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+
+        <span class="c1"># Name of the variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_name</span> <span class="o">=</span> <span class="n">temperature_variable</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">energy_name</span> <span class="o">=</span> <span class="n">energy_variable</span>
+
+        <span class="c1"># Reward parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">range_comfort_winter</span> <span class="o">=</span> <span class="n">range_comfort_winter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">range_comfort_summer</span> <span class="o">=</span> <span class="n">range_comfort_summer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">W_energy</span> <span class="o">=</span> <span class="n">energy_weight</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_energy</span> <span class="o">=</span> <span class="n">lambda_energy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_temp</span> <span class="o">=</span> <span class="n">lambda_temperature</span>
+
+        <span class="c1"># Summer period</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">summer_start</span> <span class="o">=</span> <span class="n">summer_start</span>  <span class="c1"># (month,day)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">summer_final</span> <span class="o">=</span> <span class="n">summer_final</span>  <span class="c1"># (month,day)</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the reward function.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[float, Dict[str, Any]]: Reward value and dictionary with their individual components.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Current observation</span>
+        <span class="n">obs_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">obs_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Energy term</span>
+        <span class="n">reward_energy</span> <span class="o">=</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_energy</span> <span class="o">*</span> <span class="n">obs_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">energy_name</span><span class="p">]</span>
+
+        <span class="c1"># Comfort</span>
+        <span class="n">comfort</span><span class="p">,</span> <span class="n">temps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_comfort</span><span class="p">(</span><span class="n">obs_dict</span><span class="p">)</span>
+        <span class="n">reward_comfort</span> <span class="o">=</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_temp</span> <span class="o">*</span> <span class="n">comfort</span>
+
+        <span class="c1"># Weighted sum of both terms</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">W_energy</span> <span class="o">*</span> <span class="n">reward_energy</span> <span class="o">+</span> \
+            <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">W_energy</span><span class="p">)</span> <span class="o">*</span> <span class="n">reward_comfort</span>
+
+        <span class="n">reward_terms</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;reward_energy&#39;</span><span class="p">:</span> <span class="n">reward_energy</span><span class="p">,</span>
+            <span class="s1">&#39;total_energy&#39;</span><span class="p">:</span> <span class="n">obs_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">energy_name</span><span class="p">],</span>
+            <span class="s1">&#39;reward_comfort&#39;</span><span class="p">:</span> <span class="n">reward_comfort</span><span class="p">,</span>
+            <span class="s1">&#39;abs_comfort&#39;</span><span class="p">:</span> <span class="n">comfort</span><span class="p">,</span>
+            <span class="s1">&#39;temperatures&#39;</span><span class="p">:</span> <span class="n">temps</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">reward</span><span class="p">,</span> <span class="n">reward_terms</span>
+
+    <span class="k">def</span> <span class="nf">_get_comfort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                     <span class="n">obs_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span>
+                                    <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span>
+                                                   <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the comfort term of the reward.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[float, List[float]]: comfort penalty and List with temperatures used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">month</span> <span class="o">=</span> <span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;month&#39;</span><span class="p">]</span>
+        <span class="n">day</span> <span class="o">=</span> <span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;day&#39;</span><span class="p">]</span>
+        <span class="n">year</span> <span class="o">=</span> <span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span>
+        <span class="n">current_dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">)</span>
+
+        <span class="c1"># Periods</span>
+        <span class="n">summer_start_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span>
+            <span class="n">year</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">summer_start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">summer_start</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">summer_final_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span>
+            <span class="n">year</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">summer_final</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">summer_final</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">current_dt</span> <span class="o">&gt;=</span> <span class="n">summer_start_date</span> <span class="ow">and</span> <span class="n">current_dt</span> <span class="o">&lt;=</span> <span class="n">summer_final_date</span><span class="p">:</span>
+            <span class="n">temp_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_comfort_summer</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">temp_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_comfort_winter</span>
+
+        <span class="n">temps</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obs_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_name</span><span class="p">]</span>
+        <span class="n">comfort</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">T</span> <span class="ow">in</span> <span class="n">temps</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">T</span> <span class="o">&lt;</span> <span class="n">temp_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">T</span> <span class="o">&gt;</span> <span class="n">temp_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">comfort</span> <span class="o">+=</span> <span class="nb">min</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">temp_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">T</span><span class="p">),</span> <span class="nb">abs</span><span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="n">temp_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+
+        <span class="k">return</span> <span class="n">comfort</span><span class="p">,</span> <span class="n">temps</span></div>
+
+
+<div class="viewcode-block" id="ExpReward"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.rewards.ExpReward">[docs]</a><span class="k">class</span> <span class="nc">ExpReward</span><span class="p">(</span><span class="n">LinearReward</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Env</span><span class="p">,</span>
+        <span class="n">temperature_variable</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span>
+        <span class="n">energy_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">range_comfort_winter</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">range_comfort_summer</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">summer_start</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">summer_final</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
+        <span class="n">energy_weight</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">lambda_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+        <span class="n">lambda_temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reward considering exponential absolute difference to temperature comfort.</span>
+
+<span class="sd">        .. math::</span>
+<span class="sd">            R = - W * lambda_E * power - (1 - W) * lambda_T * exp( (max(T - T_{low}, 0) + max(T_{up} - T, 0)) )</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env (Env): Gym environment.</span>
+<span class="sd">            temperature_variable (Union[str, list]): Name(s) of the temperature variable(s).</span>
+<span class="sd">            energy_variable (str): Name of the energy/power variable.</span>
+<span class="sd">            range_comfort_winter (Tuple[int,int]): Temperature comfort range for cold season. Depends on environment you are using.</span>
+<span class="sd">            range_comfort_summer (Tuple[int,int]): Temperature comfort range for hot season. Depends on environment you are using.</span>
+<span class="sd">            summer_start (Tuple[int,int]): Summer session tuple with month and day start. Defaults to (6,1).</span>
+<span class="sd">            summer_final (Tuple[int,int]): Summer session tuple with month and day end. defaults to (9,30).</span>
+<span class="sd">            energy_weight (float, optional): Weight given to the energy term. Defaults to 0.5.</span>
+<span class="sd">            lambda_energy (float, optional): Constant for removing dimensions from power(1/W). Defaults to 1e-4.</span>
+<span class="sd">            lambda_temperature (float, optional): Constant for removing dimensions from temperature(1/C). Defaults to 1.0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">ExpReward</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">env</span><span class="p">,</span>
+            <span class="n">temperature_variable</span><span class="p">,</span>
+            <span class="n">energy_variable</span><span class="p">,</span>
+            <span class="n">range_comfort_winter</span><span class="p">,</span>
+            <span class="n">range_comfort_summer</span><span class="p">,</span>
+            <span class="n">summer_start</span><span class="p">,</span>
+            <span class="n">summer_final</span><span class="p">,</span>
+            <span class="n">energy_weight</span><span class="p">,</span>
+            <span class="n">lambda_energy</span><span class="p">,</span>
+            <span class="n">lambda_temperature</span>
+        <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_comfort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                     <span class="n">obs_dict</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span>
+                                    <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span>
+                                                   <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the comfort term of the reward.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[float, List[float]]: comfort penalty and List with temperatures used.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">month</span> <span class="o">=</span> <span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;month&#39;</span><span class="p">]</span>
+        <span class="n">day</span> <span class="o">=</span> <span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;day&#39;</span><span class="p">]</span>
+        <span class="n">year</span> <span class="o">=</span> <span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;year&#39;</span><span class="p">]</span>
+        <span class="n">current_dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="p">,</span> <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">)</span>
+
+        <span class="c1"># Periods</span>
+        <span class="n">summer_start_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span>
+            <span class="n">year</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">summer_start</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">summer_start</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">summer_final_date</span> <span class="o">=</span> <span class="n">datetime</span><span class="p">(</span>
+            <span class="n">year</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">summer_final</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">summer_final</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="n">current_dt</span> <span class="o">&gt;=</span> <span class="n">summer_start_date</span> <span class="ow">and</span> <span class="n">current_dt</span> <span class="o">&lt;=</span> <span class="n">summer_final_date</span><span class="p">:</span>
+            <span class="n">temp_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_comfort_summer</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">temp_range</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_comfort_winter</span>
+
+        <span class="n">temps</span> <span class="o">=</span> <span class="p">[</span><span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">obs_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_name</span><span class="p">]</span>
+        <span class="n">comfort</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">for</span> <span class="n">T</span> <span class="ow">in</span> <span class="n">temps</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">T</span> <span class="o">&lt;</span> <span class="n">temp_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">or</span> <span class="n">T</span> <span class="o">&gt;</span> <span class="n">temp_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">comfort</span> <span class="o">+=</span> <span class="n">exp</span><span class="p">(</span><span class="nb">min</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">temp_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">T</span><span class="p">),</span>
+                                   <span class="nb">abs</span><span class="p">(</span><span class="n">T</span> <span class="o">-</span> <span class="n">temp_range</span><span class="p">[</span><span class="mi">1</span><span class="p">])))</span>
+
+        <span class="k">return</span> <span class="n">comfort</span><span class="p">,</span> <span class="n">temps</span></div>
+
+
+<div class="viewcode-block" id="HourlyLinearReward"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.rewards.HourlyLinearReward">[docs]</a><span class="k">class</span> <span class="nc">HourlyLinearReward</span><span class="p">(</span><span class="n">LinearReward</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">Env</span><span class="p">,</span>
+        <span class="n">temperature_variable</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">],</span>
+        <span class="n">energy_variable</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">range_comfort_winter</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">range_comfort_summer</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span>
+        <span class="n">summer_start</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">6</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+        <span class="n">summer_final</span><span class="p">:</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">30</span><span class="p">),</span>
+        <span class="n">min_energy_weight</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+        <span class="n">lambda_energy</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1e-4</span><span class="p">,</span>
+        <span class="n">lambda_temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">,</span>
+        <span class="n">range_comfort_hours</span><span class="p">:</span> <span class="nb">tuple</span> <span class="o">=</span> <span class="p">(</span><span class="mi">9</span><span class="p">,</span> <span class="mi">19</span><span class="p">),</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Linear reward function with a time-dependent weight for consumption and energy terms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env (Env): Gym environment.</span>
+<span class="sd">            temperature_variable (Union[str, list]): Name(s) of the temperature variable(s).</span>
+<span class="sd">            energy_variable (str): Name of the energy/power variable.</span>
+<span class="sd">            range_comfort_winter (Tuple[int,int]): Temperature comfort range for cold season. Depends on environment you are using.</span>
+<span class="sd">            range_comfort_summer (Tuple[int,int]): Temperature comfort range for hot season. Depends on environment you are using.</span>
+<span class="sd">            summer_start (Tuple[int,int]): Summer session tuple with month and day start. Defaults to (6,1).</span>
+<span class="sd">            summer_final (Tuple[int,int]): Summer session tuple with month and day end. defaults to (9,30).</span>
+<span class="sd">            min_energy_weight (float, optional): Minimum weight given to the energy term. Defaults to 0.5.</span>
+<span class="sd">            lambda_energy (float, optional): Constant for removing dimensions from power(1/W). Defaults to 1e-4.</span>
+<span class="sd">            lambda_temperature (float, optional): Constant for removing dimensions from temperature(1/C). Defaults to 1.0.</span>
+<span class="sd">            range_comfort_hours (tuple, optional): Hours where thermal comfort is considered. Defaults to (9, 19).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">HourlyLinearReward</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
+            <span class="n">env</span><span class="p">,</span>
+            <span class="n">temperature_variable</span><span class="p">,</span>
+            <span class="n">energy_variable</span><span class="p">,</span>
+            <span class="n">range_comfort_winter</span><span class="p">,</span>
+            <span class="n">range_comfort_summer</span><span class="p">,</span>
+            <span class="n">summer_start</span><span class="p">,</span>
+            <span class="n">summer_final</span><span class="p">,</span>
+            <span class="n">min_energy_weight</span><span class="p">,</span>
+            <span class="n">lambda_energy</span><span class="p">,</span>
+            <span class="n">lambda_temperature</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Reward parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">range_comfort_hours</span> <span class="o">=</span> <span class="n">range_comfort_hours</span>
+
+    <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the reward function.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[float, Dict[str, Any]]: Reward and dict with reward terms.</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+        <span class="c1"># Current observation</span>
+        <span class="n">obs_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">obs_dict</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Energy term</span>
+        <span class="n">reward_energy</span> <span class="o">=</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_energy</span> <span class="o">*</span> <span class="n">obs_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">energy_name</span><span class="p">]</span>
+
+        <span class="c1"># Comfort</span>
+        <span class="n">comfort</span><span class="p">,</span> <span class="n">temps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_comfort</span><span class="p">(</span><span class="n">obs_dict</span><span class="p">)</span>
+        <span class="n">reward_comfort</span> <span class="o">=</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_temp</span> <span class="o">*</span> <span class="n">comfort</span>
+
+        <span class="c1"># Determine energy weight depending on the hour</span>
+        <span class="n">hour</span> <span class="o">=</span> <span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;hour&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">hour</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_comfort_hours</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">hour</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">range_comfort_hours</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">W_energy</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">weight</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="c1"># Weighted sum of both terms</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="n">weight</span> <span class="o">*</span> <span class="n">reward_energy</span> <span class="o">+</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">weight</span><span class="p">)</span> <span class="o">*</span> <span class="n">reward_comfort</span>
+
+        <span class="n">reward_terms</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;reward_energy&#39;</span><span class="p">:</span> <span class="n">reward_energy</span><span class="p">,</span>
+            <span class="s1">&#39;total_energy&#39;</span><span class="p">:</span> <span class="n">obs_dict</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">energy_name</span><span class="p">],</span>
+            <span class="s1">&#39;reward_comfort&#39;</span><span class="p">:</span> <span class="n">reward_comfort</span><span class="p">,</span>
+            <span class="s1">&#39;temperatures&#39;</span><span class="p">:</span> <span class="n">temps</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">reward</span><span class="p">,</span> <span class="n">reward_terms</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

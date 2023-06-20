@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>custom_sinergym.utils.env_checker &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">custom_sinergym.utils.env_checker</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for custom_sinergym.utils.env_checker</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Env checker functionality, adapted from Stable-Baselines: https://github.com/DLR-RM/stable-baselines3&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">gymnasium</span> <span class="k">as</span> <span class="nn">gym</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">gymnasium</span> <span class="kn">import</span> <span class="n">spaces</span>
+
+
+<span class="k">def</span> <span class="nf">_is_numpy_array_space</span><span class="p">(</span><span class="n">space</span><span class="p">:</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns False if provided space is not representable as a single numpy array</span>
+<span class="sd">    (e.g. Dict and Tuple spaces return False)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="p">(</span><span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Tuple</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">_check_unsupported_spaces</span><span class="p">(</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">,</span>
+        <span class="n">observation_space</span><span class="p">:</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">,</span>
+        <span class="n">action_space</span><span class="p">:</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Emit warnings when the observation space or action space used is not supported by Stable-Baselines.&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observation_space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
+        <span class="n">nested_dict</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">space</span> <span class="ow">in</span> <span class="n">observation_space</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
+                <span class="n">nested_dict</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">nested_dict</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;Nested observation spaces are not supported by Stable Baselines3 &quot;</span>
+                <span class="s2">&quot;(Dict spaces inside Dict space). &quot;</span>
+                <span class="s2">&quot;You should flatten it to have only one level of keys.&quot;</span>
+                <span class="s2">&quot;For example, `dict(space1=dict(space2=Box(), space3=Box()), spaces4=Discrete())` &quot;</span>
+                <span class="s2">&quot;is not supported but `dict(space2=Box(), spaces3=Box(), spaces4=Discrete())` is.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observation_space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Tuple</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;The observation space is a Tuple,&quot;</span>
+            <span class="s2">&quot;this is currently not supported by Stable Baselines3. &quot;</span>
+            <span class="s2">&quot;However, you can convert it to a Dict observation space &quot;</span>
+            <span class="s2">&quot;(cf. https://github.com/openai/gym/blob/master/gym/spaces/dict.py). &quot;</span>
+            <span class="s2">&quot;which is supported by SB3.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_numpy_array_space</span><span class="p">(</span><span class="n">action_space</span><span class="p">):</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+            <span class="s2">&quot;The action space is not based off a numpy array. Typically this means it&#39;s either a Dict or Tuple space. &quot;</span>
+            <span class="s2">&quot;This type of action space is currently not supported by Stable Baselines 3. You should try to flatten the &quot;</span>
+            <span class="s2">&quot;action using a wrapper.&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_check_obs</span><span class="p">(</span><span class="n">obs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span>
+                          <span class="nb">dict</span><span class="p">,</span>
+                          <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                          <span class="nb">int</span><span class="p">],</span>
+               <span class="n">observation_space</span><span class="p">:</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">,</span>
+               <span class="n">method_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check that the observation returned by the environment</span>
+<span class="sd">    correspond to the declared one.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observation_space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Tuple</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">obs</span><span class="p">,</span> <span class="nb">tuple</span>
+        <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;The observation returned by the `</span><span class="si">{</span><span class="n">method_name</span><span class="si">}</span><span class="s2">()` method should be a single value, not a tuple&quot;</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observation_space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">obs</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;The observation returned by `</span><span class="si">{</span><span class="n">method_name</span><span class="si">}</span><span class="s2">()` method must be an int&quot;</span>
+    <span class="k">elif</span> <span class="n">_is_numpy_array_space</span><span class="p">(</span><span class="n">observation_space</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">obs</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;The observation returned by `</span><span class="si">{</span><span class="n">method_name</span><span class="si">}</span><span class="s2">()` method must be a numpy array&quot;</span>
+
+    <span class="k">assert</span> <span class="n">observation_space</span><span class="o">.</span><span class="n">contains</span><span class="p">(</span>
+        <span class="n">obs</span>
+    <span class="p">),</span> <span class="sa">f</span><span class="s2">&quot;The observation returned by the `</span><span class="si">{</span><span class="n">method_name</span><span class="si">}</span><span class="s2">()` method does not match the given observation space&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_check_returned_values</span><span class="p">(</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">,</span>
+        <span class="n">observation_space</span><span class="p">:</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">,</span>
+        <span class="n">action_space</span><span class="p">:</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check the returned values by the env when calling `.reset()` or `.step()` methods.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># because env inherits from gym.Env, we assume that `reset()` and `step()`</span>
+    <span class="c1"># methods exists</span>
+    <span class="n">obs</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observation_space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">obs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;The observation returned by `reset()` must be a dictionary&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">observation_space</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">_check_obs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">observation_space</span><span class="o">.</span><span class="n">spaces</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="s2">&quot;reset&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Error while checking key=</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_check_obs</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">observation_space</span><span class="p">,</span> <span class="s2">&quot;reset&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Sample a random action</span>
+    <span class="n">action</span> <span class="o">=</span> <span class="n">action_space</span><span class="o">.</span><span class="n">sample</span><span class="p">()</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span>
+        <span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">5</span><span class="p">,</span> <span class="s2">&quot;The `step()` method must return four values: obs, reward, terminated, truncated, info&quot;</span>
+
+    <span class="c1"># Unpack</span>
+    <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">data</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">observation_space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Dict</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">obs</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;The observation returned by `step()` must be a dictionary&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">observation_space</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">_check_obs</span><span class="p">(</span><span class="n">obs</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="n">observation_space</span><span class="o">.</span><span class="n">spaces</span><span class="p">[</span><span class="n">key</span><span class="p">],</span> <span class="s2">&quot;step&quot;</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">AssertionError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Error while checking key=</span><span class="si">{</span><span class="n">key</span><span class="si">}</span><span class="s2">: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_check_obs</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">observation_space</span><span class="p">,</span> <span class="s2">&quot;step&quot;</span><span class="p">)</span>
+
+    <span class="c1"># We also allow int because the reward will be cast to float</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reward</span><span class="p">,</span> <span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+                      <span class="p">),</span> <span class="s2">&quot;The reward returned by `step()` must be a float&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">terminated</span><span class="p">,</span> <span class="nb">bool</span><span class="p">),</span> <span class="s2">&quot;The `terminated` signal must be a boolean&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">info</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;The `info` returned by `step()` must be a python dictionary&quot;</span>
+
+
+<span class="k">def</span> <span class="nf">_check_spaces</span><span class="p">(</span><span class="n">env</span><span class="p">:</span> <span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check that the observation and action spaces are defined</span>
+<span class="sd">    and inherit from gymnasium.spaces.Space.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Helper to link to the code, because gym has no proper documentation</span>
+    <span class="n">gym_spaces</span> <span class="o">=</span> <span class="s2">&quot; cf https://github.com/openai/gym/blob/master/gym/spaces/&quot;</span>
+
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span>
+        <span class="n">env</span><span class="p">,</span> <span class="s2">&quot;observation_space&quot;</span><span class="p">),</span> <span class="s2">&quot;You must specify an observation space (cf gym.spaces)&quot;</span> <span class="o">+</span> <span class="n">gym_spaces</span>
+    <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span>
+        <span class="n">env</span><span class="p">,</span> <span class="s2">&quot;action_space&quot;</span><span class="p">),</span> <span class="s2">&quot;You must specify an action space (cf gym.spaces)&quot;</span> <span class="o">+</span> <span class="n">gym_spaces</span>
+
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">observation_space</span><span class="p">,</span>
+                      <span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">),</span> <span class="s2">&quot;The observation space must inherit from gymnasium.spaces&quot;</span> <span class="o">+</span> <span class="n">gym_spaces</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">action_space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">),</span> <span class="s2">&quot;The action space must inherit from gymnasium.spaces&quot;</span> <span class="o">+</span> <span class="n">gym_spaces</span>
+
+
+<span class="c1"># Check render cannot be covered by CI</span>
+<span class="k">def</span> <span class="nf">_check_render</span><span class="p">(</span><span class="n">env</span><span class="p">:</span> <span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">,</span> <span class="n">warn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">headless</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># pragma: no cover</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check the declared render modes and the `render()`/`close()`</span>
+<span class="sd">    method of the environment.</span>
+
+<span class="sd">    :param env: The environment to check</span>
+<span class="sd">    :param warn: Whether to output additional warnings</span>
+<span class="sd">    :param headless: Whether to disable render modes</span>
+<span class="sd">        that require a graphical interface. False by default.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">render_modes</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;render.modes&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">render_modes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">warn</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;No render modes was declared in the environment &quot;</span>
+                <span class="s2">&quot; (env.metadata[&#39;render.modes&#39;] is None or not defined), &quot;</span>
+                <span class="s2">&quot;you may have trouble when calling `.render()`&quot;</span>
+            <span class="p">)</span>
+
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Don&#39;t check render mode that require a</span>
+        <span class="c1"># graphical interface (useful for CI)</span>
+        <span class="k">if</span> <span class="n">headless</span> <span class="ow">and</span> <span class="s2">&quot;human&quot;</span> <span class="ow">in</span> <span class="n">render_modes</span><span class="p">:</span>
+            <span class="n">render_modes</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s2">&quot;human&quot;</span><span class="p">)</span>
+        <span class="c1"># Check all declared render modes</span>
+        <span class="k">for</span> <span class="n">render_mode</span> <span class="ow">in</span> <span class="n">render_modes</span><span class="p">:</span>
+            <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">mode</span><span class="o">=</span><span class="n">render_mode</span><span class="p">)</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="check_env"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.env_checker.check_env">[docs]</a><span class="k">def</span> <span class="nf">check_env</span><span class="p">(</span>
+        <span class="n">env</span><span class="p">:</span> <span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">,</span>
+        <span class="n">warn</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">skip_render_check</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check that an environment follows Gym API.</span>
+<span class="sd">    This is particularly useful when using a custom environment.</span>
+<span class="sd">    Please take a look at https://github.com/openai/gym/blob/master/gym/core.py</span>
+<span class="sd">    for more information about the API.</span>
+
+<span class="sd">    This env_checker has been adapted from Stable-Baselines: https://github.com/DLR-RM/stable-baselines3</span>
+<span class="sd">    It also optionally check that the environment is compatible with Stable-Baselines.</span>
+
+<span class="sd">    :param env: The Gym environment that will be checked</span>
+<span class="sd">    :param warn: Whether to output additional warnings</span>
+<span class="sd">        mainly related to the interaction with Stable Baselines</span>
+<span class="sd">    :param skip_render_check: Whether to skip the checks for the render method.</span>
+<span class="sd">        True by default (useful for the CI)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">env</span><span class="p">,</span> <span class="n">gym</span><span class="o">.</span><span class="n">Env</span>
+    <span class="p">),</span> <span class="s2">&quot;Your environment must inherit from the gym.Env class cf https://github.com/openai/gym/blob/master/gym/core.py&quot;</span>
+
+    <span class="c1"># ============= Check the spaces (observation and action) ================</span>
+    <span class="n">_check_spaces</span><span class="p">(</span><span class="n">env</span><span class="p">)</span>
+
+    <span class="c1"># Define aliases for convenience</span>
+    <span class="n">observation_space</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">observation_space</span>
+    <span class="n">action_space</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">action_space</span>
+
+    <span class="c1"># Warn the user if needed.</span>
+    <span class="c1"># A warning means that the environment may run but not work properly with</span>
+    <span class="c1"># Stable Baselines algorithms</span>
+    <span class="k">if</span> <span class="n">warn</span><span class="p">:</span>
+        <span class="n">_check_unsupported_spaces</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">observation_space</span><span class="p">,</span> <span class="n">action_space</span><span class="p">)</span>
+
+        <span class="c1"># Check for the action space, it may lead to hard-to-debug issues</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action_space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+            <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">action_space</span><span class="o">.</span><span class="n">low</span><span class="p">)</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">action_space</span><span class="o">.</span><span class="n">high</span><span class="p">))</span>
+            <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">action_space</span><span class="o">.</span><span class="n">low</span> <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">any</span><span class="p">(</span><span class="n">action_space</span><span class="o">.</span><span class="n">high</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="s2">&quot;We recommend you to use a symmetric and normalized Box action space (range=[-1, 1]) &quot;</span>
+                <span class="s2">&quot;cf https://stable-baselines3.readthedocs.io/en/master/guide/rl_tips.html&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action_space</span><span class="p">,</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">):</span>
+            <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">isfinite</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">action_space</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="n">action_space</span><span class="o">.</span><span class="n">high</span><span class="p">]))</span>
+            <span class="p">),</span> <span class="s2">&quot;Continuous action space must have a finite lower and upper bound&quot;</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">action_space</span><span class="p">,</span>
+                <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">)</span> <span class="ow">and</span> <span class="n">action_space</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">np</span><span class="o">.</span><span class="n">dtype</span><span class="p">(</span>
+                <span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Your action space has dtype </span><span class="si">{</span><span class="n">action_space</span><span class="o">.</span><span class="n">dtype</span><span class="si">}</span><span class="s2">, we recommend using np.float32 to avoid cast errors.&quot;</span>
+            <span class="p">)</span>
+
+    <span class="c1"># ============ Check the returned values ===============</span>
+    <span class="n">_check_returned_values</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">observation_space</span><span class="p">,</span> <span class="n">action_space</span><span class="p">)</span>
+
+    <span class="c1"># ==== Check the render method and the declared render modes ====</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">skip_render_check</span><span class="p">:</span>
+        <span class="n">_check_render</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">warn</span><span class="o">=</span><span class="n">warn</span><span class="p">)</span>  <span class="c1"># pragma: no cover</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

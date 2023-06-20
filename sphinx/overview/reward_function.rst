@@ -63,13 +63,26 @@ Add the new custom reward function to the :code:`REWARD_METHOD_MAP` dictionary.
 .. code-block:: bash
 
     REWARD_METHOD_MAP = {
-        'default_dc_reward' : default_dc_reward,
-        'default_bat_reward': default_bat_reward,
-        'default_ls_reward' : default_ls_reward,
-        # Add custom reward methods here
-        'custom_agent_reward' : custom_agent_reward,
-        
+    'default_dc_reward' : default_dc_reward,
+    'default_bat_reward': default_bat_reward,
+    'default_ls_reward' : default_ls_reward,
+    # Additional rewards methods
+    'tou_reward' : tou_reward,
+    'renewable_energy_reward' : renewable_energy_reward,
+    'energy_efficiency_reward' : energy_efficiency_reward,
+    'energy_PUE_reward' : energy_PUE_reward,
+    'temperature_efficiency_reward' : temperature_efficiency_reward,
+    # Add custom reward methods here
+    'custom_agent_reward' : custom_agent_reward,
+    'how_you_want_to_call_it' : how_is_the_function_called,
     }
+
+
+A dictionary of environment parameters is made available to the users. Based on the custom objective and requirements, a combination of these parameters can be utilised in defining the rewards.
+
+.. csv-table::
+   :file: ../tables/reward_params.csv
+   :header-rows: 1
 
 Some examples of custom rewards are listed below:
 
@@ -101,12 +114,141 @@ Some examples of custom rewards are listed below:
         
         return reward
 
-    REWARD_METHOD_MAP = {
-        'default_dc_reward' : default_dc_reward,
-        'default_bat_reward': default_bat_reward,
-        'default_ls_reward' : default_ls_reward,
-        # Add custom reward methods here
-        'custom_agent_reward' : custom_agent_reward,
-        'energy_PUE_reward': energy_PUE_reward,
-    }
+*How to use this custom reward function*
 
+To use this custom reward function, the reward function must be declared in the :code:`REWARD_METHOD_MAP`.
+In this case, by default, the reward function is already declared as :code:`'energy_PUE_reward' : energy_PUE_reward,`.
+Therefore, to use the reward function as a reward function of an agent (i.e., agent dc, the agent that modifies the HVAC setpoint), in the algorithm definition (i.e., :code:`train_ppo.py`),
+ the reward definition of the dc agent must be declared as :code:`dc_reward:energy_PUE_reward` within the env_config dictionary.
+
+Other reward function definitions can be found here:
+*Example 2*
+
+.. code-block:: bash
+
+    def tou_reward(params: dict) -> float:
+        """
+        Calculates a reward value based on the Time of Use (ToU) of energy.
+
+        Args:
+            params (dict): Dictionary containing parameters:
+                energy_usage (float): The energy usage of the agent.
+                hour (int): The current hour of the day (24-hour format).
+
+        Returns:
+            float: Reward value.
+        """
+        
+        # ToU dict: {Hour, price}
+        tou = {0: 0.25,
+            1: 0.25,
+            2: 0.25,
+            3: 0.25,
+            4: 0.25,
+            5: 0.25,
+            6: 0.41,
+            7: 0.41,
+            8: 0.41,
+            9: 0.41,
+            10: 0.41,
+            11: 0.30,
+            12: 0.30,
+            13: 0.30,
+            14: 0.30,
+            15: 0.30,
+            16: 0.27,
+            17: 0.27,
+            18: 0.27,
+            19: 0.27,
+            20: 0.27,
+            21: 0.27,
+            22: 0.25,
+            23: 0.25,
+            }
+        
+        # Obtain the price of electricity at the current hour
+        current_price = tou[params['hour']]
+        # Obtain the energy usage
+        energy_usage = params['bat_total_energy_with_battery_KWh']
+        
+        # The reward is negative as the agent's objective is to minimize energy cost
+        tou_reward = -1.0 * energy_usage * current_price
+
+        return tou_reward
+
+*Example 3:
+
+.. code-block:: bash
+
+    def renewable_energy_reward(params: dict) -> float:
+        """
+        Calculates a reward value based on the usage of renewable energy sources.
+
+        Args:
+            params (dict): Dictionary containing parameters:
+                renewable_energy_ratio (float): Ratio of energy coming from renewable sources.
+                total_energy_consumption (float): Total energy consumption of the data center.
+
+        Returns:
+            float: Reward value.
+        """
+        assert params.get('renewable_energy_ratio') is not None, 'renewable_energy_ratio is not defined. This parameter should be included using some external dataset and added to the reward_info dictionary'
+        renewable_energy_ratio = params['renewable_energy_ratio'] # This parameter should be included using some external dataset
+        total_energy_consumption = params['bat_total_energy_with_battery_KWh']
+        factor = 1.0 # factor to scale the weight of the renewable energy usage
+
+        # Reward = maximize renewable energy usage - minimize total energy consumption
+        reward = factor * renewable_energy_ratio  -1.0 * total_energy_consumption
+        return reward
+
+*Example 4*
+
+.. code-block:: bash
+
+    def energy_efficiency_reward(params: dict) -> float:
+        """
+        Calculates a reward value based on energy efficiency.
+
+        Args:
+            params (dict): Dictionary containing parameters:
+                ITE_load (float): The amount of energy spent on computation (useful work).
+                total_energy_consumption (float): Total energy consumption of the data center.
+
+        Returns:
+            float: Reward value.
+        """
+        it_equipment_power = params['dc_ITE_total_power_kW']  
+        total_power_consumption = params['dc_total_power_kW']  
+        
+        reward = it_equipment_power / total_power_consumption
+        return reward
+
+*Example 5*
+
+.. code-block:: bash
+
+    def temperature_efficiency_reward(params: dict) -> float:
+        """
+        Calculates a reward value based on the efficiency of cooling in the data center.
+
+        Args:
+            params (dict): Dictionary containing parameters:
+                current_temperature (float): Current temperature in the data center.
+                optimal_temperature_range (tuple): Tuple containing the minimum and maximum optimal temperatures for the data center.
+
+        Returns:
+            float: Reward value.
+        """
+        assert params.get('optimal_temperature_range') is not None, 'optimal_temperature_range is not defined. This parameter should be added to the reward_info dictionary'
+        current_temperature = params['dc_int_temperature'] 
+        optimal_temperature_range = params['optimal_temperature_range']
+        min_temp, max_temp = optimal_temperature_range
+        
+        if min_temp <= current_temperature <= max_temp:
+            reward = 1.0
+        else:
+            if current_temperature < min_temp:
+                reward = -abs(current_temperature - min_temp)
+            else:
+                reward = -abs(current_temperature - max_temp)
+        return reward

@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>custom_sinergym.utils.evaluation &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">custom_sinergym.utils.evaluation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for custom_sinergym.utils.evaluation</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Custom policy evaluations for Evaluation Callbacks.&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">gymnasium</span> <span class="k">as</span> <span class="nn">gym</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">stable_baselines3.common</span> <span class="kn">import</span> <span class="n">base_class</span>
+<span class="kn">from</span> <span class="nn">stable_baselines3.common.vec_env</span> <span class="kn">import</span> <span class="n">VecEnv</span>
+
+
+<div class="viewcode-block" id="evaluate_policy"><a class="viewcode-back" href="../../../custom_sinergym.utils.html#custom_sinergym.utils.evaluation.evaluate_policy">[docs]</a><span class="k">def</span> <span class="nf">evaluate_policy</span><span class="p">(</span><span class="n">model</span><span class="p">:</span> <span class="s2">&quot;base_class.BaseAlgorithm&quot;</span><span class="p">,</span>
+                    <span class="n">env</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">,</span>
+                               <span class="n">VecEnv</span><span class="p">],</span>
+                    <span class="n">n_eval_episodes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">5</span><span class="p">,</span>
+                    <span class="n">deterministic</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+                    <span class="n">render</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+                    <span class="n">callback</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span>
+                                                      <span class="n">Any</span><span class="p">],</span>
+                                                 <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span>
+                                                      <span class="n">Any</span><span class="p">]],</span>
+                                                <span class="kc">None</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs policy for n_eval_episodes episodes and returns average reward. This is made to work only with one env.</span>
+<span class="sd">        .. note:: If environment has not been wrapped with Monitor wrapper, reward and</span>
+<span class="sd">        episode lengths are counted as it appears with env.step calls. If</span>
+<span class="sd">        the environment contains wrappers that modify rewards or episode lengths</span>
+<span class="sd">        (e.g. reward scaling, early episode reset), these will affect the evaluation</span>
+<span class="sd">        results as well. You can avoid this by wrapping environment with Monitor</span>
+<span class="sd">        wrapper before anything else.</span>
+<span class="sd">        :param model: The RL agent you want to evaluate.</span>
+<span class="sd">        :param env: The gym environment. In the case of a VecEnv this must contain only one environment.</span>
+<span class="sd">        :param n_eval_episodes: Number of episode to evaluate the agent</span>
+<span class="sd">        :param deterministic: Whether to use deterministic or stochastic actions</span>
+<span class="sd">        :param render: Whether to render the environment or not</span>
+<span class="sd">        :param callback: callback function to do additional checks, called after each step. Gets locals() and globals() passed as parameters.</span>
+<span class="sd">        :param reward_threshold: Minimum expected reward per episode, this will raise an error if the performance is not met</span>
+<span class="sd">        :param return_episode_rewards: If True, a list of rewards and episode lengths per episode will be returned instead of the mean.</span>
+<span class="sd">        :return: Mean reward per episode, std of reward per episode.</span>
+<span class="sd">        Returns ([float], [int]) when return_episode_rewards is True, first</span>
+<span class="sd">        list containing per-episode rewards and second containing per-episode lengths</span>
+<span class="sd">        (in number of steps).</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;episodes_rewards&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;episodes_lengths&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;episodes_powers&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;episodes_comfort_violations&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;episodes_comfort_penalties&#39;</span><span class="p">:</span> <span class="p">[],</span>
+        <span class="s1">&#39;episodes_power_penalties&#39;</span><span class="p">:</span> <span class="p">[]</span>
+    <span class="p">}</span>
+    <span class="n">episodes_executed</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">not_reseted</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">while</span> <span class="n">episodes_executed</span> <span class="o">&lt;</span> <span class="n">n_eval_episodes</span><span class="p">:</span>
+        <span class="c1"># Number of loops here might differ from true episodes</span>
+        <span class="c1"># played, if underlying wrappers modify episode lengths.</span>
+        <span class="c1"># Avoid double reset, as VecEnv are reset automatically.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">VecEnv</span><span class="p">)</span> <span class="ow">or</span> <span class="n">not_reseted</span><span class="p">:</span>
+            <span class="c1"># obs = list(map(</span>
+            <span class="c1">#     lambda obs_dict: np.array(list(obs_dict.values()), dtype=np.float32),</span>
+            <span class="c1">#     env.get_attr(&#39;obs_dict&#39;)))</span>
+            <span class="n">obs</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
+            <span class="n">not_reseted</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">done</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="n">episode_reward</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">episode_length</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">episode_steps_comfort_violation</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">episode_power</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">episode_comfort_penalty</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">episode_power_penalty</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#                     Running episode and accumulate values                    #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">done</span><span class="p">:</span>
+            <span class="n">action</span><span class="p">,</span> <span class="n">state</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span>
+                <span class="n">obs</span><span class="p">,</span> <span class="n">state</span><span class="o">=</span><span class="n">state</span><span class="p">,</span> <span class="n">deterministic</span><span class="o">=</span><span class="n">deterministic</span><span class="p">)</span>
+            <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+            <span class="n">episode_reward</span> <span class="o">+=</span> <span class="n">reward</span>
+            <span class="n">episode_power</span> <span class="o">+=</span> <span class="n">info</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;total_power&#39;</span><span class="p">]</span>
+            <span class="n">episode_power_penalty</span> <span class="o">+=</span> <span class="n">info</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;total_power_no_units&#39;</span><span class="p">]</span>
+            <span class="n">episode_comfort_penalty</span> <span class="o">+=</span> <span class="n">info</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;comfort_penalty&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">info</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s1">&#39;comfort_penalty&#39;</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">episode_steps_comfort_violation</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">callback</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">callback</span><span class="p">(</span><span class="nb">locals</span><span class="p">(),</span> <span class="nb">globals</span><span class="p">())</span>
+            <span class="n">episode_length</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">render</span><span class="p">:</span>
+                <span class="n">env</span><span class="o">.</span><span class="n">render</span><span class="p">()</span>
+        <span class="n">episodes_executed</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#                     Storing accumulated values in result                     #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;episodes_rewards&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">episode_reward</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;episodes_lengths&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">episode_length</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;episodes_powers&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">episode_power</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;episodes_comfort_violations&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">episode_steps_comfort_violation</span> <span class="o">/</span> <span class="n">episode_length</span> <span class="o">*</span> <span class="mi">100</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;episodes_comfort_violations&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;episodes_comfort_penalties&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">episode_comfort_penalty</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">[</span><span class="s1">&#39;episodes_power_penalties&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">episode_power_penalty</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">result</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

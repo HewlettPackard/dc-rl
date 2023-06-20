@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>custom_sinergym.envs.eplus_env &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/clipboard.min.js"></script>
+        <script src="../../../_static/copybutton.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../code.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">custom_sinergym.envs.eplus_env</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for custom_sinergym.envs.eplus_env</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Gym environment for simulation with EnergyPlus.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">glob</span>
+<span class="kn">import</span> <span class="nn">datetime</span>
+<span class="kn">from</span> <span class="nn">sqlite3</span> <span class="kn">import</span> <span class="n">DatabaseError</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
+
+<span class="kn">import</span> <span class="nn">gymnasium</span> <span class="k">as</span> <span class="nn">gym</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="kn">from</span> <span class="nn">custom_sinergym.simulators</span> <span class="kn">import</span> <span class="n">EnergyPlus</span>
+<span class="kn">from</span> <span class="nn">custom_sinergym.utils.common</span> <span class="kn">import</span> <span class="n">export_actuators_to_excel</span>
+<span class="kn">from</span> <span class="nn">custom_sinergym.utils.constants</span> <span class="kn">import</span> <span class="n">PKG_DATA_PATH</span>
+<span class="kn">from</span> <span class="nn">custom_sinergym.utils.rewards</span> <span class="kn">import</span> <span class="n">ExpReward</span><span class="p">,</span> <span class="n">LinearReward</span>
+
+
+<div class="viewcode-block" id="EplusEnv"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv">[docs]</a><span class="k">class</span> <span class="nc">EplusEnv</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">):</span>
+
+    <span class="n">metadata</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;render_modes&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;human&#39;</span><span class="p">]}</span>
+
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#                            ENVIRONMENT CONSTRUCTOR                           #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">idf_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">weather_file</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+        <span class="n">observation_space</span><span class="p">:</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
+            <span class="n">low</span><span class="o">=-</span><span class="mf">5e6</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mf">5e6</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">4</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+        <span class="n">observation_variables</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">action_space</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">,</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">]</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
+            <span class="n">low</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">high</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+        <span class="n">action_variables</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="p">[],</span>
+        <span class="n">action_mapping</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="o">...</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{},</span>
+        <span class="n">weather_variability</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">reward</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="n">LinearReward</span><span class="p">,</span>
+        <span class="n">reward_kwargs</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="p">{},</span>
+        <span class="n">act_repeat</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+        <span class="n">max_ep_data_store_num</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">10</span><span class="p">,</span>
+        <span class="n">action_definition</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">env_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;eplus-env-v1&#39;</span><span class="p">,</span>
+        <span class="n">config_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+        <span class="n">delta_actions</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">temp_range</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">30</span><span class="p">],</span>
+        <span class="n">add_forecast_weather</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">seed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+        <span class="n">add_sincos</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">relative_obs</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">external_cpu_scheme</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+        <span class="n">add_cpu_usage</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Environment with EnergyPlus simulator.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            idf_file (str): Name of the IDF file with the building definition.</span>
+<span class="sd">            weather_file (str): Name of the EPW file for weather conditions.</span>
+<span class="sd">            observation_space (gym.spaces.Box, optional): Gym Observation Space definition. Defaults to an empty observation_space (no control).</span>
+<span class="sd">            observation_variables (List[str], optional): List with variables names in IDF. Defaults to an empty observation variables (no control).</span>
+<span class="sd">            action_space (Union[gym.spaces.Box, gym.spaces.Discrete], optional): Gym Action Space definition. Defaults to an empty action_space (no control).</span>
+<span class="sd">            action_variables (List[str],optional): Action variables to be controlled in IDF, if that actions names have not been configured manually in IDF, you should configure or use extra_config. Default to empty List.</span>
+<span class="sd">            action_mapping (Dict[int, Tuple[float, ...]], optional): Action mapping list for discrete actions spaces only. Defaults to empty list.</span>
+<span class="sd">            weather_variability (Optional[Tuple[float]], optional): Tuple with sigma, mu and tao of the Ornstein-Uhlenbeck process to be applied to weather data. Defaults to None.</span>
+<span class="sd">            reward (Any, optional): Reward function instance used for agent feedback. Defaults to LinearReward.</span>
+<span class="sd">            reward_kwargs (Optional[Dict[str, Any]], optional): Parameters to be passed to the reward function. Defaults to empty dict.</span>
+<span class="sd">            act_repeat (int, optional): Number of timesteps that an action is repeated in the simulator, regardless of the actions it receives during that repetition interval.</span>
+<span class="sd">            max_ep_data_store_num (int, optional): Number of last sub-folders (one for each episode) generated during execution on the simulation.</span>
+<span class="sd">            action_definition (Optional[Dict[str, Any]): Dict with building components to being controlled by Sinergym automatically if it is supported. Default value to None.</span>
+<span class="sd">            env_name (str, optional): Env name used for working directory generation. Defaults to eplus-env-v1.</span>
+<span class="sd">            config_params (Optional[Dict[str, Any]], optional): Dictionary with all extra configuration for simulator. Defaults to None.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#                          Energyplus, BCVTB and paths                         #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="n">eplus_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;EPLUS_PATH&#39;</span><span class="p">]</span>
+        <span class="n">bcvtb_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;BCVTB_PATH&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pkg_data_path</span> <span class="o">=</span> <span class="n">PKG_DATA_PATH</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">idf_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pkg_data_path</span><span class="p">,</span> <span class="s1">&#39;buildings&#39;</span><span class="p">,</span> <span class="n">idf_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weather_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">pkg_data_path</span><span class="p">,</span> <span class="s1">&#39;weather&#39;</span><span class="p">,</span> <span class="n">weather_file</span><span class="p">)</span>
+
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#                             Variables definition                             #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">observation_variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">action_variables</span>
+
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#                                   Simulator                                  #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">seed</span> <span class="o">=</span> <span class="n">seed</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">relative_obs</span> <span class="o">=</span> <span class="n">relative_obs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env_name</span> <span class="o">=</span> <span class="n">env_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">external_cpu_scheme</span> <span class="o">=</span> <span class="n">external_cpu_scheme</span>
+        <span class="c1"># self.external_cpu_scheme = pd.read_csv(external_cpu_scheme, usecols=[&#39;cpu_load&#39;, &#39;day&#39;, &#39;hour&#39;, &#39;minute&#39;])</span>
+        <span class="c1"># self.external_cpu_scheme = self.external_cpu_scheme.pivot_table(values=&#39;cpu_load&#39;, index=[&#39;day&#39;, &#39;hour&#39;, &#39;minute&#39;]).to_dict()[&#39;cpu_load&#39;]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span> <span class="o">=</span> <span class="n">EnergyPlus</span><span class="p">(</span>
+            <span class="n">env_name</span><span class="o">=</span><span class="n">env_name</span><span class="p">,</span>
+            <span class="n">eplus_path</span><span class="o">=</span><span class="n">eplus_path</span><span class="p">,</span>
+            <span class="n">bcvtb_path</span><span class="o">=</span><span class="n">bcvtb_path</span><span class="p">,</span>
+            <span class="n">idf_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">idf_path</span><span class="p">,</span>
+            <span class="n">weather_path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">weather_path</span><span class="p">,</span>
+            <span class="n">variables</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">,</span>
+            <span class="n">act_repeat</span><span class="o">=</span><span class="n">act_repeat</span><span class="p">,</span>
+            <span class="n">max_ep_data_store_num</span><span class="o">=</span><span class="n">max_ep_data_store_num</span><span class="p">,</span>
+            <span class="n">action_definition</span><span class="o">=</span><span class="n">action_definition</span><span class="p">,</span>
+            <span class="n">config_params</span><span class="o">=</span><span class="n">config_params</span><span class="p">,</span>
+            <span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">,</span>
+            <span class="n">add_forecast_weather</span><span class="o">=</span><span class="n">add_forecast_weather</span><span class="p">,</span>
+            <span class="n">add_sincos</span><span class="o">=</span><span class="n">add_sincos</span><span class="p">,</span>
+            <span class="n">relative_obs</span><span class="o">=</span><span class="n">relative_obs</span><span class="p">,</span>
+            <span class="n">external_cpu_scheme</span><span class="o">=</span><span class="n">external_cpu_scheme</span><span class="p">,</span>
+            <span class="n">add_cpu_usage</span><span class="o">=</span><span class="n">add_cpu_usage</span>
+        <span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">timesteps_per_hour</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">_eplus_run_stepsize</span> <span class="o">/</span> <span class="mi">60</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#                       Detection of controllable planners                     #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">schedulers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_schedulers</span><span class="p">()</span>
+
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#        Adding simulation date to observation (not needed in simulator)       #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_forecast_weather</span> <span class="o">=</span> <span class="n">add_forecast_weather</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_sincos</span> <span class="o">=</span> <span class="n">add_sincos</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_cpu_usage</span> <span class="o">=</span> <span class="n">add_cpu_usage</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_forecast_weather</span><span class="p">:</span>
+            <span class="c1"># self.variables[&#39;observation&#39;] = [&#39;month&#39;, &#39;day&#39;, &#39;hour&#39;] + self.variables[&#39;observation&#39;] + [&#39;extTemp1&#39;, &#39;extTemp2&#39;, &#39;extTemp3&#39;]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_sincos</span><span class="p">:</span>
+                <span class="c1"># self.variables[&#39;observation&#39;] = [&#39;day_of_the_month&#39;, &#39;sinhour&#39;, &#39;coshour&#39;] + self.variables[&#39;observation&#39;] + [&#39;extTemp1&#39;, &#39;extTemp2&#39;, &#39;extTemp3&#39;]</span>
+                <span class="c1"># self.variables[&#39;observation&#39;] = [&#39;sindayOTY&#39;, &#39;cosdayOTY&#39;, &#39;sinhour&#39;, &#39;coshour&#39;] + self.variables[&#39;observation&#39;] + [&#39;extTemp1&#39;, &#39;extTemp2&#39;, &#39;extTemp3&#39;]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sindayOTY&#39;</span><span class="p">,</span> <span class="s1">&#39;cosdayOTY&#39;</span><span class="p">,</span> <span class="s1">&#39;sinhour&#39;</span><span class="p">,</span> <span class="s1">&#39;coshour&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]</span> <span class="o">+</span> \
+                    <span class="p">[</span><span class="s1">&#39;extTemp1&#39;</span><span class="p">,</span> <span class="s1">&#39;extTemp2&#39;</span><span class="p">,</span> <span class="s1">&#39;extTemp3&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;extDP1&#39;</span><span class="p">,</span> <span class="s1">&#39;extDP2&#39;</span><span class="p">,</span> <span class="s1">&#39;extDP3&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;extHum1&#39;</span><span class="p">,</span> <span class="s1">&#39;extHum2&#39;</span><span class="p">,</span> <span class="s1">&#39;extHum3&#39;</span><span class="p">]</span>  <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;extSolar1&#39;</span><span class="p">,</span> <span class="s1">&#39;extSolar2&#39;</span><span class="p">,</span> <span class="s1">&#39;extSolar3&#39;</span><span class="p">]</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;day_of_the_month&#39;</span><span class="p">,</span> <span class="s1">&#39;hour&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;extTemp1&#39;</span><span class="p">,</span> <span class="s1">&#39;extTemp2&#39;</span><span class="p">,</span> <span class="s1">&#39;extTemp3&#39;</span><span class="p">]</span>
+            
+            <span class="k">if</span> <span class="s1">&#39;NY&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">weather_path</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">myweather_path</span> <span class="o">=</span> <span class="s1">&#39;/sinergym/projectDC/USA_NY_New.York-J.F.Kennedy.Intl.AP_v2.csv&#39;</span>
+            <span class="k">elif</span> <span class="s1">&#39;AZ&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">weather_path</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">myweather_path</span> <span class="o">=</span> <span class="s1">&#39;/sinergym/projectDC/USA_AZ_Davis-Monthan.AFB.csv&#39;</span>
+            <span class="k">elif</span> <span class="s1">&#39;WA&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">weather_path</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">myweather_path</span> <span class="o">=</span> <span class="s1">&#39;/sinergym/projectDC/USA_WA_Port.Angeles-William.csv&#39;</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">weather_i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="c1"># # self.weather_df = pd.read_csv(self.weather_path, skiprows=8, header=None, delimiter=&#39;,&#39;, names=[&#39;year&#39;, &#39;month&#39;, &#39;day&#39;, &#39;hour&#39;, &#39;minute&#39;, &#39;data_source_and_uncertainty_flags&#39;, &#39;dry_bulb_temperature&#39;, &#39;dew_point_temperature&#39;, &#39;relative_humidity&#39;, &#39;atmospheric_station_pressure&#39;, &#39;extraterrestrial_horizontal_radiation&#39;, &#39;extraterrestrial_direct_normal_radiation&#39;, &#39;horizontal_infrared_radiation_intensity&#39;, &#39;global_horizontal_radiation&#39;, &#39;direct_normal_radiation&#39;, &#39;diffuse_horizontal_radiation&#39;, &#39;global_horizontal_illuminance&#39;, &#39;direct_normal_illuminance&#39;, &#39;diffuse_horizontal_illuminance&#39;, &#39;zenith_luminance&#39;, &#39;wind_direction&#39;, &#39;wind_speed&#39;, &#39;total_sky_cover&#39;, &#39;opaque_sky_cover&#39;, &#39;visibility&#39;, &#39;ceiling_height&#39;, &#39;present_weather_observation&#39;, &#39;present_weather_codes&#39;, &#39;precipitable_water&#39;, &#39;aerosol_optical_depth&#39;, &#39;snow_depth&#39;, &#39;days_since_last_snowfall&#39;, &#39;albedo&#39;, &#39;liquid_precipitation_depth&#39;, &#39;liquid_precipitation_quantity&#39;])</span>
+            <span class="c1"># # ToDo: Obtain the correct path to the weather file</span>
+            <span class="c1"># # If seed = &#39;&#39;: read all files that Starts with Eplus-env-{env_name}- and obtain the last element with the highest resXXX number</span>
+            <span class="c1"># # Else: read the file located in the path specified by seed like: Eplus-env-{env_name}/{seed}/-res1/Eplus-env-sub_runXXX, being XXX the highest runXXX number</span>
+            <span class="c1"># myweather_path = path = r&#39;/sinergym/Eplus-env-datacenter-mixed-continuous-v1-res119/Eplus-env-sub_run1/USA_NY_New.York-J.F.Kennedy.Intl.AP.744860_TMY3_Random_4.0_1.0_0.1.epw&#39;</span>
+            <span class="c1"># # define the column names</span>
+            <span class="c1"># columns = [&#39;Year&#39;, &#39;Month&#39;, &#39;Day&#39;, &#39;Hour&#39;, &#39;Minute&#39;, &#39;Data Source and Uncertainty Flags&#39;,</span>
+            <span class="c1">#         &#39;Dry Bulb Temperature (°C)&#39;, &#39;Dew Point Temperature (°C)&#39;, &#39;Relative Humidity (%)&#39;,</span>
+            <span class="c1">#         &#39;Atmospheric Station Pressure (Pa)&#39;, &#39;Extraterrestrial Horizontal Radiation (Wh/m²)&#39;,</span>
+            <span class="c1">#         &#39;Extraterrestrial Direct Normal Radiation (Wh/m²)&#39;, &#39;Horizontal Infrared Radiation Intensity (Wh/m²)&#39;,</span>
+            <span class="c1">#         &#39;Global Horizontal Radiation (Wh/m²)&#39;, &#39;Direct Normal Radiation (Wh/m²)&#39;,</span>
+            <span class="c1">#         &#39;Diffuse Horizontal Radiation (Wh/m²)&#39;, &#39;Global Horizontal Illuminance (lux)&#39;,</span>
+            <span class="c1">#         &#39;Direct Normal Illuminance (lux)&#39;, &#39;Diffuse Horizontal Illuminance (lux)&#39;, &#39;Zenith Luminance (cd/m²)&#39;,</span>
+            <span class="c1">#         &#39;Wind Direction (°)&#39;, &#39;Wind Speed (m/s)&#39;, &#39;Total Sky Cover (tenths)&#39;, &#39;Opaque Sky Cover (tenths)&#39;,</span>
+            <span class="c1">#         &#39;Visibility (km)&#39;, &#39;Ceiling Height (m)&#39;, &#39;Present Weather Observation&#39;, &#39;Present Weather Codes&#39;,</span>
+            <span class="c1">#         &#39;Precipitable Water (mm)&#39;, &#39;Aerosol Optical Depth&#39;, &#39;Snow Depth (cm)&#39;, &#39;Days Since Last Snowfall&#39;,</span>
+            <span class="c1">#         &#39;Albedo&#39;, &#39;Liquid Precipitation Depth (mm)&#39;, &#39;Liquid Precipitation Quantity (hr)&#39;]</span>
+            <span class="c1"># columns_to_select = [&#39;Month&#39;, &#39;Day&#39;, &#39;Hour&#39;, &#39;Dry Bulb Temperature (°C)&#39;]</span>
+            <span class="c1"># read the weather file into a pandas DataFrame with the defined column names</span>
+            <span class="c1"># self.myweather_data = pd.read_csv(myweather_path, delimiter=&#39;,&#39;, skiprows=8, names=columns, usecols=columns_to_select)</span>
+            <span class="c1"># self.weather_dict = self.myweather_data.pivot_table(values=&#39;Dry Bulb Temperature (°C)&#39;, index=[&#39;Month&#39;, &#39;Day&#39;, &#39;Hour&#39;]).to_dict()[&#39;Dry Bulb Temperature (°C)&#39;]</span>
+
+            <span class="c1"># self.myweather_data = pd.read_csv(self.myweather_path)</span>
+            <span class="c1"># self.weather_dict = self.myweather_data.pivot_table(values=&#39;Site Outdoor Air Drybulb Temperature(Environment)&#39;, index=[&#39;month&#39;, &#39;day&#39;, &#39;hour&#39;, &#39;minute&#39;]).to_dict()[&#39;Site Outdoor Air Drybulb Temperature(Environment)&#39;]</span>
+            <span class="c1"># self.weather_dict = {}</span>
+            <span class="c1"># for month, days in [(6, 31), (7, 32), (8, 32)]:</span>
+            <span class="c1">#     for day in range(1, days):</span>
+            <span class="c1">#         for hour in range(24):</span>
+            <span class="c1">#             for minute in range(0, 60, 15):</span>
+            <span class="c1">#                 weather_data = self.myweather_data[(self.myweather_data[&#39;month&#39;] == month) &amp; (self.myweather_data[&#39;day&#39;] == day) &amp; (self.myweather_data[&#39;hour&#39;] == hour) &amp; (self.myweather_data[&#39;minute&#39;] == minute)]</span>
+            <span class="c1">#                 self.weather_dict[(month, day, hour, minute)] = weather_data[&#39;Site Outdoor Air Drybulb Temperature(Environment)&#39;].values[0]</span>
+            <span class="c1"># myweather_path = self.get_weather_file_path(env_name=env_name, seed=self.seed)</span>
+            <span class="c1"># self.weather_dict = self.read_weather_file(myweather_path)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># self.variables[&#39;observation&#39;] = [&#39;month&#39;, &#39;day&#39;, &#39;hour&#39;] + self.variables[&#39;observation&#39;]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_sincos</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;sindayOTY&#39;</span><span class="p">,</span> <span class="s1">&#39;cosdayOTY&#39;</span><span class="p">,</span> <span class="s1">&#39;sinhour&#39;</span><span class="p">,</span> <span class="s1">&#39;coshour&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;day_of_the_year&#39;</span><span class="p">,</span> <span class="s1">&#39;hour&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]</span>
+            
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_cpu_usage</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;cpuUsage&#39;</span><span class="p">,</span> <span class="s1">&#39;carbonIntensity&#39;</span><span class="p">,</span> <span class="s1">&#39;batterySoC&#39;</span><span class="p">]</span>
+
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#                          reset default options                               #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">default_options</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="c1"># Weather Variability</span>
+        <span class="k">if</span> <span class="n">weather_variability</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">default_options</span><span class="p">[</span><span class="s1">&#39;weather_variability&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">weather_variability</span>
+        <span class="c1"># ... more reset option implementations here</span>
+
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#                               Observation Space                              #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation_space</span> <span class="o">=</span> <span class="n">observation_space</span>
+
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#                                 Action Space                                 #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1"># Action space type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">flag_discrete</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="nb">isinstance</span><span class="p">(</span>
+                <span class="n">action_space</span><span class="p">,</span>
+                <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">))</span>
+
+        <span class="c1"># Discrete</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag_discrete</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">action_mapping</span> <span class="o">=</span> <span class="n">action_mapping</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span> <span class="o">=</span> <span class="n">action_space</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">temp_range</span> <span class="o">=</span> <span class="n">temp_range</span>
+
+        <span class="c1"># Continuous</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Defining action values setpoints (one per value)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">setpoints_space</span> <span class="o">=</span> <span class="n">action_space</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">temp_range</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">setpoints_space</span><span class="o">.</span><span class="n">low</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">setpoints_space</span><span class="o">.</span><span class="n">high</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
+                <span class="c1"># continuous_action_def[2] --&gt; shape</span>
+                <span class="n">low</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">action_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">high</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+                    <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">action_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">action_space</span><span class="o">.</span><span class="n">dtype</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta_actions</span> <span class="o">=</span> <span class="n">delta_actions</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_setpoint</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#                                    Reward                                    #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span> <span class="o">=</span> <span class="n">reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">reward_kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="c1">#                        Environment definition checker                        #</span>
+        <span class="c1"># ---------------------------------------------------------------------------- #</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_eplus_env</span><span class="p">()</span>
+
+<div class="viewcode-block" id="EplusEnv.read_weather_file"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.read_weather_file">[docs]</a>    <span class="k">def</span> <span class="nf">read_weather_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">weather_file_path</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;DEBUG: Reading weather file: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">weather_file_path</span><span class="p">))</span>
+        <span class="c1"># define the column names</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Year&#39;</span><span class="p">,</span> <span class="s1">&#39;Month&#39;</span><span class="p">,</span> <span class="s1">&#39;Day&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour&#39;</span><span class="p">,</span> <span class="s1">&#39;Minute&#39;</span><span class="p">,</span> <span class="s1">&#39;Data Source and Uncertainty Flags&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Dry Bulb Temperature (°C)&#39;</span><span class="p">,</span> <span class="s1">&#39;Dew Point Temperature (°C)&#39;</span><span class="p">,</span> <span class="s1">&#39;Relative Humidity (%)&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Atmospheric Station Pressure (Pa)&#39;</span><span class="p">,</span> <span class="s1">&#39;Extraterrestrial Horizontal Radiation (Wh/m²)&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Extraterrestrial Direct Normal Radiation (Wh/m²)&#39;</span><span class="p">,</span> <span class="s1">&#39;Horizontal Infrared Radiation Intensity (Wh/m²)&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Global Horizontal Radiation (Wh/m²)&#39;</span><span class="p">,</span> <span class="s1">&#39;Direct Normal Radiation (Wh/m²)&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Diffuse Horizontal Radiation (Wh/m²)&#39;</span><span class="p">,</span> <span class="s1">&#39;Global Horizontal Illuminance (lux)&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Direct Normal Illuminance (lux)&#39;</span><span class="p">,</span> <span class="s1">&#39;Diffuse Horizontal Illuminance (lux)&#39;</span><span class="p">,</span> <span class="s1">&#39;Zenith Luminance (cd/m²)&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Wind Direction (°)&#39;</span><span class="p">,</span> <span class="s1">&#39;Wind Speed (m/s)&#39;</span><span class="p">,</span> <span class="s1">&#39;Total Sky Cover (tenths)&#39;</span><span class="p">,</span> <span class="s1">&#39;Opaque Sky Cover (tenths)&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Visibility (km)&#39;</span><span class="p">,</span> <span class="s1">&#39;Ceiling Height (m)&#39;</span><span class="p">,</span> <span class="s1">&#39;Present Weather Observation&#39;</span><span class="p">,</span> <span class="s1">&#39;Present Weather Codes&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Precipitable Water (mm)&#39;</span><span class="p">,</span> <span class="s1">&#39;Aerosol Optical Depth&#39;</span><span class="p">,</span> <span class="s1">&#39;Snow Depth (cm)&#39;</span><span class="p">,</span> <span class="s1">&#39;Days Since Last Snowfall&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;Albedo&#39;</span><span class="p">,</span> <span class="s1">&#39;Liquid Precipitation Depth (mm)&#39;</span><span class="p">,</span> <span class="s1">&#39;Liquid Precipitation Quantity (hr)&#39;</span><span class="p">]</span>
+        <span class="n">columns_to_select</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;Month&#39;</span><span class="p">,</span> <span class="s1">&#39;Day&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour&#39;</span><span class="p">,</span> <span class="s1">&#39;Dry Bulb Temperature (°C)&#39;</span><span class="p">,</span> <span class="s1">&#39;Dew Point Temperature (°C)&#39;</span><span class="p">,</span> <span class="s1">&#39;Relative Humidity (%)&#39;</span><span class="p">,</span> <span class="s1">&#39;Global Horizontal Radiation (Wh/m²)&#39;</span><span class="p">]</span>
+        <span class="c1"># read the weather file into a pandas DataFrame with the defined column names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">myweather_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">weather_file_path</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">names</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="n">columns_to_select</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weather_dict_DBT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">myweather_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="s1">&#39;Dry Bulb Temperature (°C)&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Month&#39;</span><span class="p">,</span> <span class="s1">&#39;Day&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()[</span><span class="s1">&#39;Dry Bulb Temperature (°C)&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weather_dict_DPT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">myweather_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="s1">&#39;Dew Point Temperature (°C)&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Month&#39;</span><span class="p">,</span> <span class="s1">&#39;Day&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()[</span><span class="s1">&#39;Dew Point Temperature (°C)&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weather_dict_RH</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">myweather_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="s1">&#39;Relative Humidity (%)&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Month&#39;</span><span class="p">,</span> <span class="s1">&#39;Day&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()[</span><span class="s1">&#39;Relative Humidity (%)&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weather_dict_GHR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">myweather_data</span><span class="o">.</span><span class="n">pivot_table</span><span class="p">(</span><span class="n">values</span><span class="o">=</span><span class="s1">&#39;Global Horizontal Radiation (Wh/m²)&#39;</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;Month&#39;</span><span class="p">,</span> <span class="s1">&#39;Day&#39;</span><span class="p">,</span> <span class="s1">&#39;Hour&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">to_dict</span><span class="p">()[</span><span class="s1">&#39;Global Horizontal Radiation (Wh/m²)&#39;</span><span class="p">]</span></div>
+        
+        <span class="c1"># return self.weather_dict_DBT, self.weather_dict_DPT, self.weather_dict_RH, self.weather_dict_GHR</span>
+
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    &#39;Site Outdoor Air Drybulb Temperature(Environment)&#39;,</span>
+<span class="sd">    &#39;Zone Thermostat Cooling Setpoint Temperature(West Zone)&#39;,</span>
+<span class="sd">    &#39;Zone Air Temperature(West Zone)&#39;,</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+<div class="viewcode-block" id="EplusEnv.forecast_weather"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.forecast_weather">[docs]</a>    <span class="k">def</span> <span class="nf">forecast_weather</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timesteps</span><span class="p">,</span> <span class="n">obs</span><span class="p">):</span>        
+        <span class="c1"># month, day, hour = obs[:3]</span>
+        <span class="c1"># day_of_the_month, hour = obs[:2]</span>
+        
+        <span class="c1"># if day_of_the_month &lt;= 30:</span>
+        <span class="c1">#     month = 6</span>
+        <span class="c1">#     day = day_of_the_month</span>
+        <span class="c1"># elif day_of_the_month &lt;= 61:</span>
+        <span class="c1">#     month = 7</span>
+        <span class="c1">#     day = day_of_the_month - 30</span>
+        <span class="c1"># else:</span>
+        <span class="c1">#     month = 8</span>
+        <span class="c1">#     day = day_of_the_month - 61</span>
+        <span class="c1"># create datetime object for January 1 of the same year</span>
+        <span class="n">dt</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="mi">2020</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">day_of_year</span><span class="p">,</span> <span class="n">hour</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">obs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+        <span class="c1"># add the number of days in the day_of_year value minus 1</span>
+        <span class="n">dt</span> <span class="o">+=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">days</span><span class="o">=</span><span class="n">day_of_year</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">month</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">month</span>
+        <span class="n">day</span> <span class="o">=</span> <span class="n">dt</span><span class="o">.</span><span class="n">day</span>
+        <span class="c1"># Considering the current date and time, I need to obtain the weather data for the next timesteps defined in timestep variable.</span>
+        <span class="c1"># For example, if the current date is 2020-01-01 00:00 and self.weather_i is 0, the next timesteps will be 2020-01-01 00:15, 2020-01-01 00:30 and 2020-01-01 00:45, if timesteps is [1,2,3]</span>
+        <span class="c1"># If timestep is [1,2,4,8], I will add 15 minutes to the current date and time multiplied by the value of each timestep located in the timestep variable.</span>
+        <span class="c1"># For example, if the current date is 2020-01-01 00:30, and timestep is [1,2,4,8], the next timesteps will be 2020-01-01 00:45, 2020-01-01 01:00, 2020-01-01 01:30 and 2020-01-01 02:30</span>
+        <span class="n">current_time</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span><span class="p">(</span><span class="n">year</span><span class="o">=</span><span class="mi">1989</span><span class="p">,</span> <span class="n">month</span><span class="o">=</span><span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="o">=</span><span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="o">=</span><span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weather_i</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">timesteps_per_hour</span><span class="p">))</span>
+        <span class="n">forecast_temp_aux</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">forecast_DP_aux</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">forecast_RH_aux</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">forecast_GHR_aux</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">timestep</span> <span class="ow">in</span> <span class="n">timesteps</span><span class="p">:</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="n">datetime</span><span class="o">.</span><span class="n">timedelta</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="n">timestep</span><span class="p">)</span>
+            <span class="n">future_time</span> <span class="o">=</span> <span class="n">current_time</span> <span class="o">+</span> <span class="n">delta</span>
+            <span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span> <span class="o">=</span> <span class="n">future_time</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">future_time</span><span class="o">.</span><span class="n">day</span><span class="p">,</span> <span class="n">future_time</span><span class="o">.</span><span class="n">hour</span>
+            <span class="c1"># forecast_data = self.weather_dict[(month, day, hour, minute)]</span>
+            <span class="c1"># forecast_data = self.weather_dict[(month, day, hour+1)] # +1 because the hour is 1-indexed in the weather_file.epw</span>
+            <span class="n">forecast_temp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">weather_dict_DBT</span><span class="p">[(</span><span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="o">+</span><span class="mi">1</span><span class="p">)]</span>
+            <span class="n">forecast_DP_aux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weather_dict_DPT</span><span class="p">[(</span><span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
+            <span class="n">forecast_RH_aux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weather_dict_RH</span><span class="p">[(</span><span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
+            <span class="n">forecast_GHR_aux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">weather_dict_GHR</span><span class="p">[(</span><span class="n">month</span><span class="p">,</span> <span class="n">day</span><span class="p">,</span> <span class="n">hour</span><span class="o">+</span><span class="mi">1</span><span class="p">)])</span>
+            <span class="c1"># forecast_weather.append(forecast_data[&#39;Site Outdoor Air Drybulb Temperature(Environment)&#39;].values[0])</span>
+            <span class="c1"># If relative future temperature: Out relative temperature = Dblist[idx_external] - Dblist[idx_internal]</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">relative_obs</span><span class="p">:</span>
+                <span class="n">curr_outdoor_temp</span> <span class="o">=</span> <span class="n">obs</span><span class="p">[</span><span class="mi">4</span><span class="o">+</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">obs</span><span class="p">[</span><span class="mi">4</span><span class="o">+</span><span class="mi">2</span><span class="p">]</span>
+                <span class="n">forecast_temp_aux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">forecast_temp</span> <span class="o">-</span> <span class="n">curr_outdoor_temp</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">forecast_temp_aux</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">forecast_temp</span><span class="p">)</span>
+            <span class="c1"># delta = datetime.timedelta(minutes=self.timesteps_per_hour * timestep)</span>
+            <span class="c1"># future_time = current_time + delta</span>
+            <span class="c1"># month, day, hour, minute = future_time.month, future_time.day, future_time.hour, future_time.minute</span>
+            <span class="c1"># forecast_data = self.myweather_data[(self.myweather_data[&#39;month&#39;] == month) &amp; (self.myweather_data[&#39;day&#39;] == day) &amp; (self.myweather_data[&#39;hour&#39;] == hour) &amp; (self.myweather_data[&#39;minute&#39;] == minute)]</span>
+
+            <span class="c1"># curr_outdoor_temp = obs[2] + obs[4]</span>
+            <span class="c1"># forecast_weather.append(forecast_data[&#39;Site Outdoor Air Drybulb Temperature(Environment)&#39;].values[0] - curr_outdoor_temp)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">weather_i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">weather_i</span> <span class="o">%=</span> <span class="mi">4</span>
+        
+        <span class="k">return</span> <span class="n">forecast_temp_aux</span> <span class="o">+</span> <span class="n">forecast_DP_aux</span> <span class="o">+</span> <span class="n">forecast_RH_aux</span> <span class="o">+</span> <span class="n">forecast_GHR_aux</span></div>
+    
+    
+<div class="viewcode-block" id="EplusEnv.get_weather_file_path"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.get_weather_file_path">[docs]</a>    <span class="k">def</span> <span class="nf">get_weather_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_name</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="n">root_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getcwd</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">seed</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="c1"># Read all files that start with &#39;Eplus-env-{env_name}-&#39;</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">dirname</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">dirname</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">root_dir</span><span class="p">)</span>
+                        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="n">dirname</span><span class="p">))</span> <span class="ow">and</span> <span class="n">dirname</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Eplus-env-</span><span class="si">{</span><span class="n">env_name</span><span class="si">}</span><span class="s1">-&#39;</span><span class="p">)]</span>
+
+            <span class="c1"># Obtain the last folder with the highest &#39;resXXX&#39; number</span>
+            <span class="n">max_res_num</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">res_folder</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+                <span class="n">res_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;-&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;res&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">res_num</span> <span class="o">&gt;</span> <span class="n">max_res_num</span><span class="p">:</span>
+                    <span class="n">max_res_num</span> <span class="o">=</span> <span class="n">res_num</span>
+                    <span class="n">res_folder</span> <span class="o">=</span> <span class="n">match</span>
+
+            <span class="c1"># Obtain the file with extension &#39;.epw&#39; inside the res_folder</span>
+            <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">res_folder</span><span class="o">+</span><span class="s1">&#39;/&#39;</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.epw&#39;</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># ToDo: Now I need to test if this else if correct, the previous if works</span>
+            <span class="c1"># Read the file located in the path specified by &#39;seed&#39;</span>
+            <span class="n">seed_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root_dir</span><span class="p">,</span> <span class="sa">f</span><span class="s1">&#39;Eplus-env-</span><span class="si">{</span><span class="n">env_name</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">seed</span><span class="p">[</span><span class="mi">1</span><span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="s1">&#39;-res1&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="n">seed_dir</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Seed directory &#39;</span><span class="si">{</span><span class="n">seed_dir</span><span class="si">}</span><span class="s2">&#39; doesn&#39;t exist&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Read the file located in the path specified by &#39;seed&#39;</span>
+            <span class="n">run_folders</span> <span class="o">=</span> <span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">seed_dir</span><span class="p">,</span> <span class="n">dirname</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">dirname</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">seed_dir</span><span class="p">)</span>
+                            <span class="k">if</span> <span class="s1">&#39;run&#39;</span> <span class="ow">in</span> <span class="n">dirname</span><span class="p">]</span>
+        
+            <span class="c1"># Obtain the file with extension &#39;.epw&#39; inside the run_folder with the highest run number</span>
+            <span class="n">max_run_num</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+            <span class="n">run_folder</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">for</span> <span class="n">folder</span> <span class="ow">in</span> <span class="n">run_folders</span><span class="p">:</span>
+                <span class="n">run_num</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">folder</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;run&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">run_num</span> <span class="o">&gt;</span> <span class="n">max_run_num</span><span class="p">:</span>
+                    <span class="n">max_run_num</span> <span class="o">=</span> <span class="n">run_num</span>
+                    <span class="n">run_folder</span> <span class="o">=</span> <span class="n">folder</span>
+            
+            <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">filenames</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">run_folder</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="n">filenames</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">filename</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.epw&#39;</span><span class="p">):</span>
+                        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span>
+        <span class="c1"># If no file is found, return None</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+        
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#                                     RESET                                    #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+<div class="viewcode-block" id="EplusEnv.reset"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+              <span class="n">seed</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">int</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="n">options</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span>
+                                     <span class="n">Any</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                                            <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span>
+                                                                 <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reset the environment.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            seed (Optional[int]): The seed that is used to initialize the environment&#39;s episode (np_random). if value is None, a seed will be chosen from some source of entropy. Defaults to None.</span>
+<span class="sd">            options (Optional[Dict[str, Any]]):Additional information to specify how the environment is reset. Defaults to None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[np.ndarray,Dict[str,Any]]: Current observation and info context with additional information.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># We need the following line to seed self.np_random</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="n">seed</span><span class="p">)</span>
+
+        <span class="c1"># Change to next episode</span>
+        <span class="c1"># if no options specified and environment has default reset options</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">options</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">obs</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">default_options</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">obs</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">reset</span><span class="p">(</span>
+                <span class="n">options</span><span class="p">)</span>
+                
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_forecast_weather</span><span class="p">:</span>
+            <span class="n">myweather_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_weather_file_path</span><span class="p">(</span><span class="n">env_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env_name</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">seed</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">read_weather_file</span><span class="p">(</span><span class="n">myweather_path</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">weather_i</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="n">obs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forecast_weather</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="n">obs</span><span class="p">))</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">=</span> <span class="mf">0.69</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SoC</span> <span class="o">=</span> <span class="mf">0.69</span>
+        
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">obs</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SoC</span><span class="p">)))</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">],</span> <span class="n">obs</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">relative_obs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_setpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Zone Thermostat Cooling Setpoint Temperature(West Zone)&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Zone Air Temperature(West Zone)&#39;</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_setpoint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Zone Thermostat Cooling Setpoint Temperature(West Zone)&#39;</span><span class="p">]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_i</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shifted_wklds</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="c1"># myweather_path = r&#39;/sinergym/Eplus-env-datacenter-mixed-continuous-v1-res119/Eplus-env-sub_run1/USA_NY_New.York-J.F.Kennedy.Intl.AP.744860_TMY3_Random_4.0_1.0_0.1.epw&#39;</span>
+
+        <span class="n">info</span><span class="p">[</span><span class="s1">&#39;DC_load&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Facility Total Electricity Demand Rate(Whole Building)&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1e3</span>
+        <span class="n">info</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span> <span class="o">=</span> <span class="n">obs</span>
+
+        <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="n">info</span></div>
+
+<div class="viewcode-block" id="EplusEnv.obtain_cpu_load_deprecated"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.obtain_cpu_load_deprecated">[docs]</a>    <span class="k">def</span> <span class="nf">obtain_cpu_load_deprecated</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># Considering the day and the hour/minute, I select the cpu utilization</span>
+        <span class="c1"># The file is self.external_cpu_scheme</span>
+        <span class="n">day_of_year</span><span class="p">,</span> <span class="n">hour</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;sindayOTY&#39;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;sinhour&#39;</span><span class="p">]</span>
+        <span class="n">day_of_year</span> <span class="o">%=</span> <span class="mi">7</span>
+        <span class="n">minute</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load_i</span><span class="o">*</span><span class="bp">self</span><span class="o">.</span><span class="n">timesteps_per_hour</span><span class="p">)</span>
+        
+        <span class="n">load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">external_cpu_scheme</span><span class="p">[(</span><span class="n">day_of_year</span><span class="p">,</span> <span class="n">hour</span><span class="p">,</span> <span class="n">minute</span><span class="p">)]</span>
+        
+        <span class="c1"># Sanity clip</span>
+        <span class="n">load</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">load</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_i</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_i</span> <span class="o">%=</span> <span class="mi">4</span>
+        
+        <span class="k">return</span> <span class="n">load</span></div>
+    
+<div class="viewcode-block" id="EplusEnv.set_CI_SoC"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.set_CI_SoC">[docs]</a>    <span class="k">def</span> <span class="nf">set_CI_SoC</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">CI_SoC</span><span class="p">):</span>
+        <span class="c1"># print(f&#39;Updating shifted_wklds to {shifted_wklds}&#39;)</span>
+        <span class="n">CI</span><span class="p">,</span> <span class="n">SoC</span> <span class="o">=</span> <span class="n">CI_SoC</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CI</span> <span class="o">=</span> <span class="n">CI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">SoC</span> <span class="o">=</span> <span class="n">SoC</span></div>
+
+    <span class="c1"># set_CI_SoC</span>
+<div class="viewcode-block" id="EplusEnv.set_shifted_wklds"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.set_shifted_wklds">[docs]</a>    <span class="k">def</span> <span class="nf">set_shifted_wklds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shifted_wklds</span><span class="p">):</span>
+        <span class="c1"># print(f&#39;Updating shifted_wklds to {shifted_wklds}&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shifted_wklds</span> <span class="o">=</span> <span class="n">shifted_wklds</span></div>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#                                     STEP                                     #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+<div class="viewcode-block" id="EplusEnv.step"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+             <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span>
+                           <span class="nb">float</span><span class="p">,</span>
+                           <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span>
+                           <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                           <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+                           <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span>
+             <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="nb">bool</span><span class="p">,</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sends action to the environment</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action (Union[int, float, np.integer, np.ndarray, List[Any], Tuple[Any]]): Action selected by the agent.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Tuple[np.ndarray, float, bool, Dict[str, Any]]: Observation for next timestep, reward obtained, Whether the episode has ended or not, Wheather episode has been truncated or not, and a dictionary with extra information</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="c1"># Get action</span>
+        <span class="c1"># print(&#39;Action: &#39;, action)</span>
+        <span class="n">action_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_action</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+        <span class="n">raw_action</span> <span class="o">=</span> <span class="n">action</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">external_cpu_scheme</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="c1"># cpu_load = self.obtain_cpu_load()</span>
+            <span class="c1"># # Concat action_ with cpu_load</span>
+            <span class="c1"># action = [action, cpu_load*100]</span>
+            <span class="n">action</span> <span class="o">=</span> <span class="p">[</span><span class="n">action</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">shifted_wklds</span><span class="o">*</span><span class="mi">100</span><span class="p">]</span>
+            <span class="n">action_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">shifted_wklds</span><span class="p">)</span>
+
+        <span class="c1"># Send action to the simulator</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">logger_main</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">action_</span><span class="p">)</span>
+        <span class="c1"># Execute action in simulation</span>
+        <span class="n">obs</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">step</span><span class="p">(</span><span class="n">action_</span><span class="p">)</span>
+        
+        <span class="c1"># ToDo: change terminated to one week</span>
+        
+        <span class="c1"># self.load_shifting_model(action_load)</span>
+        
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_forecast_weather</span><span class="p">:</span>
+            <span class="n">obs</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">forecast_weather</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span> <span class="n">obs</span><span class="p">))</span>
+        
+        <span class="n">obs</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">CI</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">SoC</span><span class="p">])</span>
+        <span class="n">obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        
+        <span class="c1"># Create dictionary with observation</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">],</span> <span class="n">obs</span><span class="p">))</span>
+
+        <span class="c1"># Calculate reward</span>
+        <span class="n">reward</span><span class="p">,</span> <span class="n">terms</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward_fn</span><span class="p">()</span>
+
+        <span class="c1"># info update with reward information</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s1">&#39;total_power&#39;</span><span class="p">:</span> <span class="n">terms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;total_energy&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;total_power_no_units&#39;</span><span class="p">:</span> <span class="n">terms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;reward_energy&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;comfort_penalty&#39;</span><span class="p">:</span> <span class="n">terms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;reward_comfort&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;abs_comfort&#39;</span><span class="p">:</span> <span class="n">terms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;abs_comfort&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;temperatures&#39;</span><span class="p">:</span> <span class="n">terms</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;temperatures&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;action_&#39;</span><span class="p">:</span> <span class="n">action_</span><span class="p">,</span>
+            <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="n">action</span><span class="p">,</span>
+            <span class="s1">&#39;raw_action&#39;</span><span class="p">:</span> <span class="n">raw_action</span><span class="p">})</span>
+        
+        <span class="c1"># &#39;Site Outdoor Air Drybulb Temperature(Environment)&#39;,</span>
+        <span class="c1"># &#39;Zone Thermostat Cooling Setpoint Temperature(West Zone)&#39;,</span>
+        <span class="c1"># &#39;Zone Air Temperature(West Zone)&#39;,</span>
+        <span class="c1"># &#39;Facility Total HVAC Electricity Demand Rate(Whole Building)&#39;,</span>
+        <span class="c1"># &#39;Facility Total Electricity Demand Rate(Whole Building)&#39;,</span>
+        <span class="c1"># &#39;Facility Total Building Electricity Demand Rate(Whole Building)&#39;</span>
+                    
+        <span class="n">info</span><span class="p">[</span><span class="s1">&#39;DC_load&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Facility Total Electricity Demand Rate(Whole Building)&#39;</span><span class="p">]</span><span class="o">/</span><span class="mf">1e3</span>
+        <span class="n">info</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;dc_ITE_total_power_kW&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Facility Total Building Electricity Demand Rate(Whole Building)&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">,</span>
+                     <span class="s1">&#39;dc_HVAC_total_power_kW&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Facility Total HVAC Electricity Demand Rate(Whole Building)&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">,</span>
+                     <span class="s1">&#39;dc_total_power_kW&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Facility Total Electricity Demand Rate(Whole Building)&#39;</span><span class="p">]</span> <span class="o">/</span> <span class="mf">1e3</span><span class="p">,</span>
+                     <span class="s1">&#39;dc_power_lb_kW&#39;</span><span class="p">:</span> <span class="mi">800</span><span class="p">,</span>
+                     <span class="s1">&#39;dc_power_ub_kW&#39;</span><span class="p">:</span> <span class="mi">5000</span><span class="p">,</span>
+                     <span class="s1">&#39;dc_crac_setpoint_delta&#39;</span><span class="p">:</span> <span class="n">action_</span><span class="p">,</span>
+                     <span class="s1">&#39;dc_crac_setpoint&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Zone Thermostat Cooling Setpoint Temperature(West Zone)&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;dc_cpu_workload_percent&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">shifted_wklds</span><span class="p">,</span>
+                     <span class="s1">&#39;dc_int_temperature&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Zone Air Temperature(West Zone)&#39;</span><span class="p">],</span>
+                     <span class="s1">&#39;outside_temp&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">obs_dict</span><span class="p">[</span><span class="s1">&#39;Site Outdoor Air Drybulb Temperature(Environment)&#39;</span><span class="p">],</span>
+        <span class="p">})</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span> <span class="o">=</span> <span class="n">obs</span>
+        
+        <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span></div>
+
+<div class="viewcode-block" id="EplusEnv.update_state"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span><span class="p">[</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">shifted_wklds</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CI</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">SoC</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span></div>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#                                RENDER (empty)                                #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+<div class="viewcode-block" id="EplusEnv.render"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.render">[docs]</a>    <span class="k">def</span> <span class="nf">render</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mode</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;human&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Environment rendering.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            mode (str, optional): Mode for rendering. Defaults to &#39;human&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">pass</span></div>
+
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#                                     CLOSE                                    #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+<div class="viewcode-block" id="EplusEnv.close"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;End simulation.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">end_env</span><span class="p">()</span></div>
+
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#                           Environment functionality                          #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+<div class="viewcode-block" id="EplusEnv.get_schedulers"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.get_schedulers">[docs]</a>    <span class="k">def</span> <span class="nf">get_schedulers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Extract all schedulers available in the building model to be controlled.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            path (str, optional): If path is specified, then this method export a xlsx file version in addition to return the dictionary.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Dict[str, Any]: Python Dictionary: For each scheduler found, it shows type value and where this scheduler is present (Object name, Object field and Object type).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">schedulers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">schedulers</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">export_actuators_to_excel</span><span class="p">(</span><span class="n">actuators</span><span class="o">=</span><span class="n">schedulers</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">schedulers</span></div>
+
+<div class="viewcode-block" id="EplusEnv.get_zones"><a class="viewcode-back" href="../../../custom_sinergym.envs.html#custom_sinergym.envs.eplus_env.EplusEnv.get_zones">[docs]</a>    <span class="k">def</span> <span class="nf">get_zones</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the zone names available in the building model of that environment.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            List[str]: List of the zone names.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">simulator</span><span class="o">.</span><span class="n">_config</span><span class="o">.</span><span class="n">idf_zone_names</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span>
+                                                <span class="nb">float</span><span class="p">,</span>
+                                                <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span>
+                                                <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                                <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+                                                <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform the action for sending it to the simulator.&quot;&quot;&quot;</span>
+        <span class="c1"># print(f&quot;Action inside _get_action: {action}&quot;)</span>
+        <span class="c1"># Get action depending on flag_discrete</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag_discrete</span><span class="p">:</span>
+            <span class="c1"># Index for action_mapping</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">issubdtype</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">action</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span> <span class="c1"># or isinstance(action, np.integer):</span>
+                    <span class="n">setpoints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_mapping</span><span class="p">[</span><span class="n">action</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">setpoints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_mapping</span><span class="p">[</span><span class="n">action</span><span class="o">.</span><span class="n">item</span><span class="p">()]</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_actions</span><span class="p">:</span>
+                        <span class="n">setpoints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setpoints_transform_delta_discrete</span><span class="p">(</span><span class="n">setpoints</span><span class="p">)</span>
+            <span class="c1"># Manual action</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+                <span class="c1"># stable-baselines DQN bug prevention</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">action</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">setpoints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_mapping</span><span class="p">[</span><span class="n">action</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">setpoints</span> <span class="o">=</span> <span class="n">action</span>
+            <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">action</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+                <span class="n">setpoints</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">action_mapping</span><span class="p">[</span><span class="n">action</span><span class="o">.</span><span class="n">item</span><span class="p">()]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                    <span class="s1">&#39;action type not supported by Sinergym environment&#39;</span><span class="p">)</span>
+            <span class="n">action_</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">setpoints</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># transform action to setpoints simulation</span>
+            <span class="n">action_</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_setpoints_transform</span><span class="p">(</span><span class="n">action</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">action_</span>
+    
+    <span class="k">def</span> <span class="nf">_setpoints_transform_delta_discrete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                    <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span>
+                                                <span class="nb">float</span><span class="p">,</span>
+                                                <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span>
+                                                <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                                <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+                                                <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span>
+                                                                        <span class="nb">float</span><span class="p">,</span>
+                                                                        <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span>
+                                                                        <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                                                        <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+                                                                        <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; This method transforms an action defined in gym (-1,1 in all continuous environment) action space to simulation real action space.</span>
+<span class="sd">        Considering that the action is a delta action, consider the last setpoint to obtain the next setpoint.</span>
+<span class="sd">        The delta action is limited to increase the setpoint -0.5 and 0.5 C.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action (Union[int, float, np.integer, np.ndarray, List[Any], Tuple[Any]]): Action received in environment</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Union[int, float, np.integer, np.ndarray, List[Any], Tuple[Any]]: Action transformed in simulator action space.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+                
+        <span class="c1"># Transform the last setpoint to the next setpoint considering the delta action</span>
+        <span class="n">action_</span> <span class="o">=</span> <span class="p">[]</span>
+        
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_setpoint</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">action</span><span class="p">])</span>
+
+        <span class="c1"># Check if action is out of range</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span> <span class="c1">#self.action_space.low[0]:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_range</span><span class="p">[</span><span class="mi">0</span><span class="p">]])</span> <span class="c1">#self.action_space.low[0]</span>
+        
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span> <span class="c1">#self.action_space.high[0]:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">temp_range</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span> <span class="c1">#self.action_space.high[0]</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_setpoint</span> <span class="o">=</span> <span class="n">value</span>
+        <span class="n">action_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">action_</span>
+    
+    <span class="k">def</span> <span class="nf">_setpoints_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                             <span class="n">action</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span>
+                                           <span class="nb">float</span><span class="p">,</span>
+                                           <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span>
+                                           <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                           <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+                                           <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]])</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span>
+                                                                 <span class="nb">float</span><span class="p">,</span>
+                                                                 <span class="n">np</span><span class="o">.</span><span class="n">integer</span><span class="p">,</span>
+                                                                 <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                                                                 <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">],</span>
+                                                                 <span class="n">Tuple</span><span class="p">[</span><span class="n">Any</span><span class="p">]]:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; This method transforms an action defined in gym (-1,1 in all continuous environment) action space to simulation real action space.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action (Union[int, float, np.integer, np.ndarray, List[Any], Tuple[Any]]): Action received in environment</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            Union[int, float, np.integer, np.ndarray, List[Any], Tuple[Any]]: Action transformed in simulator action space.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">action_</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">action</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span><span class="o">.</span><span class="n">low</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">value</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span><span class="o">.</span><span class="n">high</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span>
+                <span class="n">a_max_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span><span class="o">.</span><span class="n">high</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span><span class="o">.</span><span class="n">low</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                <span class="n">sp_max_min</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">setpoints_space</span><span class="o">.</span><span class="n">high</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">-</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">setpoints_space</span><span class="o">.</span><span class="n">low</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+
+                <span class="n">action_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">setpoints_space</span><span class="o">.</span><span class="n">low</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span>
+                    <span class="p">(</span>
+                        <span class="n">value</span> <span class="o">-</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span><span class="o">.</span><span class="n">low</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span>
+                    <span class="n">sp_max_min</span> <span class="o">/</span>
+                    <span class="n">a_max_min</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If action is outer action_space already, it don&#39;t need</span>
+                <span class="c1"># transformation</span>
+                <span class="n">action_</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">action_</span>
+
+    <span class="k">def</span> <span class="nf">_check_eplus_env</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;This method checks that environment definition is correct and it has not inconsistencies.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># OBSERVATION</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;observation&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span>
+            <span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;Observation space has not the same length than variable names specified.&#39;</span>
+
+        <span class="c1"># ACTION</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">flag_discrete</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;action_mapping&#39;</span><span class="p">),</span> <span class="s1">&#39;Discrete environment: action mapping should have been defined.&#39;</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;setpoints_space&#39;</span><span class="p">),</span> <span class="s1">&#39;Discrete environment: setpoints space should not have been defined.&#39;</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span><span class="o">.</span><span class="n">n</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">action_mapping</span><span class="p">),</span> <span class="s1">&#39;Discrete environment: The length of the action_mapping must match the dimension of the discrete action space.&#39;</span>
+            <span class="c1"># for values in self.action_mapping.values():</span>
+            <span class="c1">#     assert len(values) == len(</span>
+            <span class="c1">#         self.variables[&#39;action&#39;]), &#39;Discrete environment: Action mapping tuples values must have the same length than action variables specified.&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">])</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span>
+                <span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;Action space shape must match with number of action variables specified.&#39;</span>
+            <span class="k">assert</span> <span class="nb">hasattr</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;setpoints_space&#39;</span><span class="p">),</span> <span class="s1">&#39;Continuous environment: setpoints_space attribute should have been defined.&#39;</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span>
+                <span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;action_mapping&#39;</span><span class="p">),</span> <span class="s1">&#39;Continuous environment: action mapping should not have been defined.&#39;</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span><span class="o">.</span><span class="n">low</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">])</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span><span class="o">.</span><span class="n">high</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">variables</span><span class="p">[</span><span class="s1">&#39;action&#39;</span><span class="p">]),</span> <span class="s1">&#39;Continuous environment: low and high values action space definition should have the same number of values than action variables.&#39;</span>
+
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="c1">#                                  Properties                                  #</span>
+    <span class="c1"># ---------------------------------------------------------------------------- #</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span>
+
+    <span class="nd">@action_space</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">action_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space</span><span class="p">:</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">[</span><span class="n">Any</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_space</span> <span class="o">=</span> <span class="n">space</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">[</span><span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">[</span><span class="n">Any</span><span class="p">]:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_observation_space</span>
+
+    <span class="nd">@observation_space</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">observation_space</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">space</span><span class="p">:</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Space</span><span class="p">[</span><span class="n">Any</span><span class="p">]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_observation_space</span> <span class="o">=</span> <span class="n">space</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

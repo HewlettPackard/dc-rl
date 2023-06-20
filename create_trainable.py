@@ -21,36 +21,39 @@ def create_wrapped_trainable(alg: Union[str, Algorithm]) -> Algorithm:
         KEYS_TO_PRINT = [
             'training_iteration', 
             'episodes_total',
-            'num_env_steps',
             'episode_reward_mean',
-            'policy_reward_mean',
+            'policy_reward_mean/agent_ls',
+            'policy_reward_mean/agent_dc',
+            'policy_reward_mean/agent_bat',
+            'custom_metrics/average_CO2_footprint_mean'
             ]
 
-        @staticmethod
-        def flatten(d: Dict, res: List) -> List:
+        def flatten(self, d: Dict, res: Dict = {}, flattened_key: str = '') -> Dict:
             for key, val in d.items():
                 if isinstance(val, dict):
-                    flatten(val, res)
+                    self.flatten(val, res, flattened_key + key + '/' )
                 else:
+                    # We are only interested in the mean
                     if 'min' in key or 'max' in key:
                         continue
-                    res.append(f'{key}: {round(val, 2)}')
+                    res[flattened_key + key] = val
             return res
 
         def display_results(self, results: ResultDict) -> None:
-            display_cols = []
-            for key in self.KEYS_TO_PRINT:
+
+            display = []
+            results = self.flatten(results)
+
+            for key_to_print in self.KEYS_TO_PRINT:
                 try:
-                    val = results[key]
+                    val = results[key_to_print]
                 except:
                     continue
                 
-                if isinstance(val, dict):
-                    display_cols = self.flatten(val, display_cols)
-                else:
-                    display_cols.append(f'{key}: {round(val, 2)}')
+                k = key_to_print.split('/')[-1]
+                display.append(f'{k}: {round(val, 2)}')
             
-            print(', '.join(display_cols))
+            print(', '.join(display))
 
         @override(Trainable)
         def train(self) -> ResultDict:
