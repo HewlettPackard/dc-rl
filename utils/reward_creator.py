@@ -259,10 +259,10 @@ REWARD_METHOD_MAP = {
     # Add custom reward methods here
     'custom_agent_reward' : custom_agent_reward,
     'tou_reward' : tou_reward,
-    'renewable_energy_reward': renewable_energy_reward,
-    'energy_efficiency_reward': energy_efficiency_reward,
-    'energy_PUE_reward': energy_PUE_reward,
-    'temperature_efficiency_reward': temperature_efficiency_reward,
+    'renewable_energy_reward' : renewable_energy_reward,
+    'energy_efficiency_reward' : energy_efficiency_reward,
+    'energy_PUE_reward' : energy_PUE_reward,
+    'temperature_efficiency_reward' : temperature_efficiency_reward,
 }
 
 def get_reward_method(reward_method : str = 'default_dc_reward'):
