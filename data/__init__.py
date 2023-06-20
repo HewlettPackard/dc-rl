@@ -1,1 +1,1 @@
-"""Includes common utilities, controllers, rewards, wrappers and custom callbacks."""
+"""This folder includes three folders to organize the weather, the carbon intensity, and the workload files."""
