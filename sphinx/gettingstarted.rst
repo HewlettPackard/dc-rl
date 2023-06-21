@@ -33,7 +33,7 @@ To run DCRLeplus using a docker image, first launch the docker container by exec
 
 .. code-block:: console
 
-   docker run -t -i -v \$PWD:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
+   docker run -t -i -v $PWD:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
 
 If the docker container is launched successfully, the isolated :code:`sinergym` environment is enabled. Navigate to the to the source directory :code:`dc-rl` to be able to execute DCRL-Green:
 
@@ -61,7 +61,10 @@ Next, run the script:
 If you want to run the DCRL-Green framework in background mode use the following command:
 
 .. code-block:: python
-nohup python PYTHON_SCRIPT ``>`` OUTPUT_FILE.txt  &
+
+    nohup python PYTHON_SCRIPT > OUTPUT_FILE.txt  &
+
+
 
 where :code:`PYTHON_SCRIPT` is the script you want to run (e.g., :code:`train_ppo.py`) and :code:`OUTPUT_FILE` is the name of the file that will contain the output (e.g. :code:`latest_experiment_output.txt`).
 
