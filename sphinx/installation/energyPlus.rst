@@ -36,22 +36,6 @@ Pull the Docker image with command:
 .. note::
    To run command with elevated privileges, use the prefix :code:`sudo` 
 
-A docker container can be launched using the command:
-
-.. code-block:: console
-
-   docker run -t -i -v ./:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
-
-If the docker container is launched successfully, the isolated :code:`sinergym` environment is enabled. Navigate to the to the source directory :code:`dc-rl` to be able to execute DCRL-Green:
-
-.. code-block:: console
-
-   cd dc-rl
-
-.. note::
-   Some useful Docker commands could be found here_
-   
-.. _here: https://docs.docker.com/engine/reference/commandline/cli/
 
 **********************
 2. Manual installation (**not recommended**)
