@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>How to monitor training results using TensorBoard &mdash; DCRL-Green 0.0.1 documentation</title>
+  <title>How to Monitor Training Results Using TensorBoard &mdash; DCRL-Green 0.0.1 documentation</title>
       <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
       <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
       <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
@@ -54,7 +54,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/index.html">Code</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Train and Evaluate Statistics</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">How to monitor training results using TensorBoard</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">How to Monitor Training Results Using TensorBoard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#how-to-add-custom-metrics">How to add Custom Metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="evaluate.html">How to evaluate DCRL-Green model</a></li>
 </ul>
 </li>
@@ -77,7 +78,7 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="index.html">Train and Evaluate Statistics</a></li>
-      <li class="breadcrumb-item active">How to monitor training results using TensorBoard</li>
+      <li class="breadcrumb-item active">How to Monitor Training Results Using TensorBoard</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/train_evaluate/monitor_results.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -88,7 +89,49 @@
            <div itemprop="articleBody">
              
   <section id="how-to-monitor-training-results-using-tensorboard">
-<h1>How to monitor training results using TensorBoard<a class="headerlink" href="#how-to-monitor-training-results-using-tensorboard" title="Permalink to this headline"></a></h1>
+<h1>How to Monitor Training Results Using TensorBoard<a class="headerlink" href="#how-to-monitor-training-results-using-tensorboard" title="Permalink to this headline"></a></h1>
+<p>TensorBoard is a powerful tool for monitoring and visualizing the training process of reinforcement learning algorithms. DCRL-Green provides a custom callback implementation called <code class="code docutils literal notranslate"><span class="pre">CustomCallbacks</span></code> found in <code class="code docutils literal notranslate"><span class="pre">utils/rllib_callbacks.py</span></code> which can be used to track the performance of the model during training with TensorBoard.</p>
+<p>After starting the training process, you can view the results using TensorBoard by running the following command in your terminal: <code class="code docutils literal notranslate"><span class="pre">tensorboard</span> <span class="pre">--logdir=/results/</span></code> and then navigating to the localhost URL that is displayed.</p>
+<p>Once TensorBoard is running, you can view various metrics such as the average total energy with battery (<code class="code docutils literal notranslate"><span class="pre">total_energy_with_battery</span></code>), the average CO2 footprint (<code class="code docutils literal notranslate"><span class="pre">CO2_footprint_mean</span></code>), and the total load left (<code class="code docutils literal notranslate"><span class="pre">load_left_mean</span></code>). You can also monitor the model’s progress by viewing graphs of the various metrics during training (such as <code class="code docutils literal notranslate"><span class="pre">episode_reward_mean</span></code>).</p>
+<ul class="simple">
+<li><p>The <code class="code docutils literal notranslate"><span class="pre">total_energy_with_battery</span></code> metric represents the average total energy consumed by all the agents in the environment, including energy stored in batteries. This metric is a useful indicator of the overall energy efficiency of the system.</p></li>
+<li><p>The <code class="code docutils literal notranslate"><span class="pre">CO2_footprint_mean</span></code> metric represents the average amount of CO2 emissions produced by all the agents in the environment. This metric is an important environmental metric that can be used to evaluate the carbon footprint of the data center.</p></li>
+<li><p>The <code class="code docutils literal notranslate"><span class="pre">load_left_mean</span></code> metric represents the total amount of workload left unassigned by the load shifting agent in the environment. This metric is a useful indicator of the efficiency of the load shifting module and can help to identify if the agents are not computing all of the planned workload.</p></li>
+</ul>
+</section>
+<section id="how-to-add-custom-metrics">
+<h1>How to add Custom Metrics<a class="headerlink" href="#how-to-add-custom-metrics" title="Permalink to this headline"></a></h1>
+<p>To add new custom metrics to track during training with TensorBoard, you can modify the <code class="code docutils literal notranslate"><span class="pre">CustomCallbacks</span></code> class as follows:</p>
+<p><strong>Step 1:</strong></p>
+<p>Create a new key in the <code class="code docutils literal notranslate"><span class="pre">episode.user_data</span></code> dictionary in the <code class="code docutils literal notranslate"><span class="pre">on_episode_start</span></code> method.</p>
+<p>Example to track the average battery SoC along one episode:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_episode_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">worker</span><span class="p">,</span> <span class="n">base_env</span><span class="p">,</span> <span class="n">policies</span><span class="p">,</span> <span class="n">episode</span><span class="p">,</span> <span class="n">env_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="n">episode</span><span class="o">.</span><span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;total_battery_SoC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>In this example, <code class="code docutils literal notranslate"><span class="pre">total_battery_SoC</span></code> is the new key that we initiate.</p>
+<p><strong>Step 2:</strong></p>
+<p>Store or collect the value of the desired metric in the <code class="code docutils literal notranslate"><span class="pre">on_episode_step</span></code> method.</p>
+<p>Example to track the average battery SoC along one episode:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_episode_step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">worker</span><span class="p">,</span> <span class="n">base_env</span><span class="p">,</span> <span class="n">episode</span><span class="p">,</span> <span class="n">env_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="n">episode</span><span class="o">.</span><span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;total_battery_SoC&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="n">total_battery_SoC</span>
+</pre></div>
+</div>
+<p><strong>Step 3:</strong></p>
+<p>Continue to store or modify the value of the desired metric in the <code class="code docutils literal notranslate"><span class="pre">on_episode_end</span></code> method, a function that is called at the end of each episode in the training process and store the final metric value using the <code class="code docutils literal notranslate"><span class="pre">episode.custom_metrics</span></code> dictionary.</p>
+<p>Example to track the average battery SoC along one episode:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">on_episode_end</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">worker</span><span class="p">,</span> <span class="n">base_env</span><span class="p">,</span> <span class="n">policies</span><span class="p">,</span> <span class="n">episode</span><span class="p">,</span> <span class="n">env_index</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+  <span class="n">episode</span><span class="o">.</span><span class="n">custom_metrics</span><span class="p">[</span><span class="s2">&quot;average_battery_SoC&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">episode</span><span class="o">.</span><span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;total_battery_SoC&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">episode</span><span class="o">.</span><span class="n">user_data</span><span class="p">[</span><span class="s2">&quot;step_count&quot;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Once you have added the custom metric to the <code class="code docutils literal notranslate"><span class="pre">CustomCallbacks</span></code> class, you can view it in TensorBoard by selecting the appropriate metric (i.e. <code class="code docutils literal notranslate"><span class="pre">average_battery_SoC</span></code> in the previous example) from the dropdown list of metrics in the TensorBoard dashboard.</p>
+<p>Overall, adding custom metrics in this way gives you greater flexibility and control over the training process, allowing you to track specific metrics that are relevant to your use case and goals.</p>
+<figure class="align-center" id="id1">
+<a class="reference internal image-reference" href="../_images/tensorboard.png"><img alt="TensorBoard dashboard" src="../_images/tensorboard.png" style="width: 757.6px; height: 283.6px;" /></a>
+<figcaption>
+<p><span class="caption-text">An example of the tensorboard dashboard</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+</figcaption>
+</figure>
 </section>
 
 
