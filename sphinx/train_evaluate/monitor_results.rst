@@ -32,3 +32,9 @@ For example, if you wanted to track the average battery SoC along one episode, y
 Once you have added the custom metric to the :code:`CustomCallbacks` class, you can view it in TensorBoard by selecting the appropriate metric (i.e. :code:`average_battery_SoC` in the previous example) from the dropdown list of metrics in the TensorBoard dashboard.
 
 Overall, adding custom metrics in this way gives you greater flexibility and control over the training process, allowing you to track specific metrics that are relevant to your use case and goals.
+
+An example of the tensorboard dashboard can be found in the following example
+.. image:: images/tensorboard.png
+   :scale: 85 %
+   :alt: TensorBoard dashboard
+   :align: center
