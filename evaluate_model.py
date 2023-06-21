@@ -8,11 +8,31 @@ import tqdm
 import numpy as np
 import pandas as pd
 from ray.rllib.algorithms.ppo import PPO #Select same algorithm as used in training
+from ray.rllib.algorithms.a2c import A2C
+from maddpg import MADDPGConfigStable, MADDPGStable
+
 
 from dcrl_env import DCRL
-from train_ppo import CONFIG #Import config of the desired algorithm
+from dcrl_eplus_env import DCRLeplus
+from train_ppo import CONFIG as config_ppo  #Import config of the desired algorithm
+from train_maddpg import CONFIG as config_maddpg
+from train_a2c import CONFIG as config_a2c
 
-CHECKPOINT = './results/test/PPO_DCRL_c2f2a_00000_0_2023-06-16_16-51-50/checkpoint_001215/' #PATH TO CHECKPOINT
+#Select the algorithm
+ALGORITHM = 'MADDPG' #PPO, A2C or MADDPG
+CHECKPOINT = './results/test/MADDPGStable_DCRL_0608c_00000_0_2023-06-16_16-53-42/checkpoint_008795/' #PATH TO CHECKPOINT
+
+if ALGORITHM == 'PPO':
+    config = config_ppo
+    train_algorithm = PPO
+elif ALGORITHM == 'A2C':
+    config = config_a2c
+    train_algorithm = A2C
+else:
+    config = config_maddpg
+    train_algorithm = MADDPGStable
+
+environment=DCRL if not os.getenv('EPLUS') else DCRLeplus
 
 NUM_DAYS = 30
 NUM_STEPS_PER_HOUR = 4
@@ -23,10 +43,10 @@ action_dict_ashrae = {
                     'agent_bat' : 2
                     }
 
-dummy_env = CONFIG.env(CONFIG.env_config)
+dummy_env = config.env(config.env_config)
 ls_env, dc_env, bat_env = dummy_env.ls_env, dummy_env.dc_env, dummy_env.bat_env 
 
-CONFIG = CONFIG.multi_agent(
+config = config.multi_agent(
             policies={
                 "agent_ls": PolicySpec(
                     None,
@@ -51,7 +71,7 @@ CONFIG = CONFIG.multi_agent(
         )
 
 def run(run_id):
-    trainer = PPO(deepcopy(CONFIG)) #Change to desired algorithm
+    trainer = train_algorithm(deepcopy(config)) #Change to desired algorithm
     trainer.restore(CHECKPOINT)
     
     time_step_co2 = []
@@ -60,7 +80,7 @@ def run(run_id):
 
     # Cycle over months
     for month in tqdm.tqdm(range(12)):
-        env = DCRL(env_config={'month': month, 'actions_are_logits': True})
+        env = environment(env_config={'month': month, 'actions_are_logits': True})
         obs, _ = env.reset()
         
         for i in range(24*NUM_STEPS_PER_HOUR*NUM_DAYS):
@@ -77,8 +97,8 @@ def run(run_id):
     df['energy'] = time_step_energy
     df['co2'] = time_step_co2
 
-    name = '_dc_rl_multiagent'
-    df.to_csv(f'./raw_results_ny/{name}_{run_id}.csv')
+    name = '_dc_rl_multiagent_maddpg' #Name of the output file
+    df.to_csv(f'./raw_results_ny/{name}_{run_id}.csv') #Folder in where to store results
 
 
 if __name__ == '__main__':
