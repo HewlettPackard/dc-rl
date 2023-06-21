@@ -1,89 +1,83 @@
-import os
-import itertools
-import logging
-from copy import deepcopy
-from joblib import Parallel, delayed, wrap_non_picklable_objects
-from ray.rllib.policy.policy import PolicySpec
-import tqdm
-import numpy as np
+from collections import defaultdict
+from joblib import Parallel, delayed
+from tabulate import tabulate
+
+from tqdm import tqdm
 import pandas as pd
-from ray.rllib.algorithms.ppo import PPO #Select same algorithm as used in training
+import numpy as np
+import ray
+from ray.rllib.algorithms.ppo import PPO, PPOConfig
+from ray.rllib.algorithms import Algorithm, AlgorithmConfig
+from ray.tune.analysis import ExperimentAnalysis
 
-from dcrl_env import DCRL
-from train_ppo import CONFIG #Import config of the desired algorithm
+# Please update to desired checkpoint. Path to exact checkpoint is required
+CHECKPOINT = './results/test/PPO_DCRL_4b751_00000_0_2023-06-19_06-22-09/checkpoint_002740'
 
-CHECKPOINT = './results/test/PPO_DCRL_c2f2a_00000_0_2023-06-16_16-51-50/checkpoint_001215/' #PATH TO CHECKPOINT
+def run(run_id: int, location: str, stats):
+    trainer = Algorithm.from_checkpoint(CHECKPOINT)
 
-NUM_DAYS = 30
-NUM_STEPS_PER_HOUR = 4
-
-action_dict_ashrae = { 
-                    'agent_ls' : 0,
-                    'agent_dc' : np.int64(4),
-                    'agent_bat' : 2
-                    }
-
-dummy_env = CONFIG.env(CONFIG.env_config)
-ls_env, dc_env, bat_env = dummy_env.ls_env, dummy_env.dc_env, dummy_env.bat_env 
-
-CONFIG = CONFIG.multi_agent(
-            policies={
-                "agent_ls": PolicySpec(
-                    None,
-                    ls_env.observation_space,
-                    ls_env.action_space,
-                    config={"agent_id" : 0},
-                ),
-                "agent_dc": PolicySpec(
-                    None,
-                    dc_env.observation_space,
-                    dc_env.action_space,
-                    config={"agent_id" : 1},
-                ),
-                "agent_bat": PolicySpec(
-                    None,
-                    bat_env.observation_space,
-                    bat_env.action_space,
-                    config={"agent_id" : 2},
-                ),
-            },
-            policy_mapping_fn=lambda agent_id, *args, **kwargs: agent_id,
-        )
-
-def run(run_id):
-    trainer = PPO(deepcopy(CONFIG)) #Change to desired algorithm
-    trainer.restore(CHECKPOINT)
+    env_config = trainer.config.env_config
+    env_config['location'] = location
     
-    time_step_co2 = []
-    time_step_price = []
-    time_step_energy = []
+    co2 = 0
+    energy = 0
 
     # Cycle over months
-    for month in tqdm.tqdm(range(12)):
-        env = DCRL(env_config={'month': month, 'actions_are_logits': True})
+    for month in tqdm(range(12)):
+        env_config['month'] = month
+
+        # Create environment
+        env = trainer.config.env(env_config=env_config)
         obs, _ = env.reset()
-        
-        for i in range(24*NUM_STEPS_PER_HOUR*NUM_DAYS):
+        done = False
+    
+        while not done: 
             action_dict = {}
+
             for agent in ['agent_ls', 'agent_dc', 'agent_bat']:
                 action = trainer.compute_single_action(obs[agent], policy_id=agent)
                 action_dict[agent] = action
                 
-            obs, _, _, _, info = env.step(action_dict)
-            time_step_co2.append(info['agent_bat']['bat_CO2_footprint'])
-            time_step_energy.append(info['agent_bat']['bat_total_energy_with_battery_KWh'])
-    
-    df = pd.DataFrame()
-    df['energy'] = time_step_energy
-    df['co2'] = time_step_co2
+            obs, _, terminated, _, info = env.step(action_dict)
 
-    name = '_dc_rl_multiagent'
-    df.to_csv(f'./raw_results_ny/{name}_{run_id}.csv')
-
+            co2 += info['agent_bat']['bat_CO2_footprint']
+            energy += info['agent_bat']['bat_total_energy_with_battery_KWh']
+            
+            done = terminated['__all__']
+            
+    stats[location]['co2'].append(co2)
+    stats[location]['energy'].append(energy)
 
 if __name__ == '__main__':
-    num_runs = 1
-    Parallel(num_runs, verbose=100)(
-                        delayed(run)(run_id) 
-                        for run_id in range(num_runs)
-                        )
+
+    ray.init(ignore_reinit_error=True, log_to_driver=False)
+
+    # Total number of runs for each location
+    num_runs = 2
+    locations = ['wa', 'ny', 'az']
+    
+    # Shared variable to collect results
+    stats = defaultdict(lambda: defaultdict(list))
+
+    # Use "threading" as the backed so that shared variable is accesible
+    Parallel(num_runs*3, verbose=100, backend="threading")(
+        delayed(run)(run_id, location, stats) 
+        for run_id in range(num_runs)
+        for location in locations
+        )
+
+    # Average over the runs and pretty print the results
+    data = []
+    for location, stat in stats.items():
+        co2 = np.mean(stat['co2']) / 10**6
+        energy = np.mean(stat['energy']) / 10**6
+
+        data.append([location, co2, energy])
+
+    print(f"\n\n\n\nEvaluation finished. Average of {num_runs} runs:")
+    print(tabulate(
+        tabular_data=data, 
+        headers=['Location', 'CO2(MT)', 'Energy(MW)'],
+        floatfmt='.3f'
+        )
+    )
