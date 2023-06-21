@@ -14,6 +14,16 @@ def train(
     name: str = 'latest_experiment',
     overrides: dict = {}
     ):
+    """
+    Starts the training process for a given algorithm.
+
+    Args:
+        algorithm (rllib.algorithm): RL algorithm to use for training.
+        config (algorithm_config): Algorithm training configuration.
+        results_dir (string): Directory to save the results
+        overrides (dict): Extra configuration
+
+    """
 
     # Create a dummy environment to get obs. and action space
     dummy_env = config.env(config.env_config)
