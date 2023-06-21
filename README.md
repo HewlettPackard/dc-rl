@@ -136,4 +136,4 @@ $ tensorboard --logdir ./results
 Contributions are welcome. For major changes, please open an issue first to discuss what you would like to change. Please ensure to update tests as appropriate.
 
 ## Contact
-For any questions or concerns, please open an issue in this repository or contact [add email].
+For any questions or concerns, please open an issue in this repository.
