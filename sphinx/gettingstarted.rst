@@ -77,7 +77,7 @@ Example:
 In this example, :code:`test` is the default name of the experiment.
 
 
-A detailed description of the configurations are provided in the Usage section. The Default configurations in DCRL-green are as follows:
+A detailed description of the configurations are provided in the Usage section. The default configurations in DCRL-Green are:
 
 .. csv-table::
    :file: tables/default_args.csv
