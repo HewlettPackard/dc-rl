@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>envs package &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+        <script src="../_static/jquery.js"></script>
+        <script src="../_static/underscore.js"></script>
+        <script src="../_static/doctools.js"></script>
+        <script src="../_static/clipboard.min.js"></script>
+        <script src="../_static/copybutton.js"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="evaluate_model module" href="evaluate_model.html" />
+    <link rel="prev" title="dcrl_eplus_env module" href="dcrl_eplus_env.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="index.html">Code</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="folder_structure.html">Folder Structure</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="modules.html">Class and member documentation</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="create_trainable.html">create_trainable module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.html">data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dcrl_env.html">dcrl_env module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dcrl_eplus_env.html">dcrl_eplus_env module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">envs package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-envs.bat_env_fwd_view">envs.bat_env_fwd_view module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-envs.battery_model">envs.battery_model module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-envs.carbon_ls">envs.carbon_ls module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-envs.datacenter">envs.datacenter module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-envs.dc_gym">envs.dc_gym module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#module-envs">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="evaluate_model.html">evaluate_model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="maddpg.html">maddpg module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train.html">train module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train_a2c.html">train_a2c module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train_maddpg.html">train_maddpg module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="train_ppo.html">train_ppo module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html">utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution_guidelines.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="index.html">Code</a></li>
+          <li class="breadcrumb-item"><a href="modules.html">Class and member documentation</a></li>
+      <li class="breadcrumb-item active">envs package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/code/envs.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="envs-package">
+<h1>envs package<a class="headerlink" href="#envs-package" title="Permalink to this headline"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+</section>
+<section id="module-envs.bat_env_fwd_view">
+<span id="envs-bat-env-fwd-view-module"></span><h2>envs.bat_env_fwd_view module<a class="headerlink" href="#module-envs.bat_env_fwd_view" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.bat_env_fwd_view.</span></span><span class="sig-name descname"><span class="pre">BatteryEnvFwd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gymnasium.core.Env</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.CO2_footprint">
+<span class="sig-name descname"><span class="pre">CO2_footprint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dc_load</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discharge_energy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.CO2_footprint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.CO2_footprint" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates carbon footprint</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dc_load</strong> (<em>float</em>) – Total energy consumption of the DC.</p></li>
+<li><p><strong>ci</strong> (<em>float</em>) – Carbon intensity at current time step.</p></li>
+<li><p><strong>a_t</strong> (<em>string</em>) – Agent’s action.</p></li>
+<li><p><strong>discharge_energy</strong> (<em>float</em>) – Amount of energy to be discharged</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Carbon footprint produced at the current time step</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>CO2_footprint (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.charging_rate_modifier">
+<span class="sig-name descname"><span class="pre">charging_rate_modifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">battery</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.charging_rate_modifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.charging_rate_modifier" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the battery state depeding charging rate</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>battery</strong> (<em>batt.Battery2</em>) – Battery model</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Battery charging rate</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>charging_rate (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.discharging_rate_modifier">
+<span class="sig-name descname"><span class="pre">discharging_rate_modifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">battery</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.discharging_rate_modifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.discharging_rate_modifier" title="Permalink to this definition"></a></dt>
+<dd><p>Calculates the battery state depeding discharging rate</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>battery</strong> (<em>batt.Battery2</em>) – Battery model</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Battery discharging rate</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>discharging_rate (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Reset <cite>BatteryEnvFwd</cite> to initial state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – Random seed.</p></li>
+<li><p><strong>options</strong> (<em>dict</em><em>, </em><em>optional</em>) – Environment options.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Current state of the environmment
+info (dict): A dictionary that containing additional information about the environment state</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>temp_state (List[float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.set_dcload">
+<span class="sig-name descname"><span class="pre">set_dcload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dc_load</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.set_dcload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.set_dcload" title="Permalink to this definition"></a></dt>
+<dd><p>Set the current DC energy consumption</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>float</strong> (<em>dc_load</em>) – DC energy consumption.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.step" title="Permalink to this definition"></a></dt>
+<dd><p>Step function
+:param action_id: the action id
+:type action_id: int</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Current state of the environmment
+reward (float): reward value.
+done (bool): A boolean value signaling the if the episode has ended.
+info (dict): A dictionary that containing additional information about the environment state</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>obs (list)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.update_ci">
+<span class="sig-name descname"><span class="pre">update_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.update_ci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.update_ci" title="Permalink to this definition"></a></dt>
+<dd><p>Sets internal CIs values.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.update_state">
+<span class="sig-name descname"><span class="pre">update_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.update_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.update_state" title="Permalink to this definition"></a></dt>
+<dd><p>Updates obsevation with current DC energy consumption</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>normalized_observations (string)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-envs.battery_model">
+<span id="envs-battery-model-module"></span><h2>envs.battery_model module<a class="headerlink" href="#module-envs.battery_model" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="envs.battery_model.Battery">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.battery_model.</span></span><span class="sig-name descname"><span class="pre">Battery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">capacity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery.capacity">
+<span class="sig-name descname"><span class="pre">capacity</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#envs.battery_model.Battery.capacity" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.battery_model.Battery.charge">
+<span class="sig-name descname"><span class="pre">charge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_load</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery.charge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery.charge" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery.current_load">
+<span class="sig-name descname"><span class="pre">current_load</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#envs.battery_model.Battery.current_load" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.battery_model.Battery.discharge">
+<span class="sig-name descname"><span class="pre">discharge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_load</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery.discharge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery.discharge" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.battery_model.Battery.find_and_init_capacity">
+<span class="sig-name descname"><span class="pre">find_and_init_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_load</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery.find_and_init_capacity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery.find_and_init_capacity" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.battery_model.Battery.is_full">
+<span class="sig-name descname"><span class="pre">is_full</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery.is_full"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery.is_full" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.battery_model.</span></span><span class="sig-name descname"><span class="pre">Battery2</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">capacity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_load</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff_c</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">eff_d</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">d_lim</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">0.04</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">upper_v</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_u</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lower_v</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery2" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.c_lim">
+<span class="sig-name descname"><span class="pre">c_lim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#envs.battery_model.Battery2.c_lim" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.calc_max_charge">
+<span class="sig-name descname"><span class="pre">calc_max_charge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T_u</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery2.calc_max_charge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery2.calc_max_charge" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.calc_max_discharge">
+<span class="sig-name descname"><span class="pre">calc_max_discharge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T_u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dc_load</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery2.calc_max_discharge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery2.calc_max_discharge" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.capacity">
+<span class="sig-name descname"><span class="pre">capacity</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#envs.battery_model.Battery2.capacity" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.charge">
+<span class="sig-name descname"><span class="pre">charge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_load</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_u</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery2.charge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery2.charge" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.current_load">
+<span class="sig-name descname"><span class="pre">current_load</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#envs.battery_model.Battery2.current_load" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.d_lim">
+<span class="sig-name descname"><span class="pre">d_lim</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">3</span></em><a class="headerlink" href="#envs.battery_model.Battery2.d_lim" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.discharge">
+<span class="sig-name descname"><span class="pre">discharge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_load</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T_u</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dc_load</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery2.discharge"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery2.discharge" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.eff_c">
+<span class="sig-name descname"><span class="pre">eff_c</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#envs.battery_model.Battery2.eff_c" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.eff_d">
+<span class="sig-name descname"><span class="pre">eff_d</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#envs.battery_model.Battery2.eff_d" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.find_and_init_capacity">
+<span class="sig-name descname"><span class="pre">find_and_init_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_load</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery2.find_and_init_capacity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery2.find_and_init_capacity" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.is_full">
+<span class="sig-name descname"><span class="pre">is_full</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery2.is_full"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery2.is_full" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.lower_lim_u">
+<span class="sig-name descname"><span class="pre">lower_lim_u</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#envs.battery_model.Battery2.lower_lim_u" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.lower_lim_v">
+<span class="sig-name descname"><span class="pre">lower_lim_v</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#envs.battery_model.Battery2.lower_lim_v" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.upper_lim_u">
+<span class="sig-name descname"><span class="pre">upper_lim_u</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">0</span></em><a class="headerlink" href="#envs.battery_model.Battery2.upper_lim_u" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.upper_lim_v">
+<span class="sig-name descname"><span class="pre">upper_lim_v</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">1</span></em><a class="headerlink" href="#envs.battery_model.Battery2.upper_lim_v" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="envs.battery_model.apply_battery">
+<span class="sig-prename descclassname"><span class="pre">envs.battery_model.</span></span><span class="sig-name descname"><span class="pre">apply_battery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">battery_capacity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_ren</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_dc_pow</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#apply_battery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.apply_battery" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="envs.battery_model.calculate_247_battery_capacity">
+<span class="sig-prename descclassname"><span class="pre">envs.battery_model.</span></span><span class="sig-name descname"><span class="pre">calculate_247_battery_capacity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_ren</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_dc_pow</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#calculate_247_battery_capacity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.calculate_247_battery_capacity" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="envs.battery_model.calculate_247_battery_capacity_b1_sim">
+<span class="sig-prename descclassname"><span class="pre">envs.battery_model.</span></span><span class="sig-name descname"><span class="pre">calculate_247_battery_capacity_b1_sim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_ren</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_dc_pow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bsize</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#calculate_247_battery_capacity_b1_sim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.calculate_247_battery_capacity_b1_sim" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="envs.battery_model.calculate_247_battery_capacity_b2_sim">
+<span class="sig-prename descclassname"><span class="pre">envs.battery_model.</span></span><span class="sig-name descname"><span class="pre">calculate_247_battery_capacity_b2_sim</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_ren</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_dc_pow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_bsize</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#calculate_247_battery_capacity_b2_sim"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.calculate_247_battery_capacity_b2_sim" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="envs.battery_model.sim_battery_247">
+<span class="sig-prename descclassname"><span class="pre">envs.battery_model.</span></span><span class="sig-name descname"><span class="pre">sim_battery_247</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df_ren</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">df_dc_pow</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#sim_battery_247"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.sim_battery_247" title="Permalink to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-envs.carbon_ls">
+<span id="envs-carbon-ls-module"></span><h2>envs.carbon_ls module<a class="headerlink" href="#module-envs.carbon_ls" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.carbon_ls.</span></span><span class="sig-name descname"><span class="pre">CarbonLoadEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexible_workload_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_battery</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gymnasium.core.Env</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Reset <cite>CarbonLoadEnv</cite> to initial state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Current state of the environmment
+info (dict): A dictionary that containing additional information about the environment state</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>observations (List[float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv.step" title="Permalink to this definition"></a></dt>
+<dd><p>Makes an environment step in`CarbonLoadEnv.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>action</strong> (<em>int</em>) – Action to take.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Current state of the environmment
+reward (float): reward value.
+done (bool): A boolean value signaling the if the episode has ended.
+info (dict): A dictionary that containing additional information about the environment state</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>observations (List[float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv.update_workload">
+<span class="sig-name descname"><span class="pre">update_workload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">day_workload</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workload</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv.update_workload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv.update_workload" title="Permalink to this definition"></a></dt>
+<dd><p>Makes an environment step in`BatteryEnvFwd.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>day_workload</strong> (<em>float</em>) – Total amout of daily flexible workload.</p></li>
+<li><p><strong>workload</strong> (<em>float</em>) – Workload assigned at the current time step</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-envs.datacenter">
+<span id="envs-datacenter-module"></span><h2>envs.datacenter module<a class="headerlink" href="#module-envs.datacenter" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="envs.datacenter.CPU">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">CPU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_load_pwr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idle_pwr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpu_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.CPU.compute_instantaneous_cpu_pwr">
+<span class="sig-name descname"><span class="pre">compute_instantaneous_cpu_pwr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inlet_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ITE_load_pct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.compute_instantaneous_cpu_pwr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.compute_instantaneous_cpu_pwr" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the power consumption of the CPUs at the current step</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inlet_temp</strong> (<em>float</em>) – Room temperature</p></li>
+<li><p><strong>ITE_load_pct</strong> (<em>float</em>) – Current CPU usage</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Current CPU power usage</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>cpu_power (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.CPU.compute_instantaneous_fan_pwr">
+<span class="sig-name descname"><span class="pre">compute_instantaneous_fan_pwr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inlet_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ITE_load_pct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.compute_instantaneous_fan_pwr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.compute_instantaneous_fan_pwr" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the power consumption of the Fans of the IT equipment at the current step</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inlet_temp</strong> (<em>float</em>) – Room temperature</p></li>
+<li><p><strong>ITE_load_pct</strong> (<em>float</em>) – Current CPU usage</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Current Fans power usage</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>cpu_power (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.CPU.cpu_curve1">
+<span class="sig-name descname"><span class="pre">cpu_curve1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.cpu_curve1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.cpu_curve1" title="Permalink to this definition"></a></dt>
+<dd><p>initialize the  cpu power ratio curve at different IT workload ratios as a function of inlet temperatures [3]</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.CPU.itfan_curve2">
+<span class="sig-name descname"><span class="pre">itfan_curve2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.itfan_curve2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.itfan_curve2" title="Permalink to this definition"></a></dt>
+<dd><p>initialize the itfan velocity ratio curve at different IT workload ratios as a function of inlet temperatures [3]</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="envs.datacenter.DataCenter_ITModel">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">DataCenter_ITModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_racks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_supply_approach_temp_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_CPU_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_W_per_rack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DC_ITModel_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp">
+<span class="sig-name descname"><span class="pre">compute_datacenter_IT_load_outlet_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ITE_load_pct_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CRAC_setpoint</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the average outlet temperature of all the racks</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ITE_load_pct_list</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – CPU load for each rack</p></li>
+<li><p><strong>CRAC_setpoint</strong> (<em>float</em>) – CRAC setpoint</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Rackwise CPU power usage
+rackwise_itfan_pwr (List[float]):  Rackwise IT fan power usage
+rackwise_outlet_temp (List[float]): Rackwise outlet temperature</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>rackwise_cpu_pwr (List[float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.DataCenter_ITModel.total_datacenter_full_load">
+<span class="sig-name descname"><span class="pre">total_datacenter_full_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel.total_datacenter_full_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel.total_datacenter_full_load" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the total DC IT(IT CPU POWER + IT FAN POWER) power consumption</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="envs.datacenter.Rack">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">Rack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">CPU_config_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_W_per_rack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.Rack.compute_instantaneous_pwr">
+<span class="sig-name descname"><span class="pre">compute_instantaneous_pwr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inlet_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ITE_load_pct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.compute_instantaneous_pwr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.compute_instantaneous_pwr" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the power consumption of the whole rack at the current step</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inlet_temp</strong> (<em>float</em>) – Room temperature</p></li>
+<li><p><strong>ITE_load_pct</strong> (<em>float</em>) – Current CPU usage</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Current CPU power usage</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>cpu_power (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.Rack.get_average_rack_fan_v">
+<span class="sig-name descname"><span class="pre">get_average_rack_fan_v</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_average_rack_fan_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_average_rack_fan_v" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the average fan velocity for each rack
+:returns: Average fan flow rate for the rack
+:rtype: (float)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.Rack.get_current_rack_load">
+<span class="sig-name descname"><span class="pre">get_current_rack_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_current_rack_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_current_rack_load" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the total power consumption of the rack</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Total power consumption of the rack</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="envs.datacenter.calculate_HVAC_power">
+<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">calculate_HVAC_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">CRAC_setpoint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_CRAC_return_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ambient_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_center_full_load</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DC_Config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#calculate_HVAC_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.calculate_HVAC_power" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the HVAV power attributes</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>CRAC_Setpoint</strong> (<em>float</em>) – The control action</p></li>
+<li><p><strong>avg_CRAC_return_temp</strong> (<em>float</em>) – The average of the temperatures from all the Racks + their corresponding return approach temperature (Delta)</p></li>
+<li><p><strong>ambient_temp</strong> (<em>float</em>) – outside air temperature</p></li>
+<li><p><strong>data_center_full_load</strong> (<em>float</em>) – total data center capacity</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>CRAC fan power
+CT_Fan_pwr (float):  Cooling tower fan power
+CRAC_cooling_load (float): CRAC cooling load
+Compressor_load (float): Chiller compressor load</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>CRAC_Fan_load (float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="envs.datacenter.calculate_avg_CRAC_return_temp">
+<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">calculate_avg_CRAC_return_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rack_return_approach_temp_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rackwise_outlet_temp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#calculate_avg_CRAC_return_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.calculate_avg_CRAC_return_temp" title="Permalink to this definition"></a></dt>
+<dd><p>Calculate the CRAC return air temperature</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rack_return_approach_temp_list</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – The delta change in temperature from each rack to the CRAC unit</p></li>
+<li><p><strong>rackwise_outlet_temp</strong> (<em>float</em>) – The outlet temperature of each rack</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>CRAC return air temperature</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>(float)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-envs.dc_gym">
+<span id="envs-dc-gym-module"></span><h2>envs.dc_gym module<a class="headerlink" href="#module-envs.dc_gym" title="Permalink to this headline"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.dc_gym.</span></span><span class="sig-name descname"><span class="pre">dc_gymenv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observation_variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">gymnasium.spaces.box.Box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">gymnasium.spaces.discrete.Discrete</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_cpu_usage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_temp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_temp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_definition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">123</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode_length_in_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas._libs.tslibs.timedeltas.Timedelta</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gymnasium.core.Env</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.NormalizeObservation">
+<span class="sig-name descname"><span class="pre">NormalizeObservation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.NormalizeObservation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.NormalizeObservation" title="Permalink to this definition"></a></dt>
+<dd><p>Obtains the value for normalizing the observation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.get_obs">
+<span class="sig-name descname"><span class="pre">get_obs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.get_obs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.get_obs" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the observation at the current time step.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Current state of the environmment.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>observation (List[float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.normalize">
+<span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.normalize" title="Permalink to this definition"></a></dt>
+<dd><p>Normalizes the observation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.reset">
+<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.reset" title="Permalink to this definition"></a></dt>
+<dd><p>Reset <cite>dc_gymenv</cite> to initial state.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – Random seed.</p></li>
+<li><p><strong>options</strong> (<em>dict</em><em>, </em><em>optional</em>) – Environment options.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Current state of the environmment
+{} (dict): A dictionary that containing additional information about the environment state</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>raw_curr_state (List[float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.set_ambient_temp">
+<span class="sig-name descname"><span class="pre">set_ambient_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ambient_temp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.set_ambient_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.set_ambient_temp" title="Permalink to this definition"></a></dt>
+<dd><p>Updates the external temperature.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.set_bat_SoC">
+<span class="sig-name descname"><span class="pre">set_bat_SoC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bat_SoC</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.set_bat_SoC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.set_bat_SoC" title="Permalink to this definition"></a></dt>
+<dd><p>Updates the battery state of charge.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.set_shifted_wklds">
+<span class="sig-name descname"><span class="pre">set_shifted_wklds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cpu_load</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.set_shifted_wklds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.set_shifted_wklds" title="Permalink to this definition"></a></dt>
+<dd><p>Updates the current CPU workload.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.step">
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.step" title="Permalink to this definition"></a></dt>
+<dd><p>Makes an environment step in`dc_gymenv.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>action_id</strong> (<em>int</em>) – Action to take.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Current state of the environmment
+reward (float): reward value.
+done (bool): A boolean value signaling the if the episode has ended.
+info (dict): A dictionary that containing additional information about the environment state</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>observations (List[float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv_standalone">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.dc_gym.</span></span><span class="sig-name descname"><span class="pre">dc_gymenv_standalone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv_standalone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv_standalone" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#envs.dc_gym.dc_gymenv" title="envs.dc_gym.dc_gymenv"><code class="xref py py-class docutils literal notranslate"><span class="pre">envs.dc_gym.dc_gymenv</span></code></a></p>
+</dd></dl>
+
+</section>
+<section id="module-envs">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-envs" title="Permalink to this headline"></a></h2>
+<p>Includes the environments.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="dcrl_eplus_env.html" class="btn btn-neutral float-left" title="dcrl_eplus_env module" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="evaluate_model.html" class="btn btn-neutral float-right" title="evaluate_model module" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

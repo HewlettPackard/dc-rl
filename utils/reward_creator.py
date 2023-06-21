@@ -266,6 +266,15 @@ REWARD_METHOD_MAP = {
 }
 
 def get_reward_method(reward_method : str = 'default_dc_reward'):
+    """
+    Maps the string identifier to the reward function
+
+    Args:
+        reward_method (string): Identifier for the reward function.
+
+    Returns:
+        function: Reward function.
+    """
     assert reward_method in REWARD_METHOD_MAP.keys(), f"Specified Reward Method {reward_method} not in REWARD_METHOD_MAP"
     
     return REWARD_METHOD_MAP[reward_method]

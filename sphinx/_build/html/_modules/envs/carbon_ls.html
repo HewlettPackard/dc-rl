@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>envs.carbon_ls &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code/index.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution_guidelines.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">envs.carbon_ls</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for envs.carbon_ls</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">gymnasium</span> <span class="k">as</span> <span class="nn">gym</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">reward_creator</span>
+
+<div class="viewcode-block" id="CarbonLoadEnv"><a class="viewcode-back" href="../../code/envs.html#envs.carbon_ls.CarbonLoadEnv">[docs]</a><span class="k">class</span> <span class="nc">CarbonLoadEnv</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">env_config</span> <span class="o">=</span> <span class="p">{},</span>
+        <span class="n">future</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">future_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+        <span class="n">flexible_workload_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+        <span class="n">n_vars_energy</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">n_vars_battery</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">test_mode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates load shifting envrionemnt</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env_config (dict, optional): Customizable environment confing. Defaults to {}.</span>
+<span class="sd">            future (bool, optional): To include CI forecast to the observation. Defaults to True.</span>
+<span class="sd">            future_steps (int, optional): Number of time steps in the future in the forecast. Defaults to 4.</span>
+<span class="sd">            flexible_workload_ratio (float, optional): Percentage of flexible workload. Defaults to 0.1.</span>
+<span class="sd">            n_vars_energy (int, optional): Additional number of energy variables. Defaults to 0.</span>
+<span class="sd">            n_vars_battery (int, optional): Additional number of variables from the battery. Defaults to 1.</span>
+<span class="sd">            test_mode (bool, optional): Used for evaluation of the model. Defaults to False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">flexible_workload_ratio</span> <span class="o">&lt;</span> <span class="mf">0.9</span><span class="p">,</span> <span class="s2">&quot;flexible_workload_ratio should be lower than 0.9&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">future</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
+                <span class="n">low</span><span class="o">=-</span><span class="mf">5e1</span><span class="p">,</span>
+                <span class="n">high</span><span class="o">=</span><span class="mf">5e1</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span> <span class="o">+</span> <span class="n">future_steps</span> <span class="o">+</span> <span class="n">n_vars_energy</span> <span class="o">+</span> <span class="n">n_vars_battery</span><span class="p">,),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span>
+                <span class="n">low</span><span class="o">=-</span><span class="mf">5e1</span><span class="p">,</span>
+                <span class="n">high</span><span class="o">=</span><span class="mf">5e1</span><span class="p">,</span>
+                <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span> <span class="o">+</span> <span class="n">n_vars_energy</span> <span class="o">+</span> <span class="n">n_vars_battery</span><span class="p">,),</span>
+                <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span>
+            <span class="p">)</span>
+
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_total_steps</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_mode</span> <span class="o">=</span> <span class="n">test_mode</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span> <span class="o">=</span> <span class="mi">96</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load_to_assign</span> <span class="o">=</span> <span class="mi">3</span> <span class="o">*</span> <span class="n">flexible_workload_ratio</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">day_workload</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workload</span> <span class="o">=</span> <span class="mi">0</span>
+
+<div class="viewcode-block" id="CarbonLoadEnv.reset"><a class="viewcode-back" href="../../code/envs.html#envs.carbon_ls.CarbonLoadEnv.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset `CarbonLoadEnv` to initial state.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            observations (List[float]): Current state of the environmment</span>
+<span class="sd">            info (dict): A dictionary that containing additional information about the environment state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_total_steps</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">day_workload</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">day_storage_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_hour</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">day</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">alarm</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">norm_load_left</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(([</span><span class="n">alarm</span><span class="p">,</span> <span class="n">norm_load_left</span><span class="p">])),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;load&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">workload</span><span class="p">,</span> <span class="s2">&quot;action&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;info_load_left&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">info</span></div>
+
+<div class="viewcode-block" id="CarbonLoadEnv.step"><a class="viewcode-back" href="../../code/envs.html#envs.carbon_ls.CarbonLoadEnv.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Makes an environment step in`CarbonLoadEnv.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action (int): Action to take.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            observations (List[float]): Current state of the environmment</span>
+<span class="sd">            reward (float): reward value.</span>
+<span class="sd">            done (bool): A boolean value signaling the if the episode has ended.</span>
+<span class="sd">            info (dict): A dictionary that containing additional information about the environment state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_hour</span> <span class="o">+=</span> <span class="mf">0.25</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">day_workload</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">day_workload</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">day_storage_load</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">day_workload</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_hour</span> <span class="o">&gt;=</span> <span class="mi">24</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">current_hour</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">alarm</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_hour</span> <span class="o">&gt;=</span> <span class="mi">23</span><span class="p">:</span>
+            <span class="n">alarm</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">global_total_steps</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_mode</span><span class="p">:</span>
+            <span class="n">residue</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span> <span class="o">-</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">global_total_steps</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">time_steps_day</span><span class="p">))</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_to_assign</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">residue</span> <span class="o">=</span> <span class="mf">1e9</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">original_workload</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">workload</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">action</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_to_assign</span> <span class="o">&gt;</span> <span class="n">residue</span><span class="p">:</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load_to_assign</span>
+            <span class="n">delta</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span>
+            <span class="n">total_wkl</span> <span class="o">=</span> <span class="n">delta</span><span class="o">+</span><span class="bp">self</span><span class="o">.</span><span class="n">workload</span>
+            <span class="k">if</span> <span class="n">total_wkl</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">delta</span> <span class="o">-=</span> <span class="p">(</span><span class="n">total_wkl</span><span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span> <span class="o">-=</span> <span class="n">delta</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">workload</span> <span class="o">+=</span> <span class="n">delta</span>
+    
+        <span class="n">norm_load_left</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span> <span class="o">/</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">day_storage_load</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">),</span> <span class="mi">3</span><span class="p">)</span>
+        <span class="n">info_load_left</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">out_of_time</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_hour</span> <span class="o">&gt;=</span> <span class="mf">23.75</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">out_of_time</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="n">info_load_left</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">storage_load</span>
+        <span class="n">reward</span> <span class="o">=</span> <span class="mi">0</span> 
+        
+        <span class="n">info</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;ls_original_workload&quot;</span><span class="p">:</span> <span class="n">original_workload</span><span class="p">,</span>
+                <span class="s2">&quot;ls_shifted_workload&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">workload</span><span class="p">,</span> 
+                <span class="s2">&quot;ls_action&quot;</span><span class="p">:</span> <span class="n">action</span><span class="p">,</span> 
+                <span class="s2">&quot;ls_norm_load_left&quot;</span><span class="p">:</span> <span class="n">norm_load_left</span><span class="p">,</span>
+                <span class="s2">&quot;ls_unasigned_day_load_left&quot;</span><span class="p">:</span> <span class="n">info_load_left</span><span class="p">,</span>
+                <span class="s2">&quot;ls_penalty_flag&quot;</span><span class="p">:</span> <span class="n">out_of_time</span><span class="p">}</span>
+        
+        <span class="n">state</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">(([</span><span class="n">alarm</span><span class="p">,</span> <span class="n">norm_load_left</span><span class="p">])),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+
+        <span class="c1">#Done and truncated are managed by the main class, implement individual function if needed</span>
+        <span class="n">truncated</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span>
+        
+        <span class="k">return</span> <span class="n">state</span><span class="p">,</span> <span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span> </div>
+        
+<div class="viewcode-block" id="CarbonLoadEnv.update_workload"><a class="viewcode-back" href="../../code/envs.html#envs.carbon_ls.CarbonLoadEnv.update_workload">[docs]</a>    <span class="k">def</span> <span class="nf">update_workload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">day_workload</span><span class="p">,</span> <span class="n">workload</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Makes an environment step in`BatteryEnvFwd.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            day_workload (float): Total amout of daily flexible workload.</span>
+<span class="sd">            workload (float): Workload assigned at the current time step</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">day_workload</span> <span class="o">=</span> <span class="n">day_workload</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">workload</span> <span class="o">=</span> <span class="n">workload</span></div></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

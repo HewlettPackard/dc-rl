@@ -61,6 +61,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/index.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution_guidelines.html">Contribution Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
 </ul>
 
@@ -153,7 +155,7 @@ and centralised learning approach such as MADDPG <span id="id2">[<a class="refer
 Users can upload CI dataset of choice in the repository, under <code class="code docutils literal notranslate"><span class="pre">dc-rl/data/CarbonIntensity</span></code> and use the variable <code class="code docutils literal notranslate"><span class="pre">'cintensity_file'</span></code> to specify the filename.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>CI dataset should be saved in .csv format and should contain CI data for one year (24*365)</p>
+<p>CI dataset should be saved in .csv format and should contain CI data for one year (24*365), in a hourly way.</p>
 </div>
 <p>Example:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;cintensity_file&#39;</span>:<span class="w"> </span><span class="s1">&#39;NYIS_NG_&amp;_avgCI.csv&#39;</span>
@@ -179,7 +181,11 @@ weather files collection. Users can upload weather dataset of choice in the repo
 <p>This dataset provides hourly IT workload information. The default weather data in DCRL-Green was obtained from the Alibaba open source database <span id="id4">[<a class="reference internal" href="../references.html#id7" title="Yue Cheng, Zheng Chai, and Ali Anwar. Characterizing co-located datacenter workloads: an alibaba case study. In Proceedings of the 9th Asia-Pacific Workshop on Systems, APSys '18. New York, NY, USA, 2018. Association for Computing Machinery. URL: https://doi.org/10.1145/3265723.3265742, doi:10.1145/3265723.3265742.">1</a>]</span>. Users can upload IT workload dataset of choice in the repository, under <code class="code docutils literal notranslate"><span class="pre">dc-rl/data/Workload</span></code> and use the variable <code class="code docutils literal notranslate"><span class="pre">&quot;workload_file&quot;</span></code> to specify the filename.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Workload dataset should be saved in .csv format and should contain data for one year (24*365)</p>
+<p>Workload dataset should be saved in .csv format and should contain data for one year (24*365), in a hourly way.</p>
+</div>
+<p>Example:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;workload_file&#39;</span>:<span class="w"> </span><span class="s1">&#39;Alibaba_CPU_Data_Hourly_1.csv&#39;</span>
+</pre></div>
 </div>
 </section>
 <section id="agent-configuration">

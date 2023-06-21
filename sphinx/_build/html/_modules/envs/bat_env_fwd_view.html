@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>envs.bat_env_fwd_view &mdash; DCRL-Green 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
+      <link rel="stylesheet" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/clipboard.min.js"></script>
+        <script src="../../_static/copybutton.js"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            DCRL-Green
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code/index.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution_guidelines.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">DCRL-Green</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">envs.bat_env_fwd_view</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for envs.bat_env_fwd_view</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">gymnasium</span> <span class="k">as</span> <span class="nn">gym</span>
+
+<span class="kn">import</span> <span class="nn">envs.battery_model</span> <span class="k">as</span> <span class="nn">batt</span>
+<span class="kn">from</span> <span class="nn">utils</span> <span class="kn">import</span> <span class="n">reward_creator</span>
+
+<div class="viewcode-block" id="BatteryEnvFwd"><a class="viewcode-back" href="../../code/envs.html#envs.bat_env_fwd_view.BatteryEnvFwd">[docs]</a><span class="k">class</span> <span class="nc">BatteryEnvFwd</span><span class="p">(</span><span class="n">gym</span><span class="o">.</span><span class="n">Env</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">env_config</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Creates battery envrionemnt</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            env_config (dict): Customizable environment confing.</span>
+<span class="sd">                n_fwd_steps(int): Number of forward forecast steps available</span>
+<span class="sd">                max_bat_cap(float): Maximun battery capacity in MW</span>
+<span class="sd">                charging_rate(float): Rate of charge of the battery</span>
+<span class="sd">                reward_metod(function): Method used to calculate the reward</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BatteryEnvFwd</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="n">n_fwd_steps</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;n_fwd_steps&#39;</span><span class="p">]</span>
+        <span class="n">max_bat_cap</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;max_bat_cap&#39;</span><span class="p">]</span>
+        <span class="n">charging_rate</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;charging_rate&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="o">-</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">n_fwd_steps</span><span class="p">)),</span>
+                                                <span class="n">high</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">+</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">n_fwd_steps</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_dc_pw</span> <span class="o">=</span> <span class="mf">7.24</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">action_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_action_to_direction</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="s1">&#39;charge&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">:</span> <span class="s1">&#39;discharge&#39;</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="s1">&#39;idle&#39;</span><span class="p">}</span>
+        <span class="n">other_states_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">max_dc_pw</span><span class="p">,</span> <span class="n">max_bat_cap</span><span class="p">])</span>
+        <span class="n">other_states_min</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_max</span> <span class="o">=</span> <span class="n">other_states_max</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">observation_min</span> <span class="o">=</span> <span class="n">other_states_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_max</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_min</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">battery</span> <span class="o">=</span> <span class="n">batt</span><span class="o">.</span><span class="n">Battery2</span><span class="p">(</span><span class="n">capacity</span><span class="o">=</span><span class="n">max_bat_cap</span><span class="p">,</span> <span class="n">current_load</span><span class="o">=</span><span class="mi">0</span> <span class="o">*</span> <span class="n">max_bat_cap</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_fwd_steps</span> <span class="o">=</span> <span class="n">n_fwd_steps</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">charging_rate</span> <span class="o">=</span> <span class="n">charging_rate</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">spot_CI</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ma_CI</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eta</span> <span class="o">=</span> <span class="mf">0.7</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dataset_end</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dcload</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_to_dc</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">max_bat_cap</span> <span class="o">=</span> <span class="n">max_bat_cap</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">total_energy_with_battery</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci_n</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dcload_max</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;dcload_max&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dcload_min</span> <span class="o">=</span> <span class="n">env_config</span><span class="p">[</span><span class="s1">&#39;dcload_min&#39;</span><span class="p">]</span>
+        
+<div class="viewcode-block" id="BatteryEnvFwd.reset"><a class="viewcode-back" href="../../code/envs.html#envs.bat_env_fwd_view.BatteryEnvFwd.reset">[docs]</a>    <span class="k">def</span> <span class="nf">reset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reset `BatteryEnvFwd` to initial state.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            seed (int, optional): Random seed.</span>
+<span class="sd">            options (dict, optional): Environment options.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            temp_state (List[float]): Current state of the environmment</span>
+<span class="sd">            info (dict): A dictionary that containing additional information about the environment state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hist_data_collector</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dcload</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_obs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_obs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span><span class="p">,</span> <span class="p">{</span>
+            <span class="s1">&#39;action&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+            <span class="s1">&#39;avg_dc_power_mw&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">raw_obs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s1">&#39;Grid_CI&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;total_energy_with_battery&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;CO2_footprint&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;avg_CI&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+            <span class="s1">&#39;battery SOC&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">battery</span><span class="o">.</span><span class="n">current_load</span><span class="p">,</span>
+            <span class="s1">&#39;total_energy_with_battery&#39;</span><span class="p">:</span> <span class="mi">0</span>
+        <span class="p">}</span></div>
+
+<div class="viewcode-block" id="BatteryEnvFwd.step"><a class="viewcode-back" href="../../code/envs.html#envs.bat_env_fwd_view.BatteryEnvFwd.step">[docs]</a>    <span class="k">def</span> <span class="nf">step</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot; Step function</span>
+<span class="sd">        Args:</span>
+<span class="sd">            action_id (int): the action id</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            obs (list): Current state of the environmment</span>
+<span class="sd">            reward (float): reward value.</span>
+<span class="sd">            done (bool): A boolean value signaling the if the episode has ended.</span>
+<span class="sd">            info (dict): A dictionary that containing additional information about the environment state</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">action_instantaneous</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_to_direction</span><span class="p">[</span><span class="n">action_id</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">discharge_energy</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_simulate_battery_operation</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">battery</span><span class="p">,</span> <span class="n">action_instantaneous</span><span class="p">,</span>
+                                                                  <span class="n">charging_rate</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">charging_rate</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">CO2_total</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">CO2_footprint</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dcload</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="p">,</span> <span class="n">action_instantaneous</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">discharge_energy</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw_obs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_hist_data_collector</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_obs</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">raw_obs</span><span class="p">)</span>
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">reward</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">info</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;bat_action&#39;</span><span class="p">:</span> <span class="n">action_id</span><span class="p">,</span>
+            <span class="s1">&#39;bat_SOC&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">battery</span><span class="o">.</span><span class="n">current_load</span><span class="p">,</span>
+            <span class="s1">&#39;bat_CO2_footprint&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">CO2_total</span><span class="p">,</span>
+            <span class="s1">&#39;bat_avg_CI&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">ci</span><span class="p">,</span>
+            <span class="s1">&#39;bat_total_energy_without_battery_KWh&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dcload</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">,</span>
+            <span class="s1">&#39;bat_total_energy_with_battery_KWh&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_energy_with_battery</span><span class="p">,</span>
+            <span class="s1">&#39;bat_max_bat_cap&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_bat_cap</span><span class="p">,</span>
+            <span class="s1">&#39;bat_a_t&#39;</span><span class="p">:</span> <span class="n">action_instantaneous</span><span class="p">,</span>
+            <span class="s1">&#39;bat_dcload_min&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dcload_min</span><span class="p">,</span>
+            <span class="s1">&#39;bat_dcload_max&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">dcload_max</span><span class="p">,</span>
+        <span class="p">}</span>
+        <span class="c1">#Done and truncated are managed by the main class, implement individual function if needed</span>
+        <span class="n">truncated</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">done</span> <span class="o">=</span> <span class="kc">False</span> 
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">reward</span><span class="p">,</span> <span class="n">done</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">info</span></div>
+
+<div class="viewcode-block" id="BatteryEnvFwd.update_ci"><a class="viewcode-back" href="../../code/envs.html#envs.bat_env_fwd_view.BatteryEnvFwd.update_ci">[docs]</a>    <span class="k">def</span> <span class="nf">update_ci</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">ci_n</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sets internal CIs values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci</span> <span class="o">=</span> <span class="n">ci</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ci_n</span> <span class="o">=</span> <span class="n">ci_n</span></div>
+
+    <span class="k">def</span> <span class="nf">_process_obs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Normalizes observations</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            state (List[float]): Current environment state.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            normalized_observations (List[float])</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">scaled_value</span> <span class="o">=</span> <span class="p">(</span><span class="n">state</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">observation_min</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta</span>
+        <span class="k">return</span> <span class="n">scaled_value</span>
+
+    <span class="k">def</span> <span class="nf">_process_action</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">action_id</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Maps agent actions to actoniable action for the model</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            action_id (int): Action to take.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            normalized_observations (string)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_action_to_direction</span><span class="p">[</span><span class="n">action_id</span><span class="p">]</span>
+
+<div class="viewcode-block" id="BatteryEnvFwd.update_state"><a class="viewcode-back" href="../../code/envs.html#envs.bat_env_fwd_view.BatteryEnvFwd.update_state">[docs]</a>    <span class="k">def</span> <span class="nf">update_state</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Updates obsevation with current DC energy consumption</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            normalized_observations (string)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dcload</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">temp_state</span></div>
+
+<div class="viewcode-block" id="BatteryEnvFwd.set_dcload"><a class="viewcode-back" href="../../code/envs.html#envs.bat_env_fwd_view.BatteryEnvFwd.set_dcload">[docs]</a>    <span class="k">def</span> <span class="nf">set_dcload</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dc_load</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the current DC energy consumption</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dc_load float: DC energy consumption.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dcload</span> <span class="o">=</span> <span class="n">dc_load</span></div>
+
+    <span class="k">def</span> <span class="nf">_hist_data_collector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generates the observation for the agent</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            raw_obs (List[Float]): Current state observation</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">raw_obs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">dcload</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">battery</span><span class="o">.</span><span class="n">current_load</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">raw_obs</span>
+
+    <span class="k">def</span> <span class="nf">_simulate_battery_operation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">battery</span><span class="p">,</span> <span class="n">battery_action</span><span class="p">,</span> <span class="n">charging_rate</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Simulates battery operation</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            battery (Class): Battery model.</span>
+<span class="sd">            battery_action (string): Desired action.</span>
+<span class="sd">            charging_rate (string): Battery charging rate.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            discharge_energy (float): Output energy.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">discharge_energy</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">battery_action</span> <span class="o">==</span> <span class="s1">&#39;charge&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_to_dc</span> <span class="o">=</span> <span class="n">battery</span><span class="o">.</span><span class="n">charge</span><span class="p">(</span><span class="n">battery</span><span class="o">.</span><span class="n">capacity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">charging_rate_modifier</span><span class="p">(</span><span class="n">battery</span><span class="p">)</span> <span class="o">*</span> <span class="mi">15</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">battery_action</span> <span class="o">==</span> <span class="s1">&#39;discharge&#39;</span><span class="p">:</span>
+            <span class="n">discharge_energy</span> <span class="o">=</span> <span class="n">battery</span><span class="o">.</span><span class="n">discharge</span><span class="p">(</span><span class="n">battery</span><span class="o">.</span><span class="n">capacity</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">discharging_rate_modifier</span><span class="p">(</span><span class="n">battery</span><span class="p">)</span> <span class="o">*</span> <span class="mi">15</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span>
+                                                 <span class="bp">self</span><span class="o">.</span><span class="n">dcload</span> <span class="o">*</span> <span class="mf">0.25</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_to_dc</span> <span class="o">=</span> <span class="o">-</span><span class="n">discharge_energy</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">discharge_energy</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">var_to_dc</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var_to_dc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">var_to_dc</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_bat_cap</span>
+        <span class="k">return</span> <span class="n">discharge_energy</span>
+
+<div class="viewcode-block" id="BatteryEnvFwd.CO2_footprint"><a class="viewcode-back" href="../../code/envs.html#envs.bat_env_fwd_view.BatteryEnvFwd.CO2_footprint">[docs]</a>    <span class="k">def</span> <span class="nf">CO2_footprint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dc_load</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">a_t</span><span class="p">,</span> <span class="n">discharge_energy</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates carbon footprint</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dc_load (float): Total energy consumption of the DC.</span>
+<span class="sd">            ci (float): Carbon intensity at current time step.</span>
+<span class="sd">            a_t (string): Agent&#39;s action.</span>
+<span class="sd">            discharge_energy (float): Amount of energy to be discharged</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            CO2_footprint (float): Carbon footprint produced at the current time step</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">a_t</span> <span class="o">==</span> <span class="s1">&#39;charge&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">total_energy_with_battery</span> <span class="o">=</span> <span class="n">dc_load</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="mf">0.25</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">battery</span><span class="o">.</span><span class="n">charging_load</span> <span class="o">*</span> <span class="mf">1e3</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">battery</span><span class="o">.</span><span class="n">charging_load</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># *Added*</span>
+            <span class="n">CO2_footprint</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total_energy_with_battery</span><span class="p">)</span> <span class="o">*</span> <span class="n">ci</span>
+        <span class="k">elif</span> <span class="n">a_t</span> <span class="o">==</span> <span class="s1">&#39;discharge&#39;</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">dc_load</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="mf">0.25</span> <span class="o">&gt;=</span> <span class="n">discharge_energy</span> <span class="o">*</span> <span class="mf">1e3</span><span class="p">,</span> <span class="s2">&quot;Battery discharge rate should not be higher than the datacenter energy consumption rate&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">total_energy_with_battery</span> <span class="o">=</span> <span class="n">dc_load</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="mf">0.25</span> <span class="o">-</span> <span class="n">discharge_energy</span> <span class="o">*</span> <span class="mf">1e3</span>
+            <span class="n">CO2_footprint</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">total_energy_with_battery</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="n">ci</span>  <span class="c1"># (KWh) * gCO2/KWh</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">total_energy_with_battery</span> <span class="o">=</span> <span class="n">dc_load</span> <span class="o">*</span> <span class="mf">1e3</span> <span class="o">*</span> <span class="mf">0.25</span>
+            <span class="n">CO2_footprint</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">total_energy_with_battery</span> <span class="o">*</span> <span class="n">ci</span>
+
+        <span class="k">return</span> <span class="n">CO2_footprint</span></div>
+
+<div class="viewcode-block" id="BatteryEnvFwd.charging_rate_modifier"><a class="viewcode-back" href="../../code/envs.html#envs.bat_env_fwd_view.BatteryEnvFwd.charging_rate_modifier">[docs]</a>    <span class="k">def</span> <span class="nf">charging_rate_modifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">battery</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the battery state depeding charging rate</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            battery (batt.Battery2): Battery model</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            charging_rate (float): Battery charging rate</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range</span>
+        <span class="n">curr_load</span> <span class="o">=</span> <span class="n">battery</span><span class="o">.</span><span class="n">current_load</span>
+        <span class="n">bat_max</span><span class="p">,</span> <span class="n">bat_min</span> <span class="o">=</span> <span class="n">battery</span><span class="o">.</span><span class="n">capacity</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">sigmoid_max</span><span class="p">,</span> <span class="n">sigmoid_min</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span>
+        <span class="n">scaled_curr_load</span> <span class="o">=</span> <span class="p">(</span><span class="n">curr_load</span> <span class="o">-</span> <span class="n">bat_min</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">sigmoid_max</span> <span class="o">-</span> <span class="n">sigmoid_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">bat_max</span> <span class="o">-</span> <span class="n">bat_min</span><span class="p">)</span> <span class="o">+</span> <span class="n">sigmoid_min</span>
+        <span class="n">charging_rate</span> <span class="o">=</span> <span class="mf">0.3</span>
+
+        <span class="k">return</span> <span class="n">charging_rate</span></div>
+
+<div class="viewcode-block" id="BatteryEnvFwd.discharging_rate_modifier"><a class="viewcode-back" href="../../code/envs.html#envs.bat_env_fwd_view.BatteryEnvFwd.discharging_rate_modifier">[docs]</a>    <span class="k">def</span> <span class="nf">discharging_rate_modifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">battery</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the battery state depeding discharging rate</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            battery (batt.Battery2): Battery model</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            discharging_rate (float): Battery discharging rate</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range</span>
+        <span class="n">curr_load</span> <span class="o">=</span> <span class="n">battery</span><span class="o">.</span><span class="n">current_load</span>
+        <span class="n">bat_max</span><span class="p">,</span> <span class="n">bat_min</span> <span class="o">=</span> <span class="n">battery</span><span class="o">.</span><span class="n">capacity</span><span class="p">,</span> <span class="mi">0</span>
+        <span class="n">sigmoid_max</span><span class="p">,</span> <span class="n">sigmoid_min</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="o">-</span><span class="mi">4</span>
+        <span class="n">scaled_curr_load</span> <span class="o">=</span> <span class="p">(</span><span class="n">curr_load</span> <span class="o">-</span> <span class="n">bat_min</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">sigmoid_max</span> <span class="o">-</span> <span class="n">sigmoid_min</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">bat_max</span> <span class="o">-</span> <span class="n">bat_min</span><span class="p">)</span> <span class="o">+</span> <span class="n">sigmoid_min</span>
+        <span class="n">discharging_rate</span> <span class="o">=</span> <span class="mf">0.3</span>
+
+        <span class="k">return</span> <span class="n">discharging_rate</span></div></div>
+        
+        
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

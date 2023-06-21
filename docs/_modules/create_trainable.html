@@ -50,6 +50,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/index.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution_guidelines.html">Contribution Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
 </ul>
 
@@ -87,7 +89,20 @@
 <span class="kn">from</span> <span class="nn">ray.tune.registry</span> <span class="kn">import</span> <span class="n">get_trainable_cls</span>
 
 <div class="viewcode-block" id="create_wrapped_trainable"><a class="viewcode-back" href="../code/create_trainable.html#create_trainable.create_wrapped_trainable">[docs]</a><span class="k">def</span> <span class="nf">create_wrapped_trainable</span><span class="p">(</span><span class="n">alg</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Algorithm</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Algorithm</span><span class="p">:</span>
-    
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Create a wrapped trainable algorithm that prints out training progress in an orderly fashion.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        alg (Union[str, Algorithm]): The trainable instance or string id of a registered algorithm.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        Algorithm: An instance of the wrapped trainable algorithm.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        TypeError: If `alg` is not an instance of `str` or `Algorithm`.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">alg</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="n">base_algorithm</span> <span class="o">=</span> <span class="n">get_trainable_cls</span><span class="p">(</span><span class="n">alg</span><span class="p">)</span>
     <span class="k">elif</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">alg</span><span class="p">,</span> <span class="n">Algorithm</span><span class="p">):</span>
@@ -109,6 +124,18 @@
             <span class="p">]</span>
 
         <span class="k">def</span> <span class="nf">flatten</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">d</span><span class="p">:</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">res</span><span class="p">:</span> <span class="n">Dict</span> <span class="o">=</span> <span class="p">{},</span> <span class="n">flattened_key</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Flatten a nested dictionary into a dictionary with a single level of keys.</span>
+
+<span class="sd">            Args:</span>
+<span class="sd">                d (Dict): The nested dictionary to flatten.</span>
+<span class="sd">                res (Dict): A dictionary to contain the flattened dictionary.</span>
+<span class="sd">                flattened_key (str): A prefix string to be added to all resulting flattened keys.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                Dict: A dictionary with flattened keys.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
             <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">d</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
                 <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">val</span><span class="p">,</span> <span class="n">res</span><span class="p">,</span> <span class="n">flattened_key</span> <span class="o">+</span> <span class="n">key</span> <span class="o">+</span> <span class="s1">&#39;/&#39;</span> <span class="p">)</span>
@@ -120,7 +147,17 @@
             <span class="k">return</span> <span class="n">res</span>
 
         <span class="k">def</span> <span class="nf">display_results</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">results</span><span class="p">:</span> <span class="n">ResultDict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Display the specified results in a human-readable format.</span>
 
+<span class="sd">            Args:</span>
+<span class="sd">                self (WrappedTrainable): The current instance of the wrapped trainable algorithm.</span>
+<span class="sd">                results (ResultDict): The results to display.</span>
+
+<span class="sd">            Returns:</span>
+<span class="sd">                None.</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
             <span class="n">display</span> <span class="o">=</span> <span class="p">[]</span>
             <span class="n">results</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">flatten</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
 

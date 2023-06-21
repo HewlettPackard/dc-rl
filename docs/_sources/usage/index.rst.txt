@@ -40,7 +40,7 @@ Users can upload CI dataset of choice in the repository, under :code:`dc-rl/data
 .. _eia: https://www.eia.gov/environment/emissions/state/
 
 .. note::
-   CI dataset should be saved in .csv format and should contain CI data for one year (24*365)
+   CI dataset should be saved in .csv format and should contain CI data for one year (24*365), in a hourly way.
 
 Example:
 
@@ -71,8 +71,14 @@ Workload data
 This dataset provides hourly IT workload information. The default weather data in DCRL-Green was obtained from the Alibaba open source database :cite:p:`alibaba2018`. Users can upload IT workload dataset of choice in the repository, under :code:`dc-rl/data/Workload` and use the variable :code:`"workload_file"` to specify the filename.
 
 .. note::
-   Workload dataset should be saved in .csv format and should contain data for one year (24*365)
-   
+   Workload dataset should be saved in .csv format and should contain data for one year (24*365), in a hourly way.
+
+Example:
+
+.. code-block:: bash
+
+   'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv'
+
 Agent configuration
 -------------------
 

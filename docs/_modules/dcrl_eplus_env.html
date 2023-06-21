@@ -50,6 +50,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/index.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution_guidelines.html">Contribution Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
 </ul>
 
@@ -369,6 +371,18 @@
         <span class="k">return</span> <span class="n">obs</span><span class="p">,</span> <span class="n">rew</span><span class="p">,</span> <span class="n">terminated</span><span class="p">,</span> <span class="n">truncated</span><span class="p">,</span> <span class="n">info</span></div>
 
 <div class="viewcode-block" id="DCRLeplus.calculate_reward"><a class="viewcode-back" href="../code/dcrl_eplus_env.html#dcrl_eplus_env.DCRLeplus.calculate_reward">[docs]</a>    <span class="k">def</span> <span class="nf">calculate_reward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Calculate the individual reward for each agent.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            params (dict): Dictionary of parameters to calculate the reward.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            ls_reward (float): Individual reward for the load shifting agent.</span>
+<span class="sd">            dc_reward (float): Individual reward for the data center agent.</span>
+<span class="sd">            bat_reward (float): Individual reward for the battery agent.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        
         <span class="n">ls_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ls_reward_method</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
         <span class="n">dc_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dc_reward_method</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
         <span class="n">bat_reward</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">bat_reward_method</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>

@@ -23,6 +23,15 @@ class CoherentNoise:
         self.scale = scale
 
     def generate(self, n_steps):
+        """
+        Generate coherent noise 
+
+        Args:
+            n_steps (int): Length of the data to generate.
+
+        Returns:
+            numpy.ndarray: Array of generated coherent noise.
+        """
         steps = np.random.normal(loc=0, scale=self.scale, size=n_steps)
         random_walk = np.cumsum(self.weight * steps)
         random_walk_scaled = self.base + (random_walk / np.std(random_walk)) * self.desired_std_dev

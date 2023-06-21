@@ -48,7 +48,8 @@ CONFIG = (
         .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
             gamma=0.99, 
-            lr=1e-6, 
+            lr=1e-5, 
+            lr_schedule=[[0, 3e-5], [10000000, 1e-6]],
             kl_coeff=0.3, 
             clip_param=0.02,
             entropy_coeff=0.05,

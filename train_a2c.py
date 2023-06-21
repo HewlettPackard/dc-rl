@@ -51,7 +51,7 @@ CONFIG = (
             lr=1e-4,
             train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
             model={'fcnet_hiddens': [128, 64, 16], 'fcnet_activation': 'relu'}, 
-            lr_schedule=[[0, 1e-3], [1000000, 1e-5]],
+            lr_schedule=[[0, 1e-2], [10000000, 1e-4]],
         )
         .callbacks(CustomCallbacks)
         .resources(num_cpus_per_worker=1, num_gpus=0)
