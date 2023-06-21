@@ -1,16 +1,16 @@
 Name,Default input,Description
-Experiment name,test,Assigns a name for the experiment
-Location,ny,"Specifies the location of weather/ Carbon intensity data. ""ny"" represents New York"
-Carbon Intensity,NYIS_NG_&_avgCI.csv,The filename of the carbon-intensity data. The file format should be .csv
-Weather,USA_NY_New.York-Kennedy.epw,The filename of the weather data. The file format should be .epw
-Workload,Alibaba_CPU_Data_Hourly_1.csv,The filename of the workload data. The file format should be .csv
+Experiment name,test,Name of the experiment
+Location,ny,"Location of weather/ carbon intensity data. ""ny"" represents New York"
+Carbon intensity,NYIS_NG_&_avgCI.csv,Carbon-intensity data filename. The file format should be .csv
+Weather,USA_NY_New.York-Kennedy.epw,Weather data filename. The file format should be .epw
+Workload,Alibaba_CPU_Data_Hourly_1.csv,DC workload data filename. The file format should be .csv
 Agents,"[""agents_ls"" , ""agents_dc"" , ""agents_bat""]","List of agents (ls= load shifting, dc= DC cooling, bat= Battery controller) to train"
 max_bat_cap_Mw,2,Battery capacity
-individual_reward_weight,0.8,:math:`\eta` value for collaborative weight in rewards
+individual_reward_weight,0.8,:math:`\eta` coeficient for degree of colaboration between agents
 flexible_load,0.1,Ratio of workload that is flexible
-gamma,0.99,Represents the discount factor
+gamma,0.99,Discount factor
 NUM_AGENTS ,3,Number of agents
-NUM_WORKERS ,24,"Specifies the number of parallel environments, it must be in multiples of 12"
-Batch size,6912,Provides the batch size to sample from the replay memory
-Learning rate,1.00E-06,the learning rate of the optimizer
+NUM_WORKERS ,24,"Number of parallel processes, it must be in multiples of 12"
+Batch size,6912,Batch size to sample from the replay memory
+Learning rate,1.00E-06,Learning rate of the optimizer
 Algorithm,PPO,MARL algorithm to train the agents
