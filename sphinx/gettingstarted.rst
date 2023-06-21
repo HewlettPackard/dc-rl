@@ -55,7 +55,7 @@ Next, run the script:
 .. note::
    The :code:`episode_reward_mean` will display nan values for the first few iterations until 1 episode is completed
 
-2.2 Running in Background Mode
+2.3 Running in background mode
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you want to run the DCRL-Green framework in background mode use the following command:
@@ -66,7 +66,7 @@ If you want to run the DCRL-Green framework in background mode use the following
 
 
 
-where :code:`PYTHON_SCRIPT` is the script you want to run (e.g., :code:`train_ppo.py`) and :code:`OUTPUT_FILE` is the name of the file that will contain the output (e.g. :code:`latest_experiment_output.txt`).
+where :code:`PYTHON_SCRIPT` is the script you want to run (e.g., :code:`train_ppo.py`) and :code:`OUTPUT_FILE` is the name of the file that will contain the output (e.g. :code:`latest_experiment_output`).
 
 
 3. Monitor the results
