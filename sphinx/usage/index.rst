@@ -5,11 +5,10 @@ Usage
 Reinforcement learning algorithms
 ---------------------------------
 
-DCRL-Green supports the two multi-agent training approaches: independent learning approach such as IPPO :cite:p:`dewitt2020independent`, IA2C that decompose the problem into single-agent tasks for learning
-and centralised learning approach such as MADDPG :cite:p:`lowe2020multiagent` that uses a centralised critic with decentralised execution.
+DCRL-Green supports two multi-agent training approaches: independent learning approach such as IPPO :cite:p:`dewitt2020independent`, IA2C that decompose the problem into single-agent tasks for learning
+and centralized learning approach such as MADDPG :cite:p:`lowe2020multiagent` that uses a centralised critic with decentralised execution.
 
 The following command can be used to run the MARL algorithm of choice:
-(For execution using EnergyPlus model, launch the :code:`Sinergym` environment before running the script (details can be found in :ref:`EnergyPlus enabled DC simulation (DCRLeplus)`))
 
 +--------+---------------------------+------------------------------------+
 | Name   |   DCRL Implementation     | DCRLeplus Implementation           |
@@ -26,6 +25,9 @@ The following command can be used to run the MARL algorithm of choice:
 |        |                           |                                    |
 |        |    python train_maddpg.py |    EPLUS=1  python train_maddpg.py |
 +--------+---------------------------+------------------------------------+
+
+.. note::
+   For execution using EnergyPlus model, launch the :code:`Sinergym` environment before running the script (details can be found in :ref:`EnergyPlus enabled DC simulation (DCRLeplus)`)
 
 .. note::
    User configurations described in the following sections can be modified by directly editing the above python scripts.
@@ -82,10 +84,10 @@ Example:
 Agent configuration
 -------------------
 
-DCRL-Green supports three MARL agents to optimize energy usage and reduce carbon footprint of data centers. More details of the agents' operations are discussed in :ref:`Agents` section. Based on the requirement, users can include agents of choice in the training script. The agents that are not involved in training will select the :code:`Idle` action by default and will not contribute to the optimization process. The variable :code:`"agents"` can be used to specify the required agents.
+DCRL-Green supports three MARL agents to optimize energy usage and reduce carbon footprint of data centers. More details of the agents' operations are discussed in the :ref:`Agents` section. Based on the requirement, users can include agents of choice in the training script. The agents that are not involved in training will select the :code:`Idle` action by default and will not contribute to the optimization process. The dictionary entry :code:`'agents'` can be used to specify the required agents.
 
 .. note::
-   Agent names must be provided as a list of strings, where :code:`"agent_ls"`, :code:`"agent_dc"`, :code:`"agent_bat"` represents load shifting agent, DC cooling agent, battery control agent respectively
+   Agent names must be provided as a list of strings, where :code:`'agent_ls'`, :code:`'agent_dc'`, :code:`'agent_bat'` represents load shifting agent, DC cooling agent, and battery control agent respectively.
 
 Example:
 
