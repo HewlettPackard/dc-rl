@@ -5,7 +5,7 @@ DCRL-Green's custom DC simulation (DCRL)
 Dependencies
 ------------
 
-1. Linux OS (Ubuntu 20.04)
+1. Linux OS (tested on Ubuntu 20.04)
 2. Conda_
 
 .. _Conda: https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html
@@ -13,7 +13,7 @@ Dependencies
 First time setup
 ----------------
 
-Clone the latest DCRL-Green version from github using:
+Clone the latest DCRL-Green version from GitHub using:
 
 .. code-block:: bash
     
@@ -31,7 +31,7 @@ Change the current working directory to the dc-rl folder:
     
     cd dc-rl
 
-Create a conda environment and install dependencies:
+Create a conda environment and install the needed dependencies:
 
 .. code-block:: bash
     
