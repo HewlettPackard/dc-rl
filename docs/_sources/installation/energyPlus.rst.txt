@@ -5,23 +5,23 @@ EnergyPlus enabled DC simulation (DCRLeplus)
 DCRL-Green uses Sinergym_ :cite:p:`2021sinergym` to create an environment following Gymnasium interface for wrapping EnergyPlus for data center control. 
 It is recommended to install Sinergym supported by a Docker container that imports dependencies by default. The instructions for manual installations are also provided in the following sections.
 
-*******************
-1. Docker container
-*******************
+**************************************************
+1. Installation via Docker image (**recommended**)
+**************************************************
 
 1.1 Prerequisites
 -----------------
 
 Docker_
 
-.. _Sinergym: https://ugr-sail.github.io/sinergym/compilation/main/index.html
+.. _Sinergym: https://ugr-sail.github.io/sinergym/compilation/main/index.html/
 .. _Docker: https://docs.docker.com/get-docker/
 
 
 1.2 First-time setup
 --------------------
 
-Clone the latest DCRL-Green version from github using:
+Clone the latest DCRL-Green version from GitHub using:
 
 .. code-block:: bash
     
@@ -48,11 +48,10 @@ If the docker container is launched successfully, the isolated :code:`sinergym` 
 
    cd dc-rl
 
-.. note::
-   Some useful Docker commands could be found here_
-   
-.. _here: https://docs.docker.com/engine/reference/commandline/cli/
+********************************************
+2. Manual installation (**not recommended**)
+********************************************
 
-**********************
-2. Manual installation
-**********************
+For manual installation, please follow the instructions to `manually install <manual>`_ Sinergym. Make sure all the required components (custom Python environment, EnergyPlus, and BCVTB) are correctly installed.
+
+.. _manual: https://ugr-sail.github.io/sinergym/compilation/main/pages/installation.html#manual-installation

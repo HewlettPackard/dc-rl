@@ -17,4 +17,4 @@ Error 2: Microsoft Visual C++ 14.0 or greater is required
 ---------------------------------------------------------
 
 You need to install Microsoft Visual C++ on your device.
-You can do this on this website (https://visualstudio.microsoft.com/visual-cpp-build-tools/).
+You can do this through their website (https://visualstudio.microsoft.com/visual-cpp-build-tools/).

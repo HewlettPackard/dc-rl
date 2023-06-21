@@ -44,7 +44,7 @@ Users can upload CI dataset of choice in the repository, under :code:`dc-rl/data
 
 Example:
 
-.. code-block:: bash
+.. code-block:: python
 
    'cintensity_file': 'NYIS_NG_&_avgCI.csv'
 
@@ -61,7 +61,7 @@ weather files collection. Users can upload weather dataset of choice in the repo
 
 Example:
 
-.. code-block:: bash
+.. code-block:: python
    
    'weather_file': 'USA_NY_New.York-Kennedy.epw'
 
@@ -75,7 +75,7 @@ This dataset provides hourly IT workload information. The default weather data i
 
 Example:
 
-.. code-block:: bash
+.. code-block:: python
 
    'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv'
 
@@ -89,7 +89,7 @@ DCRL-Green supports three MARL agents to optimize energy usage and reduce carbon
 
 Example:
 
-.. code-block:: bash
+.. code-block:: python
    
    'agents': ['agent_ls','agent_dc', 'agent_bat']
 

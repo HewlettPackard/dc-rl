@@ -85,6 +85,9 @@
 <div class="viewcode-block" id="BaseLoadShiftingAgent"><a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseLoadShiftingAgent">[docs]</a><span class="k">class</span> <span class="nc">BaseLoadShiftingAgent</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for load shifting agents.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        parameters (dict) :  Dictionary containing the agent parameters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -96,6 +99,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the do nothing action.</span>
 <span class="sd">        </span>
+<span class="sd">        Returns:</span>
 <span class="sd">            action (int): The action (do nothing) to be taken.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="mi">1</span></div></div>
@@ -103,17 +107,26 @@
 <div class="viewcode-block" id="BaseHVACAgent"><a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseHVACAgent">[docs]</a><span class="k">class</span> <span class="nc">BaseHVACAgent</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for HVAC agents.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    parameters : dict</span>
+<span class="sd">        Dictionary containing the agent parameters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Args:</span>
-<span class="sd">            parameters (dict) :  Dictionary containing the agent parameters.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        parameters : dict</span>
+<span class="sd">            Dictionary containing the agent parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">parameters</span>
 <div class="viewcode-block" id="BaseHVACAgent.do_nothing_action"><a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseHVACAgent.do_nothing_action">[docs]</a>    <span class="k">def</span> <span class="nf">do_nothing_action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the do nothing action.</span>
 <span class="sd">        </span>
+<span class="sd">        Returns:</span>
 <span class="sd">            action (int): The action (do nothing) to be taken.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span></div></div>
@@ -121,6 +134,9 @@
 <div class="viewcode-block" id="BaseBatteryAgent"><a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseBatteryAgent">[docs]</a><span class="k">class</span> <span class="nc">BaseBatteryAgent</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for battery agents.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        parameters (dict) :  Dictionary containing the agent parameters.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parameters</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>

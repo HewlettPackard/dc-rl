@@ -121,7 +121,7 @@ Note that this will use ```PPO``` agents; for ```MADDPG``` use the ```train_madd
 If you want to run the DCRL-Green framework in background mode use the following command:
 
 ```bash
-$ hohup python PYTHON_SCRIPT > OUTPUT_FILE.txt  &
+$ nohup python PYTHON_SCRIPT > OUTPUT_FILE.txt  &
 ```
 where ```PYTHON_SCRIPT``` is the script you want to run (e.g., ```train_ppo.py```) and ```OUTPUT_FILE``` is the name of the file that will contain the output (e.g. ```latest_experiment_output.txt```).
 

@@ -91,12 +91,20 @@
   <section id="how-to-evaluate-dcrl-green-model">
 <h1>How to evaluate DCRL-Green model<a class="headerlink" href="#how-to-evaluate-dcrl-green-model" title="Permalink to this headline"></a></h1>
 <p>In addition to monitoring the training process using TensorBoard, it is essential to evaluate the performance of the DCRL-Green model after training. The following steps outline the evaluation procedure:</p>
-<ol class="arabic simple">
-<li><p>Modifiy the <code class="code docutils literal notranslate"><span class="pre">CHECKPOINT</span></code> variable to point to the training data file</p></li>
-<li><p>Load the trained RL agent, the environment, and the evaluation data using the <code class="code docutils literal notranslate"><span class="pre">run</span></code> function provided in the <code class="code docutils literal notranslate"><span class="pre">evaluate_model.py</span></code> module.</p></li>
-<li><p>Run the evaluation using the <code class="code docutils literal notranslate"><span class="pre">evaluate_model.py</span></code> module.</p></li>
-<li><p>Analyze and visualize the evaluation results to determine the model’s performance using the csv file created.</p></li>
-</ol>
+<p><strong>Step 1:</strong></p>
+<p>Modify the <code class="code docutils literal notranslate"><span class="pre">CHECKPOINT</span></code> variable in <code class="code docutils literal notranslate"><span class="pre">evaluate.py</span></code> module to point to the training data file.</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#path to checkpoint</span>
+<span class="n">CHECKPOINT</span> <span class="o">=</span> <span class="s1">&#39;./results/test/PPO_DCRL_c2f2a_00000_0_2023-06-16_16-51-50/checkpoint_001215/&#39;</span>
+</pre></div>
+</div>
+<p><strong>Step 2:</strong></p>
+<p>Run the following command for evaluation. The model is evaluated on the specifics, such as the RL algorithm, the Environment type used during training.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">evaluate</span><span class="o">.</span><span class="n">py</span>
+</pre></div>
+</div>
+<p><strong>Step 3:</strong></p>
+<p>The evaluation process prints a table with the Carbon Footprint and Total Energy consumption values for a period of one year.</p>
 <p>Using the steps outlined above, you can effectively evaluate the DCRL-Green model and make necessary adjustments to improve its performance.</p>
 </section>
 

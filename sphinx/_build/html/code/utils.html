@@ -56,18 +56,16 @@
 <li class="toctree-l2"><a class="reference internal" href="folder_structure.html">Folder Structure</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="modules.html">Class and member documentation</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="create_trainable.html">create_trainable module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="data.html">data package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.html">Data package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dcrl_env.html">dcrl_env module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dcrl_eplus_env.html">dcrl_eplus_env module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="envs.html">envs package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="evaluate_model.html">evaluate_model module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="maddpg.html">maddpg module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="train.html">train module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="train_a2c.html">train_a2c module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="train_maddpg.html">train_maddpg module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="train_ppo.html">train_ppo module</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">utils package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-utils.base_agents">utils.base_agents module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-utils.dc_config">utils.dc_config module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-utils.dc_config_reader">utils.dc_config_reader module</a></li>
@@ -118,9 +116,6 @@
              
   <section id="utils-package">
 <h1>utils package<a class="headerlink" href="#utils-package" title="Permalink to this headline"></a></h1>
-<section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
-</section>
 <section id="module-utils.base_agents">
 <span id="utils-base-agents-module"></span><h2>utils.base_agents module<a class="headerlink" href="#module-utils.base_agents" title="Permalink to this headline"></a></h2>
 <dl class="py class">
@@ -128,6 +123,11 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.base_agents.</span></span><span class="sig-name descname"><span class="pre">BaseBatteryAgent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseBatteryAgent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseBatteryAgent" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for battery agents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>parameters</strong> (<em>dict</em>) – Dictionary containing the agent parameters.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.base_agents.BaseBatteryAgent.do_nothing_action">
 <span class="sig-name descname"><span class="pre">do_nothing_action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseBatteryAgent.do_nothing_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseBatteryAgent.do_nothing_action" title="Permalink to this definition"></a></dt>
@@ -149,13 +149,23 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.base_agents.</span></span><span class="sig-name descname"><span class="pre">BaseHVACAgent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseHVACAgent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseHVACAgent" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for HVAC agents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>parameters</strong> (<em>dict</em>) – Dictionary containing the agent parameters.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.base_agents.BaseHVACAgent.do_nothing_action">
 <span class="sig-name descname"><span class="pre">do_nothing_action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseHVACAgent.do_nothing_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseHVACAgent.do_nothing_action" title="Permalink to this definition"></a></dt>
 <dd><p>Return the do nothing action.</p>
-<blockquote>
-<div><p>action (int): The action (do nothing) to be taken.</p>
-</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The action (do nothing) to be taken.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>action (int)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -165,13 +175,23 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.base_agents.</span></span><span class="sig-name descname"><span class="pre">BaseLoadShiftingAgent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseLoadShiftingAgent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseLoadShiftingAgent" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Base class for load shifting agents.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>parameters</strong> (<em>dict</em>) – Dictionary containing the agent parameters.</p>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.base_agents.BaseLoadShiftingAgent.do_nothing_action">
 <span class="sig-name descname"><span class="pre">do_nothing_action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseLoadShiftingAgent.do_nothing_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseLoadShiftingAgent.do_nothing_action" title="Permalink to this definition"></a></dt>
 <dd><p>Return the do nothing action.</p>
-<blockquote>
-<div><p>action (int): The action (do nothing) to be taken.</p>
-</div></blockquote>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>The action (do nothing) to be taken.</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p>action (int)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -179,31 +199,9 @@
 </section>
 <section id="module-utils.dc_config">
 <span id="utils-dc-config-module"></span><h2>utils.dc_config module<a class="headerlink" href="#module-utils.dc_config" title="Permalink to this headline"></a></h2>
-<dl class="py data">
-<dt class="sig sig-object py" id="utils.dc_config.CT_REFRENCE_AIR_FLOW_RATE">
-<span class="sig-prename descclassname"><span class="pre">utils.dc_config.</span></span><span class="sig-name descname"><span class="pre">CT_REFRENCE_AIR_FLOW_RATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.8315243039169418</span></em><a class="headerlink" href="#utils.dc_config.CT_REFRENCE_AIR_FLOW_RATE" title="Permalink to this definition"></a></dt>
-<dd><p>References:
-[1]: Postema, Björn Frits. “Energy-efficient data centres: model-based analysis of power-performance trade-offs.” (2018).
-[2]: Raghunathan, S., &amp; Vk, M. (2014). Power management using dynamic power state transitions and dynamic voltage frequency scaling controls in virtualized server clusters. Turkish Journal of Electrical Engineering and Computer Sciences, 24(4). doi: 10.3906/elk-1403-264
-[3]: Sun, Kaiyu, et al. “Prototype energy models for data centers.” Energy and Buildings 231 (2021): 110603.
-[4]: Breen, Thomas J., et al. “From chip to cooling tower data center modeling: Part I influence of server inlet temperature and temperature rise across cabinet.” 2010 12th IEEE Intersociety Conference on Thermal and Thermomechanical Phenomena in Electronic Systems. IEEE, 2010.
-[5]: <a class="reference external" href="https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water">https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water</a>.</p>
-</dd></dl>
-
 </section>
 <section id="module-utils.dc_config_reader">
 <span id="utils-dc-config-reader-module"></span><h2>utils.dc_config_reader module<a class="headerlink" href="#module-utils.dc_config_reader" title="Permalink to this headline"></a></h2>
-<dl class="py data">
-<dt class="sig sig-object py" id="utils.dc_config_reader.CT_REFRENCE_AIR_FLOW_RATE">
-<span class="sig-prename descclassname"><span class="pre">utils.dc_config_reader.</span></span><span class="sig-name descname"><span class="pre">CT_REFRENCE_AIR_FLOW_RATE</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">2.8315</span></em><a class="headerlink" href="#utils.dc_config_reader.CT_REFRENCE_AIR_FLOW_RATE" title="Permalink to this definition"></a></dt>
-<dd><p>References:
-[1]: Postema, Björn Frits. “Energy-efficient data centres: model-based analysis of power-performance trade-offs.” (2018).
-[2]: Raghunathan, S., &amp; Vk, M. (2014). Power management using dynamic power state transitions and dynamic voltage frequency scaling controls in virtualized server clusters. Turkish Journal of Electrical Engineering and Computer Sciences, 24(4). doi: 10.3906/elk-1403-264
-[3]: Sun, Kaiyu, et al. “Prototype energy models for data centers.” Energy and Buildings 231 (2021): 110603.
-[4]: Breen, Thomas J., et al. “From chip to cooling tower data center modeling: Part I influence of server inlet temperature and temperature rise across cabinet.” 2010 12th IEEE Intersociety Conference on Thermal and Thermomechanical Phenomena in Electronic Systems. IEEE, 2010.
-[5]: <a class="reference external" href="https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water">https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water</a>.</p>
-</dd></dl>
-
 </section>
 <section id="module-utils.helper_methods">
 <span id="utils-helper-methods-module"></span><h2>utils.helper_methods module<a class="headerlink" href="#module-utils.helper_methods" title="Permalink to this headline"></a></h2>
@@ -434,6 +432,19 @@
 <dt class="sig sig-object py" id="utils.managers.CI_Manager">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">CI_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NYIS'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CI_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CI_Manager" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Manager of the carbon intensity data</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename of the CPU data. Defaults to ‘ ‘.</p></li>
+<li><p><strong>location</strong> (<em>str</em><em>, </em><em>optional</em>) – Location identifier. Defaults to ‘NYIS’.</p></li>
+<li><p><strong>init_day</strong> (<em>int</em><em>, </em><em>optional</em>) – Initial day of the episode. Defaults to 0.</p></li>
+<li><p><strong>future_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of steps of the CI forecast. Defaults to 4.</p></li>
+<li><p><strong>weight</strong> (<em>float</em><em>, </em><em>optional</em>) – Weight value for coherent noise. Defaults to 0.001.</p></li>
+<li><p><strong>desired_std_dev</strong> (<em>float</em><em>, </em><em>optional</em>) – Desired standard deviation for coherent noise. Defaults to 0.025.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.managers.CI_Manager.get_total_ci">
 <span class="sig-name descname"><span class="pre">get_total_ci</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CI_Manager.get_total_ci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CI_Manager.get_total_ci" title="Permalink to this definition"></a></dt>
@@ -485,6 +496,16 @@ float: Normalized carbon intensity at current time step and it’s forecast</p>
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">CoherentNoise</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">base</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scale</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CoherentNoise"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CoherentNoise" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Class to add coherent noise to the data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>base</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – Base data</p></li>
+<li><p><strong>weight</strong> (<em>float</em>) – Weight of the noise to be added</p></li>
+<li><p><strong>desired_std_dev</strong> (<em>float</em><em>, </em><em>optional</em>) – Desired standard deviation. Defaults to 0.1.</p></li>
+<li><p><strong>scale</strong> (<em>int</em><em>, </em><em>optional</em>) – Scale. Defaults to 1.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.managers.CoherentNoise.generate">
 <span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CoherentNoise.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CoherentNoise.generate" title="Permalink to this definition"></a></dt>
@@ -496,6 +517,15 @@ float: Normalized carbon intensity at current time step and it’s forecast</p>
 <dt class="sig sig-object py" id="utils.managers.Time_Manager">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">Time_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">days_per_episode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Time_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Time_Manager" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to manage the time dimenssion over an episode</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>init_day</strong> (<em>int</em><em>, </em><em>optional</em>) – Day to start from. Defaults to 0.</p></li>
+<li><p><strong>days_per_episode</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of days that an episode would last. Defaults to 30.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.managers.Time_Manager.isterminal">
 <span class="sig-name descname"><span class="pre">isterminal</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Time_Manager.isterminal"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Time_Manager.isterminal" title="Permalink to this definition"></a></dt>
@@ -545,6 +575,20 @@ bool: Signal if the episode has reach the end.</p>
 <dt class="sig sig-object py" id="utils.managers.Weather_Manager">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">Weather_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NY'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Manager of the weather data.
+Where to obtain other weather files:
+<a class="reference external" href="https://climate.onebuilding.org/">https://climate.onebuilding.org/</a></p>
+<blockquote>
+<div><dl class="simple">
+<dt>Args:</dt><dd><p>filename (str, optional): Filename of the weather data. Defaults to ‘’.
+location (str, optional): Location identifier. Defaults to ‘NY’.
+init_day (int, optional): Initial day of the year. Defaults to 0.
+weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
+desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
+temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.</p>
+</dd>
+</dl>
+</div></blockquote>
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.managers.Weather_Manager.get_total_weather">
 <span class="sig-name descname"><span class="pre">get_total_weather</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager.get_total_weather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager.get_total_weather" title="Permalink to this definition"></a></dt>
@@ -595,6 +639,19 @@ float: Normalized temperature a current step</p>
 <dt class="sig sig-object py" id="utils.managers.Workload_Manager">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">Workload_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workload_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.025</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexible_workload_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Manager of the DC workload</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>workload_filename</strong> (<em>str</em><em>, </em><em>optional</em>) – Filename of the CPU data. Defaults to ‘’. Should be a .csv file containing the CPU hourly normalized workload data between 0 and 1. Should contains ‘cpu_load’ column.</p></li>
+<li><p><strong>init_day</strong> (<em>int</em><em>, </em><em>optional</em>) – Initial day of the episode. Defaults to 0.</p></li>
+<li><p><strong>future_steps</strong> (<em>int</em><em>, </em><em>optional</em>) – Number of steps of the workload forecast. Defaults to 4.</p></li>
+<li><p><strong>weight</strong> (<em>float</em><em>, </em><em>optional</em>) – Weight value for coherent noise. Defaults to 0.001.</p></li>
+<li><p><strong>desired_std_dev</strong> (<em>float</em><em>, </em><em>optional</em>) – Desired standard deviation for coherent noise. Defaults to 0.025.</p></li>
+<li><p><strong>flexible_workload_ratio</strong> (<em>float</em><em>, </em><em>optional</em>) – Ratio of the flexible workload amount. Defaults to 0.1.</p></li>
+</ul>
+</dd>
+</dl>
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.managers.Workload_Manager.get_total_wkl">
 <span class="sig-name descname"><span class="pre">get_total_wkl</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager.get_total_wkl"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager.get_total_wkl" title="Permalink to this definition"></a></dt>

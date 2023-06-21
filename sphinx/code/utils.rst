@@ -1,9 +1,6 @@
 utils package
 =============
 
-Submodules
-----------
-
 utils.base\_agents module
 -------------------------
 

@@ -51,10 +51,11 @@
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation/index.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Getting Started</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#example">1. Example</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#basic-example">1. Basic example</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#train-the-agents">2. Train the agents</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#train-with-dcrl-environment">2.1 Train with DCRL Environment</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#train-with-dcrleplus-environment">2.2 Train with DCRLeplus Environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#train-using-the-dcrl-environment">2.1 Train using the DCRL environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#train-using-the-dcrleplus-environment">2.2 Train using the DCRLeplus environment</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#running-in-background-mode">2.3 Running in background mode</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#monitor-the-results">3. Monitor the results</a></li>
@@ -94,25 +95,37 @@
              
   <section id="getting-started">
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline"></a></h1>
-<section id="example">
-<h2>1. Example<a class="headerlink" href="#example" title="Permalink to this headline"></a></h2>
-<p>This is the simplest example to simulate one episode and view the roll-out information.</p>
+<section id="basic-example">
+<h2>1. Basic example<a class="headerlink" href="#basic-example" title="Permalink to this headline"></a></h2>
+<p>Run the DCRL-Green environment to simulate one episode and view the roll-out information using the following command:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">dcrl_env</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </section>
 <section id="train-the-agents">
 <h2>2. Train the agents<a class="headerlink" href="#train-the-agents" title="Permalink to this headline"></a></h2>
-<p>Run the following command to simulate the DC enivronment and optimize the agents with default configurations:</p>
-<section id="train-with-dcrl-environment">
-<h3>2.1 Train with DCRL Environment<a class="headerlink" href="#train-with-dcrl-environment" title="Permalink to this headline"></a></h3>
+<p>Run the following commands to simulate the DC enivronment and optimize the agents with default configurations:</p>
+<section id="train-using-the-dcrl-environment">
+<h3>2.1 Train using the DCRL environment<a class="headerlink" href="#train-using-the-dcrl-environment" title="Permalink to this headline"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">train_ppo</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </section>
-<section id="train-with-dcrleplus-environment">
-<h3>2.2 Train with DCRLeplus Environment<a class="headerlink" href="#train-with-dcrleplus-environment" title="Permalink to this headline"></a></h3>
-<p>For execution using EnergyPlus model, launch the <code class="code docutils literal notranslate"><span class="pre">Sinergym</span></code> environment before running the script (details can be found in <a class="reference internal" href="installation/energyPlus.html#energyplus-enabled-dc-simulation-dcrleplus"><span class="std std-ref">EnergyPlus enabled DC simulation (DCRLeplus)</span></a>)</p>
+<section id="train-using-the-dcrleplus-environment">
+<h3>2.2 Train using the DCRLeplus environment<a class="headerlink" href="#train-using-the-dcrleplus-environment" title="Permalink to this headline"></a></h3>
+<p>If not done already, launch the docker container by executing the command:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">docker run -t -i -v $PWD:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3</span>
+</pre></div>
+</div>
+<p>If the docker container is launched successfully, the isolated <code class="code docutils literal notranslate"><span class="pre">sinergym</span></code> environment is enabled. Navigate to the to the source directory <code class="code docutils literal notranslate"><span class="pre">dc-rl</span></code> to be able to execute DCRL-Green:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd dc-rl</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Some useful Docker commands could be found <a class="reference external" href="https://docs.docker.com/engine/reference/commandline/cli/">here</a></p>
+</div>
+<p>Next, run the script:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">EPLUS</span><span class="o">=</span><span class="mi">1</span> <span class="n">python</span> <span class="n">train_ppo</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
@@ -121,10 +134,18 @@
 <p>The <code class="code docutils literal notranslate"><span class="pre">episode_reward_mean</span></code> will display nan values for the first few iterations until 1 episode is completed</p>
 </div>
 </section>
+<section id="running-in-background-mode">
+<h3>2.3 Running in background mode<a class="headerlink" href="#running-in-background-mode" title="Permalink to this headline"></a></h3>
+<p>If you want to run the DCRL-Green framework in background mode use the following command:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nohup</span> <span class="n">python</span> <span class="n">PYTHON_SCRIPT</span> <span class="o">&gt;</span> <span class="n">OUTPUT_FILE</span><span class="o">.</span><span class="n">txt</span>  <span class="o">&amp;</span>
+</pre></div>
+</div>
+<p>where <code class="code docutils literal notranslate"><span class="pre">PYTHON_SCRIPT</span></code> is the script you want to run (e.g., <code class="code docutils literal notranslate"><span class="pre">train_ppo.py</span></code>) and <code class="code docutils literal notranslate"><span class="pre">OUTPUT_FILE</span></code> is the name of the file that will contain the output (e.g. <code class="code docutils literal notranslate"><span class="pre">latest_experiment_output</span></code>).</p>
+</section>
 </section>
 <section id="monitor-the-results">
 <h2>3. Monitor the results<a class="headerlink" href="#monitor-the-results" title="Permalink to this headline"></a></h2>
-<p>The training logs and the results of each trial are stored in the specified local directory, under a sub-folder called <code class="code docutils literal notranslate"><span class="pre">/results/</span></code> and can be visualized with TensorBoard by specifying the output directory of the results.</p>
+<p>The training logs and the results of each trial are stored in the specified local directory, under a sub-folder called <code class="code docutils literal notranslate"><span class="pre">results</span></code> and can be visualized with TensorBoard by specifying the output directory of the results.</p>
 <p>Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="o">./</span><span class="n">results</span>
 </pre></div>
