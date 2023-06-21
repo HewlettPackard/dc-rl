@@ -6,13 +6,14 @@
 DCRL-Green
 ==========
 
-DCRL-green is a framework for testing multi-agent Reinforcement Learning (MARL) algorithm that optimizes data centers for multiple objectives of carbon footprint reduction, energy consumption, and energy
+DCRL-green is a framework for testing Multi-Agent Reinforcement Learning (MARL) algorithms that optimizes data centers for multiple objectives of carbon footprint reduction, energy consumption, and energy
 cost.
 
-It uses OpenAI Gym standard and supports modeling and control of three different types of problems: 
-- Carbon aware flexible load shifting,
-- Data center HVAC cooling energy optimization and
-- Carbon aware battery auxiliary supply.
+It uses OpenAI Gym standard and supports modeling and control of three different types of problems:
+
+- Carbon-aware flexible load shifting
+- Data center HVAC cooling energy optimization
+- Carbon-aware battery auxiliary supply
 
 .. image:: images/DCRL-sim1.png
    :scale: 30 %
@@ -23,14 +24,14 @@ It uses OpenAI Gym standard and supports modeling and control of three different
 
 Main contributions of DCRL-Green:
 
-- The first OpenAI framework, to our knowledge, focused on carbon footprint reduction for data centers.
-- Modular design, i.e users can utilize pre-defined modules for load shifting, energy and battery or build their own.
-- Scalable architecture that allows multiple different types of modules and connections between them.
-- Robust data center model that provides in-depth customization to fit users' needs.
-- Provides pre-defined reward functions as well as interface to create custom reward functions.
-- Built-in mechanisms for reward shaping focused on degree of cooperation between the agents and level of prioritization of carbon footprint reduction versus other metrics such as energy cost.
-- Custom reward shaping through custom reward functions.
-- Built-in MARL algorithms, with ability to incorporate user-specified custom agents.
+- The first OpenAI framework, to our knowledge, focused on carbon footprint reduction for data centers
+- Modular design, i.e users can utilize pre-defined modules for load shifting, energy and battery or build their own
+- Scalable architecture that allows multiple different types of modules and connections between them
+- Robust data center model that provides in-depth customization to fit users' needs
+- Provides pre-defined reward functions as well as interface to create custom reward functions
+- Built-in mechanisms for reward shaping focused on degree of cooperation between the agents and level of prioritization of carbon footprint reduction versus other metrics such as energy cost
+- Reward shaping through custom reward functions
+- Built-in MARL algorithms, with ability to incorporate user-specified custom agents
 
 .. toctree::
    :hidden:

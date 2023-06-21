@@ -49,7 +49,7 @@ DCRL-Green inludes an option to include custom rewards to match user's the desir
 **Step 1:** 
 users can define these reward functions in :code:`utils/reward_creator.py`. The function can follow the schema:
 
-.. code-block:: bash
+.. code-block:: python
 
     def custom_agent_reward(params: dict) -> float:
         #read reward input parameters from dict object
@@ -60,7 +60,7 @@ users can define these reward functions in :code:`utils/reward_creator.py`. The 
 **Step 2:**
 Add the new custom reward function to the :code:`REWARD_METHOD_MAP` dictionary.
 
-.. code-block:: bash
+.. code-block:: python
 
     REWARD_METHOD_MAP = {
     'default_dc_reward' : default_dc_reward,
@@ -93,7 +93,7 @@ Some examples of custom rewards are listed below:
 
 *Example 1*
 
-.. code-block:: bash
+.. code-block:: python
 
     def energy_PUE_reward(params: dict) -> float:
         """
@@ -128,7 +128,7 @@ the reward definition of the dc agent must be declared as :code:`dc_reward:energ
 
 The following piece of code show how to declare the :code:`'energy_PUE_reward'` as reward function for the dc agent:
 
-.. code-block:: bash
+.. code-block:: python
 
     CONFIG = (
         PPOConfig()
@@ -149,7 +149,7 @@ The following piece of code show how to declare the :code:`'energy_PUE_reward'` 
 Other reward function definitions can be found here:
 *Example 2*
 
-.. code-block:: bash
+.. code-block:: python
 
     def tou_reward(params: dict) -> float:
         """
@@ -203,7 +203,7 @@ Other reward function definitions can be found here:
 
 *Example 3*
 
-.. code-block:: bash
+.. code-block:: python
 
     def renewable_energy_reward(params: dict) -> float:
         """
@@ -228,7 +228,7 @@ Other reward function definitions can be found here:
 
 *Example 4*
 
-.. code-block:: bash
+.. code-block:: python
 
     def energy_efficiency_reward(params: dict) -> float:
         """
@@ -250,7 +250,7 @@ Other reward function definitions can be found here:
 
 *Example 5*
 
-.. code-block:: bash
+.. code-block:: python
 
     def temperature_efficiency_reward(params: dict) -> float:
         """

@@ -51,12 +51,12 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Installation</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="custom.html">DCRL-Green’s custom DC simulation (DCRL)</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">EnergyPlus enabled DC simulation (DCRLeplus)</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#docker-container">1. Docker container</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#installation-via-docker-image-recommended">1. Installation via Docker image (<strong>recommended</strong>)</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#prerequisites">1.1 Prerequisites</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#first-time-setup">1.2 First-time setup</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#manual-installation">2. Manual installation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#manual-installation-not-recommended">2. Manual installation (<strong>not recommended</strong>)</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="installationtips.html">Usefull tips for the installation</a></li>
@@ -98,17 +98,17 @@
              
   <section id="energyplus-enabled-dc-simulation-dcrleplus">
 <h1>EnergyPlus enabled DC simulation (DCRLeplus)<a class="headerlink" href="#energyplus-enabled-dc-simulation-dcrleplus" title="Permalink to this headline"></a></h1>
-<p>DCRL-Green uses <a class="reference external" href="https://ugr-sail.github.io/sinergym/compilation/main/index.html">Sinergym</a> <span id="id1">[<a class="reference internal" href="../references.html#id3" title="Javier Jiménez-Raboso, Alejandro Campoy-Nieves, Antonio Manjavacas-Lucas, Juan Gómez-Romero, and Miguel Molina-Solana. Sinergym: a building simulation and control framework for training reinforcement learning agents. In Proceedings of the 8th ACM International Conference on Systems for Energy-Efficient Buildings, Cities, and Transportation, 319–323. New York, NY, USA, 2021. Association for Computing Machinery. URL: https://doi.org/10.1145/3486611.3488729, doi:10.1145/3486611.3488729.">4</a>]</span> to create an environment following Gymnasium interface for wrapping EnergyPlus for data center control.
+<p>DCRL-Green uses <a class="reference external" href="https://ugr-sail.github.io/sinergym/compilation/main/index.html/">Sinergym</a> <span id="id1">[<a class="reference internal" href="../references.html#id3" title="Javier Jiménez-Raboso, Alejandro Campoy-Nieves, Antonio Manjavacas-Lucas, Juan Gómez-Romero, and Miguel Molina-Solana. Sinergym: a building simulation and control framework for training reinforcement learning agents. In Proceedings of the 8th ACM International Conference on Systems for Energy-Efficient Buildings, Cities, and Transportation, 319–323. New York, NY, USA, 2021. Association for Computing Machinery. URL: https://doi.org/10.1145/3486611.3488729, doi:10.1145/3486611.3488729.">4</a>]</span> to create an environment following Gymnasium interface for wrapping EnergyPlus for data center control.
 It is recommended to install Sinergym supported by a Docker container that imports dependencies by default. The instructions for manual installations are also provided in the following sections.</p>
-<section id="docker-container">
-<h2>1. Docker container<a class="headerlink" href="#docker-container" title="Permalink to this headline"></a></h2>
+<section id="installation-via-docker-image-recommended">
+<h2>1. Installation via Docker image (<strong>recommended</strong>)<a class="headerlink" href="#installation-via-docker-image-recommended" title="Permalink to this headline"></a></h2>
 <section id="prerequisites">
 <h3>1.1 Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline"></a></h3>
 <p><a class="reference external" href="https://docs.docker.com/get-docker/">Docker</a></p>
 </section>
 <section id="first-time-setup">
 <h3>1.2 First-time setup<a class="headerlink" href="#first-time-setup" title="Permalink to this headline"></a></h3>
-<p>Clone the latest DCRL-Green version from github using:</p>
+<p>Clone the latest DCRL-Green version from GitHub using:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/HewlettPackard/dc-rl.git
 </pre></div>
 </div>
@@ -128,14 +128,11 @@ It is recommended to install Sinergym supported by a Docker container that impor
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">cd dc-rl</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Some useful Docker commands could be found <a class="reference external" href="https://docs.docker.com/engine/reference/commandline/cli/">here</a></p>
-</div>
 </section>
 </section>
-<section id="manual-installation">
-<h2>2. Manual installation<a class="headerlink" href="#manual-installation" title="Permalink to this headline"></a></h2>
+<section id="manual-installation-not-recommended">
+<h2>2. Manual installation (<strong>not recommended</strong>)<a class="headerlink" href="#manual-installation-not-recommended" title="Permalink to this headline"></a></h2>
+<p>For manual installation, please follow the instructions to <a class="reference external" href="manual">manually install</a> Sinergym. Make sure all the required components (custom Python environment, EnergyPlus, and BCVTB) are correctly installed.</p>
 </section>
 </section>
 
