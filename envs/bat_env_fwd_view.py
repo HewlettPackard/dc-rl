@@ -201,7 +201,7 @@ class BatteryEnvFwd(gym.Env):
             discharge_energy (float): Amount of energy to be discharged
 
         Returns:
-            CO2_footprint (float): Carbon footprint produced at the current time step
+            CO2_footprint (float): Carbon footprint produced at the current time step (gCO2e)
         """
         if a_t == 'charge':
             self.total_energy_with_battery = dc_load * 1e3 * 0.25 + self.battery.charging_load * 1e3
