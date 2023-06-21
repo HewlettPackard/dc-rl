@@ -25,7 +25,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Contribution Guidelines" href="../contribution_guidelines.html" />
-    <link rel="prev" title="How to monitor training results using TensorBoard" href="monitor_results.html" /> 
+    <link rel="prev" title="How to Monitor Training Results Using TensorBoard" href="monitor_results.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,7 +54,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../overview/index.html">Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../code/index.html">Code</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Train and Evaluate Statistics</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="monitor_results.html">How to monitor training results using TensorBoard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monitor_results.html">How to Monitor Training Results Using TensorBoard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="monitor_results.html#how-to-add-custom-metrics">How to add Custom Metrics</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">How to evaluate DCRL-Green model</a></li>
 </ul>
 </li>
@@ -89,13 +90,21 @@
              
   <section id="how-to-evaluate-dcrl-green-model">
 <h1>How to evaluate DCRL-Green model<a class="headerlink" href="#how-to-evaluate-dcrl-green-model" title="Permalink to this headline"></a></h1>
+<p>In addition to monitoring the training process using TensorBoard, it is essential to evaluate the performance of the DCRL-Green model after training. The following steps outline the evaluation procedure:</p>
+<ol class="arabic simple">
+<li><p>Modifiy the <code class="code docutils literal notranslate"><span class="pre">CHECKPOINT</span></code> variable to point to the training data file</p></li>
+<li><p>Load the trained RL agent, the environment, and the evaluation data using the <code class="code docutils literal notranslate"><span class="pre">run</span></code> function provided in the <code class="code docutils literal notranslate"><span class="pre">evaluate_model.py</span></code> module.</p></li>
+<li><p>Run the evaluation using the <code class="code docutils literal notranslate"><span class="pre">evaluate_model.py</span></code> module.</p></li>
+<li><p>Analyze and visualize the evaluation results to determine the model’s performance using the csv file created.</p></li>
+</ol>
+<p>Using the steps outlined above, you can effectively evaluate the DCRL-Green model and make necessary adjustments to improve its performance.</p>
 </section>
 
 
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="monitor_results.html" class="btn btn-neutral float-left" title="How to monitor training results using TensorBoard" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="monitor_results.html" class="btn btn-neutral float-left" title="How to Monitor Training Results Using TensorBoard" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="../contribution_guidelines.html" class="btn btn-neutral float-right" title="Contribution Guidelines" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
