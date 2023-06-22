@@ -11,19 +11,19 @@ Independent rewards
    :file: ../tables/agent_rewards.csv
    :header-rows: 1
 
-Total EC refers o the total building energy consumption (HVAC+IT), CI is the carbon intensity in the power grid indicating the inverse of the availability of green energy, and UL refers to the amount of unassigned flexible workload.
+Total EC refers to the total building energy consumption (HVAC+IT), CI is the carbon intensity in the power grid indicating the inverse of the availability of green energy, and UL refers to the amount of unassigned flexible computational workload.
 A penalty is attributed to the load shifting agent if it fails to schedule all the required load within the time horizon N.
 
 Collaborative rewards
 ---------------------
 
-The reward-sharing mechanism allows the agents to estimate the feedback from their actions in other environments.
+The reward-sharing mechanism allows the agents to estimate the feedback from their actions in other environments. Users have an option to choose the level of colaboration between the agents. This can be done by specifying the :math:`\eta` value in the script.
 
 .. csv-table::
    :file: ../tables/agent_colab_rewards.csv
    :header-rows: 1
 
-Users have an option to choose between the two reward mechanisms. This can be done by specifying the :math:`\eta` value in the script.
+Example :math:`\eta` values to set up a collaborative, independent and custom weighted environment are given in the table below. The higher the value of :math:`\eta`, the less collaboration between the agents in the environment.   
 
 +----------------+---------------------------------------+
 | Reward Scheme  |   Implementation                      | 
@@ -44,10 +44,10 @@ Users have an option to choose between the two reward mechanisms. This can be do
 Custom rewards
 --------------
 
-DCRL-Green inludes an option to include custom rewards to match user's the desired optimization objective. 
+DCRL-Green inludes an option to include custom rewards to match user's optimization objectives. 
 
 **Step 1:** 
-users can define these reward functions in :code:`utils/reward_creator.py`. The function can follow the schema:
+Users need to define custom reward functions in :code:`utils/reward_creator.py`. Those function should follow the schema:
 
 .. code-block:: python
 
@@ -58,7 +58,7 @@ users can define these reward functions in :code:`utils/reward_creator.py`. The 
         return custom_reward
 
 **Step 2:**
-Add the new custom reward function to the :code:`REWARD_METHOD_MAP` dictionary.
+Next, users need to add the new custom reward function(s) to the :code:`REWARD_METHOD_MAP` dictionary:
 
 .. code-block:: python
 
@@ -78,9 +78,9 @@ Add the new custom reward function to the :code:`REWARD_METHOD_MAP` dictionary.
     }
 
 
-A dictionary of environment parameters (:code:`reward_params`) is available to users in :code:`dcrl_env.py` or :code:`dcrl_eplus_env.py`.
-This dictionary consists of the information dictionary of each environment, and some other global variables such as time, day, carbon intensity, outside temperature, etc.
-If another user wants to add another parameter, the parameter must be added in the dictionary :code:`reward_params`. Using that, that variable will be visible in the reward function.
+A dictionary of the environment parameters (:code:`reward_params`) is available to users in :code:`dcrl_env.py` or :code:`dcrl_eplus_env.py`.
+This object consists of the information dictionary of each environment, and some other global variables such as time, day, carbon intensity, outside temperature, etc.
+If a user wants to add additional custom parameters, they must be added in the dictionary :code:`reward_params` so that those variables are visible in the reward function.
 Within the dictionary, the following environment parameters are available to users:
 
 .. csv-table::
