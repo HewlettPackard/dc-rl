@@ -13,7 +13,3 @@ tensorflow_probability
 # Sinergym requirements
 xlsxwriter
 opyplus
-
-#For evaluation only
-joblib
-tqdm
