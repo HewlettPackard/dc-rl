@@ -151,7 +151,7 @@
 </pre></div>
 </div>
 <p>In this example, <code class="code docutils literal notranslate"><span class="pre">test</span></code> is the default name of the experiment.</p>
-<p>A detailed description of the configurations are provided in the Usage section. The Default configurations in DCRL-green are as follows:</p>
+<p>A detailed description of the configurations are provided in the Usage section. The default configurations in DCRL-Green are:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 33%" />
@@ -167,23 +167,23 @@
 <tbody>
 <tr class="row-even"><td><p>Experiment name</p></td>
 <td><p>test</p></td>
-<td><p>Assigns a name for the experiment</p></td>
+<td><p>Name of the experiment</p></td>
 </tr>
 <tr class="row-odd"><td><p>Location</p></td>
 <td><p>ny</p></td>
-<td><p>Specifies the location of weather/ Carbon intensity data. “ny” represents New York</p></td>
+<td><p>Location of weather/ carbon intensity data. “ny” represents New York</p></td>
 </tr>
-<tr class="row-even"><td><p>Carbon Intensity</p></td>
+<tr class="row-even"><td><p>Carbon intensity</p></td>
 <td><p>NYIS_NG_&amp;_avgCI.csv</p></td>
-<td><p>The filename of the carbon-intensity data. The file format should be .csv</p></td>
+<td><p>Carbon-intensity data filename. The file format should be .csv</p></td>
 </tr>
 <tr class="row-odd"><td><p>Weather</p></td>
 <td><p>USA_NY_New.York-Kennedy.epw</p></td>
-<td><p>The filename of the weather data. The file format should be .epw</p></td>
+<td><p>Weather data filename. The file format should be .epw</p></td>
 </tr>
 <tr class="row-even"><td><p>Workload</p></td>
 <td><p>Alibaba_CPU_Data_Hourly_1.csv</p></td>
-<td><p>The filename of the workload data. The file format should be .csv</p></td>
+<td><p>DC workload data filename. The file format should be .csv</p></td>
 </tr>
 <tr class="row-odd"><td><p>Agents</p></td>
 <td><p>[“agents_ls” , “agents_dc” , “agents_bat”]</p></td>
@@ -195,7 +195,7 @@
 </tr>
 <tr class="row-odd"><td><p>individual_reward_weight</p></td>
 <td><p>0.8</p></td>
-<td><p><span class="math notranslate nohighlight">\(\eta\)</span> value for collaborative weight in rewards</p></td>
+<td><p><span class="math notranslate nohighlight">\(\eta\)</span> coeficient for degree of colaboration between agents</p></td>
 </tr>
 <tr class="row-even"><td><p>flexible_load</p></td>
 <td><p>0.1</p></td>
@@ -203,7 +203,7 @@
 </tr>
 <tr class="row-odd"><td><p>gamma</p></td>
 <td><p>0.99</p></td>
-<td><p>Represents the discount factor</p></td>
+<td><p>Discount factor</p></td>
 </tr>
 <tr class="row-even"><td><p>NUM_AGENTS</p></td>
 <td><p>3</p></td>
@@ -211,15 +211,15 @@
 </tr>
 <tr class="row-odd"><td><p>NUM_WORKERS</p></td>
 <td><p>24</p></td>
-<td><p>Specifies the number of parallel environments, it must be in multiples of 12</p></td>
+<td><p>Number of parallel processes, it must be in multiples of 12</p></td>
 </tr>
 <tr class="row-even"><td><p>Batch size</p></td>
 <td><p>6912</p></td>
-<td><p>Provides the batch size to sample from the replay memory</p></td>
+<td><p>Batch size to sample from the replay memory</p></td>
 </tr>
 <tr class="row-odd"><td><p>Learning rate</p></td>
 <td><p>1.00E-06</p></td>
-<td><p>the learning rate of the optimizer</p></td>
+<td><p>Learning rate of the optimizer</p></td>
 </tr>
 <tr class="row-even"><td><p>Algorithm</p></td>
 <td><p>PPO</p></td>

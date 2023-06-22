@@ -1,3 +1,7 @@
+"""
+Creates algorithm configuration for PPO and starts training process
+"""
+
 import os
 
 import ray
@@ -7,9 +11,6 @@ from dcrl_eplus_env import DCRLeplus
 from dcrl_env import DCRL
 from utils.rllib_callbacks import CustomCallbacks
 
-"""
-Creates algorithm configuration for PPO and starts training process
-"""
 # Data collection config
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7

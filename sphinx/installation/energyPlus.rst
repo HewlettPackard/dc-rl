@@ -54,4 +54,5 @@ If the docker container is launched successfully, the isolated :code:`sinergym` 
 
 For manual installation, please follow the instructions to `manually install <manual>`_ Sinergym. Make sure all the required components (custom Python environment, EnergyPlus, and BCVTB) are correctly installed.
 
+
 .. _manual: https://ugr-sail.github.io/sinergym/compilation/main/pages/installation.html#manual-installation

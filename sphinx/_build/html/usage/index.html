@@ -94,10 +94,9 @@
 <h1>Usage<a class="headerlink" href="#usage" title="Permalink to this headline"></a></h1>
 <section id="reinforcement-learning-algorithms">
 <h2>Reinforcement learning algorithms<a class="headerlink" href="#reinforcement-learning-algorithms" title="Permalink to this headline"></a></h2>
-<p>DCRL-Green supports the two multi-agent training approaches: independent learning approach such as IPPO <span id="id1">[<a class="reference internal" href="../references.html#id5" title="Christian Schroeder de Witt, Tarun Gupta, Denys Makoviichuk, Viktor Makoviychuk, Philip H. S. Torr, Mingfei Sun, and Shimon Whiteson. Is independent learning all you need in the starcraft multi-agent challenge? 2020. arXiv:2011.09533.">3</a>]</span>, IA2C that decompose the problem into single-agent tasks for learning
-and centralised learning approach such as MADDPG <span id="id2">[<a class="reference internal" href="../references.html#id6" title="Ryan Lowe, Yi Wu, Aviv Tamar, Jean Harb, Pieter Abbeel, and Igor Mordatch. Multi-agent actor-critic for mixed cooperative-competitive environments. 2020. arXiv:1706.02275.">5</a>]</span> that uses a centralised critic with decentralised execution.</p>
-<p>The following command can be used to run the MARL algorithm of choice:
-(For execution using EnergyPlus model, launch the <code class="code docutils literal notranslate"><span class="pre">Sinergym</span></code> environment before running the script (details can be found in <a class="reference internal" href="../installation/energyPlus.html#energyplus-enabled-dc-simulation-dcrleplus"><span class="std std-ref">EnergyPlus enabled DC simulation (DCRLeplus)</span></a>))</p>
+<p>DCRL-Green supports two multi-agent training approaches: independent learning approach such as IPPO <span id="id1">[<a class="reference internal" href="../references.html#id5" title="Christian Schroeder de Witt, Tarun Gupta, Denys Makoviichuk, Viktor Makoviychuk, Philip H. S. Torr, Mingfei Sun, and Shimon Whiteson. Is independent learning all you need in the starcraft multi-agent challenge? 2020. arXiv:2011.09533.">3</a>]</span>, IA2C that decompose the problem into single-agent tasks for learning
+and centralized learning approach such as MADDPG <span id="id2">[<a class="reference internal" href="../references.html#id6" title="Ryan Lowe, Yi Wu, Aviv Tamar, Jean Harb, Pieter Abbeel, and Igor Mordatch. Multi-agent actor-critic for mixed cooperative-competitive environments. 2020. arXiv:1706.02275.">5</a>]</span> that uses a centralised critic with decentralised execution.</p>
+<p>The following command can be used to run the MARL algorithm of choice:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 11%" />
@@ -145,6 +144,10 @@ and centralised learning approach such as MADDPG <span id="id2">[<a class="refer
 </table>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
+<p>For execution using EnergyPlus model, launch the <code class="code docutils literal notranslate"><span class="pre">Sinergym</span></code> environment before running the script (details can be found in <a class="reference internal" href="../installation/energyPlus.html#energyplus-enabled-dc-simulation-dcrleplus"><span class="std std-ref">EnergyPlus enabled DC simulation (DCRLeplus)</span></a>)</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>User configurations described in the following sections can be modified by directly editing the above python scripts.</p>
 </div>
 </section>
@@ -190,10 +193,10 @@ weather files collection. Users can upload weather dataset of choice in the repo
 </section>
 <section id="agent-configuration">
 <h2>Agent configuration<a class="headerlink" href="#agent-configuration" title="Permalink to this headline"></a></h2>
-<p>DCRL-Green supports three MARL agents to optimize energy usage and reduce carbon footprint of data centers. More details of the agents’ operations are discussed in <a class="reference internal" href="../overview/agents.html#agents"><span class="std std-ref">Agents</span></a> section. Based on the requirement, users can include agents of choice in the training script. The agents that are not involved in training will select the <code class="code docutils literal notranslate"><span class="pre">Idle</span></code> action by default and will not contribute to the optimization process. The variable <code class="code docutils literal notranslate"><span class="pre">&quot;agents&quot;</span></code> can be used to specify the required agents.</p>
+<p>DCRL-Green supports three MARL agents to optimize energy usage and reduce carbon footprint of data centers. More details of the agents’ operations are discussed in the <a class="reference internal" href="../overview/agents.html#agents"><span class="std std-ref">Agents</span></a> section. Based on the requirement, users can include agents of choice in the training script. The agents that are not involved in training will select the <code class="code docutils literal notranslate"><span class="pre">Idle</span></code> action by default and will not contribute to the optimization process. The dictionary entry <code class="code docutils literal notranslate"><span class="pre">'agents'</span></code> can be used to specify the required agents.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Agent names must be provided as a list of strings, where <code class="code docutils literal notranslate"><span class="pre">&quot;agent_ls&quot;</span></code>, <code class="code docutils literal notranslate"><span class="pre">&quot;agent_dc&quot;</span></code>, <code class="code docutils literal notranslate"><span class="pre">&quot;agent_bat&quot;</span></code> represents load shifting agent, DC cooling agent, battery control agent respectively</p>
+<p>Agent names must be provided as a list of strings, where <code class="code docutils literal notranslate"><span class="pre">'agent_ls'</span></code>, <code class="code docutils literal notranslate"><span class="pre">'agent_dc'</span></code>, <code class="code docutils literal notranslate"><span class="pre">'agent_bat'</span></code> represents load shifting agent, DC cooling agent, and battery control agent respectively.</p>
 </div>
 <p>Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;agents&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;agent_ls&#39;</span><span class="p">,</span><span class="s1">&#39;agent_dc&#39;</span><span class="p">,</span> <span class="s1">&#39;agent_bat&#39;</span><span class="p">]</span>
@@ -231,7 +234,7 @@ weather files collection. Users can upload weather dataset of choice in the repo
 <tr class="row-even"><td><p>IPPO, IA2C</p></td>
 <td><p><code class="code docutils literal notranslate"><span class="pre">use_gae</span></code></p></td>
 <td><p>TRUE</p></td>
-<td><p>If true, use the Generalized Advantage Estimator (GAE) with a value function</p></td>
+<td><p>Use the Generalized Advantage Estimator (GAE) with a value function</p></td>
 </tr>
 <tr class="row-odd"><td><p>IPPO, IA2C</p></td>
 <td><p><code class="code docutils literal notranslate"><span class="pre">train_batch_size</span></code></p></td>

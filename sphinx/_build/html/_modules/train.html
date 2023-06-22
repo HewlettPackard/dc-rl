@@ -96,6 +96,16 @@
     <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;latest_experiment&#39;</span><span class="p">,</span>
     <span class="n">overrides</span><span class="p">:</span> <span class="nb">dict</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Starts the training process for a given algorithm.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        algorithm (rllib.algorithm): RL algorithm to use for training.</span>
+<span class="sd">        config (algorithm_config): Algorithm training configuration.</span>
+<span class="sd">        results_dir (string): Directory to save the results</span>
+<span class="sd">        overrides (dict): Extra configuration</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Create a dummy environment to get obs. and action space</span>
     <span class="n">dummy_env</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">env</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">env_config</span><span class="p">)</span>
