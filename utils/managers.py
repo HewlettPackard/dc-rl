@@ -7,6 +7,12 @@ PATH = os.path.split(os.path.dirname(file_path))[0]
 
 class CoherentNoise:
     """Class to add coherent noise to the data.
+
+        Args:
+            base (List[float]): Base data
+            weight (float): Weight of the noise to be added
+            desired_std_dev (float, optional): Desired standard deviation. Defaults to 0.1.
+            scale (int, optional): Scale. Defaults to 1.
     """
     def __init__(self, base, weight, desired_std_dev=0.1, scale=1):
         """Initialize CoherentNoise class
@@ -23,6 +29,15 @@ class CoherentNoise:
         self.scale = scale
 
     def generate(self, n_steps):
+        """
+        Generate coherent noise 
+
+        Args:
+            n_steps (int): Length of the data to generate.
+
+        Returns:
+            numpy.ndarray: Array of generated coherent noise.
+        """
         steps = np.random.normal(loc=0, scale=self.scale, size=n_steps)
         random_walk = np.cumsum(self.weight * steps)
         random_walk_scaled = self.base + (random_walk / np.std(random_walk)) * self.desired_std_dev
@@ -81,6 +96,12 @@ def sc_obs(current_hour, current_day):
 
 
 class Time_Manager():
+    """Class to manage the time dimenssion over an episode
+
+        Args:
+            init_day (int, optional): Day to start from. Defaults to 0.
+            days_per_episode (int, optional): Number of days that an episode would last. Defaults to 30.
+    """
     def __init__(self, init_day=0, days_per_episode=30):
         """Class to manage the time dimenssion over an episode
 
@@ -129,6 +150,16 @@ class Time_Manager():
 
 # Class to manage CPU workload data
 class Workload_Manager():
+    """Manager of the DC workload
+
+        Args:
+            workload_filename (str, optional): Filename of the CPU data. Defaults to ''. Should be a .csv file containing the CPU hourly normalized workload data between 0 and 1. Should contains 'cpu_load' column.
+            init_day (int, optional): Initial day of the episode. Defaults to 0.
+            future_steps (int, optional): Number of steps of the workload forecast. Defaults to 4.
+            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
+            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
+            flexible_workload_ratio (float, optional): Ratio of the flexible workload amount. Defaults to 0.1.
+    """
     def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.001, desired_std_dev=0.025, flexible_workload_ratio=0.1):
         """Manager of the DC workload
 
@@ -222,6 +253,16 @@ class Workload_Manager():
 
 # Class to manage carbon intensity data
 class CI_Manager():
+    """Manager of the carbon intensity data
+
+        Args:
+            filename (str, optional): Filename of the CPU data. Defaults to ' '.
+            location (str, optional): Location identifier. Defaults to 'NYIS'.
+            init_day (int, optional): Initial day of the episode. Defaults to 0.
+            future_steps (int, optional): Number of steps of the CI forecast. Defaults to 4.
+            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
+            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
+    """
     def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5):
         """Manager of the carbon intesity data
 
@@ -323,6 +364,18 @@ class CI_Manager():
 # Where to obtain other weather files:
 # https://climate.onebuilding.org/
 class Weather_Manager():
+    """Manager of the weather data.
+       Where to obtain other weather files:
+       https://climate.onebuilding.org/
+
+        Args:
+            filename (str, optional): Filename of the weather data. Defaults to ''.
+            location (str, optional): Location identifier. Defaults to 'NY'.
+            init_day (int, optional): Initial day of the year. Defaults to 0.
+            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
+            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
+            temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.
+    """
     def __init__(self, filename='', location='NY', init_day=0, weight=0.01, desired_std_dev=0.5, temp_column=6):
         """Manager of the weather data.
 

@@ -89,6 +89,12 @@
 
 <div class="viewcode-block" id="CoherentNoise"><a class="viewcode-back" href="../../code/utils.html#utils.managers.CoherentNoise">[docs]</a><span class="k">class</span> <span class="nc">CoherentNoise</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to add coherent noise to the data.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base (List[float]): Base data</span>
+<span class="sd">            weight (float): Weight of the noise to be added</span>
+<span class="sd">            desired_std_dev (float, optional): Desired standard deviation. Defaults to 0.1.</span>
+<span class="sd">            scale (int, optional): Scale. Defaults to 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="n">desired_std_dev</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize CoherentNoise class</span>
@@ -163,6 +169,12 @@
 
 
 <div class="viewcode-block" id="Time_Manager"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Time_Manager">[docs]</a><span class="k">class</span> <span class="nc">Time_Manager</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to manage the time dimenssion over an episode</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            init_day (int, optional): Day to start from. Defaults to 0.</span>
+<span class="sd">            days_per_episode (int, optional): Number of days that an episode would last. Defaults to 30.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_day</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">days_per_episode</span><span class="o">=</span><span class="mi">30</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Class to manage the time dimenssion over an episode</span>
 
@@ -211,6 +223,16 @@
 
 <span class="c1"># Class to manage CPU workload data</span>
 <div class="viewcode-block" id="Workload_Manager"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Workload_Manager">[docs]</a><span class="k">class</span> <span class="nc">Workload_Manager</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manager of the DC workload</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            workload_filename (str, optional): Filename of the CPU data. Defaults to &#39;&#39;. Should be a .csv file containing the CPU hourly normalized workload data between 0 and 1. Should contains &#39;cpu_load&#39; column.</span>
+<span class="sd">            init_day (int, optional): Initial day of the episode. Defaults to 0.</span>
+<span class="sd">            future_steps (int, optional): Number of steps of the workload forecast. Defaults to 4.</span>
+<span class="sd">            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.</span>
+<span class="sd">            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.</span>
+<span class="sd">            flexible_workload_ratio (float, optional): Ratio of the flexible workload amount. Defaults to 0.1.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">workload_filename</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">init_day</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">future_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">desired_std_dev</span><span class="o">=</span><span class="mf">0.025</span><span class="p">,</span> <span class="n">flexible_workload_ratio</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Manager of the DC workload</span>
 
@@ -304,6 +326,16 @@
 
 <span class="c1"># Class to manage carbon intensity data</span>
 <div class="viewcode-block" id="CI_Manager"><a class="viewcode-back" href="../../code/utils.html#utils.managers.CI_Manager">[docs]</a><span class="k">class</span> <span class="nc">CI_Manager</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manager of the carbon intensity data</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str, optional): Filename of the CPU data. Defaults to &#39; &#39;.</span>
+<span class="sd">            location (str, optional): Location identifier. Defaults to &#39;NYIS&#39;.</span>
+<span class="sd">            init_day (int, optional): Initial day of the episode. Defaults to 0.</span>
+<span class="sd">            future_steps (int, optional): Number of steps of the CI forecast. Defaults to 4.</span>
+<span class="sd">            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.</span>
+<span class="sd">            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;NYIS&#39;</span><span class="p">,</span> <span class="n">init_day</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">future_steps</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">desired_std_dev</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Manager of the carbon intesity data</span>
 
@@ -405,6 +437,18 @@
 <span class="c1"># Where to obtain other weather files:</span>
 <span class="c1"># https://climate.onebuilding.org/</span>
 <div class="viewcode-block" id="Weather_Manager"><a class="viewcode-back" href="../../code/utils.html#utils.managers.Weather_Manager">[docs]</a><span class="k">class</span> <span class="nc">Weather_Manager</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manager of the weather data.</span>
+<span class="sd">       Where to obtain other weather files:</span>
+<span class="sd">       https://climate.onebuilding.org/</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            filename (str, optional): Filename of the weather data. Defaults to &#39;&#39;.</span>
+<span class="sd">            location (str, optional): Location identifier. Defaults to &#39;NY&#39;.</span>
+<span class="sd">            init_day (int, optional): Initial day of the year. Defaults to 0.</span>
+<span class="sd">            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.</span>
+<span class="sd">            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.</span>
+<span class="sd">            temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="s1">&#39;NY&#39;</span><span class="p">,</span> <span class="n">init_day</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">desired_std_dev</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">temp_column</span><span class="o">=</span><span class="mi">6</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Manager of the weather data.</span>
 

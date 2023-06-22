@@ -3,33 +3,30 @@ Getting Started
 ===============
 
 1. Basic example
-----------
+----------------
 
-To run the DCRL-Green environment to simulate one episode and view the roll-out information execute:
+Run the DCRL-Green environment to simulate one episode and view the roll-out information using the following command:
 
 .. code-block:: python
 
     python dcrl_env.py 
 
-.. note::
-   Make sure to always run code from  the :code:`dr-rl` directory.
-
-2. Example - Train the agents using PPO
+2. Train the agents
 -------------------
 
 Run the following commands to simulate the DC enivronment and optimize the agents with default configurations:
 
 2.1 Train using the DCRL environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
     python train_ppo.py 
 
 2.2 Train using the DCRLeplus environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To run DCRLeplus using a docker image, first launch the docker container by executing the command:
+If not done already, launch the docker container by executing the command:
 
 .. code-block:: console
 
@@ -56,7 +53,7 @@ Next, run the script:
    The :code:`episode_reward_mean` will display nan values for the first few iterations until 1 episode is completed
 
 2.3 Running in background mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you want to run the DCRL-Green framework in background mode use the following command:
 
@@ -64,10 +61,7 @@ If you want to run the DCRL-Green framework in background mode use the following
 
     nohup python PYTHON_SCRIPT > OUTPUT_FILE.txt  &
 
-
-
 where :code:`PYTHON_SCRIPT` is the script you want to run (e.g., :code:`train_ppo.py`) and :code:`OUTPUT_FILE` is the name of the file that will contain the output (e.g. :code:`latest_experiment_output`).
-
 
 3. Monitor the results
 ----------------------
@@ -83,7 +77,7 @@ Example:
 In this example, :code:`test` is the default name of the experiment.
 
 
-A detailed description of the configurations are provided in the Usage section. The Default configurations in DCRL-green are as follows:
+A detailed description of the configurations are provided in the Usage section. The default configurations in DCRL-Green are:
 
 .. csv-table::
    :file: tables/default_args.csv

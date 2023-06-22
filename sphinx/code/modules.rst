@@ -9,7 +9,6 @@ Class and member documentation
    dcrl_env
    dcrl_eplus_env
    envs
-   evaluate_model
    maddpg
    train
    train_a2c
