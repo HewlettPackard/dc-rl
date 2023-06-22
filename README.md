@@ -104,7 +104,7 @@ $ python train_a2c.py
 ```
 
 ### Training on the DCRLeplus environment
-First run the docker image that you previosuly downloaded:
+First, run the docker image that you previosuly downloaded:
 
 ```bash
 $ docker run -t -i -v $PWD:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
@@ -115,7 +115,7 @@ Finally to run DCRLeplus use:
 $ cd dc-rl
 $ EPLUS=1 python train_ppo.py
 ```
-Note that this will use ```PPO``` agents; for ```MADDPG``` use the ```train_maddpg.py``` Python script and for ```A2C``` use the ```train_a2c.py``` script.
+Note that this will use ```PPO``` agents; for ```MADDPG``` use the ```train_maddpg.py``` Python script and for ```A2C``` use the ```train_a2c.py``` script. Other algorithms can be used, it is only necessary to utilize the RLLib [algorithms](https://docs.ray.io/en/latest/rllib/rllib-algorithms.html).
 
 ### Running in Background Mode
 If you want to run the DCRL-Green framework in background mode use the following command:
