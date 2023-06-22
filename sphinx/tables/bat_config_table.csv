@@ -1,0 +1,4 @@
+BAT Configuration Variables,Default values,Source file,Description
+ :code:`n_fwd_steps`, 4,:code:`envs`/ :code:`bat_env_fwd_view.py`,Time window for scheduling: Researchers can adjust the time horizon in which the agent is aware of the CI and thus consider charge/discharge to optimize energy use and carbon footprint
+ :code:`max_bat_cap`, 2,:code:`envs`/ :code:`bat_env_fwd_view.py`,Maximum battery capacity in MW: Users can define the maximum capacity of the battery energy storage system
+ :code:`charging_rate`, 0.5,:code:`envs`/ :code:`bat_env_fwd_view.py`,Charging and discharging rates: Researchers can adjust parameters related to the battery charging and discharging process to study the impact of different rates on energy optimization and grid dependency

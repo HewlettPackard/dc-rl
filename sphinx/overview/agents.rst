@@ -18,9 +18,8 @@ DCRL-Green consists of multiple agents that work together to optimize energy usa
    Internal and external system dependencies
 
 
-========================
 Inter-Model Dependencies
-========================
+------------------------
 
 The agents in DCRL-Green operate collaboratively, where their actions and decisions are taken using shared information. The load shifting agent, DC energy optimizer agent, and battery energy storage agent rely on each other's outputs and feedback to optimize energy usage and reduce the carbon footprint of the data center. Here are the key inter-model dependencies:
 
@@ -34,9 +33,8 @@ The agents in DCRL-Green operate collaboratively, where their actions and decisi
 
 These inter-model dependencies allow the agents in DCRL-Green to collaborate and make informed decisions by considering the outputs and feedback from other agents. By leveraging these dependencies, the agents optimize energy usage, reduce the carbon footprint, and promote sustainability in data centers. It creates a holistic approach to data center management, where the actions of one agent affect the decisions and outcomes of other agents, leading to coordinated efforts in energy optimization.
 
-=============================
 Other Interesting Information
-=============================
+-----------------------------
 
 In addition to the collaborative MARL agents, DCRL-Green offers various customization options and features to further enhance the data center sustainability optimization process:
 

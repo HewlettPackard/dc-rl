@@ -60,11 +60,11 @@
 <li class="toctree-l4"><a class="reference internal" href="#configure-hvac-characteristics">3. Configure HVAC Characteristics</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="#configure-the-load-shifting-environment">Configure the Load Shifting Environment:</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#configure-the-battery-environment">Configure the Battery Environment:</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="agents.html">Agents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="agents.html#inter-model-dependencies">Inter-Model Dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="agents.html#other-interesting-information">Other Interesting Information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="observations.html">Observations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="actions.html">Actions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reward_function.html">Reward function</a></li>
@@ -103,7 +103,11 @@
              
   <section id="environment">
 <h1>Environment<a class="headerlink" href="#environment" title="Permalink to this headline"></a></h1>
-<p>DCRL-Green provides a simulation framework for Data Centers (DCs) and evaluates multi-objective, collaborative MARL agents in this environment.
+<p>DCRL-Green consists of multiple sub-environments that together form a comprehensive simulation framework for data centers. Each sub-environment focuses on a specific aspect of data center operations and includes adjustable parameters that allow researchers to customize the simulation according to their specific needs and research goals.
+The adjustable parameters vary depending on the sub-environment and enable researchers to investigate and optimize different components of data center sustainability.</p>
+<p>Here are the key sub-environments in DCRL-Green along with their adjustable parameters:</p>
+<p><strong>Data Center Environment:</strong>
+This sub-environment simulates the overall operation of the data center.
 Along with the flexibility to adjust other external settings such as the workload profile, the external weather pattern, and the grid carbon intensity (CI) as discussed in the <a class="reference internal" href="../usage/index.html#usage"><span class="std std-ref">Usage</span></a> section, it provides customizable a JSON object file for three main sections:</p>
 <ol class="arabic simple">
 <li><p>DC geometry (rows, racks, workload, CRAC characteristics)</p></li>
@@ -111,6 +115,23 @@ Along with the flexibility to adjust other external settings such as the workloa
 <li><p>HVAC characteristics (cooling mechanisms)</p></li>
 </ol>
 <p>The model calculates Total IT power, CRAC fan power, and CRAC evaporator power, enabling real-time calculations for energy optimization.</p>
+<p><strong>Load Shifting Environment:</strong>
+The load shifting sub-environment focuses on the scheduling and allocation of flexible workloads within the data center.
+Adjustable parameters in this sub-environment include:</p>
+<ol class="arabic simple">
+<li><p>Flexible workload ratio</p></li>
+<li><p>Time window for rescheduling</p></li>
+</ol>
+<p><strong>Battery Environment:</strong>
+This sub-environment models the battery energy storage system in the data center. Adjustable parameters in the battery environment include:</p>
+<ol class="arabic simple">
+<li><p>Maximum battery capacity</p></li>
+<li><p>Charging and discharging rates</p></li>
+<li><p>Time window for scheduling</p></li>
+</ol>
+<p>The adjustable parameters in each sub-environment allow researchers to explore different scenarios, evaluate the impact of various factors, and optimize data center sustainability. By adjusting these parameters, users can conduct comprehensive simulations, investigate optimization strategies, and customize the simulation environment to their specific research needs.</p>
+<p>It is worth mentioning that the adjustable parameters outlined above represent a subset of the available options in each sub-environment. DCRL-Green offers extensive flexibility and customization capabilities, providing researchers with a powerful platform to study and improve data center sustainability.</p>
+<p>Feel free to modify and enhance the content based on your specific sub-environments and adjustable parameters in DCRL-Green.</p>
 <section id="configure-the-dc-environment">
 <h2>Configure the DC Environment:<a class="headerlink" href="#configure-the-dc-environment" title="Permalink to this headline"></a></h2>
 <p>Users can configure the simulation of the DC environment to suit their requirements. It may be configured by modifying the <code class="code docutils literal notranslate"><span class="pre">utils/dc_config.json</span></code> file in the <a class="reference external" href="https://github.com/HewlettPackard/dc-rl/blob/main/utils/dc_config.json">GitHub</a> repository.</p>
@@ -293,6 +314,73 @@ at reference air flow rate</p></td>
 </tbody>
 </table>
 </section>
+</section>
+<section id="configure-the-load-shifting-environment">
+<h2>Configure the Load Shifting Environment:<a class="headerlink" href="#configure-the-load-shifting-environment" title="Permalink to this headline"></a></h2>
+<p>It may be configured by modifying the source code as shown below:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>LS Configuration Variables</p></th>
+<th class="head"><p>Default values</p></th>
+<th class="head"><p>Source file</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">flexible_workload_ratio</span></code></p></td>
+<td><p>0.1</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">envs</span></code>/ <code class="code docutils literal notranslate"><span class="pre">carbon_ls.py</span></code></p></td>
+<td><p>Percentage of the workload that can be rescheduled within a given time horizon</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">future_steps</span></code></p></td>
+<td><p>4</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">envs</span></code>/ <code class="code docutils literal notranslate"><span class="pre">carbon_ls.py</span></code></p></td>
+<td><p>Time window for rescheduling: Researchers can adjust the time horizon in which the agent is aware of the CI and thus consider shifiting the flexible workload to optimize energy use and carbon footprint</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="configure-the-battery-environment">
+<h2>Configure the Battery Environment:<a class="headerlink" href="#configure-the-battery-environment" title="Permalink to this headline"></a></h2>
+<p>It may be configured by modifying the source code as shown below:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+<col style="width: 25%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>BAT Configuration Variables</p></th>
+<th class="head"><p>Default values</p></th>
+<th class="head"><p>Source file</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">n_fwd_steps</span></code></p></td>
+<td><p>4</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">envs</span></code>/ <code class="code docutils literal notranslate"><span class="pre">bat_env_fwd_view.py</span></code></p></td>
+<td><p>Time window for scheduling: Researchers can adjust the time horizon in which the agent is aware of the CI and thus consider charge/discharge to optimize energy use and carbon footprint</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">max_bat_cap</span></code></p></td>
+<td><p>2</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">envs</span></code>/ <code class="code docutils literal notranslate"><span class="pre">bat_env_fwd_view.py</span></code></p></td>
+<td><p>Maximum battery capacity in MW: Users can define the maximum capacity of the battery energy storage system</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">charging_rate</span></code></p></td>
+<td><p>0.5</p></td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">envs</span></code>/ <code class="code docutils literal notranslate"><span class="pre">bat_env_fwd_view.py</span></code></p></td>
+<td><p>Charging and discharging rates: Researchers can adjust parameters related to the battery charging and discharging process to study the impact of different rates on energy optimization and grid dependency</p></td>
+</tr>
+</tbody>
+</table>
 </section>
 </section>
 
