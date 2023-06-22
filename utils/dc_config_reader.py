@@ -1,3 +1,7 @@
+"""
+This file is used to read the data center configuration from  user inputs provided inside dc_config.json. It also performs some auxiliary steps to calculate the server power specifications based on the given parameters.
+"""
+
 import json
 
 import os

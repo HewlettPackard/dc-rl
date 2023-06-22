@@ -1,3 +1,6 @@
+"""
+This file contains the data center configurations that may be customized by the user for designing the data center. The use of this file has been deprecated. Any changes to this file will not be reflected in the actual data center design. Instead, modify `utils/dc_config.json` to design the data center.
+"""
 ##################################################################
 #################### GEOMETRY DEPENDENT PARAMETERS ###############
 ##################################################################

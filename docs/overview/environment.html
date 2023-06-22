@@ -55,8 +55,8 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Overview</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Environment</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#configure-the-dc-environment">Configure the DC Environment:</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#configure-dc-geometry">1. Configure DC Geometry</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#configure-server-characteristics">2. Configure Server Characteristics</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-dc-geometry">1. Configure DC geometry</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#configure-server-characteristics">2. Configure server characteristics</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#configure-hvac-characteristics">3. Configure HVAC Characteristics</a></li>
 </ul>
 </li>
@@ -101,26 +101,26 @@
              
   <section id="environment">
 <h1>Environment<a class="headerlink" href="#environment" title="Permalink to this headline"></a></h1>
-<p>DCRL-Green provides a simulation framework for Data Centers and evaluates multi objective, collaborative MARL agents in this environment.
-Along with the flexibility to adjust other external settings, such as the workload profile, the external weather pattern, and the grid carbon intensity (CI) as discussed in <a class="reference internal" href="../usage/index.html#usage"><span class="std std-ref">Usage</span></a>, it provides customizable a JSON object file for three main sections:</p>
+<p>DCRL-Green provides a simulation framework for Data Centers (DCs) and evaluates multi-objective, collaborative MARL agents in this environment.
+Along with the flexibility to adjust other external settings such as the workload profile, the external weather pattern, and the grid carbon intensity (CI) as discussed in the <a class="reference internal" href="../usage/index.html#usage"><span class="std std-ref">Usage</span></a> section, it provides customizable a JSON object file for three main sections:</p>
 <ol class="arabic simple">
-<li><p>DC Geometry (rows, racks, workload, CRAC characteristics)</p></li>
-<li><p>Server Characteristics (power consumption)</p></li>
-<li><p>HVAC Characteristics (cooling mechanisms)</p></li>
+<li><p>DC geometry (rows, racks, workload, CRAC characteristics)</p></li>
+<li><p>Server characteristics (power consumption)</p></li>
+<li><p>HVAC characteristics (cooling mechanisms)</p></li>
 </ol>
-<p>The model calculates Total IT power, CRAC Fan power, and CRAC Evaporator power, enabling real-time calculations for energy optimization.</p>
+<p>The model calculates Total IT power, CRAC fan power, and CRAC evaporator power, enabling real-time calculations for energy optimization.</p>
 <section id="configure-the-dc-environment">
 <h2>Configure the DC Environment:<a class="headerlink" href="#configure-the-dc-environment" title="Permalink to this headline"></a></h2>
-<p>Users can configure the simulation of the DC environment to suit their requirements. It may be configured by modifying the <code class="code docutils literal notranslate"><span class="pre">utils/dc_config.json</span></code> file in the <a class="reference external" href="https://github.com/HewlettPackard/dc-rl/blob/main/utils/dc_config.json">Github</a> repository.</p>
+<p>Users can configure the simulation of the DC environment to suit their requirements. It may be configured by modifying the <code class="code docutils literal notranslate"><span class="pre">utils/dc_config.json</span></code> file in the <a class="reference external" href="https://github.com/HewlettPackard/dc-rl/blob/main/utils/dc_config.json">GitHub</a> repository.</p>
 <figure class="align-center" id="id1">
-<a class="reference internal image-reference" href="../_images/Labeled_dc_view_2.png"><img alt="Data Center View in 6Sigma DCX from a given configuration file" src="../_images/Labeled_dc_view_2.png" style="width: 667.0px; height: 413.8px;" /></a>
+<a class="reference internal image-reference" href="../_images/Labeled_dc_view_2.png"><img alt="Data center view in 6Sigma DCX from a given configuration file" src="../_images/Labeled_dc_view_2.png" style="width: 667.0px; height: 413.8px;" /></a>
 <figcaption>
-<p><span class="caption-text">Data Center View in 6Sigma DCX from a given configuration file</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Data center view in 6Sigma DCX from a given configuration file</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
 </figcaption>
 </figure>
 <section id="configure-dc-geometry">
-<h3>1. Configure DC Geometry<a class="headerlink" href="#configure-dc-geometry" title="Permalink to this headline"></a></h3>
-<p>The following DC specifications could be modified under the <code class="code docutils literal notranslate"><span class="pre">data_center_configuration</span></code> subsection as follows:</p>
+<h3>1. Configure DC geometry<a class="headerlink" href="#configure-dc-geometry" title="Permalink to this headline"></a></h3>
+<p>The following DC specifications could be modified under the <code class="code docutils literal notranslate"><span class="pre">data_center_configuration</span></code> subsection:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 33%" />
@@ -168,8 +168,8 @@ CRAC return temperature</p></td>
 </table>
 </section>
 <section id="configure-server-characteristics">
-<h3>2. Configure Server Characteristics<a class="headerlink" href="#configure-server-characteristics" title="Permalink to this headline"></a></h3>
-<p>The following DC specifications could be modified under the <code class="code docutils literal notranslate"><span class="pre">server_characteristics</span></code> subsection as follows:</p>
+<h3>2. Configure server characteristics<a class="headerlink" href="#configure-server-characteristics" title="Permalink to this headline"></a></h3>
+<p>The following DC specifications could be modified under the <code class="code docutils literal notranslate"><span class="pre">server_characteristics</span></code> subsection:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 33%" />
@@ -235,7 +235,7 @@ NUM_ROWS*NUM_RACKS_PER_ROW)</p></td>
 </section>
 <section id="configure-hvac-characteristics">
 <h3>3. Configure HVAC Characteristics<a class="headerlink" href="#configure-hvac-characteristics" title="Permalink to this headline"></a></h3>
-<p>The following DC specifications could be modified under the <code class="code docutils literal notranslate"><span class="pre">hvac_configuration</span></code> subsection as follows:</p>
+<p>The following DC specifications could be modified under the <code class="code docutils literal notranslate"><span class="pre">hvac_configuration</span></code> subsection:</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 33%" />

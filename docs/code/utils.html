@@ -199,9 +199,11 @@
 </section>
 <section id="module-utils.dc_config">
 <span id="utils-dc-config-module"></span><h2>utils.dc_config module<a class="headerlink" href="#module-utils.dc_config" title="Permalink to this headline"></a></h2>
+<p>This file contains the data center configurations that may be customized by the user for designing the data center. The use of this file has been deprecated. Any changes to this file will not be reflected in the actual data center design. Instead, modify <cite>utils/dc_config.json</cite> to design the data center.</p>
 </section>
 <section id="module-utils.dc_config_reader">
 <span id="utils-dc-config-reader-module"></span><h2>utils.dc_config_reader module<a class="headerlink" href="#module-utils.dc_config_reader" title="Permalink to this headline"></a></h2>
+<p>This file is used to read the data center configuration from  user inputs provided inside dc_config.json. It also performs some auxiliary steps to calculate the server power specifications based on the given parameters.</p>
 </section>
 <section id="module-utils.helper_methods">
 <span id="utils-helper-methods-module"></span><h2>utils.helper_methods module<a class="headerlink" href="#module-utils.helper_methods" title="Permalink to this headline"></a></h2>
@@ -509,7 +511,19 @@ float: Normalized carbon intensity at current time step and it’s forecast</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.managers.CoherentNoise.generate">
 <span class="sig-name descname"><span class="pre">generate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n_steps</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CoherentNoise.generate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CoherentNoise.generate" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Generate coherent noise</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>n_steps</strong> (<em>int</em>) – Length of the data to generate.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Array of generated coherent noise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>numpy.ndarray</p>
+</dd>
+</dl>
+</dd></dl>
 
 </dd></dl>
 
@@ -879,7 +893,19 @@ total_energy_consumption (float): Total energy consumption of the data center.</
 <dl class="py function">
 <dt class="sig sig-object py" id="utils.reward_creator.get_reward_method">
 <span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">get_reward_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reward_method</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default_dc_reward'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/reward_creator.html#get_reward_method"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.get_reward_method" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Maps the string identifier to the reward function</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>reward_method</strong> (<em>string</em>) – Identifier for the reward function.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Reward function.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>function</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="utils.reward_creator.renewable_energy_reward">
