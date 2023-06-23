@@ -17,8 +17,14 @@ from utils.base_agents import (BaseBatteryAgent, BaseHVACAgent,
 from utils.managers import CI_Manager, Time_Manager, Workload_Manager
 from utils.utils_cf import get_init_day, obtain_paths
 
+#import logging
+import warnings
 
 class DCRLeplus(MultiAgentEnv):
+    #logging.disable(logging.WARNING)
+    warnings.filterwarnings("ignore", category=UserWarning)
+    warnings.filterwarnings("ignore", category=FutureWarning)
+    warnings.filterwarnings("ignore", category=DeprecationWarning)
     def __init__(self, env_config: Union[dict, EnvContext] = {}):
         '''
         Args:
