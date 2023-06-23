@@ -4,7 +4,8 @@ from tabulate import tabulate
 
 import ray
 
-CHECKPOINT = './results/test/PPO_DCRL_4b751_00000_0_2023-06-19_06-22-09/checkpoint_002740'
+CHECKPOINT = './results/test/PPO_DCRLeplus_66c2e_00000_0_2023-06-14_18-08-01/checkpoint_000015'
+
 NUM_RUNS = 4
 
 if __name__ == '__main__':

@@ -27,7 +27,7 @@ The following command can be used to run the MARL algorithm of choice:
 +--------+---------------------------+------------------------------------+
 
 .. note::
-   For execution using EnergyPlus model, launch the :code:`Sinergym` environment before running the script (details can be found in :ref:`EnergyPlus enabled DC simulation (DCRLeplus)`)
+   For execution using EnergyPlus model, launch Docker before running the script (details can be found in :ref:`EnergyPlus enabled DC simulation (DCRLeplus)`)
 
 .. note::
    User configurations described in the following sections can be modified by directly editing the above python scripts.

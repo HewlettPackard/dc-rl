@@ -1,0 +1,3 @@
+LS Configuration Variables,Default values,Source file,Description
+ :code:`flexible_workload_ratio` , 0.1, :code:`envs`/ :code:`carbon_ls.py`,Percentage of the workload that can be rescheduled within a given time horizon
+ :code:`future_steps` , 4, :code:`envs`/ :code:`carbon_ls.py`,Forecast length: Researchers can adjust the time horizon in which the agent is aware of the CI and thus consider shifting the flexible workload to optimize energy use and carbon footprint

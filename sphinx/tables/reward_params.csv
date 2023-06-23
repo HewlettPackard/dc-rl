@@ -1,8 +1,8 @@
 Parameter,Example,Description
 :code:`bat_action`,0,Action of the battery agent
 :code:`bat_SOC`,0.15,Battery state of charge
-:code:`bat_CO2_footprint`,380899.11,CO2 Footprint obtained after the battery action
-:code:`bat_avg_CI`,500.63,Carbon Intensity used in Battery (same as current CI)
+:code:`bat_CO2_footprint`,380899.11,CO2 footprint obtained after the battery action
+:code:`bat_avg_CI`,500.63,Carbon Intensity used in battery (same as current CI)
 :code:`bat_total_energy_without_battery_KWh`,610.82,Total energy (KWh) consumed before battery action
 :code:`bat_total_energy_with_battery_KWh`,760.82,Total energy (KWh) consumed after battery action
 :code:`bat_max_bat_cap`,2,Battery maximum capacity (KWh)
@@ -16,15 +16,15 @@ Parameter,Example,Description
 :code:`ls_unasigned_day_load_left`,0,Total end of the day unassigned flexible workload
 :code:`ls_penalty_flag`,FALSE,"Flag to indicate that at the end of the day, there is some workload unassigned."
 :code:`dc_ITE_total_power_kW`,2443.31,IT total power consumption (KW)
-:code:`dc_HVAC_total_power_kW`,0,"HVAC total power consumption (KW). It doesn't consider the CRAC Fan load, CRAC Cooling load, or the Compressor load because these have constant  power consumption."
+:code:`dc_HVAC_total_power_kW`,0,"HVAC total power consumption (KW). It doesn't consider the CRAC fan load, CRAC cooling load, or the compressor load because these have constant  power consumption."
 :code:`dc_total_power_kW`,2443.31,Total power consumption (KW)
 :code:`dc_energy_lb_kW`,40000,Lower bound in the normalization of the datacenter energy consumption (W)
 :code:`dc_energy_ub_kW`,160000,Upper bound in the normalization of the datacenter energy consumption (W)
 :code:`dc_crac_setpoint_delta`,-5,HVAC temperature delta change in the setpoint
-:code:`dc_crac_setpoint`,15,HVAC current temperature setpoint (C )
-:code:`dc_cpu_workload_percent`,0.69,Normalized shifted workload (%) that the dc agent is using. Is the same as ls_shifted_workload
-:code:`dc_int_temperature`,29.60,Room temperature (C ) 
-:code:`outside_temp`,3.50,Outside temperature (C ) 
+:code:`dc_crac_setpoint`,15,HVAC current temperature setpoint (C)
+:code:`dc_cpu_workload_percent`,0.69,Normalized shifted workload (%) that the dc agent is using (same as ls_shifted_workload)
+:code:`dc_int_temperature`,29.60,Room temperature (C) 
+:code:`outside_temp`,3.50,Outside temperature (C) 
 :code:`day_of_the_year`,0,Day of the year
 :code:`hour`,0.25,Hour.Fraction of the hour.
 :code:`day_workload`,0,Total flexible workload at the start of the day

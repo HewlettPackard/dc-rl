@@ -18,9 +18,8 @@ DCRL-Green consists of multiple agents that work together to optimize energy usa
    Internal and external system dependencies
 
 
-========================
 Inter-Model Dependencies
-========================
+------------------------
 
 The agents in DCRL-Green operate collaboratively, where their actions and decisions are taken using shared information. The load shifting agent, DC energy optimizer agent, and battery energy storage agent rely on each other's outputs and feedback to optimize energy usage and reduce the carbon footprint of the data center. Here are the key inter-model dependencies:
 
@@ -34,15 +33,14 @@ The agents in DCRL-Green operate collaboratively, where their actions and decisi
 
 These inter-model dependencies allow the agents in DCRL-Green to collaborate and make informed decisions by considering the outputs and feedback from other agents. By leveraging these dependencies, the agents optimize energy usage, reduce the carbon footprint, and promote sustainability in data centers. It creates a holistic approach to data center management, where the actions of one agent affect the decisions and outcomes of other agents, leading to coordinated efforts in energy optimization.
 
-=============================
 Other Interesting Information
-=============================
+-----------------------------
 
 In addition to the collaborative MARL agents, DCRL-Green offers various customization options and features to further enhance the data center sustainability optimization process:
 
 - Customization of DC Design: DCRL-Green allows users to specify individual servers within racks and customize the layout and characteristics of the data center infrastructure. This flexibility enables researchers and developers to simulate different data center configurations and evaluate the impact of different designs on energy consumption and sustainability.
 
- - Customization of Battery Model: DCRL-Green provides the flexibility to customize the battery model within the battery energy storage agent. Users can specify different battery types, capacities, charging and discharging rates, and other parameters based on their specific requirements. This customization allows researchers and developers to study the performance of different battery technologies and configurations in improving energy efficiency and reducing reliance on the grid.
+- Customization of Battery Model: DCRL-Green provides the flexibility to customize the battery model within the battery energy storage agent. Users can specify different battery types, capacities, charging and discharging rates, and other parameters based on their specific requirements. This customization allows researchers and developers to study the performance of different battery technologies and configurations in improving energy efficiency and reducing reliance on the grid.
 
 - Configurable Simulation Parameters: DCRL-Green provides configurable simulation parameters that allow users to adjust the simulation duration, time granularity, and other settings according to their specific research needs. This flexibility enables researchers to conduct in-depth analyses, such as long-term performance evaluations, sensitivity studies, and optimization experiments.
 

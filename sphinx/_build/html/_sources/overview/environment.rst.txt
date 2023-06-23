@@ -2,7 +2,13 @@
 Environment
 ===========
 
-DCRL-Green provides a simulation framework for Data Centers (DCs) and evaluates multi-objective, collaborative MARL agents in this environment. 
+DCRL-Green consists of multiple sub-environments that together form a comprehensive simulation framework for data centers. Each sub-environment focuses on a specific aspect of data center operations and includes adjustable parameters that allow researchers to customize the simulation according to their specific needs and research goals.
+The adjustable parameters vary depending on the sub-environment and enable researchers to investigate and optimize different components of data center sustainability. 
+
+Here are the key sub-environments in DCRL-Green along with their adjustable parameters:
+
+**Data Center Environment:**
+This sub-environment simulates the overall operation of the data center.
 Along with the flexibility to adjust other external settings such as the workload profile, the external weather pattern, and the grid carbon intensity (CI) as discussed in the :ref:`Usage` section, it provides customizable a JSON object file for three main sections:
 
 1. DC geometry (rows, racks, workload, CRAC characteristics)
@@ -10,6 +16,26 @@ Along with the flexibility to adjust other external settings such as the workloa
 3. HVAC characteristics (cooling mechanisms)
 
 The model calculates Total IT power, CRAC fan power, and CRAC evaporator power, enabling real-time calculations for energy optimization.
+
+**Load Shifting Environment:**
+The load shifting sub-environment focuses on the scheduling and allocation of flexible workloads within the data center. 
+Adjustable parameters in this sub-environment include:
+
+1. Flexible workload ratio
+2. Time window for rescheduling
+
+**Battery Environment:**
+This sub-environment models the battery energy storage system in the data center. Adjustable parameters in the battery environment include:
+
+1. Maximum battery capacity
+2. Charging and discharging rates
+3. Time window for scheduling
+
+The adjustable parameters in each sub-environment allow researchers to explore different scenarios, evaluate the impact of various factors, and optimize data center sustainability. By adjusting these parameters, users can conduct comprehensive simulations, investigate optimization strategies, and customize the simulation environment to their specific research needs.
+
+It is worth mentioning that the adjustable parameters outlined above represent a subset of the available options in each sub-environment. DCRL-Green offers extensive flexibility and customization capabilities, providing researchers with a powerful platform to study and improve data center sustainability.
+
+Feel free to modify and enhance the content based on your specific sub-environments and adjustable parameters in DCRL-Green.
 
 Configure the DC Environment:
 -----------------------------
@@ -50,4 +76,22 @@ The following DC specifications could be modified under the :code:`hvac_configur
 
 .. csv-table::
    :file: ../tables/DC_hvac_chars.csv
+   :header-rows: 1
+
+Configure the Load Shifting Environment:
+----------------------------------------
+
+It may be configured by modifying the source code as shown below:
+
+.. csv-table::
+   :file: ../tables/ls_config_table.csv
+   :header-rows: 1
+
+Configure the Battery Environment:
+----------------------------------
+
+It may be configured by modifying the source code as shown below:
+
+.. csv-table::
+   :file: ../tables/bat_config_table.csv
    :header-rows: 1

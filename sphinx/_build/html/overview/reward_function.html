@@ -55,8 +55,6 @@
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Overview</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="environment.html">Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="agents.html">Agents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="agents.html#inter-model-dependencies">Inter-Model Dependencies</a></li>
-<li class="toctree-l2"><a class="reference internal" href="agents.html#other-interesting-information">Other Interesting Information</a></li>
 <li class="toctree-l2"><a class="reference internal" href="observations.html">Observations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="actions.html">Actions</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Reward function</a><ul>
@@ -131,12 +129,12 @@
 </tr>
 </tbody>
 </table>
-<p>Total EC refers o the total building energy consumption (HVAC+IT), CI is the carbon intensity in the power grid indicating the inverse of the availability of green energy, and UL refers to the amount of unassigned flexible workload.
+<p>Total EC refers to the total building energy consumption (HVAC+IT), CI is the carbon intensity in the power grid indicating the inverse of the availability of green energy, and UL refers to the amount of unassigned flexible computational workload.
 A penalty is attributed to the load shifting agent if it fails to schedule all the required load within the time horizon N.</p>
 </section>
 <section id="collaborative-rewards">
 <h2>Collaborative rewards<a class="headerlink" href="#collaborative-rewards" title="Permalink to this headline"></a></h2>
-<p>The reward-sharing mechanism allows the agents to estimate the feedback from their actions in other environments.</p>
+<p>The reward-sharing mechanism allows the agents to estimate the feedback from their actions in other environments. Users have an option to choose the level of colaboration between the agents. This can be done by specifying the <span class="math notranslate nohighlight">\(\eta\)</span> value in the script.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 50%" />
@@ -165,7 +163,7 @@ A penalty is attributed to the load shifting agent if it fails to schedule all t
 </tr>
 </tbody>
 </table>
-<p>Users have an option to choose between the two reward mechanisms. This can be done by specifying the <span class="math notranslate nohighlight">\(\eta\)</span> value in the script.</p>
+<p>Example <span class="math notranslate nohighlight">\(\eta\)</span> values to set up a collaborative, independent and custom weighted environment are given in the table below. The higher the value of <span class="math notranslate nohighlight">\(\eta\)</span>, the less collaboration between the agents in the environment.</p>
 <table class="docutils align-default">
 <colgroup>
 <col style="width: 29%" />
@@ -201,9 +199,9 @@ A penalty is attributed to the load shifting agent if it fails to schedule all t
 </section>
 <section id="custom-rewards">
 <h2>Custom rewards<a class="headerlink" href="#custom-rewards" title="Permalink to this headline"></a></h2>
-<p>DCRL-Green inludes an option to include custom rewards to match user’s the desired optimization objective.</p>
+<p>DCRL-Green inludes an option to include custom rewards to match user’s optimization objectives.</p>
 <p><strong>Step 1:</strong>
-users can define these reward functions in <code class="code docutils literal notranslate"><span class="pre">utils/reward_creator.py</span></code>. The function can follow the schema:</p>
+Users need to define custom reward functions in <code class="code docutils literal notranslate"><span class="pre">utils/reward_creator.py</span></code>. Those function should follow the schema:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">custom_agent_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
     <span class="c1">#read reward input parameters from dict object</span>
     <span class="c1">#custom reward calculations</span>
@@ -212,7 +210,7 @@ users can define these reward functions in <code class="code docutils literal no
 </pre></div>
 </div>
 <p><strong>Step 2:</strong>
-Add the new custom reward function to the <code class="code docutils literal notranslate"><span class="pre">REWARD_METHOD_MAP</span></code> dictionary.</p>
+Next, users need to add the new custom reward function(s) to the <code class="code docutils literal notranslate"><span class="pre">REWARD_METHOD_MAP</span></code> dictionary:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">REWARD_METHOD_MAP</span> <span class="o">=</span> <span class="p">{</span>
 <span class="s1">&#39;default_dc_reward&#39;</span> <span class="p">:</span> <span class="n">default_dc_reward</span><span class="p">,</span>
 <span class="s1">&#39;default_bat_reward&#39;</span><span class="p">:</span> <span class="n">default_bat_reward</span><span class="p">,</span>
@@ -229,9 +227,9 @@ Add the new custom reward function to the <code class="code docutils literal not
 <span class="p">}</span>
 </pre></div>
 </div>
-<p>A dictionary of environment parameters (<code class="code docutils literal notranslate"><span class="pre">reward_params</span></code>) is available to users in <code class="code docutils literal notranslate"><span class="pre">dcrl_env.py</span></code> or <code class="code docutils literal notranslate"><span class="pre">dcrl_eplus_env.py</span></code>.
-This dictionary consists of the information dictionary of each environment, and some other global variables such as time, day, carbon intensity, outside temperature, etc.
-If another user wants to add another parameter, the parameter must be added in the dictionary <code class="code docutils literal notranslate"><span class="pre">reward_params</span></code>. Using that, that variable will be visible in the reward function.
+<p>A dictionary of the environment parameters (<code class="code docutils literal notranslate"><span class="pre">reward_params</span></code>) is available to users in <code class="code docutils literal notranslate"><span class="pre">dcrl_env.py</span></code> or <code class="code docutils literal notranslate"><span class="pre">dcrl_eplus_env.py</span></code>.
+This object consists of the information dictionary of each environment, and some other global variables such as time, day, carbon intensity, outside temperature, etc.
+If a user wants to add additional custom parameters, they must be added in the dictionary <code class="code docutils literal notranslate"><span class="pre">reward_params</span></code> so that those variables are visible in the reward function.
 Within the dictionary, the following environment parameters are available to users:</p>
 <table class="docutils align-default">
 <colgroup>
@@ -256,11 +254,11 @@ Within the dictionary, the following environment parameters are available to use
 </tr>
 <tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_CO2_footprint</span></code></p></td>
 <td><p>380899.11</p></td>
-<td><p>CO2 Footprint obtained after the battery action</p></td>
+<td><p>CO2 footprint obtained after the battery action</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_avg_CI</span></code></p></td>
 <td><p>500.63</p></td>
-<td><p>Carbon Intensity used in Battery (same as current CI)</p></td>
+<td><p>Carbon Intensity used in battery (same as current CI)</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_total_energy_without_battery_KWh</span></code></p></td>
 <td><p>610.82</p></td>
@@ -316,7 +314,7 @@ Within the dictionary, the following environment parameters are available to use
 </tr>
 <tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_HVAC_total_power_kW</span></code></p></td>
 <td><p>0</p></td>
-<td><p>HVAC total power consumption (KW). It doesn’t consider the CRAC Fan load, CRAC Cooling load, or the Compressor load because these have constant  power consumption.</p></td>
+<td><p>HVAC total power consumption (KW). It doesn’t consider the CRAC fan load, CRAC cooling load, or the compressor load because these have constant  power consumption.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_total_power_kW</span></code></p></td>
 <td><p>2443.31</p></td>
@@ -336,19 +334,19 @@ Within the dictionary, the following environment parameters are available to use
 </tr>
 <tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_crac_setpoint</span></code></p></td>
 <td><p>15</p></td>
-<td><p>HVAC current temperature setpoint (C )</p></td>
+<td><p>HVAC current temperature setpoint (C)</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_cpu_workload_percent</span></code></p></td>
 <td><p>0.69</p></td>
-<td><p>Normalized shifted workload (%) that the dc agent is using. Is the same as ls_shifted_workload</p></td>
+<td><p>Normalized shifted workload (%) that the dc agent is using (same as ls_shifted_workload)</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_int_temperature</span></code></p></td>
 <td><p>29.60</p></td>
-<td><p>Room temperature (C )</p></td>
+<td><p>Room temperature (C)</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">outside_temp</span></code></p></td>
 <td><p>3.50</p></td>
-<td><p>Outside temperature (C )</p></td>
+<td><p>Outside temperature (C)</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">day_of_the_year</span></code></p></td>
 <td><p>0</p></td>
@@ -368,9 +366,9 @@ Within the dictionary, the following environment parameters are available to use
 </tr>
 </tbody>
 </table>
-<p>Depending on the objective and customized requirements, the user can use a combination of these parameters to define their customized rewards, or use other reward functions already provided.</p>
+<p>Depending on the objective and requirements, users can utilize a combination of these parameters to define their customized reward functions, or use one of already provided reward functions.</p>
 <p>Some examples of custom rewards are listed below:</p>
-<p><em>Example 1</em></p>
+<p><em>Example 1: Reward function based on power usage effectivness (PUE)</em></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">energy_PUE_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates a reward value based on Power Usage Effectiveness (PUE).</span>
@@ -399,9 +397,9 @@ Within the dictionary, the following environment parameters are available to use
 <p><em>How to use this custom reward function</em></p>
 <p>To use this custom reward function, the reward function must be declared in the <code class="code docutils literal notranslate"><span class="pre">REWARD_METHOD_MAP</span></code>.
 In this case, by default, the reward function is already declared as <code class="code docutils literal notranslate"><span class="pre">'energy_PUE_reward'</span> <span class="pre">:</span> <span class="pre">energy_PUE_reward,</span></code>.
-Therefore, to use the reward function as a reward function of an agent (i.e., agent dc, the agent that modifies the HVAC setpoint), in the algorithm definition (i.e., <code class="code docutils literal notranslate"><span class="pre">train_ppo.py</span></code>),
-the reward definition of the dc agent must be declared as <code class="code docutils literal notranslate"><span class="pre">dc_reward:energy_PUE_reward</span></code> within the env_config dictionary.</p>
-<p>The following piece of code show how to declare the <code class="code docutils literal notranslate"><span class="pre">'energy_PUE_reward'</span></code> as reward function for the dc agent:</p>
+Therefore, to use the function as a reward function of an agent (i.e., <code class="code docutils literal notranslate"><span class="pre">agent_dc</span></code>, the agent that modifies the HVAC setpoint), in the algorithm definition (i.e., <code class="code docutils literal notranslate"><span class="pre">train_ppo.py</span></code>),
+the reward definition of the dc agent must be declared as <code class="code docutils literal notranslate"><span class="pre">dc_reward:energy_PUE_reward</span></code> within the <code class="code docutils literal notranslate"><span class="pre">env_config</span></code> dictionary.</p>
+<p>The following piece of code show how to declare the <code class="code docutils literal notranslate"><span class="pre">'energy_PUE_reward'</span></code> as reward function for the DC agent:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">CONFIG</span> <span class="o">=</span> <span class="p">(</span>
     <span class="n">PPOConfig</span><span class="p">()</span>
     <span class="o">.</span><span class="n">environment</span><span class="p">(</span>
@@ -419,8 +417,7 @@ the reward definition of the dc agent must be declared as <code class="code docu
         <span class="p">}</span>
 </pre></div>
 </div>
-<p>Other reward function definitions can be found here:
-<em>Example 2</em></p>
+<p><em>Example 2: Reward function based on time of use (ToU) of energy</em></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">tou_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates a reward value based on the Time of Use (ToU) of energy.</span>
@@ -472,7 +469,7 @@ the reward definition of the dc agent must be declared as <code class="code docu
     <span class="k">return</span> <span class="n">tou_reward</span>
 </pre></div>
 </div>
-<p><em>Example 3</em></p>
+<p><em>Example 3: Reward function based on the usage of renewable energy sources</em></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">renewable_energy_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates a reward value based on the usage of renewable energy sources.</span>
@@ -495,7 +492,7 @@ the reward definition of the dc agent must be declared as <code class="code docu
     <span class="k">return</span> <span class="n">reward</span>
 </pre></div>
 </div>
-<p><em>Example 4</em></p>
+<p><em>Example 4: Reward function based on energy efficiency</em></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">energy_efficiency_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates a reward value based on energy efficiency.</span>
@@ -515,7 +512,7 @@ the reward definition of the dc agent must be declared as <code class="code docu
     <span class="k">return</span> <span class="n">reward</span>
 </pre></div>
 </div>
-<p><em>Example 5</em></p>
+<p><em>Example 5: Reward function based on the efficiency of cooling in the data center</em></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">temperature_efficiency_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculates a reward value based on the efficiency of cooling in the data center.</span>
