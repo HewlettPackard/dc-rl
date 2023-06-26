@@ -96,9 +96,9 @@ def make_dc_env(month, location):
     s = string.ascii_letters+string.digits
     random_seed = '/' + ''.join(random.sample(s, 16)) + '/'
     weather = 'USA_WA_Port.Angeles-William.R.Fairchild.Intl.AP.727885_TMY3.epw'
-    if location.lower() == 'ny':
+    if 'ny' in location.lower():
         weather = 'USA_NY_New.York-J.F.Kennedy.Intl.AP.744860_TMY3.epw'
-    elif location.lower() == 'az':
+    elif 'az' in location.lower():
         weather = 'USA_AZ_Davis-Monthan.AFB.722745_TMY3.epw'
 
     dc_env = gym.make(datacenter_env,

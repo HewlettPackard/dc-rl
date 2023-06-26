@@ -276,7 +276,7 @@ class CI_Manager():
         """
         # Load carbon intensity data from a CSV file
         # One year data=24*365=8760
-        if filename == '':
+        if not location == '':
             carbon_data_list = pd.read_csv(PATH+f"/data/CarbonIntensity/{location}_NG_&_avgCI.csv")['avg_CI'].values[:8760]
         else:
             carbon_data_list = pd.read_csv(PATH+f"/data/CarbonIntensity/{filename}")['avg_CI'].values[:8760]
@@ -388,7 +388,8 @@ class Weather_Manager():
             temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.
         """
         # Load weather data from a CSV file
-        if filename == '':
+
+        if not location == '':
             temperature_data = pd.read_csv(PATH+f'/data/Weather/{location}', skiprows=8, header=None).values[:,temp_column]
         else:
             temperature_data = pd.read_csv(PATH+f'/data/Weather/{filename}', skiprows=8, header=None).values[:,temp_column]

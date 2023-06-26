@@ -50,9 +50,9 @@ class DCRLeplus(MultiAgentEnv):
         
         # Assign month according to worker index, if available
         if hasattr(env_config, 'worker_index'):
-            month = int((env_config.worker_index - 1) % 12)
+            self.month = int((env_config.worker_index - 1) % 12)
         else:
-            month = env_config.get('month', 0)
+            self.month = env_config.get('month', 0)
             
         self._agent_ids = set(self.agents)
         
@@ -67,9 +67,9 @@ class DCRLeplus(MultiAgentEnv):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        self.ls_env = make_envs.make_ls_env(month)
-        self.dc_env = make_envs.make_dc_env(month, self.location) 
-        self.bat_env = make_envs.make_bat_fwd_env(month)
+        self.ls_env = make_envs.make_ls_env(self.month)
+        self.dc_env = make_envs.make_dc_env(self.month, self.location) 
+        self.bat_env = make_envs.make_bat_fwd_env(self.month)
 
         self._obs_space_in_preferred_format = True
         
@@ -100,14 +100,13 @@ class DCRLeplus(MultiAgentEnv):
             self.base_agents["agent_bat"] = BaseBatteryAgent()
             
         # Create the managers: date/hour/time manager, workload manager, and CI manager.
-        self.init_day = get_init_day(month)
+        self.init_day = get_init_day(self.month)
         self.t_m = Time_Manager(init_day=self.init_day)
         self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=flexible_load, init_day=self.init_day)
         self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file)
 
         # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
-
 
     def reset(self, *, seed=None, options=None):
         """
@@ -121,6 +120,7 @@ class DCRLeplus(MultiAgentEnv):
             states (dict): Dictionary of states.
             infos (dict): Dictionary of infos.
         """
+        
         self.terminateds = set()
         self.truncateds = set()
 

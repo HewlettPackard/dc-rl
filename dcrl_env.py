@@ -93,9 +93,9 @@ class DCRL(MultiAgentEnv):
 
         # Assign month according to worker index, if available
         if hasattr(env_config, 'worker_index'):
-            month = int((env_config.worker_index - 1) % 12)
+            self.month = int((env_config.worker_index - 1) % 12)
         else:
-            month = env_config.get('month', 0)
+            self.month = env_config.get('month', 0)
 
         self._agent_ids = set(self.agents)
 
@@ -110,9 +110,9 @@ class DCRL(MultiAgentEnv):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        self.ls_env = make_ls_env(month)
-        self.dc_env = make_dc_pyeplus_env(month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
-        self.bat_env = make_bat_fwd_env(month, max_bat_cap_Mw=self.max_bat_cap_Mw)
+        self.ls_env = make_ls_env(self.month)
+        self.dc_env = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
+        self.bat_env = make_bat_fwd_env(self.month, max_bat_cap_Mw=self.max_bat_cap_Mw)
 
         self._obs_space_in_preferred_format = True
         
@@ -143,7 +143,7 @@ class DCRL(MultiAgentEnv):
             self.base_agents["agent_bat"] = BaseBatteryAgent()
 
         # Create the managers: date/hour/time manager, workload manager, weather manager, and CI manager.
-        self.init_day = get_init_day(month)
+        self.init_day = get_init_day(self.month)
         self.t_m = Time_Manager(self.init_day)
         self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=flexible_load, init_day=self.init_day)
         self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file)
@@ -151,8 +151,7 @@ class DCRL(MultiAgentEnv):
 
         # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
-
-
+        
     def reset(self, *, seed=None, options=None):
         """
         Reset the environment.
@@ -165,7 +164,6 @@ class DCRL(MultiAgentEnv):
             states (dict): Dictionary of states.
             infos (dict): Dictionary of infos.
         """
-
         self.ls_terminated = False
         self.dc_terminated = False
         self.bat_terminated = False

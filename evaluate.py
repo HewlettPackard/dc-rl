@@ -4,14 +4,16 @@ from tabulate import tabulate
 
 import ray
 
-CHECKPOINT = './results/test/PPO_DCRLeplus_66c2e_00000_0_2023-06-14_18-08-01/checkpoint_000015'
-
+# CHECKPOINT = './results/test/A2C_DCRLeplus_b7612_00000_0_2023-06-22_21-14-04/checkpoint_001895'
+CHECKPOINT = '/lustre/guillant/dc-rl/results/test/A2C_DCRL_81d62_00000_0_2023-06-20_14-22-06/checkpoint_000070'
 NUM_RUNS = 4
 
 if __name__ == '__main__':
     
     # log_to_driver ensures the RolloutWorkers don't log to the terminal
-    ray.init(ignore_reinit_error=True, log_to_driver=False)
+    ray.init( ignore_reinit_error=True,
+            #  local_mode=True,
+             log_to_driver=False)
 
     # Load checkpoint state
     with open(os.path.join(CHECKPOINT, 'algorithm_state.pkl'), 'rb') as f:
@@ -36,18 +38,19 @@ if __name__ == '__main__':
 
         # Unfreeze the config
         config._is_frozen = False
-        config.evaluation_config = config.overrides(
-            env_config={'location': location}
-        )
-
+        # config.evaluation_config = config.overrides(
+        #     env_config={'location': location}
+        # )
+        config['env_config']['location'] = location
         trainer = algo_class(config)
-        trainer.restore(CHECKPOINT)
 
+        trainer.restore(CHECKPOINT)
         results = trainer.evaluate()
 
         co2 = results['evaluation']['custom_metrics']['average_CO2_footprint_mean']
         energy = results['evaluation']['custom_metrics']['average_total_energy_with_battery_mean']
-
+        
+        print(f'Current results for {location}: \n\tCO2: {co2} \n\tEnergy: {energy}\n')
         data.append([location, co2, energy])
 
         # Release resources
