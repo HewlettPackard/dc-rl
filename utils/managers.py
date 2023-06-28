@@ -331,9 +331,9 @@ class CI_Manager():
 
         self.min_ci = min(self.carbon_smooth)
         self.max_ci = max(self.carbon_smooth)
-        # self.norm_carbon = normalize(self.carbon_smooth, self.min_ci, self.max_ci)
-        self.norm_carbon = standarize(self.carbon_smooth)
-        self.norm_carbon = (np.clip(self.norm_carbon, -1, 1) + 1) * 0.5
+        self.norm_carbon = normalize(self.carbon_smooth, self.min_ci, self.max_ci)
+        # self.norm_carbon = standarize(self.carbon_smooth)
+        # self.norm_carbon = (np.clip(self.norm_carbon, -1, 1) + 1) * 0.5
 
         return self.carbon_smooth[self.time_step], self.norm_carbon[self.time_step:self.time_step+self.future_steps]
     
