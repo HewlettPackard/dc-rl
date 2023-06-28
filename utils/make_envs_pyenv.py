@@ -49,7 +49,7 @@ def make_bat_fwd_env(month,
                  'charging_rate':charging_rate,
                  'start_point':init_day,
                  'dcload_max': 1.81, 
-                 'dcload_min': 0.6}
+                 'dcload_min': 0.4}
     bat_env = battery_env_fwd(env_config)
     return bat_env
 
