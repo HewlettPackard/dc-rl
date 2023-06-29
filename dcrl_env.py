@@ -97,6 +97,11 @@ class DCRL(MultiAgentEnv):
         else:
             self.month = env_config.get('month', 0)
 
+        if hasattr(env_config, 'evaluation'):
+            self.evaluation_mode = env_config['evaluation']
+        else:
+            self.evaluation_mode = False
+
         self._agent_ids = set(self.agents)
 
         ci_loc, wea_loc = obtain_paths(self.location)
@@ -110,7 +115,7 @@ class DCRL(MultiAgentEnv):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        self.ls_env = make_ls_env(self.month)
+        self.ls_env = make_ls_env(self.month, test_mode = self.evaluation_mode)
         self.dc_env = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
         self.bat_env = make_bat_fwd_env(self.month, max_bat_cap_Mw=self.max_bat_cap_Mw)
 
@@ -285,7 +290,7 @@ class DCRL(MultiAgentEnv):
             action = self.base_agents["agent_bat"].do_nothing_action()
             
         # The battery environment/agent is updated.
-        self.bat_env.set_dcload(self.dc_info['dc_ITE_total_power_kW'] / 1e3) # The DC load is updated with the total power in MW.
+        self.bat_env.set_dcload(self.dc_info['dc_total_power_kW'] / 1e3) # The DC load is updated with the total power in MW.
         self.bat_state = self.bat_env.update_state() # The state is updated with DC load
         self.bat_env.update_ci(ci_i, ci_i_future[0]) # Update the CI with the current CI, and the normalized current CI.
         

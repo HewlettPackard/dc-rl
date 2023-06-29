@@ -22,17 +22,16 @@ def default_ls_reward(params: dict) -> float:
     # Penalty part of the reward
     norm_load_left = params['ls_norm_load_left']
     out_of_time = params['ls_penalty_flag']
-    penalty = 1e2
+    penalty = 1e3
     
     # Calculate the reward associted to the energy consumption
     norm_net_dc_load = (total_energy_with_battery / 1e3 - dcload_min) / (dcload_max - dcload_min)
-    footprint = -1.0 * norm_CI * norm_net_dc_load * 2 #Added scalar to line up with dc reward
+    footprint = -1.0 * norm_CI * norm_net_dc_load
     # Obtain the penalty if there is load at the end of the day
     if out_of_time:
         penalty = -norm_load_left*penalty
     else:
         penalty = 0
-    
     # Add the rewards
     reward = footprint + penalty
     return reward
@@ -79,7 +78,7 @@ def default_bat_reward(params: dict) -> float:
     dcload_max = params['bat_dcload_max']
     
     norm_net_dc_load = (total_energy_with_battery / 1e3 - dcload_min) / (dcload_max - dcload_min)
-    rew_footprint = -1.0 * norm_CI * norm_net_dc_load * 2 #Added scalar to line up with dc reward
+    rew_footprint = -1.0 * norm_CI * norm_net_dc_load #Added scalar to line up with dc reward
 
     return rew_footprint
 

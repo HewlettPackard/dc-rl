@@ -12,7 +12,8 @@ from utils.utils_cf import get_init_day
 
 def make_ls_env(month,
                 n_vars_energy : int = 4,
-                n_vars_battery : int = 1):
+                n_vars_battery : int = 1,
+                test_mode=False,):
     """Method to build the Load shifting environment
 
     Args:
@@ -25,7 +26,8 @@ def make_ls_env(month,
     """
     
     return CarbonLoadEnv(n_vars_energy=n_vars_energy,
-                         n_vars_battery=n_vars_battery
+                         n_vars_battery=n_vars_battery,
+                         test_mode=test_mode,
                          )
 
 def make_bat_fwd_env(month,

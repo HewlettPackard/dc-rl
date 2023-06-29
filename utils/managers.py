@@ -222,7 +222,7 @@ class Workload_Manager():
         self.init_time_step = self.time_step
         
         # Add noise to the workload data using the CoherentNoise 
-        self.cpu_smooth = self.original_data + self.coherent_noise.generate(len(self.original_data))
+        self.cpu_smooth = self.original_data * 0.7 + self.coherent_noise.generate(len(self.original_data)) * 0.3
 
         self.cpu_smooth = np.clip(self.cpu_smooth, 0, 1)
         self.cpu_smooth = self.cpu_smooth * (1-self.flexible_workload_ratio)

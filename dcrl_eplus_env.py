@@ -239,7 +239,7 @@ class DCRLeplus(MultiAgentEnv):
         else:
             action = self.base_agents["agent_bat"].do_nothing_action()
             
-        self.bat_env.set_dcload(self.dc_info['dc_ITE_total_power_kW']/1e3)  # The DC load is updated with the total power in MW.
+        self.bat_env.set_dcload(self.dc_info['dc_total_power_kW']/1e3)  # The DC load is updated with the total power in MW.
         self.bat_state = self.bat_env.update_state()  # The state is updated with DC load
         self.bat_env.update_ci(ci_i, ci_i_future[0])  # Update the CI with the current CI, and the normalized current CI.
         

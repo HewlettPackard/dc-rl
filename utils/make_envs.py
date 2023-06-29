@@ -161,13 +161,14 @@ def make_dc_env(month, location):
     dc_env = tinyMultiObsWrapper(dc_env, n=3, add_sincos=True)
     return dc_env
 
-def make_ls_env(month, n_vars_energy=4, n_vars_battery=1):
+def make_ls_env(month, test_mode=False, n_vars_energy=4, n_vars_battery=1):
     """Method to build the Load shifting environment
 
     Args:
         month (int): Month of the year in which the agent is training.
         n_vars_energy (int, optional): Number of variables from the Energy environment. Defaults to 4.
         n_vars_battery (int, optional): Number of variables from the Battery environment. Defaults to 1.
+        test_mode (bool,optional): Use or not evaluation mode
 
     Returns:
         CarbonLoadEnv: Load Shifting environment
@@ -175,7 +176,7 @@ def make_ls_env(month, n_vars_energy=4, n_vars_battery=1):
 
     total_wkl = Workload_Manager().get_total_wkl()
     
-    return CarbonLoadEnv(n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery)
+    return CarbonLoadEnv(n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, test_mode=test_mode)
 
 def make_bat_fwd_env(month):
 
