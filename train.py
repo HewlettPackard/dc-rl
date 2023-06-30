@@ -69,7 +69,7 @@ def train(
     tune.Tuner(
         create_wrapped_trainable(algorithm),
         param_space=config,
-        run_config=air.RunConfig(stop={"timesteps_total": 10_000_000},
+        run_config=air.RunConfig(stop={"timesteps_total": 100_000_000},
             verbose=0,
             local_dir=results_dir,
             name=name,
