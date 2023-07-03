@@ -1,5 +1,7 @@
 # DCRL-Green
 
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)]([https://addcolablinkhere](https://colab.research.google.com/drive/1ldxlcG_prPw9U26alK9oRN2XvxrxNSDP?usp=sharing))
+
 This repository contains the datasets and code for the paper DCRL-Green: Sustainable Data Center Environment and Benchmark for Multi-Agent Reinforcement Learning.
 
 <p align="center">
