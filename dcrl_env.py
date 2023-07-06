@@ -46,6 +46,10 @@ class EnvConfig(dict):
         'dc_reward': 'default_dc_reward',
         'bat_reward': 'default_bat_reward',
 
+        # Evaluation flag that is required by the load-shifting environment
+        # To be set only during offline evaluation
+        'evaluation': False,
+
         # Set this to True if an agent (like MADDPG) returns continuous actions,
         "actions_are_logits": False
     }
@@ -97,10 +101,7 @@ class DCRL(MultiAgentEnv):
         else:
             self.month = env_config.get('month', 0)
 
-        if hasattr(env_config, 'evaluation'):
-            self.evaluation_mode = env_config['evaluation']
-        else:
-            self.evaluation_mode = False
+        self.evaluation_mode = env_config['evaluation']
 
         self._agent_ids = set(self.agents)
 
