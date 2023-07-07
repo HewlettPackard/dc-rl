@@ -50,7 +50,7 @@ def make_bat_fwd_env(month,
                  'max_bat_cap':max_bat_cap_Mw,
                  'charging_rate':charging_rate,
                  'start_point':init_day,
-                 'dcload_max': 1.81, 
+                 'dcload_max': 2.5, 
                  'dcload_min': 0.4}
     bat_env = battery_env_fwd(env_config)
     return bat_env
@@ -141,7 +141,7 @@ def make_dc_pyeplus_env(month : int = 1,
         'Site Outdoor Air Drybulb Temperature(Environment)': [-10.0, 40.0], #6
         'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [10.0, 30.0],  # reasonable range for setpoint; can be updated based on need #7
         'Zone Air Temperature(West Zone)':[10, 35],
-        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0, 2.5e6],
+        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0, 5.5e6],
         'Facility Total Electricity Demand Rate(Whole Building)': [1.0e5, 1.0e6],  # TODO: This is not a part of the observation variables right now
         'Facility Total Building Electricity Demand Rate(Whole Building)':[3.0e5, 5.0e6],
         
