@@ -4,8 +4,9 @@ from tabulate import tabulate
 
 import ray
 
-# CHECKPOINT = './results/test/A2C_DCRLeplus_b7612_00000_0_2023-06-22_21-14-04/checkpoint_001895'
-CHECKPOINT = '/lustre/guillant/dc-rl/results/test/A2C_DCRL_81d62_00000_0_2023-06-20_14-22-06/checkpoint_000070'
+from utils.checkpoint_finder import get_best_checkpoint
+
+CHECKPOINT = get_best_checkpoint('results/test/A2C_DCRL_6c1e5_00000_0_2023-07-07_15-41-33')
 NUM_RUNS = 4
 
 if __name__ == '__main__':
