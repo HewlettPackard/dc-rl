@@ -100,11 +100,16 @@ CRAC_FAN_REF_P = 150  # TODO: Have to check these values watt?
 
 # Chiller Stats
 CHILLER_COP = 6.0  # Have to check these values;usual values are in (2.5, 3.5) with as high as 7.5 for variable speed high efficiency chillers. Using 6.0 from [4]
+CW_PRESSURE_DROP = 300000 #Pa 
+CW_WATER_FLOW_RATE = 0.0011 #m3/s
+CW_PUMP_EFFICIENCY = 0.87 #%
 
 # Cooling Tower parameters
 CT_FAN_REF_P = 1000 # [5]
 CT_REFRENCE_AIR_FLOW_RATE = 6000/2119
-
+CT_PRESSURE_DROP = 300000 #Pa 
+CT_WATER_FLOW_RATE = 0.011#m3/s
+CT_PUMP_EFFICIENCY = 0.87 #%
 
 #References:
 #[1]: Postema, Björn Frits. "Energy-efficient data centres: model-based analysis of power-performance trade-offs." (2018).

@@ -94,10 +94,16 @@ CRAC_FAN_REF_P = json_obj['hvac_configuration']['CRAC_FAN_REF_P']
 
 # Chiller Stats
 CHILLER_COP = json_obj['hvac_configuration']['CHILLER_COP']
+CW_PRESSURE_DROP = json_obj['hvac_configuration']['CW_PRESSURE_DROP'] #Pa 
+CW_WATER_FLOW_RATE = json_obj['hvac_configuration']['CW_WATER_FLOW_RATE'] #m3/s
+CW_PUMP_EFFICIENCY = json_obj['hvac_configuration']['CW_PUMP_EFFICIENCY'] #%
 
 # Cooling Tower parameters
 CT_FAN_REF_P = json_obj['hvac_configuration']['CT_FAN_REF_P']
 CT_REFRENCE_AIR_FLOW_RATE = json_obj['hvac_configuration']['CT_REFRENCE_AIR_FLOW_RATE']
+CT_PRESSURE_DROP = json_obj['hvac_configuration']['CT_PRESSURE_DROP'] #Pa 
+CT_WATER_FLOW_RATE = json_obj['hvac_configuration']['CT_WATER_FLOW_RATE']#m3/s
+CT_PUMP_EFFICIENCY = json_obj['hvac_configuration']['CT_PUMP_EFFICIENCY'] #%
 
 
 #References:

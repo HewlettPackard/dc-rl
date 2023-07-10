@@ -64,6 +64,8 @@ class dc_gymenv(gym.Env):
                                                 DC_ITModel_config=DC_Config)
         
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_cooling_load, self.Compressor_load = 100, 1000, 1000, 100
+        self.CW_pump_load = 30
+        self.CT_pump_load = 30
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         self.cpu_load = 0.5
         self.bat_SoC = 300*1e3  # all units are SI
@@ -93,6 +95,8 @@ class dc_gymenv(gym.Env):
         super().reset(seed=self.seed)
 
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_cooling_load, self.Compressor_load = 100, 1000, 1000, 100  
+        self.CW_pump_load = 30
+        self.CT_pump_load = 30
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         
         self.raw_curr_state = self.get_obs()
@@ -129,7 +133,7 @@ class dc_gymenv(gym.Env):
         
         data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
         
-        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
+        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
                                                                          avg_CRAC_return_temp=avg_CRAC_return_temp,
                                                                          ambient_temp=self.ambient_temp,
                                                                          data_center_full_load=data_center_total_ITE_Load,
@@ -151,8 +155,11 @@ class dc_gymenv(gym.Env):
             'dc_crac_setpoint': self.raw_curr_stpt,
             'dc_cpu_workload_percent': self.cpu_load,
             'dc_int_temperature': np.mean(self.rackwise_outlet_temp),
+            'dc_CW_pump_power_kW': self.CW_pump_load,
+            'dc_CT_pump_power_kW': self.CT_pump_load,
         }
         
+
         #Done and truncated are managed by the main class, implement individual function if needed
         truncated = False
         done = False 
