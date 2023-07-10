@@ -133,7 +133,8 @@ class dc_gymenv(gym.Env):
         
         data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
         
-        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
+        #TODO: include self.CW_pump_load, self.CT_pump_load
+        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
                                                                          avg_CRAC_return_temp=avg_CRAC_return_temp,
                                                                          ambient_temp=self.ambient_temp,
                                                                          data_center_full_load=data_center_total_ITE_Load,
