@@ -220,20 +220,21 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp,data_
     CRAC_cooling_load = m_sys*DC_Config.C_AIR*(avg_CRAC_return_temp-CRAC_setpoint) 
     CRAC_Fan_load = DC_Config.CRAC_FAN_REF_P*(DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu/DC_Config.CRAC_REFRENCE_AIR_FLOW_RATE_pu)**3  
     Compressor_load = CRAC_cooling_load/DC_Config.CHILLER_COP 
-    if ambient_temp < 5:
-        return CRAC_Fan_load, 0.0, CRAC_cooling_load, Compressor_load
-    Cooling_tower_air_delta = max(50 - (ambient_temp-CRAC_setpoint), 5)  
-    m_air = CRAC_cooling_load/(DC_Config.C_AIR*Cooling_tower_air_delta) 
-    v_air = m_air/DC_Config.RHO_AIR
-    CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(v_air/DC_Config.CT_REFRENCE_AIR_FLOW_RATE)**3  
-    
+
     #compute chilled water pump power
     power_consumed_CW = (DC_Config.CW_PRESSURE_DROP*DC_Config.CW_WATER_FLOW_RATE)/DC_Config.CW_PUMP_EFFICIENCY
     
     #compute Cooling tower pump power
     power_consumed_CT = (DC_Config.CT_PRESSURE_DROP*DC_Config.CT_WATER_FLOW_RATE)/DC_Config.CT_PUMP_EFFICIENCY
-    
 
+    if ambient_temp < 5:
+        return CRAC_Fan_load, 0.0, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
+
+    Cooling_tower_air_delta = max(50 - (ambient_temp-CRAC_setpoint), 5)  
+    m_air = CRAC_cooling_load/(DC_Config.C_AIR*Cooling_tower_air_delta) 
+    v_air = m_air/DC_Config.RHO_AIR
+    CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(v_air/DC_Config.CT_REFRENCE_AIR_FLOW_RATE)**3  
+    
     return CRAC_Fan_load, CT_Fan_pwr*1.05, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
     
 def calculate_avg_CRAC_return_temp(rack_return_approach_temp_list,rackwise_outlet_temp):   
