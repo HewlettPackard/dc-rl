@@ -52,7 +52,7 @@ CONFIG = (
             use_gae=True,
             gamma=0.99, 
             lr=1e-4,
-            train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
+            train_batch_size=32,
             model={'fcnet_hiddens': [128, 64, 16], 'fcnet_activation': 'relu'}, 
             lr_schedule=[[0, 1e-3], [1000000, 1e-5]],
         )
