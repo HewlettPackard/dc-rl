@@ -9,10 +9,12 @@ import os
 file_path = os.path.abspath(__file__)
 PATH = os.path.split(os.path.dirname(file_path))[0]
 
+use_config = "dc_config.json"  # "dc_config_per_cpu.json" use this for custom cpu config
+
 ##################################################################
 #################### READ DATA CENTER CONFIGURATIONS #############
 ##################################################################
-with open(PATH + '/utils/dc_config.json', 'r') as myfile:
+with open(PATH + '/utils/' + use_config, 'r') as myfile:
     data=myfile.read()
 json_obj = json.loads(data)
 
@@ -25,7 +27,7 @@ NUM_ROWS = json_obj['data_center_configuration']['NUM_ROWS']  # number of rows i
 NUM_RACKS_PER_ROW = json_obj['data_center_configuration']['NUM_RACKS_PER_ROW']  # number of racks/ITcabinets in each row
 NUM_RACKS = NUM_ROWS * NUM_RACKS_PER_ROW  # calculate total number of racks/ITcabinets in the data center model
 
-TOTAM_MAX_PWR = 240000000 * 1e3  # specify maximum allowed power consumption for the data center
+TOTAM_MAX_PWR = 2400 * 1e3  # specify maximum allowed power consumption for the data center
 MAX_W_PER_RACK = int(TOTAM_MAX_PWR/NUM_RACKS)  # calculate maximum allowable power consumption for each rack/ITcabinet
 
 
@@ -48,7 +50,8 @@ RACK_SUPPLY_APPROACH_TEMP_LIST = json_obj['data_center_configuration']['RACK_SUP
 RACK_RETURN_APPROACH_TEMP_LIST = json_obj['data_center_configuration']['RACK_RETURN_APPROACH_TEMP_LIST']
 
 # how many servers are assigned in each rack. The actual number of servers per rack may be limited while
-CPUS_PER_RACK = json_obj['data_center_configuration']['CPUS_PER_RACK']  
+if use_config == "dc_config.json":
+    CPUS_PER_RACK = json_obj['data_center_configuration']['CPUS_PER_RACK']  
 
 ##################################################################
 #################### SERVER CONFIGURATION ########################
@@ -64,7 +67,10 @@ DEFAULT_SERVER_POWER_CHARACTERISTICS = json_obj['server_characteristics']['DEFAU
 
 # This list should be of length NUM_RACKS; Here DEFAULT_SERVER_POWER_CHARACTERISTICS is of same length as NUM_RACKS
 assert len(DEFAULT_SERVER_POWER_CHARACTERISTICS) == NUM_RACKS, "DEFAULT_SERVER_POWER_CHARACTERISTICS should be of length as NUM_RACKS"
-RACK_CPU_CONFIG = [[{'full_load_pwr' : j[0],
+if use_config == "dc_config_per_cpu.json":
+    RACK_CPU_CONFIG = DEFAULT_SERVER_POWER_CHARACTERISTICS
+else:
+    RACK_CPU_CONFIG = [[{'full_load_pwr' : j[0],
                      'idle_pwr': j[-1]} for _ in range(CPUS_PER_RACK)] for j in DEFAULT_SERVER_POWER_CHARACTERISTICS]
 
 # A default value of HP_PROLIANT server for standalone testing

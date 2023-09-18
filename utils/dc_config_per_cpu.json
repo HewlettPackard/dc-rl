@@ -1,0 +1,3468 @@
+{
+    "data_center_configuration" : 
+    {
+        "NUM_ROWS" : 4,
+        "NUM_RACKS_PER_ROW" : 5,
+        "RACK_SUPPLY_APPROACH_TEMP_LIST" : [
+                                            5.3, 5.3, 5.3, 5.3,
+                                            5.0, 5.0, 5.0, 5.0,
+                                            5.0, 5.0, 5.0, 5.0,
+                                            5.3, 5.3, 5.3, 5.3
+                                            ],
+        "RACK_RETURN_APPROACH_TEMP_LIST" :  [
+                                            -3.7, -3.7, -3.7, -3.7,
+                                            -2.5, -2.5, -2.5, -2.5,
+                                            -2.5, -2.5, -2.5, -2.5,
+                                            -3.7, -3.7, -3.7, -3.7
+                                            ]                                                                                                                                                     
+    },
+    "hvac_configuration" : 
+    {
+        "C_AIR" : 1006,
+        "RHO_AIR" : 1.225,
+        "CRAC_SUPPLY_AIR_FLOW_RATE_pu" : 0.00005663,
+        "CRAC_REFRENCE_AIR_FLOW_RATE_pu" : 0.00009438,
+        "CRAC_FAN_REF_P" : 150,
+        "CHILLER_COP" : 6.0,
+        "CT_FAN_REF_P" : 1000,
+        "CT_REFRENCE_AIR_FLOW_RATE" : 2.8315,
+        "CW_PRESSURE_DROP" : 300000,
+        "CW_WATER_FLOW_RATE" : 0.0011,
+        "CW_PUMP_EFFICIENCY" : 0.87,
+        "CT_PRESSURE_DROP" : 300000,
+        "CT_WATER_FLOW_RATE" : 0.0011,
+        "CT_PUMP_EFFICIENCY" : 0.87
+
+    },
+    "server_characteristics": {
+        "CPU_POWER_RATIO_LB": [
+            0.22,
+            1.00
+        ],
+        "CPU_POWER_RATIO_UB": [
+            0.24,
+            1.02
+        ],
+        "IT_FAN_AIRFLOW_RATIO_LB": [
+            0.0,
+            0.6
+        ],
+        "IT_FAN_AIRFLOW_RATIO_UB": [
+            0.7,
+            1.3
+        ],
+        "IT_FAN_FULL_LOAD_V": 0.05,
+        "ITFAN_REF_V_RATIO": 1.0,
+        "ITFAN_REF_P": 10.0,
+        "INLET_TEMP_RANGE": [
+            18,
+            27
+        ],
+        "DEFAULT_SERVER_POWER_CHARACTERISTICS": [
+            [
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 410,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 720,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 210,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 320,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 550,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 250,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 610,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 350,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 410,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 470,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 820,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 220,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 460,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 640,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 240,
+                    "idle_pwr": 70
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 670,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 170,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 660,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 640,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 810,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 610,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 640,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 810,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 170,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 250,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 400,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 360,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 870,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 160
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 350,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 220,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 170,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 470,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 850,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 630,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 190,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 670,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 850,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 300,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 300,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 550,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 210,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 210,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 60
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 670,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 320,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 240,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 460,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 390,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 410,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 400,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 660,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 850,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 300,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 470,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 840,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 600,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 60
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 640,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 810,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 610,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 420,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 590,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 430,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 250,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 490,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 240,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 420,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 550,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 460,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 870,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 600,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 190,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 250,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 610,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 820,
+                    "idle_pwr": 80
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 430,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 210,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 320,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 550,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 240,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 640,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 590,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 220,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 470,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 760,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 490,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 470,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 640,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 720,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 240,
+                    "idle_pwr": 80
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 870,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 870,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 870,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 760,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 390,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 660,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 600,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 460,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 810,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 600,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 250,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 550,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 600,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 400,
+                    "idle_pwr": 140
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 630,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 240,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 610,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 210,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 190,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 660,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 250,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 850,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 170,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 320,
+                    "idle_pwr": 140
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 670,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 410,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 640,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 490,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 320,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 850,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 600,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 590,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 760,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 670,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 670,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 470,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 250,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 190,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 630,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 150
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 210,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 640,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 360,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 760,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 170,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 590,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 220,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 760,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 760,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 490,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 640,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 360,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 470,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 470,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 810,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 90
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 600,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 400,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 820,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 840,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 420,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 460,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 210,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 240,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 610,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 590,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 870,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 350,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 590,
+                    "idle_pwr": 150
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 490,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 420,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 820,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 640,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 420,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 720,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 870,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 170,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 840,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 360,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 400,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 590,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 760,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 810,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 430,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 170,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 410,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 550,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 820,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 660,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 220,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 110
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 490,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 720,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 760,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 210,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 220,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 600,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 320,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 550,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 360,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 670,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 610,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 410,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 660,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 820,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 420,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 460,
+                    "idle_pwr": 80
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 410,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 460,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 630,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 470,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 670,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 820,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 430,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 300,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 220,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 810,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 320,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 350,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 70
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 320,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 670,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 610,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 840,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 660,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 820,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 840,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 460,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 870,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 780,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 170,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 660,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 590,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 410,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 430,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 80
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 430,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 850,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 240,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 390,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 720,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 430,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 190,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 360,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 400,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 170,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 390,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 720,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 590,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 760,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 100
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 810,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 300,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 760,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 220,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 630,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 360,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 300,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 210,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 390,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 410,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 490,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 350,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 550,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 220,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 820,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 430,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 90
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 750,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 480,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 530,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 220,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 470,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 820,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 640,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 320,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 670,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 740,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 600,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 650,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 490,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 500,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 460,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 470,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 220,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 190,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 70
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 600,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 810,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 270,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 680,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 800,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 580,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 430,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 340,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 320,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 180,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 360,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 840,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 190,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 870,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 710,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 410,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 490,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 230,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 450,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 240,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 300,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 460,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 320,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 720,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 420,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 290,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 560,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 190,
+                    "idle_pwr": 110
+                }
+            ],
+            [
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 690,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 570,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 840,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 660,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 790,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 370,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 540,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 200,
+                    "idle_pwr": 80
+                },
+                {
+                    "full_load_pwr": 620,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 240,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 660,
+                    "idle_pwr": 100
+                },
+                {
+                    "full_load_pwr": 700,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 660,
+                    "idle_pwr": 70
+                },
+                {
+                    "full_load_pwr": 510,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 860,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 420,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 830,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 770,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 730,
+                    "idle_pwr": 120
+                },
+                {
+                    "full_load_pwr": 380,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 720,
+                    "idle_pwr": 90
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 240,
+                    "idle_pwr": 130
+                },
+                {
+                    "full_load_pwr": 210,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 490,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 460,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 310,
+                    "idle_pwr": 140
+                },
+                {
+                    "full_load_pwr": 260,
+                    "idle_pwr": 150
+                },
+                {
+                    "full_load_pwr": 440,
+                    "idle_pwr": 60
+                },
+                {
+                    "full_load_pwr": 520,
+                    "idle_pwr": 110
+                },
+                {
+                    "full_load_pwr": 330,
+                    "idle_pwr": 160
+                },
+                {
+                    "full_load_pwr": 280,
+                    "idle_pwr": 110
+                }
+            ]
+        ],
+        "HP_PROLIANT": [
+            110,
+            170
+        ]
+    }
+}
