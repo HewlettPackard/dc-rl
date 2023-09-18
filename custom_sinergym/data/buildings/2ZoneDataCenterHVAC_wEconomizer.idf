@@ -2948,7 +2948,7 @@
     FlowFromSystem,          !- Air Flow Calculation Method
     Watts/Unit,              !- Design Power Input Calculation Method
     5000,                        !- Watts per Unit {W}
-    150,                        !- Number of Units
+    1000000,                        !- Number of Units
     ,                     !- Watts per Zone Floor Area {W/m2}
     Data Center Operation Schedule,  !- Design Power Input Schedule Name
     Data Center CPU Loading Schedule,  !- CPU Loading  Schedule Name
@@ -3089,7 +3089,7 @@
     FlowFromSystem,          !- Air Flow Calculation Method
     Watts/Unit,              !- Design Power Input Calculation Method
     5000,                        !- Watts per Unit {W}
-    150,                        !- Number of Units
+    1000000,                        !- Number of Units
     ,                     !- Watts per Zone Floor Area {W/m2}
     Data Center Operation Schedule,  !- Design Power Input Schedule Name
     Data Center CPU Loading Schedule,  !- CPU Loading  Schedule Name

@@ -52,7 +52,7 @@ def make_dc_env(month, location):
 
     add_vars = 2 
 
-    new_observation_space = gym.spaces.Box(low=-5.0, high=5.0,
+    new_observation_space = gym.spaces.Box(low=-5.0e9, high=5.0e9,
                                            shape=(date_var + len(obs_variables) + cpu_var + add_vars,),
                                            dtype=np.float32)
 
@@ -150,9 +150,9 @@ def make_dc_env(month, location):
         'Zone Air Relative Humidity(East Zone)': [23.709562, 74.624275],
         'Zone ITE CPU Electricity Rate(East Zone)': [11917.506, 38515.42],
         'Zone ITE Fan Electricity Rate(East Zone)': [7770.8535, 28150.297],
-        'Facility Total HVAC Electricity Demand Rate(Whole Building)': [3.0e4, 1.1e5],
-        'Facility Total Electricity Demand Rate(Whole Building)': [1.0e5, 1.0e6],
-        'Facility Total Building Electricity Demand Rate(Whole Building)': [6.0e4, 9.0e5],
+        'Facility Total HVAC Electricity Demand Rate(Whole Building)': [3.0e4, 1.1e8],
+        'Facility Total Electricity Demand Rate(Whole Building)': [1.0e5, 1.0e9],
+        'Facility Total Building Electricity Demand Rate(Whole Building)': [6.0e4, 9.0e8],
         'Power Utilization Effectiveness(EMS)': [1.0335548, 1.9118807],
         'cpuUsage': [0, 1],
         'carbonIntensity': [0, 1],

@@ -25,7 +25,7 @@ NUM_ROWS = json_obj['data_center_configuration']['NUM_ROWS']  # number of rows i
 NUM_RACKS_PER_ROW = json_obj['data_center_configuration']['NUM_RACKS_PER_ROW']  # number of racks/ITcabinets in each row
 NUM_RACKS = NUM_ROWS * NUM_RACKS_PER_ROW  # calculate total number of racks/ITcabinets in the data center model
 
-TOTAM_MAX_PWR = 2400 * 1e3  # specify maximum allowed power consumption for the data center
+TOTAM_MAX_PWR = 240000000 * 1e3  # specify maximum allowed power consumption for the data center
 MAX_W_PER_RACK = int(TOTAM_MAX_PWR/NUM_RACKS)  # calculate maximum allowable power consumption for each rack/ITcabinet
 
 

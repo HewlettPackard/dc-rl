@@ -23,7 +23,8 @@ CONFIG = (
             env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
             env_config={
                 # Agents active
-                'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+                # 'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+                'agents': ['agent_dc'],
 
                 # Datafiles
                 'location': 'ny',
@@ -71,7 +72,7 @@ if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
 
     ray.init(ignore_reinit_error=True)
-    #ray.init(local_mode=True, ignore_reinit_error=True)
+    # ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(
         algorithm="PPO",

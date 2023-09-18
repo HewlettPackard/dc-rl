@@ -101,8 +101,8 @@ def make_dc_pyeplus_env(month : int = 1,
         'Facility Total Building Electricity Demand Rate(Whole Building)'  #  'IT POWER'
     ]
         
-    observation_space = gym.spaces.Box(low=np.float32(-2.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
-                                       high=np.float32(5.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
+    observation_space = gym.spaces.Box(low=np.float32(-2.0e9*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
+                                       high=np.float32(5.0e9*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
                                        )
     
     ################################################################################
