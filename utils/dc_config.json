@@ -1,17 +1,15 @@
 {
     "data_center_configuration" : 
     {
-        "NUM_ROWS" : 4,
-        "NUM_RACKS_PER_ROW" : 2,
+        "NUM_ROWS" : 2,
+        "NUM_RACKS_PER_ROW" : 1,
         "RACK_SUPPLY_APPROACH_TEMP_LIST" : [
-                                            5.3, 5.3, 5.3, 5.3,
-                                            5.3, 5.3, 5.3, 5.3
+                                            5.3, 5.3
                                         ],
         "RACK_RETURN_APPROACH_TEMP_LIST" :  [
-                                            -3.7, -3.7, -3.7, -3.7,
-                                            -3.7, -3.7, -3.7, -3.7
+                                            -3.7, -3.7
                                         ],
-        "CPUS_PER_RACK" : 10                                                                                                                                                       
+        "CPUS_PER_RACK" : 150                                                                                                                                                  
     },
     "hvac_configuration" : 
     {
@@ -42,12 +40,6 @@
         "ITFAN_REF_P" : 10.0,
         "INLET_TEMP_RANGE" : [18, 27],
         "DEFAULT_SERVER_POWER_CHARACTERISTICS":[[170, 110],
-                                                [120, 60],
-                                                [170, 110],
-                                                [120, 60],
-                                                [170, 110],
-                                                [120, 60],
-                                                [170, 110],
                                                 [120, 60]],
         "HP_PROLIANT" : [110,170]
     }

@@ -4,7 +4,7 @@
 numpy==1.23.5
 pandas==1.5.3
 torch==2.0.0+cpu
-tensorflow==2.12.0
+tensorflow==2.13.0
 ray[rllib]==2.4.0
 gymnasium
 dm_tree
