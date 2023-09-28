@@ -18,7 +18,7 @@ class trim_and_respond_ctrl():
         self.TandR_monitor_idx = TandR_monitor_idx
         
         self.response_duration_counter = 0
-        self.response_duration_limit = 4  # assuming 1 hour if sampling interval is 15mins
+        self.response_duration_limit = 2  # assuming 1 hour if sampling interval is 15mins
         
     def set_limit(self,x):
         self.TandR_monitor_limit = x
@@ -29,9 +29,10 @@ class trim_and_respond_ctrl():
 
         if self.TandR_monitor_limit >= curr_val:
             if self.response_duration_counter>self.response_duration_limit:
-                self.response_duration_counter += 1
+                self.response_duration_counter = 0
                 return 5  # maps to +0.5F  # trim
             else:
+                self.response_duration_counter += 1
                 return 4  # maps to +-0F 
         else:
             return 3  # maps to -0.5F
