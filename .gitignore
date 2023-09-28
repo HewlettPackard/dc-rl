@@ -5,3 +5,7 @@ __pycache__/
 *.pyc
 *.txt
 */__pycache__/
+pydcm/
+data/pydcmresults
+*.ipynb
+Benchmark_pydcm.pdf

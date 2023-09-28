@@ -98,6 +98,8 @@ class DCRL(MultiAgentEnv):
         # Assign month according to worker index, if available
         if hasattr(env_config, 'worker_index'):
             self.month = int((env_config.worker_index - 1) % 12)
+        elif 'worker_index' in env_config.keys():
+            self.month = int((env_config['worker_index'] - 1) % 12)
         else:
             self.month = env_config.get('month', 0)
 
@@ -330,6 +332,9 @@ class DCRL(MultiAgentEnv):
             obs["agent_dc"] = self.dc_state
             rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_reward + self.collab_reward * self.bat_reward
             terminated["agent_dc"] = terminal
+            self.dc_info["bat_total_energy_with_battery_KWh"] = self.bat_info["bat_total_energy_with_battery_KWh"]
+            self.dc_info["bat_CO2_footprint"] = self.bat_info["bat_CO2_footprint"]
+            self.dc_info["ls_unasigned_day_load_left"] = self.ls_info["ls_unasigned_day_load_left"]
             info["agent_dc"] = self.dc_info
             
          # If agent_bat is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 

@@ -5,7 +5,7 @@ Creates algorithm configuration for PPO and starts training process
 import os
 
 import ray
-from ray.rllib.algorithms.ppo import PPOConfig
+from ray.rllib.algorithms.dqn import DQNConfig
 from train import train
 from dcrl_eplus_env import DCRLeplus
 from dcrl_env import DCRL
@@ -18,7 +18,7 @@ NUM_AGENTS = 1
 NUM_WORKERS = 12
 
 CONFIG = (
-        PPOConfig()
+        DQNConfig()
         .environment(
             env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
             env_config={
@@ -51,15 +51,10 @@ CONFIG = (
         .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
             gamma=0.99, 
-            lr=1e-5, 
+            lr=1e-4, 
             lr_schedule=[[0, 3e-5], [10000000, 1e-6]],
-            kl_coeff=0.3, 
-            clip_param=0.02,
-            entropy_coeff=0.05,
-            use_gae=True, 
             train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
             model={'fcnet_hiddens': [128, 64, 16], 'fcnet_activation': 'relu'}, 
-            shuffle_sequences=True
         )
         .callbacks(CustomCallbacks)
         .resources(num_cpus_per_worker=1, num_gpus=0)
@@ -75,7 +70,7 @@ if __name__ == '__main__':
     # ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(
-        algorithm="PPO",
+        algorithm="DQN",
         config=CONFIG,
         results_dir=RESULTS_DIR,
         name=NAME,

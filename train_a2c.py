@@ -14,8 +14,8 @@ from utils.rllib_callbacks import CustomCallbacks
 # Data collection config
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
-NUM_AGENTS = 3
-NUM_WORKERS = 24
+NUM_AGENTS = 1
+NUM_WORKERS = 12
 
 CONFIG = (
         A2CConfig()
@@ -23,7 +23,8 @@ CONFIG = (
             env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
             env_config={
                 # Agents active
-                'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+                # 'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+                'agents': ['agent_dc'],
 
                 # Datafiles
                 'location': 'ny',
@@ -54,14 +55,14 @@ CONFIG = (
             lr=1e-4,
             train_batch_size=32,
             model={'fcnet_hiddens': [128, 64, 16], 'fcnet_activation': 'relu'}, 
-            lr_schedule=[[0, 1e-3], [1000000, 1e-5]],
+            lr_schedule=[[0, 1e-3], [10000000, 1e-5]],
         )
         .callbacks(CustomCallbacks)
         .resources(num_cpus_per_worker=1, num_gpus=0)
     )
 
 NAME = "test"
-RESULTS_DIR = './results'
+RESULTS_DIR = './pydcm'
 
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
