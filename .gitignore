@@ -5,3 +5,6 @@ __pycache__/
 *.pyc
 *.txt
 */__pycache__/
+*.ipynb
+/pydcm
+data/pydcmresults
