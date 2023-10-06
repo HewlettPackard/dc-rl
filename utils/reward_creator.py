@@ -22,7 +22,7 @@ def default_ls_reward(params: dict) -> float:
     # Penalty part of the reward
     norm_load_left = params['ls_norm_load_left']
     out_of_time = params['ls_penalty_flag']
-    penalty = 1e3
+    penalty = 1e2
     
     # Calculate the reward associted to the energy consumption
     norm_net_dc_load = (total_energy_with_battery / 1e3 - dcload_min) / (dcload_max - dcload_min)

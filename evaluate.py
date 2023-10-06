@@ -6,14 +6,15 @@ import ray
 
 from utils.checkpoint_finder import get_best_checkpoint
 
-CHECKPOINT = get_best_checkpoint('results/test/A2C_DCRL_6c1e5_00000_0_2023-07-07_15-41-33')
-NUM_RUNS = 4
+CHECKPOINT = get_best_checkpoint('results/MADDPGStable_DCRL_c8a76_00000_0_2023-10-05_17-53-37')
+# CHECKPOINT = get_best_checkpoint('results/test/MADDPGStable_DCRL_1f396_00000_0_2023-10-03_08-04-16')
+NUM_RUNS = 1
 
 if __name__ == '__main__':
     
     # log_to_driver ensures the RolloutWorkers don't log to the terminal
-    ray.init(ignore_reinit_error=True, log_to_driver=False)
-
+    ray.init(ignore_reinit_error=True, log_to_driver=False, local_mode=False)
+    
     # Load checkpoint state
     with open(os.path.join(CHECKPOINT, 'algorithm_state.pkl'), 'rb') as f:
         state = pickle.load(f)

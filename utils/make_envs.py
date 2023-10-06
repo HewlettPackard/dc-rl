@@ -176,7 +176,7 @@ def make_ls_env(month, test_mode=False, n_vars_energy=4, n_vars_battery=1):
 
     total_wkl = Workload_Manager().get_total_wkl()
     
-    return CarbonLoadEnv(n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, test_mode=test_mode)
+    return CarbonLoadEnv(n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, test_mode=test_mode, future_steps=4*24)
 
 def make_bat_fwd_env(month):
 

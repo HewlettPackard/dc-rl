@@ -13,7 +13,7 @@ PATH = os.path.split(os.path.dirname(file_path))[0]
 #################### READ DATA CENTER CONFIGURATIONS #############
 ##################################################################
 with open(PATH + '/utils/dc_config.json', 'r') as myfile:
-    data=myfile.read()
+    data = myfile.read()
 json_obj = json.loads(data)
 
 ##################################################################
@@ -63,9 +63,8 @@ CPUS_PER_RACK = json_obj['data_center_configuration']['CPUS_PER_RACK']
 DEFAULT_SERVER_POWER_CHARACTERISTICS = json_obj['server_characteristics']['DEFAULT_SERVER_POWER_CHARACTERISTICS']
 
 # This list should be of length NUM_RACKS; Here DEFAULT_SERVER_POWER_CHARACTERISTICS is of same length as NUM_RACKS
-assert len(DEFAULT_SERVER_POWER_CHARACTERISTICS) == NUM_RACKS, "DEFAULT_SERVER_POWER_CHARACTERISTICS should be of length as NUM_RACKS"
-RACK_CPU_CONFIG = [[{'full_load_pwr' : j[0],
-                     'idle_pwr': j[-1]} for _ in range(CPUS_PER_RACK)] for j in DEFAULT_SERVER_POWER_CHARACTERISTICS]
+RACK_CPU_CONFIG = [[{'full_load_pwr' : DEFAULT_SERVER_POWER_CHARACTERISTICS[0],
+                     'idle_pwr': DEFAULT_SERVER_POWER_CHARACTERISTICS[-1]} for _ in range(CPUS_PER_RACK)]]
 
 # A default value of HP_PROLIANT server for standalone testing
 HP_PROLIANT = json_obj["server_characteristics"]['HP_PROLIANT']

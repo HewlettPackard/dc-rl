@@ -1,21 +1,11 @@
 {
     "data_center_configuration" : 
     {
-        "NUM_ROWS" : 4,
-        "NUM_RACKS_PER_ROW" : 5,
-        "RACK_SUPPLY_APPROACH_TEMP_LIST" : [
-                                            5.3, 5.3, 5.3, 5.3,
-                                            5.0, 5.0, 5.0, 5.0,
-                                            5.0, 5.0, 5.0, 5.0,
-                                            5.3, 5.3, 5.3, 5.3
-                                            ],
-        "RACK_RETURN_APPROACH_TEMP_LIST" :  [
-                                            -3.7, -3.7, -3.7, -3.7,
-                                            -2.5, -2.5, -2.5, -2.5,
-                                            -2.5, -2.5, -2.5, -2.5,
-                                            -3.7, -3.7, -3.7, -3.7
-                                            ],
-        "CPUS_PER_RACK" : 300                                                                                                                                                       
+        "NUM_ROWS" : 1,
+        "NUM_RACKS_PER_ROW" : 1,
+        "RACK_SUPPLY_APPROACH_TEMP_LIST" : 5.3,
+        "RACK_RETURN_APPROACH_TEMP_LIST" : -3.7,
+        "CPUS_PER_RACK" : 20                                                                                                                                                       
     },
     "hvac_configuration" : 
     {
@@ -44,27 +34,8 @@
         "IT_FAN_FULL_LOAD_V" : 0.05,
         "ITFAN_REF_V_RATIO" : 1.0,
         "ITFAN_REF_P" : 10.0,
-        "INLET_TEMP_RANGE" : [18, 27],
-        "DEFAULT_SERVER_POWER_CHARACTERISTICS":[[170, 110],
-                                                [120, 60],
-                                                [870, 110],
-                                                [650, 100],
-                                                [420, 130],
-                                                [160, 100],
-                                                [300, 60],
-                                                [530, 80],
-                                                [670, 110],
-                                                [660, 100],
-                                                [670, 110],
-                                                [190, 120],
-                                                [170, 110],
-                                                [170, 110],
-                                                [220, 150],
-                                                [280, 180],
-                                                [110, 70],
-                                                [170, 110],
-                                                [170, 110],
-                                                [170, 110]],
-        "HP_PROLIANT" : [110,170]
+        "INLET_TEMP_RANGE" : [18, 33],
+        "DEFAULT_SERVER_POWER_CHARACTERISTICS": [870, 80],
+        "HP_PROLIANT" : [870, 110]
     }
 }

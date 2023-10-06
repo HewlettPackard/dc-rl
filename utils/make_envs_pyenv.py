@@ -13,7 +13,8 @@ from utils.utils_cf import get_init_day
 def make_ls_env(month,
                 n_vars_energy : int = 4,
                 n_vars_battery : int = 1,
-                test_mode=False,):
+                test_mode=False,
+                future_steps=4):
     """Method to build the Load shifting environment
 
     Args:
@@ -28,11 +29,13 @@ def make_ls_env(month,
     return CarbonLoadEnv(n_vars_energy=n_vars_energy,
                          n_vars_battery=n_vars_battery,
                          test_mode=test_mode,
+                         future_steps=future_steps
                          )
 
 def make_bat_fwd_env(month,
                     max_bat_cap_Mw : float = 2.0,
                     charging_rate : float = 0.5,
+                    future_steps : int = 4,
                     ):
     """Method to build the Battery environment.
 
@@ -46,12 +49,12 @@ def make_bat_fwd_env(month,
         battery_env_fwd: Batery environment.
     """
     init_day = get_init_day(month)
-    env_config= {'n_fwd_steps':4,
+    env_config= {'n_fwd_steps':future_steps,
                  'max_bat_cap':max_bat_cap_Mw,
                  'charging_rate':charging_rate,
                  'start_point':init_day,
-                 'dcload_max': 2.5, 
-                 'dcload_min': 0.4}
+                 'dcload_max': 1.5, 
+                 'dcload_min': 0.2}
     bat_env = battery_env_fwd(env_config)
     return bat_env
 
@@ -111,8 +114,8 @@ def make_dc_pyeplus_env(month : int = 1,
     
     action_variables = ['Cooling_Setpoint_RL']
     action_definition = {'cooling setpoints': {'name': 'Cooling_Setpoint_RL', 'initial_value': 18}}
-    min_temp = 15.0
-    max_temp = 21.6
+    min_temp = 16.0
+    max_temp = 22.0
     action_mapping = {
         0: (-5),
         1: (-2),
@@ -143,7 +146,7 @@ def make_dc_pyeplus_env(month : int = 1,
         'Zone Air Temperature(West Zone)':[10, 35],
         'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0, 5.5e6],
         'Facility Total Electricity Demand Rate(Whole Building)': [1.0e5, 1.0e6],  # TODO: This is not a part of the observation variables right now
-        'Facility Total Building Electricity Demand Rate(Whole Building)':[3.0e5, 5.0e6],
+        'Facility Total Building Electricity Demand Rate(Whole Building)':[1e3, 20e3],
         
         'cpuUsage':[0.0, 1.0],
         'carbonIntensity':[0.0, 1000.0],

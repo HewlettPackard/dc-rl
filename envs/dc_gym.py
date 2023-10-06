@@ -123,7 +123,7 @@ class dc_gymenv(gym.Env):
         self.raw_curr_stpt += crac_setpoint_delta
         self.raw_curr_stpt = max(min(self.raw_curr_stpt, self.max_temp), self.min_temp)
     
-        ITE_load_pct_list = [self.cpu_load*100 for i in range(DC_Config.NUM_RACKS)] 
+        ITE_load_pct_list = self.cpu_load*100
         
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = \
             self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=self.raw_curr_stpt)
@@ -131,7 +131,7 @@ class dc_gymenv(gym.Env):
         avg_CRAC_return_temp = DataCenter.calculate_avg_CRAC_return_temp(rack_return_approach_temp_list=DC_Config.RACK_RETURN_APPROACH_TEMP_LIST,
                                                                          rackwise_outlet_temp=self.rackwise_outlet_temp)
         
-        data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
+        data_center_total_ITE_Load = self.rackwise_cpu_pwr + self.rackwise_itfan_pwr
         
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load,self.CT_pump_load  = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
                                                                                                                                                                        avg_CRAC_return_temp=avg_CRAC_return_temp,
@@ -155,8 +155,11 @@ class dc_gymenv(gym.Env):
             'dc_crac_setpoint': self.raw_curr_stpt,
             'dc_cpu_workload_percent': self.cpu_load,
             'dc_int_temperature': np.mean(self.rackwise_outlet_temp),
+            'dc_ext_temperature': self.ambient_temp,
             'dc_CW_pump_power_kW': self.CW_pump_load,
             'dc_CT_pump_power_kW': self.CT_pump_load,
+            'sum IT power': self.rackwise_cpu_pwr,
+            'sum fan power': self.rackwise_itfan_pwr
         }
         
 
@@ -186,7 +189,7 @@ class dc_gymenv(gym.Env):
         """
         return (obs-self.obs_min)/self.obs_delta
 
-    def get_obs(self):
+    def  get_obs(self):
         """
         Returns the observation at the current time step.
 
@@ -199,15 +202,14 @@ class dc_gymenv(gym.Env):
         
         zone_air_temp = 20  # in C, default for reset state
         if self.rackwise_outlet_temp:
-            zone_air_temp = sum(self.rackwise_outlet_temp)/len(self.rackwise_outlet_temp)
+            zone_air_temp = self.rackwise_outlet_temp
 
         # 'Facility Total HVAC Electricity Demand Rate(Whole Building)'  ie 'HVAC POWER'
         hvac_power = self.CT_Cooling_load
 
         # 'Facility Total Building Electricity Demand Rate(Whole Building)' ie 'IT POWER'
-        it_power = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
-
-        return [self.ambient_temp, zone_air_therm_cooling_stpt,zone_air_temp,hvac_power,it_power]
+        it_power = np.sum(self.rackwise_cpu_pwr) + np.sum(self.rackwise_itfan_pwr)
+        return [self.ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power]
 
     def set_shifted_wklds(self, cpu_load):
         """

@@ -15,7 +15,7 @@ from utils.rllib_callbacks import CustomCallbacks
 # Data collection config
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
-NUM_AGENTS = 3
+NUM_AGENTS = 2
 NUM_WORKERS = 24
 
 CONFIG = (
@@ -24,7 +24,7 @@ CONFIG = (
             env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
             env_config={
                 # Agents active
-                'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+                'agents': ['agent_ls', 'agent_dc'],
 
                 # Datafiles
                 'location': 'ny',
@@ -33,7 +33,7 @@ CONFIG = (
                 'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
 
                 # Battery capacity
-                'max_bat_cap_Mw': 2,
+                'max_bat_cap_Mw': 0.05,
 
                 # MADDPG returns logits instead of discrete actions
                 "actions_are_logits": True,
@@ -42,7 +42,7 @@ CONFIG = (
                 'individual_reward_weight': 0.8,
                 
                 # Flexible load ratio
-                'flexible_load': 0.1,
+                'flexible_load': 0.5,
                 
                 # Specify reward methods
                 'ls_reward': 'default_ls_reward',
@@ -54,13 +54,13 @@ CONFIG = (
         .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
             gamma=0.99, 
-            lr=1e-7,
-            model={'fcnet_hiddens':[128, 64, 16], 'fcnet_activation': 'relu'},
+            lr=1e-6,
+            model={'fcnet_hiddens':[256, 64, 16], 'fcnet_activation': 'relu'},
             train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
             use_local_critic=False,
         )
         .callbacks(CustomCallbacks)
-        .resources(num_cpus_per_worker=1, num_gpus=0)
+        .resources(num_cpus_per_worker=2, num_gpus=0)
     )
 
 NAME = "test"

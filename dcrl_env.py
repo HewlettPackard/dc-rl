@@ -1,8 +1,10 @@
 import os
 from typing import Optional, Tuple, Union
+import csv
 
 import gymnasium as gym
 import numpy as np
+import pandas as pd
 
 from ray.rllib.env import EnvContext
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
@@ -39,7 +41,7 @@ class EnvConfig(dict):
         'individual_reward_weight': 0.8,
         
         # flexible load ratio of the total workload
-        'flexible_load': 0.1,
+        'flexible_load': 0.5,
         
         # Specify reward methods. These are defined in utils/reward_creator.
         'ls_reward': 'default_ls_reward',
@@ -78,6 +80,8 @@ class DCRL(MultiAgentEnv):
         '''
         super().__init__()
 
+        FUTURE_STEPS = 4
+        
         # Initialize the environment config
         env_config = EnvConfig(env_config)
 
@@ -98,6 +102,8 @@ class DCRL(MultiAgentEnv):
         # Assign month according to worker index, if available
         if hasattr(env_config, 'worker_index'):
             self.month = int((env_config.worker_index - 1) % 12)
+        elif 'worker_index' in env_config.keys():
+            self.month = int((env_config['worker_index'] - 1) % 12)
         else:
             self.month = env_config.get('month', 0)
 
@@ -116,9 +122,9 @@ class DCRL(MultiAgentEnv):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        self.ls_env = make_ls_env(self.month, test_mode = self.evaluation_mode)
+        self.ls_env = make_ls_env(self.month, test_mode=self.evaluation_mode, future_steps=FUTURE_STEPS)
         self.dc_env = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
-        self.bat_env = make_bat_fwd_env(self.month, max_bat_cap_Mw=self.max_bat_cap_Mw)
+        self.bat_env = make_bat_fwd_env(self.month, max_bat_cap_Mw=self.max_bat_cap_Mw, future_steps=FUTURE_STEPS)
 
         self._obs_space_in_preferred_format = True
         
@@ -153,11 +159,34 @@ class DCRL(MultiAgentEnv):
         self.t_m = Time_Manager(self.init_day)
         self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=flexible_load, init_day=self.init_day)
         self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file)
-        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file)
+        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=FUTURE_STEPS)
 
         # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
         
+        self.data_to_record = {
+            'datetime': [],
+            'energy_without_battery': [],
+            'energy_with_battery': [],
+            'carbon_footprint': [],
+            'carbon_intensity': [],
+            'energy_cost': [],
+            'original_workload': [],
+            'shifted_workload': [],
+            'exterior_temperature': [],
+            'interior_temperature': [],
+            'hvac_setpoint': [],
+            'battery_soc': [],
+            'sum IT power': [],
+            'sum fan power': []
+        }
+        
+        self.tou = {0: 0.25, 1: 0.25, 2: 0.25, 3: 0.25, 4: 0.25, 5: 0.25, 6: 0.41, 7: 0.41,
+                    8: 0.41, 9: 0.41, 10: 0.41, 11: 0.30, 12: 0.30, 13: 0.30, 14: 0.30, 
+                    15: 0.30, 16: 0.27, 17: 0.27, 18: 0.27, 19: 0.27, 20: 0.27, 21: 0.27, 
+                    22: 0.25, 23: 0.25
+    }
+
     def reset(self, *, seed=None, options=None):
         """
         Reset the environment.
@@ -222,7 +251,12 @@ class DCRL(MultiAgentEnv):
         if "agent_bat" in self.agents:
             states["agent_bat"] = self.bat_state
             infos["agent_bat"] = self.bat_info
-            
+        
+        if len(self.data_to_record) > 0:
+            # self.save_to_csv(f'DCRL9_data_{self.location}.csv')
+            for key in self.data_to_record:
+                self.data_to_record[key] = []  # Clear the lists after saving
+                        
         return states, infos
 
     def step(self, action_dict: MultiAgentDict):
@@ -277,6 +311,9 @@ class DCRL(MultiAgentEnv):
 
         # Update the data center environment/agent.
         shifted_wkld = self.ls_info['ls_shifted_workload']
+        
+        # ToDo: Save on each time step, the different variables we want to plot.
+        
         self.dc_env.set_shifted_wklds(shifted_wkld)
         self.dc_env.set_ambient_temp(temp)
         
@@ -330,6 +367,9 @@ class DCRL(MultiAgentEnv):
             obs["agent_dc"] = self.dc_state
             rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_reward + self.collab_reward * self.bat_reward
             terminated["agent_dc"] = terminal
+            self.dc_info["bat_total_energy_with_battery_KWh"] = self.bat_info["bat_total_energy_with_battery_KWh"]
+            self.dc_info["bat_CO2_footprint"] = self.bat_info["bat_CO2_footprint"]
+            self.dc_info["ls_unasigned_day_load_left"] = self.ls_info["ls_unasigned_day_load_left"]
             info["agent_dc"] = self.dc_info
             
          # If agent_bat is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
@@ -344,7 +384,41 @@ class DCRL(MultiAgentEnv):
             truncated["__all__"] = True
             for agent in self.agents:
                 truncated[agent] = True
-                
+        
+        
+        # Save variables for dashboard:
+        
+        # Constructing datetime using pandas
+        start_of_year = pd.Timestamp('2023-01-01')
+        specific_date = start_of_year + pd.Timedelta(days=day - 1)  # Subtracting 1 because day starts from 1
+
+        # Combining specific date with the hour to form the full datetime
+        dt = specific_date + pd.Timedelta(hours=hour)
+        datetime_str = dt.strftime('%Y-%m-%d %H:%M:%S')
+
+        self.data_to_record['datetime'].append(datetime_str) # Constructing datetime
+        self.data_to_record['energy_without_battery'].append(self.bat_info['bat_total_energy_without_battery_KWh'] / 1e3)
+        self.data_to_record['energy_with_battery'].append(self.bat_info['bat_total_energy_with_battery_KWh'] / 1e3)
+        self.data_to_record['carbon_footprint'].append(self.bat_info['bat_CO2_footprint'])
+        self.data_to_record['carbon_intensity'].append(self.bat_info['bat_avg_CI'])
+        
+        tou_rate = self.tou[int((hour//1)%24)]
+        energy_cost = tou_rate * self.bat_info['bat_total_energy_with_battery_KWh']   # Adjust this if your energy key is different
+        self.data_to_record['energy_cost'].append(energy_cost)
+        
+        self.data_to_record['original_workload'].append(self.ls_info['ls_original_workload'])
+        self.data_to_record['shifted_workload'].append(self.ls_info['ls_shifted_workload'])
+        
+        self.data_to_record['exterior_temperature'].append(self.dc_info['dc_ext_temperature'])
+        self.data_to_record['interior_temperature'].append(self.dc_info['dc_int_temperature'])
+        self.data_to_record['hvac_setpoint'].append(self.dc_info['dc_crac_setpoint'])
+        
+        self.data_to_record['battery_soc'].append(self.bat_info['bat_SOC'])
+
+        # self.data_to_record['sum IT power'].append(self.dc_info['sum IT power'])
+        # self.data_to_record['sum fan power'].append(self.dc_info['sum fan power'])
+
+        # info['datetime'] = datetime_str
         return obs, rew, terminated, truncated, info
 
     def calculate_reward(self, params):
@@ -364,7 +438,74 @@ class DCRL(MultiAgentEnv):
         dc_reward = self.dc_reward_method(params)
         bat_reward = self.bat_reward_method(params)
         return ls_reward, dc_reward, bat_reward
+ 
+    def save_to_csv(self, filename):
+        # Determine if we need to write headers
+        write_header = not os.path.exists(filename)
+        
+        with open(filename, 'a', newline='') as csvfile:  # 'a' mode for appending
+            writer = csv.writer(csvfile)
+            
+            # If file didn't exist before, write the headers
+            if write_header:
+                writer.writerow(['Datetime', 
+                                 'Energy Without Battery',
+                                 'Energy With Battery', 
+                                 'Carbon Footprint', 
+                                 'Carbon Intensity',
+                                 'Energy Cost',
+                                 'Original Workload',
+                                 'Shifted Workload',
+                                 'Exterior Temperature',
+                                 'Interior Temperature',
+                                 'HVAC Setpoint',
+                                 'Battery SoC'])
+                
+            for i in range(len(self.data_to_record['datetime'])):
+                writer.writerow([self.data_to_record['datetime'][i],
+                                 self.data_to_record['energy_without_battery'][i],
+                                 self.data_to_record['energy_with_battery'][i],
+                                 self.data_to_record['carbon_footprint'][i],
+                                 self.data_to_record['carbon_intensity'][i],
+                                 self.data_to_record['energy_cost'][i],
+                                 self.data_to_record['original_workload'][i],
+                                 self.data_to_record['shifted_workload'][i],
+                                 self.data_to_record['exterior_temperature'][i],
+                                 self.data_to_record['interior_temperature'][i],
+                                 self.data_to_record['hvac_setpoint'][i],
+                                 self.data_to_record['battery_soc'][i]])
 
+            # if write_header:
+            #     writer.writerow(['Datetime', 
+            #                      'Energy Without Battery',
+            #                      'Energy With Battery', 
+            #                      'Carbon Footprint', 
+            #                      'Carbon Intensity',
+            #                      'Energy Cost',
+            #                      'Original Workload',
+            #                      'Shifted Workload',
+            #                      'Exterior Temperature',
+            #                      'Interior Temperature',
+            #                      'HVAC Setpoint',
+            #                      'Battery SoC',
+            #                      'sum IT power',
+            #                      'sum fan power'])
+                
+            # for i in range(len(self.data_to_record['datetime'])):
+            #     writer.writerow([self.data_to_record['datetime'][i],
+            #                      self.data_to_record['energy_without_battery'][i],
+            #                      self.data_to_record['energy_with_battery'][i],
+            #                      self.data_to_record['carbon_footprint'][i],
+            #                      self.data_to_record['carbon_intensity'][i],
+            #                      self.data_to_record['energy_cost'][i],
+            #                      self.data_to_record['original_workload'][i],
+            #                      self.data_to_record['shifted_workload'][i],
+            #                      self.data_to_record['exterior_temperature'][i],
+            #                      self.data_to_record['interior_temperature'][i],
+            #                      self.data_to_record['hvac_setpoint'][i],
+            #                      self.data_to_record['battery_soc'][i],
+            #                      self.data_to_record['sum IT power'][i],
+            #                      self.data_to_record['sum fan power'][i]])
 if __name__ == '__main__':
 
     env = DCRL()
