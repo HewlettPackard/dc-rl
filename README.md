@@ -4,9 +4,9 @@
 
 To watch the video, click on the screenshot below:
 
-[![Dashboard, click it to visualize it](media/DCRL_screenshot2.png)](https://www.dropbox.com/scl/fi/9ua64tu4nha29ae0du8me/Data-Center-Green-Dashboard.mp4?rlkey=lt2th4bvfpqmrwjr5m5sdeb52&dl=0)
+[![Dashboard, click it to visualize it](media/DCRL_screenshot2.png)](https://www.dropbox.com/scl/fi/85gumlvjgbbk5kwjhee3i/Data-Center-Green-Dashboard-ver2.mp4?rlkey=w3mu21qqdk9asi826cjyyutzl&dl=0)
 
-If you wish to download the video directly, [click here](https://www.dropbox.com/scl/fi/9ua64tu4nha29ae0du8me/Data-Center-Green-Dashboard.mp4?rlkey=lt2th4bvfpqmrwjr5m5sdeb52&dl=1).
+If you wish to download the video directly, [click here](https://www.dropbox.com/scl/fi/85gumlvjgbbk5kwjhee3i/Data-Center-Green-Dashboard-ver2.mp4?rlkey=w3mu21qqdk9asi826cjyyutzl&dl=1).
 
 
 Demo of DCRL functionality
