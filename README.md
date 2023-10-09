@@ -4,7 +4,7 @@
 
 To watch the video, click on the screenshot below:
 
-[![Dashboard, click it to visualize it](media/DCRL_screenshot.png)](https://www.dropbox.com/scl/fi/9ua64tu4nha29ae0du8me/Data-Center-Green-Dashboard.mp4?rlkey=lt2th4bvfpqmrwjr5m5sdeb52&dl=0)
+[![Dashboard, click it to visualize it](media/DCRL_screenshot_2.png)](https://www.dropbox.com/scl/fi/9ua64tu4nha29ae0du8me/Data-Center-Green-Dashboard.mp4?rlkey=lt2th4bvfpqmrwjr5m5sdeb52&dl=0)
 
 If you wish to download the video directly, [click here](https://www.dropbox.com/scl/fi/9ua64tu4nha29ae0du8me/Data-Center-Green-Dashboard.mp4?rlkey=lt2th4bvfpqmrwjr5m5sdeb52&dl=1).
 
