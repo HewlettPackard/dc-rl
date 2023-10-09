@@ -1,5 +1,10 @@
 # DCRL-Green
 
+Dashboard
+
+[![Dashboard](media/DCRL_screenshot.png)]([https://www.dropbox.com/s/abcd1234/video.mp4?dl=1](https://www.dropbox.com/scl/fi/9ua64tu4nha29ae0du8me/Data-Center-Green-Dashboard.mp4?rlkey=lt2th4bvfpqmrwjr5m5sdeb52&dl=1))
+
+
 Demo of DCRL functionality
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1XF92aR6nVYxENrviHeFyuRu0exKBb-nh?usp=sharing)
 ---
