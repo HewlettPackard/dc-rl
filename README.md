@@ -9,9 +9,6 @@ To watch the video, click on the screenshot below:
 If you wish to download the video directly, [click here](https://www.dropbox.com/scl/fi/85gumlvjgbbk5kwjhee3i/Data-Center-Green-Dashboard-ver2.mp4?rlkey=w3mu21qqdk9asi826cjyyutzl&dl=1).
 
 
-![Video](https://github.com/HewlettPackard/dc-rl/assets/134748338/7af115ab-5188-4082-b3b0-9614c35f3ea5)
-
-
 Demo of DCRL functionality
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1XF92aR6nVYxENrviHeFyuRu0exKBb-nh?usp=sharing)
 ---
