@@ -80,7 +80,7 @@ class DCRL(MultiAgentEnv):
         '''
         super().__init__()
 
-        FUTURE_STEPS = 4
+        FUTURE_STEPS = 1
         
         # Initialize the environment config
         env_config = EnvConfig(env_config)
@@ -107,6 +107,8 @@ class DCRL(MultiAgentEnv):
         else:
             self.month = env_config.get('month', 0)
 
+        # self.month = 6
+        
         self.evaluation_mode = env_config['evaluation']
 
         self._agent_ids = set(self.agents)
@@ -122,7 +124,7 @@ class DCRL(MultiAgentEnv):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        self.ls_env = make_ls_env(self.month, test_mode=self.evaluation_mode, future_steps=FUTURE_STEPS)
+        self.ls_env = make_ls_env(self.month, test_mode=self.evaluation_mode, future_steps=FUTURE_STEPS, n_vars_battery=0, flexible_workload_ratio=0.1)
         self.dc_env = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
         self.bat_env = make_bat_fwd_env(self.month, max_bat_cap_Mw=self.max_bat_cap_Mw, future_steps=FUTURE_STEPS)
 
@@ -230,11 +232,11 @@ class DCRL(MultiAgentEnv):
         batSoC = bat_s[1]
         
         # dc state -> [time (sine/cosine enconded), original dc observation, current workload, current normalized CI, battery SOC]
-        self.dc_state = np.hstack((t_i, self.dc_state, workload, ci_i_future[0], batSoC))
+        self.dc_state = np.hstack((t_i, self.dc_state, workload, ci_i_future[0]))
         var_to_LS_energy = get_energy_variables(self.dc_state)
         
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, current workload, energy variables from DC, battery SoC]
-        self.ls_state = np.hstack((t_i, ls_s, ci_i_future, workload, var_to_LS_energy, batSoC))
+        self.ls_state = np.hstack((t_i, ls_s, ci_i_future, workload, var_to_LS_energy))
         
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
         self.bat_state = np.hstack((t_i, bat_s, ci_i_future))
@@ -253,7 +255,7 @@ class DCRL(MultiAgentEnv):
             infos["agent_bat"] = self.bat_info
         
         if len(self.data_to_record) > 0:
-            # self.save_to_csv(f'DCRL9_data_{self.location}.csv')
+            # self.save_to_csv(f'ASHRAE2_data_{self.location}.csv')
             for key in self.data_to_record:
                 self.data_to_record[key] = []  # Clear the lists after saving
                         
@@ -342,12 +344,12 @@ class DCRL(MultiAgentEnv):
         # self.dc_reward = -1.0 * self.bat_info['bat_total_energy_with_battery_KWh'] / 1e3  # The raw reward of the DC is directly the total energy consumption in MWh.
 
         # Update the shared variables
-        self.dc_state = np.hstack((t_i, self.dc_state, shifted_wkld, ci_i_future[0], batSoC))
+        self.dc_state = np.hstack((t_i, self.dc_state, shifted_wkld, ci_i_future[0]))
         
         # We need to update the LS state with the DC energy variables and the final battery SoC.
         var_to_LS_energy = get_energy_variables(self.dc_state)
-        self.ls_state = np.hstack((t_i, self.ls_state, ci_i_future, workload, var_to_LS_energy, batSoC))
-        
+        self.ls_state = np.hstack((t_i, self.ls_state, ci_i_future, workload, var_to_LS_energy))
+
         # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
         # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
         info_dict = {**self.bat_info, **self.ls_info, **self.dc_info}
@@ -396,24 +398,24 @@ class DCRL(MultiAgentEnv):
         dt = specific_date + pd.Timedelta(hours=hour)
         datetime_str = dt.strftime('%Y-%m-%d %H:%M:%S')
 
-        self.data_to_record['datetime'].append(datetime_str) # Constructing datetime
-        self.data_to_record['energy_without_battery'].append(self.bat_info['bat_total_energy_without_battery_KWh'] / 1e3)
-        self.data_to_record['energy_with_battery'].append(self.bat_info['bat_total_energy_with_battery_KWh'] / 1e3)
-        self.data_to_record['carbon_footprint'].append(self.bat_info['bat_CO2_footprint'])
-        self.data_to_record['carbon_intensity'].append(self.bat_info['bat_avg_CI'])
+        # self.data_to_record['datetime'].append(datetime_str) # Constructing datetime
+        # self.data_to_record['energy_without_battery'].append(self.bat_info['bat_total_energy_without_battery_KWh'] / 1e3)
+        # self.data_to_record['energy_with_battery'].append(self.bat_info['bat_total_energy_with_battery_KWh'] / 1e3)
+        # self.data_to_record['carbon_footprint'].append(self.bat_info['bat_CO2_footprint'])
+        # self.data_to_record['carbon_intensity'].append(self.bat_info['bat_avg_CI'])
         
-        tou_rate = self.tou[int((hour//1)%24)]
-        energy_cost = tou_rate * self.bat_info['bat_total_energy_with_battery_KWh']   # Adjust this if your energy key is different
-        self.data_to_record['energy_cost'].append(energy_cost)
+        # tou_rate = self.tou[int((hour//1)%24)]
+        # energy_cost = tou_rate * self.bat_info['bat_total_energy_with_battery_KWh']   # Adjust this if your energy key is different
+        # self.data_to_record['energy_cost'].append(energy_cost)
         
-        self.data_to_record['original_workload'].append(self.ls_info['ls_original_workload'])
-        self.data_to_record['shifted_workload'].append(self.ls_info['ls_shifted_workload'])
+        # self.data_to_record['original_workload'].append(self.ls_info['ls_original_workload'])
+        # self.data_to_record['shifted_workload'].append(self.ls_info['ls_shifted_workload'])
         
-        self.data_to_record['exterior_temperature'].append(self.dc_info['dc_ext_temperature'])
-        self.data_to_record['interior_temperature'].append(self.dc_info['dc_int_temperature'])
-        self.data_to_record['hvac_setpoint'].append(self.dc_info['dc_crac_setpoint'])
+        # self.data_to_record['exterior_temperature'].append(self.dc_info['dc_ext_temperature'])
+        # self.data_to_record['interior_temperature'].append(self.dc_info['dc_int_temperature'])
+        # self.data_to_record['hvac_setpoint'].append(self.dc_info['dc_crac_setpoint'])
         
-        self.data_to_record['battery_soc'].append(self.bat_info['bat_SOC'])
+        # self.data_to_record['battery_soc'].append(self.bat_info['bat_SOC'])
 
         # self.data_to_record['sum IT power'].append(self.dc_info['sum IT power'])
         # self.data_to_record['sum fan power'].append(self.dc_info['sum fan power'])

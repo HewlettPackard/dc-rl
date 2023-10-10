@@ -129,8 +129,7 @@ class Rack():
             [],[],[],[],[],[]
         self.m_coefficient = 10 #1 -> 10 
         self.c_coefficient = 4 #1 -> 5
-        self.it_slope = 100
-        self.m_coefficient = 10
+        self.it_slope = 100 # 100 -> 20
         self.c_coefficient = 5
             
         for CPU_item in self.CPU_list:
@@ -192,15 +191,21 @@ class Rack():
 
     def compute_instantaneous_pwr_vecd(self, inlet_temp, ITE_load_pct):
         
-        # CPU                                    
-        base_cpu_power_ratio = (self.m_cpu[0]+0.01)*inlet_temp + self.c_cpu[0]
-        cpu_power_ratio_at_inlet_temp = base_cpu_power_ratio + self.ratio_shift_max_cpu[0]*(ITE_load_pct/100)
+        # CPU
+        w = ITE_load_pct/100
+        a = 0.01
+        f = 0.01
+        d = 0.03
+        base_cpu_power_ratio = ((self.m_cpu[0]*a + d*w - f*w*a)*inlet_temp+((1-a)*self.m_cpu[0]*16+self.c_cpu[0])-0.218)
+        cpu_power_ratio_at_inlet_temp = base_cpu_power_ratio + self.ratio_shift_max_cpu[0]*w
         cpu_power = np.max([self.idle_pwr[0], self.full_load_pwr[0]*cpu_power_ratio_at_inlet_temp])
-        
+
         # itfan
-        base_itfan_v_ratio = self.m_itfan[0]*self.m_coefficient*inlet_temp + self.c_itfan[0]*self.c_coefficient
-        itfan_v_ratio_at_inlet_temp = base_itfan_v_ratio + self.ratio_shift_max_itfan[0]*(ITE_load_pct/self.it_slope)
-        itfan_pwr = self.ITFAN_REF_P[0] * (itfan_v_ratio_at_inlet_temp/self.ITFAN_REF_V_RATIO[0])  # [4] Eqn (3)
+        b = 20
+        c = 5
+        base_itfan_v_ratio = self.m_itfan[0]*b*inlet_temp + (1-b)*self.m_itfan[0]*16 + self.c_itfan[0] + c
+        itfan_v_ratio_at_inlet_temp = base_itfan_v_ratio + self.ratio_shift_max_itfan[0]*w*20
+        itfan_pwr = self.ITFAN_REF_P[0] * itfan_v_ratio_at_inlet_temp  # [4] Eqn (3)
         self.v_fan_rack = self.IT_FAN_FULL_LOAD_V[0]*itfan_v_ratio_at_inlet_temp
         
         return cpu_power*len(self.m_cpu), itfan_pwr*len(self.m_cpu)
@@ -276,7 +281,11 @@ class DataCenter_ITModel():
         #clamp supply approach temperatures
         rack_inlet_temp = rack_supply_approach_temp + CRAC_setpoint 
         rack_cpu_power, rack_itfan_power = rack.compute_instantaneous_pwr_vecd(rack_inlet_temp, ITE_load_pct_list)
-        rackwise_outlet_temp = rack_inlet_temp + (rack_cpu_power+rack_itfan_power)/(self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*(rack.get_average_rack_fan_v()))
+        
+        c = 0.8
+        a = 0.008
+        f = a * (rack_cpu_power+rack_itfan_power) / (self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*rack.get_average_rack_fan_v()) + c*ITE_load_pct_list/100*rack_inlet_temp
+        rackwise_outlet_temp = rack_inlet_temp + f
             
         return rack_cpu_power, rack_itfan_power, rackwise_outlet_temp
       
@@ -286,7 +295,7 @@ class DataCenter_ITModel():
         self.total_DC_full_load = self.racks_list[0].get_current_rack_load()
 
 
-def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp,data_center_full_load, DC_Config):
+def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data_center_full_load, DC_Config):
     """Calculate the HVAV power attributes
 
         Args:
@@ -301,9 +310,9 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp,data_
             CRAC_cooling_load (float): CRAC cooling load
             Compressor_load (float): Chiller compressor load
         """
-
+    a = 500
     m_sys = DC_Config.RHO_AIR * DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu * data_center_full_load
-    CRAC_cooling_load = m_sys*DC_Config.C_AIR*(avg_CRAC_return_temp-CRAC_setpoint) 
+    CRAC_cooling_load = m_sys*DC_Config.C_AIR*(avg_CRAC_return_temp-CRAC_setpoint) + (a/CRAC_setpoint)**3
     CRAC_Fan_load = DC_Config.CRAC_FAN_REF_P*(DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu/DC_Config.CRAC_REFRENCE_AIR_FLOW_RATE_pu)
     Compressor_load = CRAC_cooling_load/DC_Config.CHILLER_COP 
 
@@ -313,7 +322,7 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp,data_
     #compute Cooling tower pump power
     power_consumed_CT = (DC_Config.CT_PRESSURE_DROP*DC_Config.CT_WATER_FLOW_RATE)/DC_Config.CT_PUMP_EFFICIENCY
 
-    if ambient_temp < 5:
+    if (ambient_temp < 5) or (avg_CRAC_return_temp < CRAC_setpoint):
         return CRAC_Fan_load, 0.0, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
 
     Cooling_tower_air_delta = max(50 - (ambient_temp-CRAC_setpoint), 5)  
@@ -321,7 +330,7 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp,data_
     v_air = m_air/DC_Config.RHO_AIR
     CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(v_air/DC_Config.CT_REFRENCE_AIR_FLOW_RATE)**3  
     
-    return CRAC_Fan_load, CT_Fan_pwr*1.05, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
+    return CRAC_Fan_load, CT_Fan_pwr*10, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
     
 def calculate_avg_CRAC_return_temp(rack_return_approach_temp_list,rackwise_outlet_temp):   
     """Calculate the CRAC return air temperature

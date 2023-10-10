@@ -38,7 +38,7 @@ def get_energy_variables(state):
     Returns:
         List[float]: Subset of the agent_dc observation
     """
-    energy_vars = np.hstack((state[4:7],(state[7]+state[8])/2))
+    energy_vars = np.hstack((state[4:7],(state[7]+state[8])))
     return energy_vars
 
 

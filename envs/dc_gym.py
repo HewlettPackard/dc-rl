@@ -133,7 +133,7 @@ class dc_gymenv(gym.Env):
         
         data_center_total_ITE_Load = self.rackwise_cpu_pwr + self.rackwise_itfan_pwr
         
-        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load,self.CT_pump_load  = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
+        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load,self.CT_pump_load = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
                                                                                                                                                                        avg_CRAC_return_temp=avg_CRAC_return_temp,
                                                                                                                                                                        ambient_temp=self.ambient_temp,
                                                                                                                                                                        data_center_full_load=data_center_total_ITE_Load,
@@ -149,8 +149,8 @@ class dc_gymenv(gym.Env):
             'dc_ITE_total_power_kW': data_center_total_ITE_Load / 1e3,
             'dc_HVAC_total_power_kW': self.CT_Cooling_load / 1e3,
             'dc_total_power_kW': (data_center_total_ITE_Load + self.CT_Cooling_load) / 1e3,
-            'dc_power_lb_kW': 1000,
-            'dc_power_ub_kW': 7000,
+            'dc_power_lb_kW': 20,
+            'dc_power_ub_kW': 350,
             'dc_crac_setpoint_delta': crac_setpoint_delta,
             'dc_crac_setpoint': self.raw_curr_stpt,
             'dc_cpu_workload_percent': self.cpu_load,

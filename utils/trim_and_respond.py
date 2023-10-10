@@ -10,7 +10,7 @@ class trim_and_respond_ctrl():
     def __init__(self,
                 TandR_monitor_idx = 6,
                 TandR_monitor : str = "avg_room_temp",
-                TandR_monitor_limit : float = 34):
+                TandR_monitor_limit : float = 21):
         
         assert (TandR_monitor == "avg_room_temp") | (TandR_monitor == "crac_return_temp"), f"invalid TandR_monitor monitor string : {TandR_monitor}"
         self.TandR_monitor = TandR_monitor

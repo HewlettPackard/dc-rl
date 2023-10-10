@@ -1,24 +1,25 @@
 """
-Creates algorithm configuration for PPO and starts training process
+Creates algorithm configuration for MADDPG and starts training process
 """
 
 import os
 
 import ray
-from ray.rllib.algorithms.ppo import PPOConfig
-from train import train
-from dcrl_eplus_env import DCRLeplus
+
 from dcrl_env import DCRL
+from dcrl_eplus_env import DCRLeplus
+from maddpg import MADDPGConfigStable, MADDPGStable
+from train import train
 from utils.rllib_callbacks import CustomCallbacks
 
 # Data collection config
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
-NUM_AGENTS = 2
+NUM_AGENTS = 3
 NUM_WORKERS = 12
 
 CONFIG = (
-        PPOConfig()
+        MADDPGConfigStable()
         .environment(
             env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
             env_config={
@@ -33,6 +34,9 @@ CONFIG = (
 
                 # Battery capacity
                 'max_bat_cap_Mw': 0.05,
+
+                # MADDPG returns logits instead of discrete actions
+                "actions_are_logits": True,
                 
                 # Collaborative weight in the reward
                 'individual_reward_weight': 0.8,
@@ -46,23 +50,19 @@ CONFIG = (
                 'bat_reward': 'default_bat_reward'
             }
         )
-        .framework("torch")
-        .rollouts(num_rollout_workers=NUM_WORKERS,
-                  rollout_fragment_length='auto')
+        .framework("tf")
+        .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
             gamma=0.99, 
-            lr=1e-5, 
-            lr_schedule=[[0, 3e-5], [10000000, 1e-6]],
-            kl_coeff=0.3, 
-            clip_param=0.02,
-            entropy_coeff=0.05,
-            use_gae=True, 
+            lr=1e-6,
+            model={
+                    "use_attention": True,
+                    }, 
             train_batch_size=96*2 * NUM_WORKERS * NUM_AGENTS,
-            model={'fcnet_hiddens': [128, 64, 16], 'fcnet_activation': 'relu'}, 
-            shuffle_sequences=True
+            use_local_critic=False,
         )
         .callbacks(CustomCallbacks)
-        .resources(num_cpus_per_worker=1, num_gpus=0)
+        .resources(num_cpus_per_worker=2, num_gpus=0)
     )
 
 NAME = "test"
@@ -75,8 +75,9 @@ if __name__ == '__main__':
     # ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(
-        algorithm="PPO",
+        algorithm=MADDPGStable,
         config=CONFIG,
         results_dir=RESULTS_DIR,
         name=NAME,
     )
+

@@ -28,23 +28,23 @@ class CarbonLoadEnv(gym.Env):
         self.action_space = gym.spaces.Discrete(2)
         if future:
             self.observation_space = gym.spaces.Box(
-                low=-5e1,
-                high=5e1,
+                low=-10,
+                high=10,
                 shape=(7 + future_steps + n_vars_energy + n_vars_battery,),
                 dtype=np.float32,
             )
         else:
             self.observation_space = gym.spaces.Box(
-                low=-5e1,
-                high=5e1,
-                shape=(7 + n_vars_energy + n_vars_battery,),
+                low=-10,
+                high=10,
+                shape=(7 + n_vars_energy + n_vars_battery + 1,),
                 dtype=np.float32,
             )
 
 
         self.global_total_steps = 0
         self.test_mode = test_mode
-        self.time_steps_day = 96
+        self.time_steps_day = 24*4
         self.load_to_assign = 3 * flexible_workload_ratio
         self.day_workload = 0
         self.workload = 0

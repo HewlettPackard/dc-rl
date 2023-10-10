@@ -1,9 +1,12 @@
 from dcrl_env import DCRL
 from utils.trim_and_respond import trim_and_respond_ctrl
 from tqdm import tqdm
+import pandas as pd
+import os
 import warnings
 warnings.filterwarnings('ignore')
 
+# os.remove('ASHRAE2_data_ny.csv')
 # will create a bunch of these for rollouts
 month_idxs = list(range(0,12))
 
@@ -83,13 +86,14 @@ with tqdm(total=len(month_idxs), desc="Processing", unit="iteration") as pbar:
         # Update the progress bar
         pbar.update(1)
         states, infos = env.reset()
-print(f"Average bat_total_energy_with_battery_KWh {sum(monthly_energy)/len(monthly_energy)}")  
-print(f"Average monthly episode reward {sum(monthly_reward)/len(monthly_reward)}")
-print(f"Average episodic_co2 {sum(monthly_co2)/len(monthly_co2)}")
-print(f"Average monthly_loadleft {sum(monthly_loadleft)/len(monthly_loadleft)}")
+print(f"Average bat_total_energy_with_battery_KWh {sum(monthly_energy)/len(monthly_energy):.2f}")  
+print(f"Average monthly episode reward {sum(monthly_reward)/len(monthly_reward):.2f}")
+print(f"Average episodic_co2 {sum(monthly_co2)/len(monthly_co2):.2f}")
+print(f"Average monthly_loadleft {sum(monthly_loadleft)/len(monthly_loadleft):.2f}")
 
-        
+# df = pd.read_csv('ASHRAE2_data_ny.csv')
 
+# print(f"Std of HVAC setpoint: {df['HVAC Setpoint'].values.std():.2f}")
 
 """
 Average bat_total_energy_with_battery_KWh 28.52126949218589

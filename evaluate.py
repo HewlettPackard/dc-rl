@@ -6,7 +6,7 @@ import ray
 
 from utils.checkpoint_finder import get_best_checkpoint
 
-CHECKPOINT = get_best_checkpoint('results/MADDPGStable_DCRL_c8a76_00000_0_2023-10-05_17-53-37')
+CHECKPOINT = get_best_checkpoint('results/test/MADDPGStable_DCRL_a986a_00000_0_2023-10-06_18-39-59')
 # CHECKPOINT = get_best_checkpoint('results/test/MADDPGStable_DCRL_1f396_00000_0_2023-10-03_08-04-16')
 NUM_RUNS = 1
 

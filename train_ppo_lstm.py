@@ -47,8 +47,7 @@ CONFIG = (
             }
         )
         .framework("torch")
-        .rollouts(num_rollout_workers=NUM_WORKERS,
-                  rollout_fragment_length='auto')
+        .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
             gamma=0.99, 
             lr=1e-5, 
@@ -58,7 +57,15 @@ CONFIG = (
             entropy_coeff=0.05,
             use_gae=True, 
             train_batch_size=96*2 * NUM_WORKERS * NUM_AGENTS,
-            model={'fcnet_hiddens': [128, 64, 16], 'fcnet_activation': 'relu'}, 
+            model={
+                    'fcnet_hiddens': [128, 64, 16], 
+                    'fcnet_activation': 'relu',
+                    'use_lstm': True,
+                    'max_seq_len': 20,  # or whatever sequence length you find appropriate
+                    'lstm_cell_size': 256,  # optional, default is usually 256
+                    'lstm_use_prev_action': True,
+                    'lstm_use_prev_reward': True
+                    }, 
             shuffle_sequences=True
         )
         .callbacks(CustomCallbacks)
@@ -72,7 +79,7 @@ if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
 
     ray.init(ignore_reinit_error=True)
-    # ray.init(local_mode=True, ignore_reinit_error=True)
+    #ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(
         algorithm="PPO",
