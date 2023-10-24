@@ -18,7 +18,7 @@ if __name__ == '__main__':
              'results/test/A2C_DCRL_ae138_00000_0_2023-10-12_09-52-08',
              'results/test/MADDPGStable_DCRL_c1bbb_00000_0_2023-10-12_11-52-41',
              'results/test/MADDPGStable_DCRL_fc90b_00000_0_2023-10-12_11-54-19',
-             'results/test/MADDPGStable_DCRL_100b5_00000_0_2023-10-12_11-54-52'
+             'results/test/MADDPGStable_DCRL_100b5_00000_0_2023-10-12_11-54-52',
              ]
     
     NUM_RUNS = 1

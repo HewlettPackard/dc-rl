@@ -160,8 +160,8 @@ class DCRL(MultiAgentEnv):
         self.init_day = get_init_day(self.month)
         self.t_m = Time_Manager(self.init_day)
         self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=flexible_load, init_day=self.init_day)
-        self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file, future_steps=FUTURE_STEPS, evaluation_noise=False)
-        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=FUTURE_STEPS, evaluation_noise=False)
+        self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file, future_steps=FUTURE_STEPS, evaluation_noise=self.evaluation_mode)
+        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=FUTURE_STEPS, evaluation_noise=self.evaluation_mode)
 
         # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
