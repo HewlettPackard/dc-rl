@@ -6,3 +6,9 @@ __pycache__/
 *.txt
 *.csv
 */__pycache__/
+.ipynb_checkpoints
+pydcm/test/
+pydcm_examples/
+arima_model.ipynb
+Benchmark_pydcm.pdf
+pydcm_plots.ipynb
