@@ -15,7 +15,7 @@ monthly_energy = []
 monthly_loadleft = []
 monthly_reward = []
 
-LOCATION = 'NY'
+LOCATION = 'WA'
 with tqdm(total=len(month_idxs), desc="Processing", unit="iteration") as pbar:
     for month_idx in month_idxs:
         

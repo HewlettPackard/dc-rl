@@ -158,26 +158,35 @@ def make_dc_env(month, location):
         'carbonIntensity': [0, 1],
         'batterySoC': [0, 1]}
     dc_env = NormalizeObservation(dc_env, ranges, add_sincos=True)
-    dc_env = tinyMultiObsWrapper(dc_env, n=3, add_sincos=True)
+    # dc_env = tinyMultiObsWrapper(dc_env, n=3, add_sincos=True)
     return dc_env
 
-def make_ls_env(month, test_mode=False, n_vars_energy=4, n_vars_battery=1):
+def make_ls_env(month,
+                n_vars_energy : int = 4,
+                n_vars_battery : int = 1,
+                test_mode=False,
+                future_steps=4, 
+                flexible_workload_ratio=0.1):
     """Method to build the Load shifting environment
 
     Args:
         month (int): Month of the year in which the agent is training.
         n_vars_energy (int, optional): Number of variables from the Energy environment. Defaults to 4.
         n_vars_battery (int, optional): Number of variables from the Battery environment. Defaults to 1.
-        test_mode (bool,optional): Use or not evaluation mode
 
     Returns:
         CarbonLoadEnv: Load Shifting environment
     """
-
-    total_wkl = Workload_Manager().get_total_wkl()
     
-    return CarbonLoadEnv(n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, test_mode=test_mode, future_steps=4*24)
-
+    return CarbonLoadEnv(n_vars_energy=n_vars_energy,
+                         n_vars_battery=n_vars_battery,
+                         test_mode=test_mode,
+                         future_steps=future_steps,
+                         future=True if future_steps > 1 else False,
+                         flexible_workload_ratio=flexible_workload_ratio
+                         )
+    
+    
 def make_bat_fwd_env(month):
 
     """Method to build the Battery environment.

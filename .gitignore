@@ -5,4 +5,7 @@ __pycache__/
 *.pyc
 *.txt
 *.csv
+*.pdf
+*.json
+*.png
 */__pycache__/

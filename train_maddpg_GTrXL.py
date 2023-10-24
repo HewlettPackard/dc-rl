@@ -15,7 +15,7 @@ from utils.rllib_callbacks import CustomCallbacks
 # Data collection config
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
-NUM_AGENTS = 3
+NUM_AGENTS = 2
 NUM_WORKERS = 12
 
 CONFIG = (
@@ -45,7 +45,7 @@ CONFIG = (
                 'flexible_load': 0.5,
                 
                 # Specify reward methods
-                'ls_reward': 'default_ls_reward',
+                'ls_reward': 'advanced_ls_reward',
                 'dc_reward': 'default_dc_reward',
                 'bat_reward': 'default_bat_reward'
             }
@@ -57,6 +57,13 @@ CONFIG = (
             lr=1e-6,
             model={
                     "use_attention": True,
+                    "attention_num_transformer_units": 2,
+                    "attention_num_heads": 4,
+                    "attention_dim": 192,
+                    "attention_use_n_prev_actions": 5,
+                    "attention_use_n_prev_rewards": 5,
+                    "attention_memory_inference": 96,
+                    "attention_memory_training": 96
                     }, 
             train_batch_size=96*2 * NUM_WORKERS * NUM_AGENTS,
             use_local_critic=False,
@@ -65,7 +72,7 @@ CONFIG = (
         .resources(num_cpus_per_worker=2, num_gpus=0)
     )
 
-NAME = "test"
+NAME = "test2"
 RESULTS_DIR = './results'
 
 if __name__ == '__main__':

@@ -1,6 +1,8 @@
 import os
 import numpy as np
 import pandas as pd
+from statsmodels.tsa.arima.model import ARIMA
+from statsmodels.tsa.statespace.sarimax import SARIMAX
 
 file_path = os.path.abspath(__file__)
 PATH = os.path.split(os.path.dirname(file_path))[0]
@@ -263,7 +265,7 @@ class CI_Manager():
             weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
     """
-    def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5):
+    def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5, evaluation_noise=False):
         """Manager of the carbon intesity data
 
         Args:
@@ -305,6 +307,8 @@ class CI_Manager():
         
         self.future_steps = future_steps
         
+        self.evaluation_noise = evaluation_noise
+
 
     # Function to return all carbon intensity data
     def get_total_ci(self):
@@ -325,18 +329,36 @@ class CI_Manager():
         self.time_step = self.init_day*self.time_steps_day
         
         # Add noise to the carbon data using the CoherentNoise
-        self.carbon_smooth = self.original_data + self.coherent_noise.generate(len(self.original_data))
-        
-        self.carbon_smooth = np.clip(self.carbon_smooth, 0, None)
+        while True:
+            try:
+                self.carbon_smooth = self.original_data + self.coherent_noise.generate(len(self.original_data))
+                
+                self.carbon_smooth = np.clip(self.carbon_smooth, 0, None)
 
-        self.min_ci = min(self.carbon_smooth)
-        self.max_ci = max(self.carbon_smooth)
-        self.norm_carbon = normalize(self.carbon_smooth, self.min_ci, self.max_ci)
+                self.min_ci = min(self.carbon_smooth)
+                self.max_ci = max(self.carbon_smooth)
+                self.norm_carbon = normalize(self.carbon_smooth, self.min_ci, self.max_ci)
+                
+                if self.evaluation_noise:
+                    # Create the evaluation model noise and train it using self.original_data
+                    # ARIMA(2,1,4)
+                    self.forecast_model = ARIMA(self.norm_carbon, order=(2,1,4)).fit() 
+                break
+            
+            except:
+                print("Error during creating the evaluation model")
+                pass
         # self.norm_carbon = standarize(self.carbon_smooth)
         # self.norm_carbon = (np.clip(self.norm_carbon, -1, 1) + 1) * 0.5
+        if not self.evaluation_noise:
+            return self.carbon_smooth[self.time_step], self.norm_carbon[self.time_step:self.time_step+self.future_steps]
+        else:
+            # Use the created noise for evaluation
+            forecasted_noised_values = self.forecast_model.predict(self.time_step+1, self.time_step+self.future_steps-1)
+            # forecasted_noised_values += np.random.normal(0.5, 0.5, size=len(forecasted_noised_values))
+            forecasted_noised_values = np.clip(forecasted_noised_values, 0, 1)
+            return self.carbon_smooth[self.time_step], np.hstack((self.norm_carbon[self.time_step], forecasted_noised_values))
 
-        return self.carbon_smooth[self.time_step], self.norm_carbon[self.time_step:self.time_step+self.future_steps]
-    
     # Function to advance the time step and return the carbon intensity at the new time step
     def step(self):
         """Step CI_Manager
@@ -357,8 +379,15 @@ class CI_Manager():
         else:
             data = self.norm_carbon[self.time_step:self.time_step+self.future_steps]
 
-        return self.carbon_smooth[self.time_step], data
-
+        if not self.evaluation_noise:
+            return self.carbon_smooth[self.time_step], data
+        else:
+            # Use the created noise for evaluation
+            forecasted_noised_values = self.forecast_model.predict(self.time_step+1, self.time_step+self.future_steps-1)
+            # forecasted_noised_values += np.random.normal(0.5, 0.5, size=len(forecasted_noised_values))
+            forecasted_noised_values = np.clip(forecasted_noised_values, 0, 1)
+            return self.carbon_smooth[self.time_step], np.hstack((self.norm_carbon[self.time_step], forecasted_noised_values))
+        
 
 # Class to manage weather data
 # Where to obtain other weather files:
@@ -376,7 +405,7 @@ class Weather_Manager():
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
             temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.
     """
-    def __init__(self, filename='', location='NY', init_day=0, weight=0.01, desired_std_dev=0.5, temp_column=6):
+    def __init__(self, filename='', location='NY', init_day=0, weight=0.01, desired_std_dev=0.5, temp_column=6, future_steps=4, evaluation_noise=False):
         """Manager of the weather data.
 
         Args:
@@ -401,7 +430,7 @@ class Weather_Manager():
         xtemperature_new = np.linspace(0, len(temperature_data), len(temperature_data)*4)
         
         self.min_temp = -10
-        self.max_temp = 40
+        self.max_temp = 50
         
         # Interpolate the carbon data to increase the number of data points
         self.temperature_data = np.interp(xtemperature_new, x, temperature_data)
@@ -412,11 +441,25 @@ class Weather_Manager():
         # Save a copy of the original data
         self.original_data = self.temperature_data.copy()
         
+        # ar_params = [0.9]
+        # ma_params = [0.3]
+
+        # For ARMA noise
+        # self.add_noise_generator = ARMANoise(ar_params=ar_params, ma_params=ma_params)
+        
+        # For ARIMA noise
+        # d is the differencing order for ARIMA
+        # d = 1
+        # self.add_noise_generator = ARIMANoise(ar_params=ar_params, d=d, ma_params=ma_params)
+
         # Initialize CoherentNoise process
         self.coherent_noise = CoherentNoise(base=self.original_data[0], weight=weight, desired_std_dev=desired_std_dev)
-                
+        
+        self.future_steps = future_steps
         self.timestep_per_hour = 4
         self.time_steps_day = self.timestep_per_hour*24
+        
+        self.evaluation_noise = evaluation_noise
 
     # Function to return all weather data
     def get_total_weather(self):
@@ -438,12 +481,36 @@ class Weather_Manager():
         self.time_step = self.init_day*self.time_steps_day
         
         # Add noise to the temperature data using the CoherentNoise
-        self.temperature_data = self.original_data + self.coherent_noise.generate(len(self.original_data))
-        
-        self.temperature_data = np.clip(self.temperature_data, self.min_temp, self.max_temp)
-        self.norm_temp_data = normalize(self.temperature_data, self.min_temp, self.max_temp)
+        # if self.add_noise_generator:
+        # self.temperature_data = self.original_data + 2*self.add_noise_generator.generate(len(self.original_data))
+        # else:
+        while True:
+            try:
+                self.temperature_data = self.original_data + self.coherent_noise.generate(len(self.original_data))
+                
+                self.temperature_data = np.clip(self.temperature_data, self.min_temp, self.max_temp)
+                self.norm_temp_data = normalize(self.temperature_data, self.min_temp, self.max_temp)
+                
+                if self.evaluation_noise:
+                    # Create the evaluation model noise and train it using self.original_data
+                    self.forecast_model = ARIMA(self.norm_temp_data, order=(2,1,4)).fit()
+                    
+                break
+            except:
+                print("Error during creating the evaluation model")
+                pass
+        future_norm_temperature = self.norm_temp_data[self.time_step+1:self.time_step+1+self.future_steps]
+        assert len(future_norm_temperature) == self.future_steps, f'Future normalized temperature is not of length {self.future_steps}; {len(future_norm_temperature)}'
 
-        return self.temperature_data[self.time_step], self.norm_temp_data[self.time_step]
+        if not self.evaluation_noise:
+            return self.temperature_data[self.time_step], future_norm_temperature
+        else:
+            # Use the created noise for evaluation
+            forecasted_noised_values = self.forecast_model.predict(self.time_step+1, self.time_step+self.future_steps-1)
+            # forecasted_noised_values += np.random.normal(0.5, 0.5, size=len(forecasted_noised_values))
+            forecasted_noised_values = np.clip(forecasted_noised_values, 0, 1)
+            return self.temperature_data[self.time_step], np.hstack((self.norm_temp_data[self.time_step], forecasted_noised_values))
+        
     
     # Function to advance the time step and return the weather at the new time step
     def step(self):
@@ -460,4 +527,21 @@ class Weather_Manager():
             self.time_step = self.init_day*self.time_steps_day
             
         # assert self.time_step < len(self.temperature_data), 'Episode length is longer than the provide Temperature_data'
-        return self.temperature_data[self.time_step], self.norm_temp_data[self.time_step]
+        if self.time_step + self.future_steps + 1 > len(self.temperature_data):
+            future_norm_temperature = self.norm_temp_data[-1]*np.ones(shape=(self.future_steps))
+        else:
+            future_norm_temperature = self.norm_temp_data[self.time_step+1:self.time_step+1+self.future_steps]
+        
+        if len(future_norm_temperature) != self.future_steps:
+            assert len(future_norm_temperature) == self.future_steps, f'Future normalized temperature is not of length {self.future_steps}; {len(future_norm_temperature)}'
+    
+    
+        if not self.evaluation_noise:
+            return self.temperature_data[self.time_step], future_norm_temperature
+        else:
+            # Use the created noise for evaluation
+            forecasted_noised_values = self.forecast_model.predict(self.time_step+1, self.time_step+self.future_steps-1)
+            # forecasted_noised_values += np.random.normal(0.5, 0.5, size=len(forecasted_noised_values))
+            forecasted_noised_values = np.clip(forecasted_noised_values, 0, 1)
+
+            return self.temperature_data[self.time_step], np.hstack((self.norm_temp_data[self.time_step], forecasted_noised_values))

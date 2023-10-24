@@ -66,10 +66,12 @@ class DCRLeplus(MultiAgentEnv):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        self.ls_env = make_envs.make_ls_env(self.month)
+        FUTURE_STEPS = 4
+        
+        self.ls_env = make_envs.make_ls_env(self.month, future_steps=FUTURE_STEPS, n_vars_battery=0, flexible_workload_ratio=self.flexible_load)
         self.dc_env = make_envs.make_dc_env(self.month, self.location) 
         self.bat_env = make_envs.make_bat_fwd_env(self.month)
-
+        
         self._obs_space_in_preferred_format = True
         
         self.observation_space = gym.spaces.Dict({})
@@ -102,8 +104,8 @@ class DCRLeplus(MultiAgentEnv):
         self.init_day = get_init_day(self.month)
         self.t_m = Time_Manager(init_day=self.init_day)
         self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=flexible_load, init_day=self.init_day)
-        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file)
-
+        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=FUTURE_STEPS, evaluation_noise=False)
+        
         # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
 
@@ -151,7 +153,7 @@ class DCRLeplus(MultiAgentEnv):
 
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, current workload, energy variables from DC, battery SoC]
         var_to_LS_energy = [self.dc_state[i] for i in [4, 5, 6, 8]]  # 4: External Temperature, 5: Internal Temperature, 6: Setpoint, 8: Total energy consumption
-        self.ls_state = np.hstack((t_i, ls_s, ci_i_future, workload, var_to_LS_energy, batSoC))
+        self.ls_state = np.hstack((t_i, ls_s, ci_i_future, workload, var_to_LS_energy))
         
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
         self.bat_state = np.hstack((t_i, bat_s, ci_i_future))
@@ -255,7 +257,7 @@ class DCRLeplus(MultiAgentEnv):
 
         # We need to update the LS state with the DC energy variables and the final battery SoC.
         var_to_LS_energy = [self.dc_state[i] for i in [4, 5, 6, 8]]
-        self.ls_state = np.hstack((t_i, self.ls_state, ci_i_future, workload, var_to_LS_energy, batSoC))
+        self.ls_state = np.hstack((t_i, self.ls_state, ci_i_future, workload, var_to_LS_energy))
         
         # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
         # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
