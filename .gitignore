@@ -9,3 +9,4 @@ pydcm/
 data/pydcmresults
 *.ipynb
 Benchmark_pydcm.pdf
+pydcm_examples

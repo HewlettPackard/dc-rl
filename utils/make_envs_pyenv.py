@@ -6,7 +6,7 @@ import pandas as pd
 
 from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
 from envs.carbon_ls import CarbonLoadEnv
-from envs.dc_gym import dc_gymenv, dc_gymenv_standalone
+from envs.dc_gym import dc_gymenv
 from utils.utils_cf import get_init_day
 
 
@@ -64,7 +64,6 @@ def make_dc_pyeplus_env(month : int = 1,
                         add_CI : bool = True,
                         episode_length_in_time : pd.Timedelta = None,
                         use_ls_cpu_load : bool = False,
-                        standalone_pyeplus : bool = False,
                         num_sin_cos_vars : int = 4,
                         ):
     """Method that creates the data center environment with the timeline, location, proper data files, gym specifications and auxiliary methods
@@ -82,7 +81,6 @@ def make_dc_pyeplus_env(month : int = 1,
         add_CI (bool, optional): Boolean Flag to indicate whether Carbon Intensity is part of the environment statespace. Defaults to True.
         episode_length_in_time (pd.Timedelta, optional): Length of an episode in terms of pandas time-delta object. Defaults to None.
         use_ls_cpu_load (bool, optional): Use the cpu workload value from a separate Load Shifting agent. This turns of reading default cpu data. Defaults to False.
-        standalone_pyeplus (bool, optional): Boolean Flag to indicate whether the data center environment is being tested in a standalone manner or not. Defaults to False.
         num_sin_cos_vars (int, optional): Number of sin and cosine variable that will be added externally from the centralized data source
     Returns:
         envs.dc_gym.dc_gymenv: The environment instantiated with the particular month.
@@ -153,43 +151,20 @@ def make_dc_pyeplus_env(month : int = 1,
     
     ################################################################################
     ############################## Create the Environment ##########################
-    ################################################################################
+    ################################################################################   
+    dc_env = dc_gymenv(observation_variables=observation_variables,
+                    observation_space=observation_space,
+                    action_variables=action_variables,
+                    action_space=action_space,
+                    action_mapping=action_mapping,
+                    ranges=ranges,
+                    add_cpu_usage=add_cpu_usage,
+                    min_temp=min_temp,
+                    max_temp=max_temp,
+                    action_definition=action_definition,
+                    episode_length_in_time=episode_length_in_time
+                    )
     
-    if not standalone_pyeplus:
-        
-        dc_env = dc_gymenv(observation_variables=observation_variables,
-                        observation_space=observation_space,
-                        action_variables=action_variables,
-                        action_space=action_space,
-                        action_mapping=action_mapping,
-                        ranges=ranges,
-                        add_cpu_usage=add_cpu_usage,
-                        min_temp=min_temp,
-                        max_temp=max_temp,
-                        action_definition=action_definition,
-                        episode_length_in_time=episode_length_in_time
-                        )
-        
-        dc_env.NormalizeObservation()
-        
-        return dc_env
-    # test in standalone mode
-    else:
-        env_config = {'observation_variables': observation_variables,
-                        'observation_space':observation_space,
-                        'action_variables':action_variables,
-                        'action_space':action_space,
-                        'action_mapping' : action_mapping,
-                        'ranges': ranges,
-                        'add_cpu_usage':add_cpu_usage,
-                        'min_temp':min_temp,
-                        'max_temp':max_temp,
-                        'action_definition':action_definition,
-                        'use_ls_cpu_load' : use_ls_cpu_load,  # changed here
-                        'episode_length_in_time': episode_length_in_time
-        }
-        
-        return dc_gymenv_standalone, env_config
+    dc_env.NormalizeObservation()
     
-    
-    
+    return dc_env

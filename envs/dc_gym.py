@@ -103,6 +103,8 @@ class dc_gymenv(gym.Env):
         
         if self.scale_obs:
             return self.normalize(self.raw_curr_state), {}  
+        else:
+            return self.raw_curr_state, {}
         
     def step(self, action):
 
@@ -157,6 +159,9 @@ class dc_gymenv(gym.Env):
             'dc_int_temperature': np.mean(self.rackwise_outlet_temp),
             'dc_CW_pump_power_kW': self.CW_pump_load,
             'dc_CT_pump_power_kW': self.CT_pump_load,
+            'dc_rackwise_outlet_temp':self.rackwise_outlet_temp,
+            'dc_config':DC_Config,
+            'dc_rackwise_inlet_temp':self.dc.rackwise_inlet_temp,
         }
         
 
@@ -226,23 +231,3 @@ class dc_gymenv(gym.Env):
         Updates the battery state of charge.
         """
         self.bat_SoC = bat_SoC
-        
-class dc_gymenv_standalone(dc_gymenv):
-    
-    def __init__(self, env_config):
-        
-        super().__init__(
-                       env_config['observation_variables'],
-                       observation_space=env_config['observation_space'],
-                       action_variables=env_config['action_variables'],
-                       action_space=env_config['action_space'],
-                       action_mapping=env_config['action_mapping'],
-                       ranges=env_config['ranges'],
-                       add_cpu_usage=env_config['add_cpu_usage'],
-                       min_temp=env_config['min_temp'],
-                       max_temp=env_config['max_temp'],
-                       action_definition=env_config['action_definition'],
-                       episode_length_in_time=env_config['episode_length_in_time']
-        )
-        
-        self.NormalizeObservation()

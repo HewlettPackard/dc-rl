@@ -250,6 +250,7 @@ class DataCenter_ITModel():
         self.racks_list = []
         self.rack_supply_approach_temp_list = rack_supply_approach_temp_list
         self.rack_CPU_config = rack_CPU_config
+        self.rackwise_inlet_temp = []
         
         for _, CPU_config_list in zip(range(num_racks),self.rack_CPU_config):
             self.racks_list.append(Rack(CPU_config_list, max_W_per_rack = max_W_per_rack, rack_config=self.DC_ITModel_config))
@@ -274,16 +275,20 @@ class DataCenter_ITModel():
         rackwise_cpu_pwr = [] 
         rackwise_itfan_pwr = []
         rackwise_outlet_temp = []
+        rackwise_inlet_temp = []
         
         for rack, rack_supply_approach_temp, ITE_load_pct \
                                 in zip(self.racks_list, self.rack_supply_approach_temp_list, ITE_load_pct_list):
             #clamp supply approach temperatures
             rack_supply_approach_temp = rack.clamp_supply_approach_temp(rack_supply_approach_temp)
             rack_inlet_temp = rack_supply_approach_temp + CRAC_setpoint 
+            rackwise_inlet_temp.append(rack_inlet_temp)
             rack_cpu_power, rack_itfan_power = rack.compute_instantaneous_pwr_vecd(rack_inlet_temp,ITE_load_pct)
             rackwise_cpu_pwr.append(rack_cpu_power)
             rackwise_itfan_pwr.append(rack_itfan_power)
             rackwise_outlet_temp.append((rack_inlet_temp + (rack_cpu_power+rack_itfan_power)/(self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*(rack.get_average_rack_fan_v()/25)))*0.75)
+        
+        self.rackwise_inlet_temp = rackwise_inlet_temp
             
         return rackwise_cpu_pwr, rackwise_itfan_pwr, rackwise_outlet_temp
       
