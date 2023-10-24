@@ -1,3 +1,19 @@
+# class RunningStats:
+#     def __init__(self):
+#         self.min_value = float('inf')
+#         self.max_value = float('-inf')
+
+#     def update(self, value):
+#         self.min_value = min(self.min_value, value)
+#         self.max_value = max(self.max_value, value)
+
+#     def get_min(self):
+#         return self.min_value
+
+#     def get_max(self):
+#         return self.max_value
+
+# stats = RunningStats()
 # File where the rewards are defined
 
 def default_ls_reward(params: dict) -> float:
@@ -16,8 +32,8 @@ def default_ls_reward(params: dict) -> float:
     # Energy part of the reward
     total_energy_with_battery = params['bat_total_energy_with_battery_KWh']
     norm_CI = params['norm_CI']
-    dcload_min = params['bat_dcload_min']
-    dcload_max = params['bat_dcload_max']
+    dcload_min = 50
+    dcload_max = 900
     
     # Penalty part of the reward
     norm_load_left = params['ls_norm_load_left']
@@ -25,7 +41,7 @@ def default_ls_reward(params: dict) -> float:
     penalty = 1e2
     
     # Calculate the reward associted to the energy consumption
-    norm_net_dc_load = (total_energy_with_battery / 1e3 - dcload_min) / (dcload_max - dcload_min)
+    norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
     footprint = -1.0 * norm_CI * norm_net_dc_load
     # Obtain the penalty if there is load at the end of the day
     if out_of_time:
@@ -34,6 +50,11 @@ def default_ls_reward(params: dict) -> float:
         penalty = 0
     # Add the rewards
     reward = footprint + penalty
+    
+    # Update with new values
+    # stats.update(total_energy_with_battery)
+
+    # print(f'Min: {stats.get_min()}; Max: {stats.get_max()}')
     return reward
 
 
@@ -53,7 +74,7 @@ def default_dc_reward(params: dict) -> float:
     """
     data_center_total_ITE_Load = params['dc_ITE_total_power_kW']
     CT_Cooling_load = params['dc_HVAC_total_power_kW']
-    energy_lb,  energy_ub = params['dc_power_lb_kW'], params['dc_power_ub_kW']
+    energy_lb,  energy_ub = 50, 900
     
     return - 1.0 * ((data_center_total_ITE_Load + CT_Cooling_load) - energy_lb) / (energy_ub - energy_lb)
 
@@ -247,6 +268,64 @@ def temperature_efficiency_reward(params: dict) -> float:
             reward = -abs(current_temperature - max_temp)
     return reward
 
+def advanced_ls_reward(params: dict) -> float:
+    """
+    Calculates a reward value based on normalized load shifting.
+
+    Args:
+        params (dict): Dictionary containing parameters.
+    Returns:
+        float: Reward value.
+    """
+    # Energy part of the reward
+    total_energy_with_battery = params['bat_total_energy_with_battery_KWh']
+    norm_CI = params['norm_CI'] # Current normalized carbon intensity value
+    dcload_min = 50/4 #Khw
+    dcload_max = 900/4 #Kwh
+    
+
+    # Penalty part of the reward
+    norm_load_left = params['ls_norm_load_left']
+    out_of_time = params['forced']
+    time_of_day = params['hour']/24 # current time is between 0 (start of day) and 1 (end of day)
+    forecast_CI = params['forecast_CI']
+    ls_action = params['ls_action']
+
+    # Constants
+    max_penalty = 100
+    
+    # Dynamically set the threshold based on the forecasted CI
+    low_carbon_intensity_threshold = sum(forecast_CI) / len(forecast_CI)  # mean of forecasted values
+
+    # Normalize energy reward
+    norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
+    footprint = -1.0 * norm_CI * norm_net_dc_load
+
+    # Look ahead in forecast for low CI periods
+    upcoming_low_periods = [i for i, val in enumerate(forecast_CI) if val < low_carbon_intensity_threshold]
+
+    # If we are leading up to a low carbon period and there's still flexible workload left, reward the agent
+    anticipate_reward = 0
+    if upcoming_low_periods and upcoming_low_periods[0] < 3 and norm_load_left > 0:
+        anticipate_reward = 1.0  # reward for anticipating the low carbon period
+
+    # If we are currently in a low carbon period and the agent decides to assign the workload, reward the agent
+    assign_reward = 0
+    if norm_CI < low_carbon_intensity_threshold and norm_load_left > 0 and ls_action == 1:
+        assign_reward = 2.0  # stronger reward for assigning during low carbon period
+
+    # Gradual penalty for not assigning load
+    gradual_penalty = -norm_load_left * max_penalty * time_of_day
+
+    # End of day penalty
+    end_of_day_penalty = 0
+    if out_of_time:
+        end_of_day_penalty = -norm_load_left * max_penalty
+
+    # Combine rewards and penalties
+    reward = footprint + anticipate_reward + assign_reward + gradual_penalty + end_of_day_penalty
+
+    return reward
 
 # Other reward methods can be added here.
 
@@ -261,6 +340,7 @@ REWARD_METHOD_MAP = {
     'energy_efficiency_reward' : energy_efficiency_reward,
     'energy_PUE_reward' : energy_PUE_reward,
     'temperature_efficiency_reward' : temperature_efficiency_reward,
+    'advanced_ls_reward': advanced_ls_reward
 }
 
 def get_reward_method(reward_method : str = 'default_dc_reward'):

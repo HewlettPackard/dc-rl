@@ -29,14 +29,14 @@ class CarbonLoadEnv(gym.Env):
         if future:
             self.observation_space = gym.spaces.Box(
                 low=-10,
-                high=10,
+                high=21,
                 shape=(7 + future_steps + n_vars_energy + n_vars_battery,),
                 dtype=np.float32,
             )
         else:
             self.observation_space = gym.spaces.Box(
                 low=-10,
-                high=10,
+                high=20,
                 shape=(7 + n_vars_energy + n_vars_battery + 1,),
                 dtype=np.float32,
             )

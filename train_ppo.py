@@ -15,12 +15,14 @@ from utils.rllib_callbacks import CustomCallbacks
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
 NUM_AGENTS = 2
-NUM_WORKERS = 12
+NUM_WORKERS = 1
 
 CONFIG = (
         PPOConfig()
         .environment(
-            env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
+            # env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
+            env=DCRLeplus,
+
             env_config={
                 # Agents active
                 'agents': ['agent_ls', 'agent_dc'],
@@ -38,10 +40,10 @@ CONFIG = (
                 'individual_reward_weight': 0.8,
                 
                 # Flexible load ratio
-                'flexible_load': 0.5,
+                'flexible_load': 0.2,
                 
                 # Specify reward methods
-                'ls_reward': 'default_ls_reward',
+                'ls_reward': 'advanced_ls_reward',
                 'dc_reward': 'default_dc_reward',
                 'bat_reward': 'default_bat_reward'
             }
@@ -54,7 +56,7 @@ CONFIG = (
             lr=1e-5, 
             lr_schedule=[[0, 3e-5], [10000000, 1e-6]],
             kl_coeff=0.3, 
-            clip_param=0.02,
+            clip_param=0.002,
             entropy_coeff=0.05,
             use_gae=True, 
             train_batch_size=96*2 * NUM_WORKERS * NUM_AGENTS,
@@ -65,14 +67,14 @@ CONFIG = (
         .resources(num_cpus_per_worker=1, num_gpus=0)
     )
 
-NAME = "test"
+NAME = "test2"
 RESULTS_DIR = './results'
 
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
 
-    ray.init(ignore_reinit_error=True)
-    # ray.init(local_mode=True, ignore_reinit_error=True)
+    # ray.init(ignore_reinit_error=True)
+    ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(
         algorithm="PPO",

@@ -52,7 +52,15 @@ class CustomCallbacks(DefaultCallbacks):
         episode.user_data["load_left"] += load_left
         
         episode.user_data["step_count"] += 1
-    
+
+        dc_total_power_kW = base_env.envs[0].dc_info["dc_total_power_kW"]
+        if 'dc_total_power_values' not in episode.user_data:
+            episode.user_data['dc_total_power_values'] = []
+
+        episode.user_data['dc_total_power_values'].append(dc_total_power_kW)
+
+
+
     def on_episode_end(self, *, worker, base_env, policies, episode, env_index, **kwargs) -> None:
         """
         Method that is called at the end of each episode in the training process. It calculates some metrics based
@@ -81,3 +89,23 @@ class CustomCallbacks(DefaultCallbacks):
         episode.custom_metrics["average_total_energy_with_battery"] = average_net_energy
         episode.custom_metrics["average_CO2_footprint"] = average_CO2_footprint
         episode.custom_metrics["load_left"] = total_load_left
+        
+        dc_total_power_values = episode.user_data.get('dc_total_power_values', [])
+
+        if dc_total_power_values:
+            min_value = min(dc_total_power_values)
+            max_value = max(dc_total_power_values)
+            episode.custom_metrics["min_dc_total_power_kW"] = min_value
+            episode.custom_metrics["max_dc_total_power_kW"] = max_value
+        
+    # def on_postprocess_trajectory(self, worker, episode, agent_id, policy_id, policies, postprocessed_batch, original_batches, **kwargs):
+    #     # Compute min/max from postprocessed_batch['total_energy_with_battery']
+    #     if agent_id == 'agent_dc':
+    #         dc_total_power_values = [info['dc_total_power_kW'] for info in postprocessed_batch['infos'] if 'dc_total_power_kW' in info]
+
+    #         min_value = np.min(dc_total_power_values)
+    #         max_value = np.max(dc_total_power_values)
+
+    #         # Store in custom metrics
+    #         worker.custom_metrics[f'min_total_energy_{worker.worker_index}'] = min_value
+    #         worker.custom_metrics[f'max_total_energy_{worker.worker_index}'] = max_value

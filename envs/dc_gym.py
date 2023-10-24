@@ -189,7 +189,7 @@ class dc_gymenv(gym.Env):
         """
         return (obs-self.obs_min)/self.obs_delta
 
-    def  get_obs(self):
+    def get_obs(self):
         """
         Returns the observation at the current time step.
 

@@ -5,6 +5,9 @@ __pycache__/
 *.pyc
 *.txt
 *.csv
+*.pdf
+*.json
+*.png
 */__pycache__/
 .ipynb_checkpoints
 pydcm/test/

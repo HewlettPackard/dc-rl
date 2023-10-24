@@ -31,7 +31,7 @@ def make_ls_env(month,
                          n_vars_battery=n_vars_battery,
                          test_mode=test_mode,
                          future_steps=future_steps,
-                         future=False,
+                         future=True if future_steps > 1 else False,
                          flexible_workload_ratio=flexible_workload_ratio
                          )
 
@@ -72,6 +72,7 @@ def make_dc_pyeplus_env(month : int = 1,
                         use_ls_cpu_load : bool = False,
                         standalone_pyeplus : bool = False,
                         num_sin_cos_vars : int = 4,
+                        future_steps: int = 4,
                         ):
     """Method that creates the data center environment with the timeline, location, proper data files, gym specifications and auxiliary methods
 
@@ -107,8 +108,8 @@ def make_dc_pyeplus_env(month : int = 1,
         'Facility Total Building Electricity Demand Rate(Whole Building)'  #  'IT POWER'
     ]
         
-    observation_space = gym.spaces.Box(low=np.float32(-10.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(2*float(add_cpu_usage)))),
-                                       high=np.float32(10.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(2*float(add_cpu_usage)))),
+    observation_space = gym.spaces.Box(low=np.float32(-10.0*np.ones(len(observation_variables) + num_sin_cos_vars + int(2*float(add_cpu_usage)) + future_steps)),
+                                       high=np.float32(20.0*np.ones(len(observation_variables) + num_sin_cos_vars + int(2*float(add_cpu_usage)) + future_steps)),
                                        )
     
     ################################################################################

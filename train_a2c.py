@@ -14,8 +14,8 @@ from utils.rllib_callbacks import CustomCallbacks
 # Data collection config
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
-NUM_AGENTS = 3
-NUM_WORKERS = 24
+NUM_AGENTS = 2
+NUM_WORKERS = 12
 
 CONFIG = (
         A2CConfig()
@@ -23,7 +23,7 @@ CONFIG = (
             env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
             env_config={
                 # Agents active
-                'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+                'agents': ['agent_ls', 'agent_dc'],
 
                 # Datafiles
                 'location': 'ny',
@@ -32,13 +32,13 @@ CONFIG = (
                 'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
 
                 # Battery capacity
-                'max_bat_cap_Mw': 2,
+                'max_bat_cap_Mw': 0.05,
                 
                 # Collaborative weight in the reward
                 'individual_reward_weight': 0.8,
                 
                 # Flexible load ratio
-                'flexible_load': 0.1,
+                'flexible_load': 0.5,
                 
                 # Specify reward methods
                 'ls_reward': 'default_ls_reward',
@@ -47,12 +47,13 @@ CONFIG = (
             }
         )
         .framework("torch")
-        .rollouts(num_rollout_workers=NUM_WORKERS)
+        .rollouts(num_rollout_workers=NUM_WORKERS,
+                  rollout_fragment_length='auto')
         .training(
             use_gae=True,
             gamma=0.99, 
             lr=1e-4,
-            train_batch_size=32,
+            train_batch_size=96*2 * NUM_WORKERS * NUM_AGENTS,
             model={'fcnet_hiddens': [128, 64, 16], 'fcnet_activation': 'relu'}, 
             lr_schedule=[[0, 1e-3], [1000000, 1e-5]],
         )

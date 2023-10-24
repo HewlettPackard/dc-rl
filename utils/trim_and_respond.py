@@ -10,7 +10,7 @@ class trim_and_respond_ctrl():
     def __init__(self,
                 TandR_monitor_idx = 6,
                 TandR_monitor : str = "avg_room_temp",
-                TandR_monitor_limit : float = 21):
+                TandR_monitor_limit : float = 22.75):
         
         assert (TandR_monitor == "avg_room_temp") | (TandR_monitor == "crac_return_temp"), f"invalid TandR_monitor monitor string : {TandR_monitor}"
         self.TandR_monitor = TandR_monitor
@@ -30,12 +30,12 @@ class trim_and_respond_ctrl():
         if self.TandR_monitor_limit >= curr_val:
             if self.response_duration_counter > self.response_duration_limit:
                 self.response_duration_counter = 0
-                return 5  # maps to +0.5F  # trim
+                return 5  # maps to +0.5C  # trim
             else:
                 self.response_duration_counter += 1
-                return 4  # maps to +-0F 
+                return 4  # maps to +-0C 
         else:
-            return 3  # maps to -0.5F
+            return 3  # maps to -0.5C
 
             
         
