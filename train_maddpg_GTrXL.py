@@ -15,7 +15,7 @@ from utils.rllib_callbacks import CustomCallbacks
 # Data collection config
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
-NUM_AGENTS = 2
+NUM_AGENTS = 1
 NUM_WORKERS = 12
 
 CONFIG = (
@@ -24,11 +24,11 @@ CONFIG = (
             env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
             env_config={
                 # Agents active
-                'agents': ['agent_ls', 'agent_dc'],
+                'agents': ['agent_ls'],
 
                 # Datafiles
                 'location': 'ny',
-                'cintensity_file': 'NYIS_NG_&_avgCI.csv',
+                'cintensity_file': 'AZPS_NG_&_avgCI.csv',
                 'weather_file': 'USA_NY_New.York-Kennedy.epw',
                 'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
 
@@ -44,6 +44,10 @@ CONFIG = (
                 # Flexible load ratio
                 'flexible_load': 0.5,
                 
+                # Future steps vision for managers (timesteps)
+                'future_steps': 96,
+                'hyperparameter_tuning': True,
+                
                 # Specify reward methods
                 'ls_reward': 'advanced_ls_reward',
                 'dc_reward': 'default_dc_reward',
@@ -54,25 +58,26 @@ CONFIG = (
         .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
             gamma=0.99, 
-            lr=1e-6,
+            critic_lr=1e-6,
+            actor_lr=1e-6,
             model={
                     "use_attention": True,
-                    "attention_num_transformer_units": 2,
-                    "attention_num_heads": 4,
-                    "attention_dim": 192,
-                    "attention_use_n_prev_actions": 5,
-                    "attention_use_n_prev_rewards": 5,
-                    "attention_memory_inference": 96,
-                    "attention_memory_training": 96
+                    "attention_num_transformer_units": 7,
+                    "attention_num_heads": 16,
+                    "attention_dim": 60,
+                    "attention_use_n_prev_actions": 0,
+                    "attention_use_n_prev_rewards": 0,
+                    "attention_memory_inference": 192,
+                    "attention_memory_training": 192
                     }, 
             train_batch_size=96*2 * NUM_WORKERS * NUM_AGENTS,
             use_local_critic=False,
         )
         .callbacks(CustomCallbacks)
-        .resources(num_cpus_per_worker=2, num_gpus=0)
+        .resources(num_cpus_per_worker=1, num_gpus=0)
     )
 
-NAME = "test2"
+NAME = "agent_ls_RayTune2/ai04"
 RESULTS_DIR = './results'
 
 if __name__ == '__main__':

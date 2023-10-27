@@ -148,9 +148,9 @@ def make_dc_pyeplus_env(month : int = 1,
         'Site Outdoor Air Drybulb Temperature(Environment)': [-10.0, 40.0], #6
         'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [10.0, 30.0],  # reasonable range for setpoint; can be updated based on need #7
         'Zone Air Temperature(West Zone)':[10, 35],
-        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0, 100e3],
+        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0, 5e5],
         # 'Facility Total Electricity Demand Rate(Whole Building)': [1.0e5, 1.0e6],  # TODO: This is not a part of the observation variables right now
-        'Facility Total Building Electricity Demand Rate(Whole Building)':[10e3, 400e3],
+        'Facility Total Building Electricity Demand Rate(Whole Building)':[10e3, 3e6],
         
         'cpuUsage':[0.0, 1.0],
         'carbonIntensity':[0.0, 1000.0],

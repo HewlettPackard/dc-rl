@@ -40,7 +40,7 @@ def default_ls_reward(params: dict) -> float:
     out_of_time = params['ls_penalty_flag']
     penalty = 1e2
     
-    # Calculate the reward associted to the energy consumption
+    # Calculate the reward associated to the energy consumption
     norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
     footprint = -1.0 * norm_CI * norm_net_dc_load
     # Obtain the penalty if there is load at the end of the day
@@ -299,7 +299,7 @@ def advanced_ls_reward(params: dict) -> float:
 
     # Normalize energy reward
     norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
-    footprint = -1.0 * norm_CI * norm_net_dc_load
+    footprint = -10.0 * norm_CI * norm_net_dc_load + 5
 
     # Look ahead in forecast for low CI periods
     upcoming_low_periods = [i for i, val in enumerate(forecast_CI) if val < low_carbon_intensity_threshold]

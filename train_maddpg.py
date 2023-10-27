@@ -15,8 +15,8 @@ from utils.rllib_callbacks import CustomCallbacks
 # Data collection config
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
-NUM_AGENTS = 2
-NUM_WORKERS = 12
+NUM_AGENTS = 1
+NUM_WORKERS = 1
 
 CONFIG = (
         MADDPGConfigStable()
@@ -24,11 +24,11 @@ CONFIG = (
             env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
             env_config={
                 # Agents active
-                'agents': ['agent_ls', 'agent_dc'],
+                'agents': ['agent_ls'],
 
                 # Datafiles
                 'location': 'ny',
-                'cintensity_file': 'NYIS_NG_&_avgCI.csv',
+                'cintensity_file': 'AZPS_NG_&_avgCI.csv',
                 'weather_file': 'USA_NY_New.York-Kennedy.epw',
                 'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
 
@@ -43,9 +43,10 @@ CONFIG = (
                 
                 # Flexible load ratio
                 'flexible_load': 0.5,
+                'future_steps': 4,
                 
                 # Specify reward methods
-                'ls_reward': 'default_ls_reward',
+                'ls_reward': 'advanced_ls_reward',
                 'dc_reward': 'default_dc_reward',
                 'bat_reward': 'default_bat_reward'
             }
@@ -69,8 +70,8 @@ RESULTS_DIR = './results'
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
 
-    ray.init(ignore_reinit_error=True)
-    # ray.init(local_mode=True, ignore_reinit_error=True)
+    # ray.init(ignore_reinit_error=True)
+    ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(
         algorithm=MADDPGStable,

@@ -86,8 +86,10 @@ class CarbonLoadEnv(gym.Env):
         if self.day_workload > 0:
             self.storage_load = self.day_workload
             self.day_storage_load = self.day_workload
+        
         if self.current_hour >= 24:
             self.current_hour = 0
+            
         alarm = 0
         if self.current_hour >= 23:
             alarm = 1

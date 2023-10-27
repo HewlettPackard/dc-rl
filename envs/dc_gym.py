@@ -168,7 +168,8 @@ class dc_gymenv(gym.Env):
         done = False 
         # return processed/unprocessed state to agent
         if self.scale_obs:
-            return self.normalize(self.raw_next_state), self.reward, done, truncated, self.info
+            norm_obs = self.normalize(self.raw_next_state)
+            return norm_obs, self.reward, done, truncated, self.info
 
     def NormalizeObservation(self,):
         """

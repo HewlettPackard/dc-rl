@@ -20,6 +20,8 @@ if __name__ == '__main__':
              'results/test/MADDPGStable_DCRL_fc90b_00000_0_2023-10-12_11-54-19',
              'results/test/MADDPGStable_DCRL_100b5_00000_0_2023-10-12_11-54-52',
              ]
+    paths = ['/tmp/checkpoint_tmp_ba6d475e9e974b77b5ea13511571e79f',
+             '/tmp/checkpoint_tmp_3eba44a6650e4171839c29df40eef468']
     
     NUM_RUNS = 1
     results2 = {}

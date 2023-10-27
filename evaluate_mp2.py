@@ -103,7 +103,7 @@ if __name__ == '__main__':
         paths = [paths[sel_path]]
     
     
-    NUM_RUNS = 2
+    NUM_RUNS = 3
 
     # Initialize Ray with a CPU limit
     ray.init(ignore_reinit_error=True, log_to_driver=True, local_mode=False, num_cpus=80)
@@ -115,5 +115,5 @@ if __name__ == '__main__':
     results2 = {res[0]: res[1] for res in results_list}
 
     # Save results2 to disk
-    with open(f'results_random_{algo}_{sel_path}.json', 'w') as f:
+    with open(f'results_MADDPG_{algo}_{sel_path}.json', 'w') as f:
         json.dump(results2, f, indent=4)

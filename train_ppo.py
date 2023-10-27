@@ -14,18 +14,18 @@ from utils.rllib_callbacks import CustomCallbacks
 # Data collection config
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
-NUM_AGENTS = 2
+NUM_AGENTS = 1
 NUM_WORKERS = 1
 
 CONFIG = (
         PPOConfig()
         .environment(
-            # env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
-            env=DCRLeplus,
+            env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
+            # env=DCRLeplus,
 
             env_config={
                 # Agents active
-                'agents': ['agent_ls', 'agent_dc'],
+                'agents': ['agent_ls'],
 
                 # Datafiles
                 'location': 'ny',
@@ -42,6 +42,9 @@ CONFIG = (
                 # Flexible load ratio
                 'flexible_load': 0.2,
                 
+                # Future steps vision for managers (timesteps)
+                'future_steps': 4,
+                
                 # Specify reward methods
                 'ls_reward': 'advanced_ls_reward',
                 'dc_reward': 'default_dc_reward',
@@ -54,7 +57,6 @@ CONFIG = (
         .training(
             gamma=0.99, 
             lr=1e-5, 
-            lr_schedule=[[0, 3e-5], [10000000, 1e-6]],
             kl_coeff=0.3, 
             clip_param=0.002,
             entropy_coeff=0.05,

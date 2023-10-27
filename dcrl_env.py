@@ -80,7 +80,6 @@ class DCRL(MultiAgentEnv):
         '''
         super().__init__()
 
-        FUTURE_STEPS = 12*4
         
         # Initialize the environment config
         env_config = EnvConfig(env_config)
@@ -98,6 +97,8 @@ class DCRL(MultiAgentEnv):
         self.collab_reward = (1 - self.indv_reward) / 2
         
         self.flexible_load = env_config['flexible_load']
+        FUTURE_STEPS = env_config['future_steps']
+
 
         # Assign month according to worker index, if available
         if hasattr(env_config, 'worker_index'):
@@ -108,6 +109,11 @@ class DCRL(MultiAgentEnv):
             self.month = env_config.get('month', 0)
 
         # self.month = 6
+        
+        if hasattr(env_config, 'hyperparameter_tuning'):
+            self.hyperparameter_tuning = env_config.get('hyperparameter_tuning')
+        else:
+            self.hyperparameter_tuning = False
         
         self.evaluation_mode = env_config['evaluation']
 
@@ -124,7 +130,7 @@ class DCRL(MultiAgentEnv):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        self.ls_env = make_ls_env(self.month, test_mode=self.evaluation_mode, future_steps=FUTURE_STEPS, n_vars_battery=0, flexible_workload_ratio=0.1)
+        self.ls_env = make_ls_env(self.month, test_mode=self.evaluation_mode, future_steps=FUTURE_STEPS, n_vars_battery=0, flexible_workload_ratio=self.flexible_load)
         self.dc_env = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, future_steps=FUTURE_STEPS) 
         self.bat_env = make_bat_fwd_env(self.month, max_bat_cap_Mw=self.max_bat_cap_Mw, future_steps=FUTURE_STEPS)
 
@@ -159,9 +165,9 @@ class DCRL(MultiAgentEnv):
         # Create the managers: date/hour/time manager, workload manager, weather manager, and CI manager.
         self.init_day = get_init_day(self.month)
         self.t_m = Time_Manager(self.init_day)
-        self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=flexible_load, init_day=self.init_day)
-        self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file, future_steps=FUTURE_STEPS, evaluation_noise=self.evaluation_mode)
-        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=FUTURE_STEPS, evaluation_noise=self.evaluation_mode)
+        self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=self.flexible_load, init_day=self.init_day, hyperparameters_tuning=self.hyperparameter_tuning)
+        self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file, future_steps=FUTURE_STEPS, evaluation_noise=self.evaluation_mode, hyperparameters_tuning=self.hyperparameter_tuning)
+        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=FUTURE_STEPS, evaluation_noise=self.evaluation_mode, make_relative=False, hyperparameters_tuning=self.hyperparameter_tuning)
 
         # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
@@ -365,11 +371,11 @@ class DCRL(MultiAgentEnv):
         add_info = {"outside_temp": temp, "day": day, "hour": hour, "day_workload": day_workload, "norm_CI": ci_i_future[0], "forecast_CI": ci_i_future}
         reward_params = {**info_dict, **add_info}
         self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
-        
+            
         # If agent_ls is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_ls" in self.agents:
             obs['agent_ls'] = self.ls_state
-            rew["agent_ls"] = self.indv_reward * self.ls_reward + self.collab_reward * self.bat_reward + self.collab_reward * self.dc_reward
+            rew["agent_ls"] = self.ls_reward * self.indv_reward * self.ls_reward + self.collab_reward * self.bat_reward + self.collab_reward * self.dc_reward
             terminated["agent_ls"] = terminal
             info["agent_ls"] = self.ls_info
 

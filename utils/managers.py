@@ -162,7 +162,7 @@ class Workload_Manager():
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
             flexible_workload_ratio (float, optional): Ratio of the flexible workload amount. Defaults to 0.1.
     """
-    def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.001, desired_std_dev=0.025, flexible_workload_ratio=0.1):
+    def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.001, desired_std_dev=0.025, flexible_workload_ratio=0.1, hyperparameters_tuning=False):
         """Manager of the DC workload
 
         Args:
@@ -191,6 +191,7 @@ class Workload_Manager():
         self.time_steps_day = self.timestep_per_hour*24
         self.flexible_workload_ratio = flexible_workload_ratio
         self.init_day = init_day
+        self.hyperparameters_tuning = hyperparameters_tuning
 
         # Interpolate the CPU data to increase the number of data points
         x = range(0, len(cpu_data_list))
@@ -223,8 +224,11 @@ class Workload_Manager():
         self.time_step = self.init_day*self.time_steps_day
         self.init_time_step = self.time_step
         
-        # Add noise to the workload data using the CoherentNoise 
-        self.cpu_smooth = self.original_data * 0.7 + self.coherent_noise.generate(len(self.original_data)) * 0.3
+        # Add noise to the workload data using the CoherentNoise
+        if self.hyperparameters_tuning:
+            self.cpu_smooth = self.original_data
+        else:
+            self.cpu_smooth = self.original_data * 0.7 + self.coherent_noise.generate(len(self.original_data)) * 0.3
 
         self.cpu_smooth = np.clip(self.cpu_smooth, 0, 1)
         self.cpu_smooth = self.cpu_smooth * (1-self.flexible_workload_ratio)
@@ -265,7 +269,7 @@ class CI_Manager():
             weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
     """
-    def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5, evaluation_noise=False):
+    def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5, evaluation_noise=False, make_relative=False, hyperparameters_tuning=False):
         """Manager of the carbon intesity data
 
         Args:
@@ -308,6 +312,8 @@ class CI_Manager():
         self.future_steps = future_steps
         
         self.evaluation_noise = evaluation_noise
+        self.make_relative = make_relative
+        self.hyperparameters_tuning = hyperparameters_tuning
 
 
     # Function to return all carbon intensity data
@@ -331,7 +337,10 @@ class CI_Manager():
         # Add noise to the carbon data using the CoherentNoise
         while True:
             try:
-                self.carbon_smooth = self.original_data + self.coherent_noise.generate(len(self.original_data))
+                if self.hyperparameters_tuning:
+                    self.carbon_smooth = self.original_data
+                else:
+                    self.carbon_smooth = self.original_data + self.coherent_noise.generate(len(self.original_data))
                 
                 self.carbon_smooth = np.clip(self.carbon_smooth, 0, None)
 
@@ -351,13 +360,25 @@ class CI_Manager():
         # self.norm_carbon = standarize(self.carbon_smooth)
         # self.norm_carbon = (np.clip(self.norm_carbon, -1, 1) + 1) * 0.5
         if not self.evaluation_noise:
-            return self.carbon_smooth[self.time_step], self.norm_carbon[self.time_step:self.time_step+self.future_steps]
+            if not self.make_relative:
+                return self.carbon_smooth[self.time_step], self.norm_carbon[self.time_step:self.time_step+self.future_steps]
+            else:
+                current = self.norm_carbon[self.time_step]
+                future = self.norm_carbon[self.time_step+1:self.time_step+self.future_steps]
+                relative_future = future - current
+                return self.carbon_smooth[self.time_step], np.hstack((current, relative_future))
         else:
             # Use the created noise for evaluation
             forecasted_noised_values = self.forecast_model.predict(self.time_step+1, self.time_step+self.future_steps-1)
             # forecasted_noised_values += np.random.normal(0.5, 0.5, size=len(forecasted_noised_values))
             forecasted_noised_values = np.clip(forecasted_noised_values, 0, 1)
-            return self.carbon_smooth[self.time_step], np.hstack((self.norm_carbon[self.time_step], forecasted_noised_values))
+            if not self.make_relative:
+                return self.carbon_smooth[self.time_step], np.hstack((self.norm_carbon[self.time_step], forecasted_noised_values))
+            else:
+                current = self.norm_carbon[self.time_step]
+                future = forecasted_noised_values
+                relative_future = future - current
+                return self.carbon_smooth[self.time_step], np.hstack((current, relative_future))
 
     # Function to advance the time step and return the carbon intensity at the new time step
     def step(self):
@@ -405,7 +426,7 @@ class Weather_Manager():
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
             temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.
     """
-    def __init__(self, filename='', location='NY', init_day=0, weight=0.01, desired_std_dev=0.5, temp_column=6, future_steps=4, evaluation_noise=False):
+    def __init__(self, filename='', location='NY', init_day=0, weight=0.01, desired_std_dev=0.5, temp_column=6, future_steps=4, evaluation_noise=False, hyperparameters_tuning=False):
         """Manager of the weather data.
 
         Args:
@@ -440,7 +461,8 @@ class Weather_Manager():
         
         # Save a copy of the original data
         self.original_data = self.temperature_data.copy()
-        
+        self.hyperparameters_tuning = hyperparameters_tuning
+
         # ar_params = [0.9]
         # ma_params = [0.3]
 
@@ -486,7 +508,10 @@ class Weather_Manager():
         # else:
         while True:
             try:
-                self.temperature_data = self.original_data + self.coherent_noise.generate(len(self.original_data))
+                if self.hyperparameters_tuning:
+                    self.temperature_data = self.original_data
+                else:
+                    self.temperature_data = self.original_data + self.coherent_noise.generate(len(self.original_data))
                 
                 self.temperature_data = np.clip(self.temperature_data, self.min_temp, self.max_temp)
                 self.norm_temp_data = normalize(self.temperature_data, self.min_temp, self.max_temp)

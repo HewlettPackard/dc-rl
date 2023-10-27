@@ -330,7 +330,7 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data
     v_air = m_air/DC_Config.RHO_AIR
     CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(v_air/DC_Config.CT_REFRENCE_AIR_FLOW_RATE)**3  
     
-    return CRAC_Fan_load, CT_Fan_pwr*10, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
+    return CRAC_Fan_load, CT_Fan_pwr, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
     
 def calculate_avg_CRAC_return_temp(rack_return_approach_temp_list,rackwise_outlet_temp):   
     """Calculate the CRAC return air temperature
