@@ -49,7 +49,7 @@ CONFIG = (
                 'hyperparameter_tuning': True,
                 
                 # Specify reward methods
-                'ls_reward': 'advanced_ls_reward',
+                'ls_reward': 'default_ls_reward',
                 'dc_reward': 'default_dc_reward',
                 'bat_reward': 'default_bat_reward'
             }
@@ -77,7 +77,7 @@ CONFIG = (
         .resources(num_cpus_per_worker=1, num_gpus=0)
     )
 
-NAME = "agent_ls_RayTune2/ai04"
+NAME = "agent_ls_RayTune2/ai03"
 RESULTS_DIR = './results'
 
 if __name__ == '__main__':

@@ -54,7 +54,8 @@ CONFIG = (
         .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
             gamma=0.99, 
-            lr=1e-6,
+            critic_lr=1e-6,
+            actor_lr=1e-6,
             model={
                     'fcnet_hiddens': [128, 64, 16], 
                     'fcnet_activation': 'relu',

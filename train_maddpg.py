@@ -16,7 +16,7 @@ from utils.rllib_callbacks import CustomCallbacks
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
 NUM_AGENTS = 1
-NUM_WORKERS = 1
+NUM_WORKERS = 48
 
 CONFIG = (
         MADDPGConfigStable()
@@ -43,10 +43,13 @@ CONFIG = (
                 
                 # Flexible load ratio
                 'flexible_load': 0.5,
-                'future_steps': 4,
+                
+                # Future steps vision for managers (timesteps)
+                'future_steps': 64,
+                'hyperparameter_tuning': False,
                 
                 # Specify reward methods
-                'ls_reward': 'advanced_ls_reward',
+                'ls_reward': 'default_ls_reward',
                 'dc_reward': 'default_dc_reward',
                 'bat_reward': 'default_bat_reward'
             }
@@ -55,23 +58,24 @@ CONFIG = (
         .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
             gamma=0.99, 
-            lr=1e-6,
+            critic_lr=1e-6,
+            actor_lr=1e-6,
             model={'fcnet_hiddens':[256, 64, 16], 'fcnet_activation': 'relu'},
             train_batch_size=96*2 * NUM_WORKERS * NUM_AGENTS,
             use_local_critic=False,
         )
         .callbacks(CustomCallbacks)
-        .resources(num_cpus_per_worker=2, num_gpus=0)
+        .resources(num_cpus_per_worker=1, num_gpus=0)
     )
 
-NAME = "test"
+NAME = "agent_ls3/ai08"
 RESULTS_DIR = './results'
 
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
 
-    # ray.init(ignore_reinit_error=True)
-    ray.init(local_mode=True, ignore_reinit_error=True)
+    ray.init(ignore_reinit_error=True)
+    # ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(
         algorithm=MADDPGStable,
