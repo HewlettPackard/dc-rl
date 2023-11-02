@@ -225,10 +225,10 @@ class Workload_Manager():
         self.cpu_smooth = self.original_data * 0.7 + self.coherent_noise.generate(len(self.original_data)) * 0.3
 
         self.cpu_smooth = np.clip(self.cpu_smooth, 0, 1)
-        self.cpu_smooth = self.cpu_smooth * (1-self.flexible_workload_ratio)
+        self.cpu_base_smooth = self.cpu_smooth * (1-self.flexible_workload_ratio)
         self.storage_load = np.sum(self.cpu_smooth[self.time_step:self.time_step+self.time_steps_day]*self.flexible_workload_ratio)
 
-        return self.cpu_smooth[self.time_step], self.storage_load
+        return self.cpu_base_smooth[self.time_step], self.storage_load
         
     # Function to advance the time step and return the workload at the new time step
     def step(self):
@@ -248,7 +248,7 @@ class Workload_Manager():
         if self.time_step >= len(self.cpu_smooth):
             self.time_step = self.init_time_step
         # assert self.time_step < len(self.cpu_smooth), f'Episode length: {self.time_step} is longer than the provide cpu_smooth: {len(self.cpu_smooth)}'
-        return self.cpu_smooth[self.time_step], data_load
+        return self.cpu_base_smooth[self.time_step], data_load
 
 
 # Class to manage carbon intensity data
