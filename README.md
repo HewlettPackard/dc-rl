@@ -44,7 +44,7 @@ Currently, we provide two versions for the data center dynamics.
 
 ## Works Utilizing DCRL-Green
 
-[Real-time Carbon Footprint Minimization in Sustainable Data Centers wth Reinforcement Learning](https://www.climatechange.ai/papers/neurips2023/28). Best Paper - Best ML Innovation award at NeurIPS Climate Change AI Workshop.
+***[Real-time Carbon Footprint Minimization in Sustainable Data Centers wth Reinforcement Learning]***(https://www.climatechange.ai/papers/neurips2023/28). Best Paper - Best ML Innovation award at NeurIPS Climate Change AI Workshop.
 
 ## Documentation and Installation
 Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for documentation of the DCRL-Green.
