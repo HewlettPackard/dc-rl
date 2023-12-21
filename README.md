@@ -42,6 +42,9 @@ Currently, we provide two versions for the data center dynamics.
 
 `DCRLeplus (dcrl_eplus_env.py)`: This uses the [EnergyPlus](https://energyplus.net/) model of a data center from the [Sinergym](https://github.com/ugr-sail/sinergym) repository. We provide a docker image for this environment as well as instructions for manual installation.
 
+## Works Utilizing DCRL-Green
+
+[Real-time Carbon Footprint Minimization in Sustainable Data Centers wth Reinforcement Learning](https://www.climatechange.ai/papers/neurips2023/28). Best Paper - Best ML Innovation award at NeurIPS Climate Change AI Workshop.
 
 ## Documentation and Installation
 Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for documentation of the DCRL-Green.
