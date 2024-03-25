@@ -5,7 +5,6 @@ import numpy as np
 import pandas as pd
 import math 
 
-
 class DataCenterEnv(gym.Env):
     """Custom Environment that simulates load shifting in a data center with forecasted carbon intensity."""
     metadata = {'render.modes': ['human']}
