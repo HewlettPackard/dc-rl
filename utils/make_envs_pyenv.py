@@ -6,9 +6,13 @@ import pandas as pd
 
 from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
 from envs.carbon_ls import CarbonLoadEnv
-from envs.dc_gym import dc_gymenv, dc_gymenv_standalone
+from envs.dc_gym import dc_gymenv
 from utils.utils_cf import get_init_day
 
+import envs.datacenter as DataCenter
+import utils.dc_config_reader as DC_Config
+
+import itertools
 
 def make_ls_env(month,
                 n_vars_energy : int = 4,
@@ -64,7 +68,6 @@ def make_dc_pyeplus_env(month : int = 1,
                         add_CI : bool = True,
                         episode_length_in_time : pd.Timedelta = None,
                         use_ls_cpu_load : bool = False,
-                        standalone_pyeplus : bool = False,
                         num_sin_cos_vars : int = 4,
                         ):
     """Method that creates the data center environment with the timeline, location, proper data files, gym specifications and auxiliary methods
@@ -82,7 +85,6 @@ def make_dc_pyeplus_env(month : int = 1,
         add_CI (bool, optional): Boolean Flag to indicate whether Carbon Intensity is part of the environment statespace. Defaults to True.
         episode_length_in_time (pd.Timedelta, optional): Length of an episode in terms of pandas time-delta object. Defaults to None.
         use_ls_cpu_load (bool, optional): Use the cpu workload value from a separate Load Shifting agent. This turns of reading default cpu data. Defaults to False.
-        standalone_pyeplus (bool, optional): Boolean Flag to indicate whether the data center environment is being tested in a standalone manner or not. Defaults to False.
         num_sin_cos_vars (int, optional): Number of sin and cosine variable that will be added externally from the centralized data source
     Returns:
         envs.dc_gym.dc_gymenv: The environment instantiated with the particular month.
@@ -130,6 +132,31 @@ def make_dc_pyeplus_env(month : int = 1,
     ################################################################################
     ########################## Variable Ranges #####################################
     ################################################################################
+    
+    # Perform Cooling Tower Sizing
+    # This step determines the potential maximum loading of the CT
+    # setting a higher ambient temp here will cause the CT to consume less power for cooling water under normal ambient temperature
+    # setting a lower value of min_CRAC_setpoint will cause the CT to consume more power for higher crac setpoints during normal use
+    ctafr, ct_rated_load = DataCenter.chiller_sizing(DC_Config, min_CRAC_setpoint = 14.0, ambient_temp = 40.0)  # we assume 14 so that there is no oob error
+    DC_Config.CT_REFRENCE_AIR_FLOW_RATE = ctafr
+    DC_Config.CT_FAN_REF_P = ct_rated_load
+    
+    # Perform sizing of ITE power and ambient temperature
+    # Find highest and lowest values of ITE power, rackwise outlet temperature
+    dc = DataCenter.DataCenter_ITModel(num_racks=DC_Config.NUM_RACKS, rack_supply_approach_temp_list=DC_Config.RACK_SUPPLY_APPROACH_TEMP_LIST,
+                                    rack_CPU_config=DC_Config.RACK_CPU_CONFIG, max_W_per_rack=DC_Config.MAX_W_PER_RACK, DC_ITModel_config=DC_Config)
+    raw_curr_stpt_list = range(16,23)
+    cpu_load_list = range(0,110,10) # We assume same data center load for all servers; Here it will be max
+    p = itertools.product(raw_curr_stpt_list,cpu_load_list)
+    dc_ambient_temp_list = []
+    total_ite_pwr = []
+    for raw_curr_stpt, cpu_load in p:
+        ITE_load_pct_list = [cpu_load for i in range(DC_Config.NUM_RACKS)] 
+        rackwise_cpu_pwr, rackwise_itfan_pwr, rackwise_outlet_temp = \
+            dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=raw_curr_stpt)
+        total_ite_pwr.append(sum(rackwise_cpu_pwr) + sum(rackwise_itfan_pwr))
+        dc_ambient_temp_list.append(sum(rackwise_outlet_temp)/len(rackwise_outlet_temp))   
+    
     ranges = {
         'sinhour': [-1.0, 1.0], #0
         'coshour': [-1.0, 1.0], #1
@@ -140,10 +167,10 @@ def make_dc_pyeplus_env(month : int = 1,
         
         'Site Outdoor Air Drybulb Temperature(Environment)': [-10.0, 40.0], #6
         'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [10.0, 30.0],  # reasonable range for setpoint; can be updated based on need #7
-        'Zone Air Temperature(West Zone)':[10, 35],
-        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0, 5.5e6],
+        'Zone Air Temperature(West Zone)':[0.9*min(dc_ambient_temp_list),1.1*max(dc_ambient_temp_list)],
+        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0.0, 1.1*ct_rated_load],  # this is cooling tower power
         'Facility Total Electricity Demand Rate(Whole Building)': [1.0e5, 1.0e6],  # TODO: This is not a part of the observation variables right now
-        'Facility Total Building Electricity Demand Rate(Whole Building)':[3.0e5, 5.0e6],
+        'Facility Total Building Electricity Demand Rate(Whole Building)':[0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr)],  # this is it power
         
         'cpuUsage':[0.0, 1.0],
         'carbonIntensity':[0.0, 1000.0],
@@ -154,42 +181,24 @@ def make_dc_pyeplus_env(month : int = 1,
     ################################################################################
     ############################## Create the Environment ##########################
     ################################################################################
+        
+    dc_env = dc_gymenv(observation_variables=observation_variables,
+                    observation_space=observation_space,
+                    action_variables=action_variables,
+                    action_space=action_space,
+                    action_mapping=action_mapping,
+                    ranges=ranges,
+                    add_cpu_usage=add_cpu_usage,
+                    min_temp=min_temp,
+                    max_temp=max_temp,
+                    action_definition=action_definition,
+                    DC_Config = DC_Config,
+                    episode_length_in_time=episode_length_in_time
+                    )
     
-    if not standalone_pyeplus:
-        
-        dc_env = dc_gymenv(observation_variables=observation_variables,
-                        observation_space=observation_space,
-                        action_variables=action_variables,
-                        action_space=action_space,
-                        action_mapping=action_mapping,
-                        ranges=ranges,
-                        add_cpu_usage=add_cpu_usage,
-                        min_temp=min_temp,
-                        max_temp=max_temp,
-                        action_definition=action_definition,
-                        episode_length_in_time=episode_length_in_time
-                        )
-        
-        dc_env.NormalizeObservation()
-        
-        return dc_env
-    # test in standalone mode
-    else:
-        env_config = {'observation_variables': observation_variables,
-                        'observation_space':observation_space,
-                        'action_variables':action_variables,
-                        'action_space':action_space,
-                        'action_mapping' : action_mapping,
-                        'ranges': ranges,
-                        'add_cpu_usage':add_cpu_usage,
-                        'min_temp':min_temp,
-                        'max_temp':max_temp,
-                        'action_definition':action_definition,
-                        'use_ls_cpu_load' : use_ls_cpu_load,  # changed here
-                        'episode_length_in_time': episode_length_in_time
-        }
-        
-        return dc_gymenv_standalone, env_config
+    dc_env.NormalizeObservation()
+    
+    return dc_env
     
     
     
