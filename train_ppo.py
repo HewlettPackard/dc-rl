@@ -1,7 +1,7 @@
 """
 Creates algorithm configuration for PPO and starts training process
 """
-
+#%%
 import os
 
 import ray
@@ -63,7 +63,7 @@ CONFIG = (
         .callbacks(CustomCallbacks)
         .resources(num_cpus_per_worker=1, num_gpus=0)
     )
-
+#%%
 NAME = "test"
 RESULTS_DIR = './results'
 
