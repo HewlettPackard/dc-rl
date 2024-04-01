@@ -5,7 +5,6 @@ import pandas as pd
 import gymnasium as gym
 
 import envs.datacenter as DataCenter
-import utils.dc_config_reader as DC_Config
 from utils import reward_creator
 
 class dc_gymenv(gym.Env):
@@ -20,6 +19,7 @@ class dc_gymenv(gym.Env):
                        min_temp : float,
                        max_temp : float,
                        action_definition : dict,
+                       DC_Config : dict,
                        seed : int = 123,
                        episode_length_in_time : pd.Timedelta = None,  # can be 1 week in minutes eg pd.Timedelta('7days')
                        ):
@@ -55,19 +55,20 @@ class dc_gymenv(gym.Env):
         self.scale_obs = False
         self.obs_max = []
         self.obs_min = []
+        self.DC_Config = DC_Config
                 
         # similar to reset
-        self.dc = DataCenter.DataCenter_ITModel(num_racks=DC_Config.NUM_RACKS,
-                                                rack_supply_approach_temp_list=DC_Config.RACK_SUPPLY_APPROACH_TEMP_LIST,
-                                                rack_CPU_config=DC_Config.RACK_CPU_CONFIG,
-                                                max_W_per_rack=DC_Config.MAX_W_PER_RACK,
-                                                DC_ITModel_config=DC_Config)
+        self.dc = DataCenter.DataCenter_ITModel(num_racks=self.DC_Config.NUM_RACKS,
+                                                rack_supply_approach_temp_list=self.DC_Config.RACK_SUPPLY_APPROACH_TEMP_LIST,
+                                                rack_CPU_config=self.DC_Config.RACK_CPU_CONFIG,
+                                                max_W_per_rack=self.DC_Config.MAX_W_PER_RACK,
+                                                DC_ITModel_config=self.DC_Config)
         
-        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_cooling_load, self.Compressor_load = 100, 1000, 1000, 100
-        self.CW_pump_load = 30
-        self.CT_pump_load = 30
+        
+        self.CRAC_Fan_load, self.CRAC_cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = None, None, None, None, None
+        self.CT_Cooling_load = self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
-        self.cpu_load = 0.5
+        self.cpu_load_frac = 0.5
         self.bat_SoC = 300*1e3  # all units are SI
         
         self.raw_curr_state = None
@@ -94,9 +95,8 @@ class dc_gymenv(gym.Env):
 
         super().reset(seed=self.seed)
 
-        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_cooling_load, self.Compressor_load = 100, 1000, 1000, 100  
-        self.CW_pump_load = 30
-        self.CT_pump_load = 30
+        self.CRAC_Fan_load, self.CRAC_cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = None, None, None, None, None
+        self.CT_Cooling_load = self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         
         self.raw_curr_state = self.get_obs()
@@ -123,12 +123,12 @@ class dc_gymenv(gym.Env):
         self.raw_curr_stpt += crac_setpoint_delta
         self.raw_curr_stpt = max(min(self.raw_curr_stpt, self.max_temp), self.min_temp)
     
-        ITE_load_pct_list = [self.cpu_load*100 for i in range(DC_Config.NUM_RACKS)] 
+        ITE_load_pct_list = [self.cpu_load_frac*100 for i in range(self.DC_Config.NUM_RACKS)] 
         
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = \
             self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=self.raw_curr_stpt)
             
-        avg_CRAC_return_temp = DataCenter.calculate_avg_CRAC_return_temp(rack_return_approach_temp_list=DC_Config.RACK_RETURN_APPROACH_TEMP_LIST,
+        avg_CRAC_return_temp = DataCenter.calculate_avg_CRAC_return_temp(rack_return_approach_temp_list=self.DC_Config.RACK_RETURN_APPROACH_TEMP_LIST,
                                                                          rackwise_outlet_temp=self.rackwise_outlet_temp)
         
         data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
@@ -137,7 +137,7 @@ class dc_gymenv(gym.Env):
                                                                                                                                                                        avg_CRAC_return_temp=avg_CRAC_return_temp,
                                                                                                                                                                        ambient_temp=self.ambient_temp,
                                                                                                                                                                        data_center_full_load=data_center_total_ITE_Load,
-                                                                                                                                                                       DC_Config=DC_Config)
+                                                                                                                                                                       DC_Config=self.DC_Config)
         
         # calculate reward
         self.reward = 0
@@ -153,7 +153,7 @@ class dc_gymenv(gym.Env):
             'dc_power_ub_kW': 7000,
             'dc_crac_setpoint_delta': crac_setpoint_delta,
             'dc_crac_setpoint': self.raw_curr_stpt,
-            'dc_cpu_workload_percent': self.cpu_load,
+            'dc_cpu_workload_fraction': self.cpu_load_frac,
             'dc_int_temperature': np.mean(self.rackwise_outlet_temp),
             'dc_CW_pump_power_kW': self.CW_pump_load,
             'dc_CT_pump_power_kW': self.CT_pump_load,
@@ -193,11 +193,11 @@ class dc_gymenv(gym.Env):
         Returns:
             observation (List[float]): Current state of the environmment.
         """
-        zone_air_therm_cooling_stpt = 20  # in C, default for reset state
+        zone_air_therm_cooling_stpt = self.min_temp  # in C, default for reset state
         if self.raw_curr_stpt is not None:
             zone_air_therm_cooling_stpt = self.raw_curr_stpt
         
-        zone_air_temp = 20  # in C, default for reset state
+        zone_air_temp = self.obs_min[2]  # in C, default for reset state
         if self.rackwise_outlet_temp:
             zone_air_temp = sum(self.rackwise_outlet_temp)/len(self.rackwise_outlet_temp)
 
@@ -205,15 +205,18 @@ class dc_gymenv(gym.Env):
         hvac_power = self.CT_Cooling_load
 
         # 'Facility Total Building Electricity Demand Rate(Whole Building)' ie 'IT POWER'
-        it_power = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
+        if self.rackwise_cpu_pwr:
+            it_power = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
+        else:
+            it_power = self.ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][0]
 
         return [self.ambient_temp, zone_air_therm_cooling_stpt,zone_air_temp,hvac_power,it_power]
 
     def set_shifted_wklds(self, cpu_load):
         """
-        Updates the current CPU workload.
+        Updates the current CPU workload. fraction between 0.0 and 1.0
         """
-        self.cpu_load = cpu_load
+        self.cpu_load_frac = cpu_load
     
     def set_ambient_temp(self, ambient_temp):
         """
@@ -226,23 +229,3 @@ class dc_gymenv(gym.Env):
         Updates the battery state of charge.
         """
         self.bat_SoC = bat_SoC
-        
-class dc_gymenv_standalone(dc_gymenv):
-    
-    def __init__(self, env_config):
-        
-        super().__init__(
-                       env_config['observation_variables'],
-                       observation_space=env_config['observation_space'],
-                       action_variables=env_config['action_variables'],
-                       action_space=env_config['action_space'],
-                       action_mapping=env_config['action_mapping'],
-                       ranges=env_config['ranges'],
-                       add_cpu_usage=env_config['add_cpu_usage'],
-                       min_temp=env_config['min_temp'],
-                       max_temp=env_config['max_temp'],
-                       action_definition=env_config['action_definition'],
-                       episode_length_in_time=env_config['episode_length_in_time']
-        )
-        
-        self.NormalizeObservation()
