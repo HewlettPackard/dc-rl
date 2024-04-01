@@ -18,22 +18,26 @@ def default_ls_reward(params: dict) -> float:
     norm_CI = params['norm_CI']
     dcload_min = params['bat_dcload_min']
     dcload_max = params['bat_dcload_max']
-    
-    # Penalty part of the reward
-    norm_load_left = params['ls_norm_load_left']
-    out_of_time = params['ls_penalty_flag']
-    penalty = 1e3
-    
+        
     # Calculate the reward associted to the energy consumption
     norm_net_dc_load = (total_energy_with_battery / 1e3 - dcload_min) / (dcload_max - dcload_min)
     footprint = -1.0 * norm_CI * norm_net_dc_load
-    # Obtain the penalty if there is load at the end of the day
-    if out_of_time:
-        penalty = -norm_load_left*penalty
-    else:
-        penalty = 0
-    # Add the rewards
-    reward = footprint + penalty
+
+    # Penalize the agent for each task that was dropped due to queue limit
+    penalty_per_dropped_task = -10  # Define the penalty value per dropped task
+    tasks_dropped = params['ls_tasks_dropped']
+    reward += tasks_dropped * penalty_per_dropped_task
+    
+    tasks_in_queue = params['ls_tasks_in_queue']
+    current_step = params['ls_current_hour']
+    if current_step % (24*4) >= (23*4):   # Penalty for queued tasks at the end of the day
+        factor_hour = (current_step % (24*4)) / 96 # min = 0.95833, max = 0.98953
+        factor_hour = (factor_hour - 0.95833) / (0.98935 - 0.95833)
+        reward -= factor_hour * tasks_in_queue/10  # Penalty for each task left in the queue
+    
+    if current_step % (24*4) == 0:   # Penalty for queued tasks at the end of the day
+        reward -= tasks_in_queue/10 # Penalty for each task left in the queue
+        
     return reward
 
 
