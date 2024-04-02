@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 import gymnasium as gym
+from gymnasium import spaces
 
 import envs.datacenter as DataCenter
 from utils import reward_creator
@@ -10,9 +11,9 @@ from utils import reward_creator
 class dc_gymenv(gym.Env):
     
     def __init__(self, observation_variables : list[str],
-                       observation_space : gym.spaces.Box,
+                       observation_space : spaces.Box,
                        action_variables: list[str],
-                       action_space : gym.spaces.Discrete,
+                       action_space : spaces.Discrete,
                        action_mapping: dict,
                        ranges : dict[str,list],  # this data frame should be time indexed for the code to work
                        add_cpu_usage : bool,
@@ -29,10 +30,10 @@ class dc_gymenv(gym.Env):
             observation_variables (list[str]): The partial list of variables that will be evaluated inside this evironment.The actual
                                                 gym space may include other variables like sine cosine of hours, day of year, cpu usage,
                                                 carbon intensity and battery state of charge.
-            observation_space (gym.spaces.Box): The gym observations space following gymnasium standard
+            observation_space (spaces.Box): The gym observations space following gymnasium standard
             action_variables (list[str]): The list of action variables for the environment. It is used to create the info dict returned by
                                         the environment
-            action_space (gym.spaces.Discrete): The gym action space following gymnasium standard
+            action_space (spaces.Discrete): The gym action space following gymnasium standard
             action_mapping (dict): A mapping from agent discrete action choice to actual delta change in setpoint. The mapping is defined in
                                     utils.make_pyeplus_env.py
             ranges (dict[str,list]): The upper and lower bounds on the observation_variables
@@ -77,6 +78,11 @@ class dc_gymenv(gym.Env):
         self.max_temp = max_temp
         self.min_temp = min_temp
         
+        self.consecutive_actions = 0
+        self.last_action = None
+        self.action_scaling_factor = 1  # Starts with a scale factor of 1
+        
+        
         super().__init__()
     
     def reset(self, *, seed=None, options=None):
@@ -101,9 +107,13 @@ class dc_gymenv(gym.Env):
         
         self.raw_curr_state = self.get_obs()
         
+        self.consecutive_actions = 0
+        self.last_action = None
+        self.action_scaling_factor = 1  # Starts with a scale factor of 1
+        
         if self.scale_obs:
             return self.normalize(self.raw_curr_state), {}  
-        
+    
     def step(self, action):
 
         """
@@ -120,7 +130,19 @@ class dc_gymenv(gym.Env):
         """
         
         crac_setpoint_delta = self.action_mapping[action]
-        self.raw_curr_stpt += crac_setpoint_delta
+        
+        # Check if the current action is in the same direction as the last one
+        if crac_setpoint_delta == self.last_action and action != 0:
+            self.consecutive_actions += 1
+        else:
+            self.consecutive_actions = 1
+            self.action_scaling_factor = 1  # Reset scaling factor if the direction changes
+
+        # Adjust the scaling factor based on consecutive actions
+        if self.consecutive_actions > 3:
+            self.action_scaling_factor += 1  # Increase the scale factor after every 3 consecutive actions
+        
+        self.raw_curr_stpt += crac_setpoint_delta * self.action_scaling_factor
         self.raw_curr_stpt = max(min(self.raw_curr_stpt, self.max_temp), self.min_temp)
     
         ITE_load_pct_list = [self.cpu_load_frac*100 for i in range(self.DC_Config.NUM_RACKS)] 
@@ -144,6 +166,10 @@ class dc_gymenv(gym.Env):
                 
         # calculate self.raw_next_state
         self.raw_next_state = self.get_obs()
+        
+        # Update the last action
+        self.last_action = crac_setpoint_delta
+        
         # add info dictionary 
         self.info = {
             'dc_ITE_total_power_kW': data_center_total_ITE_Load / 1e3,
@@ -184,7 +210,7 @@ class dc_gymenv(gym.Env):
         """
         Normalizes the observation.
         """
-        return (obs-self.obs_min)/self.obs_delta
+        return np.float32((obs-self.obs_min)/self.obs_delta)
 
     def get_obs(self):
         """
@@ -210,13 +236,15 @@ class dc_gymenv(gym.Env):
         else:
             it_power = self.ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][0]
 
-        return [self.ambient_temp, zone_air_therm_cooling_stpt,zone_air_temp,hvac_power,it_power]
+        return [self.ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power]
 
     def set_shifted_wklds(self, cpu_load):
         """
         Updates the current CPU workload. fraction between 0.0 and 1.0
         """
-        assert 0.0 < cpu_load < 1.0, 'CPU load out of bounds'
+        if 0.0 > cpu_load or cpu_load > 1.0:
+            print('CPU load out of bounds')
+        assert 0.0 <= cpu_load <= 1.0, 'CPU load out of bounds'
         self.cpu_load_frac = cpu_load
     
     def set_ambient_temp(self, ambient_temp):

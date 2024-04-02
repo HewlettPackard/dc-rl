@@ -49,7 +49,7 @@ CONFIG = (
         .framework("torch")
         .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
-            gamma=0.99, 
+            gamma=0.995, 
             lr=1e-5, 
             lr_schedule=[[0, 3e-5], [10000000, 1e-6]],
             kl_coeff=0.3, 
@@ -57,7 +57,7 @@ CONFIG = (
             entropy_coeff=0.05,
             use_gae=True, 
             train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
-            model={'fcnet_hiddens': [64, 16], 'fcnet_activation': 'relu'}, 
+            model={'fcnet_hiddens': [16, 16], 'fcnet_activation': 'relu'}, 
             shuffle_sequences=True
         )
         .callbacks(CustomCallbacks)

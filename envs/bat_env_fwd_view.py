@@ -1,5 +1,6 @@
 import numpy as np
 import gymnasium as gym
+from gymnasium import spaces
 
 import envs.battery_model as batt
 from utils import reward_creator
@@ -19,16 +20,20 @@ class BatteryEnvFwd(gym.Env):
         n_fwd_steps = env_config['n_fwd_steps']
         max_bat_cap = env_config['max_bat_cap']
         charging_rate = env_config['charging_rate']
-        self.observation_space = gym.spaces.Box(low=np.float32(-5 * np.ones(1 + 1 + 4 + n_fwd_steps)),
-                                                high=np.float32(5 * np.ones(1 + 1 + 4 + n_fwd_steps)))
+        self.observation_space = spaces.Box(low=np.float32(0 * np.ones(1 + 1 + 4 + n_fwd_steps)),
+                                                high=np.float32(1 * np.ones(1 + 1 + 4 + n_fwd_steps)))
+        
         self.max_dc_pw = 7.24
-        self.action_space = gym.spaces.Discrete(3)
+        self.action_space = spaces.Discrete(3)
         self._action_to_direction = {0: 'charge', 1: 'discharge', 2: 'idle'}
+        
         other_states_max = np.array([self.max_dc_pw, max_bat_cap])
         other_states_min = np.array([0.1, 0])
+        
         self.observation_max = other_states_max
         self.observation_min = other_states_min
         self.delta = self.observation_max - self.observation_min
+        
         self.battery = batt.Battery2(capacity=max_bat_cap, current_load=0 * max_bat_cap)
         self.n_fwd_steps = n_fwd_steps
         self.charging_rate = charging_rate
@@ -58,8 +63,11 @@ class BatteryEnvFwd(gym.Env):
             temp_state (List[float]): Current state of the environmment
             info (dict): A dictionary that containing additional information about the environment state
         """
+        self.battery.reset() # Reset the battery with a random current_load between 0 and 25% max capacity
+        
+        self.dcload = self.dcload_min
         self.raw_obs = self._hist_data_collector()
-        self.dcload = 0
+        
         self.temp_state = self._process_obs(self.raw_obs)
         return self.temp_state, {
             'action': -1,
@@ -126,7 +134,7 @@ class BatteryEnvFwd(gym.Env):
             normalized_observations (List[float])
         """
         scaled_value = (state - self.observation_min) / self.delta
-        return scaled_value
+        return np.float32(scaled_value)
 
     def _process_action(self, action_id):
         """Maps agent actions to actoniable action for the model

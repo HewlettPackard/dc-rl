@@ -26,18 +26,20 @@ def default_ls_reward(params: dict) -> float:
     # Penalize the agent for each task that was dropped due to queue limit
     penalty_per_dropped_task = -10  # Define the penalty value per dropped task
     tasks_dropped = params['ls_tasks_dropped']
-    reward += tasks_dropped * penalty_per_dropped_task
+    penalty_dropped_tasks = tasks_dropped * penalty_per_dropped_task
     
     tasks_in_queue = params['ls_tasks_in_queue']
     current_step = params['ls_current_hour']
+    penalty_tasks_queue = 0
     if current_step % (24*4) >= (23*4):   # Penalty for queued tasks at the end of the day
         factor_hour = (current_step % (24*4)) / 96 # min = 0.95833, max = 0.98953
         factor_hour = (factor_hour - 0.95833) / (0.98935 - 0.95833)
-        reward -= factor_hour * tasks_in_queue/10  # Penalty for each task left in the queue
+        penalty_tasks_queue = -1.0 * factor_hour * tasks_in_queue/10  # Penalty for each task left in the queue
     
     if current_step % (24*4) == 0:   # Penalty for queued tasks at the end of the day
-        reward -= tasks_in_queue/10 # Penalty for each task left in the queue
-        
+        penalty_tasks_queue = -1.0 * tasks_in_queue/10 # Penalty for each task left in the queue
+    
+    reward = footprint + penalty_dropped_tasks + penalty_tasks_queue    
     return reward
 
 

@@ -38,15 +38,15 @@ class CarbonLoadEnv(gym.Env):
         # self.ls_state = [current_workload, queue status]
         if future:
             self.observation_space = spaces.Box(
-                low=-5e1,
-                high=5e1,
+                low=0,
+                high=1,
                 shape=(6 + n_vars_ci + n_vars_energy + n_vars_battery,),
                 dtype=np.float32,
             )
         else:
             self.observation_space = spaces.Box(
-                low=-5e1,
-                high=5e1,
+                low=0,
+                high=1,
                 shape=(6 + n_vars_energy + n_vars_battery,),
                 dtype=np.float32,
             )
@@ -60,10 +60,10 @@ class CarbonLoadEnv(gym.Env):
         self.workload = 0
         
         # Initialize the queue to manage individual delayed tasks
-        self.task_queue = []  # A list to hold individual tasks
+        self.tasks_queue = []  # A list to hold individual tasks
         self.queue_max_len = queue_max_len
 
-    def reset(self):
+    def reset(self, *, seed=None, options=None):
         """
         Reset `CarbonLoadEnv` to initial state.
 
@@ -74,7 +74,7 @@ class CarbonLoadEnv(gym.Env):
         self.global_total_steps = 0
         
         # Clear the task queue
-        self.task_queue = []
+        self.tasks_queue = []
         
         done = False
         self.current_hour = 0.0
@@ -107,7 +107,8 @@ class CarbonLoadEnv(gym.Env):
             done (bool): A boolean value signaling the if the episode has ended.
             info (dict): A dictionary that containing additional information about the environment state
         """
-        
+        self.current_hour += 0.25
+
         shiftable_tasks_percentage = self.flexible_workload_ratio
         non_shiftable_tasks_percentage = 1 - shiftable_tasks_percentage
 
@@ -121,8 +122,8 @@ class CarbonLoadEnv(gym.Env):
             # Attempt to queue shiftable tasks, tracking any that are dropped
             timestamp = self.current_hour  # Current timestamp
             for _ in range(shiftable_tasks):
-                if len(self.task_queue) < self.queue_max_len:  # Check if adding the task would exceed the queue limit
-                    self.task_queue.append({'timestamp': timestamp, 'utilization': 1})
+                if len(self.tasks_queue) < self.queue_max_len:  # Check if adding the task would exceed the queue limit
+                    self.tasks_queue.append({'timestamp': timestamp, 'utilization': 1})
                 else:
                     tasks_dropped += 1  # Increment dropped tasks count
             self.current_utilization = non_shiftable_tasks / 100
@@ -133,10 +134,10 @@ class CarbonLoadEnv(gym.Env):
         
         elif action == 2:  # Attempt to process as many tasks from the queue as possible or the max utilization (100%)
             # Determine the number of tasks that can be processed, considering total utilization limits
-            tasks_to_process = min(len(self.task_queue), 100 - (non_shiftable_tasks + shiftable_tasks))
+            tasks_to_process = min(len(self.tasks_queue), 100 - (non_shiftable_tasks + shiftable_tasks))
             for _ in range(tasks_to_process):
-                if self.task_queue:
-                    self.task_queue.pop(0)  # Remove a task from the queue for processing
+                if self.tasks_queue:
+                    self.tasks_queue.pop(0)  # Remove a task from the queue for processing
             self.current_utilization = (non_shiftable_tasks + shiftable_tasks + tasks_to_process) / 100
             
         done = False
@@ -145,17 +146,16 @@ class CarbonLoadEnv(gym.Env):
         original_workload = self.workload
 
         if self.current_hour % (24*4) == 0:   # Penalty for queued tasks at the end of the day
-            self.task_queue = []
-            print(f'Checked that the task_queue is cleaned every 24 hours at {self.current_hour}')
+            self.tasks_queue = []
+            print(f'Checked that the tasks_queue is cleaned every 24 hours at {self.current_hour}')
         
-        self.current_hour += 0.25
         
         if self.current_hour >= 24:
             self.current_hour = 0
             
         reward = 0 
         
-        tasks_in_queue = len(self.task_queue)
+        tasks_in_queue = len(self.tasks_queue)
         
         current_workload = self.current_utilization
         

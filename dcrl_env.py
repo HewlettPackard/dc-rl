@@ -2,8 +2,10 @@ import os
 from typing import Optional, Tuple, Union
 
 import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
 
+from ray.rllib.utils import check_env
 from ray.rllib.env import EnvContext
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
@@ -122,8 +124,8 @@ class DCRL(MultiAgentEnv):
 
         self._obs_space_in_preferred_format = True
         
-        self.observation_space = gym.spaces.Dict({})
-        self.action_space = gym.spaces.Dict({})
+        self.observation_space = spaces.Dict({})
+        self.action_space = spaces.Dict({})
         self.base_agents = {}
         flexible_load = 0
         
@@ -201,14 +203,14 @@ class DCRL(MultiAgentEnv):
         batSoC = bat_s[1]
         
         # dc state -> [time (sine/cosine enconded), original dc observation, current workload, current normalized CI, battery SOC]
-        self.dc_state = np.hstack((t_i, self.dc_state, workload, ci_i_future[0], batSoC))
+        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, workload, ci_i_future[0], batSoC)))
         var_to_LS_energy = get_energy_variables(self.dc_state)
         
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, energy variables from DC, battery SoC]
-        self.ls_state = np.hstack((t_i, ls_s, ci_i_future, var_to_LS_energy, batSoC))
+        self.ls_state = np.float32(np.hstack((t_i, ls_s, ci_i_future, var_to_LS_energy, batSoC)))
         
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
-        self.bat_state = np.hstack((t_i, bat_s, ci_i_future))
+        self.bat_state = np.float32(np.hstack((t_i, bat_s, ci_i_future)))
 
         states = {}
         infos = {}
@@ -239,9 +241,9 @@ class DCRL(MultiAgentEnv):
             truncated (dict): Dictionary of truncated flags.
             infos (dict): Dictionary of infos.
         """
-        obs, rew, terminated, truncated, info = {}, {}, {}, {}, {}
-        terminated["__all__"] = False
-        truncated["__all__"] = False
+        obs, rew, terminateds, truncateds, info = {}, {}, {}, {}, {}
+        terminateds["__all__"] = False
+        truncateds["__all__"] = False
 
         # Step in the managers
         day, hour, t_i, terminal = self.t_m.step()
@@ -300,18 +302,18 @@ class DCRL(MultiAgentEnv):
         
         # Update the state of the bat state
         batSoC = self.bat_state[1]
-        self.bat_state = np.hstack((t_i, self.bat_state, ci_i_future))
+        self.bat_state = np.float32(np.hstack((t_i, self.bat_state, ci_i_future)))
         
         # self.dc_reward = -1.0 * self.bat_info['bat_total_energy_with_battery_KWh'] / 1e3  # The raw reward of the DC is directly the total energy consumption in MWh.
 
         # Update the shared variables
-        self.dc_state = np.hstack((t_i, self.dc_state, shifted_wkld, ci_i_future[0], batSoC))
+        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, shifted_wkld, ci_i_future[0], batSoC)))
         
         # We need to update the LS state with the DC energy variables and the final battery SoC.
         var_to_LS_energy = get_energy_variables(self.dc_state)
         
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, energy variables from DC, battery SoC]
-        self.ls_state = np.hstack((t_i, self.ls_state, ci_i_future, var_to_LS_energy, batSoC))
+        self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future, var_to_LS_energy, batSoC)))
         
         # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
         # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
@@ -320,34 +322,37 @@ class DCRL(MultiAgentEnv):
         reward_params = {**info_dict, **add_info}
         self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
         
+        # Respect the terminateds and truncateds check EER_MSG_OLD_GYM_API
+        # from here: https://github.com/ray-project/ray/blob/master/rllib/utils/error.py
+        
         # If agent_ls is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_ls" in self.agents:
             obs['agent_ls'] = self.ls_state
             rew["agent_ls"] = self.indv_reward * self.ls_reward + self.collab_reward * self.bat_reward + self.collab_reward * self.dc_reward
-            terminated["agent_ls"] = terminal
+            terminateds["agent_ls"] = False
             info["agent_ls"] = self.ls_info
         
         # If agent_dc is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_dc" in self.agents:
             obs["agent_dc"] = self.dc_state
             rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_reward + self.collab_reward * self.bat_reward
-            terminated["agent_dc"] = terminal
+            terminateds["agent_dc"] = False
             info["agent_dc"] = self.dc_info
             
          # If agent_bat is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_bat" in self.agents:
             obs["agent_bat"] = self.bat_state
             rew["agent_bat"] = self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_reward
-            terminated["agent_bat"] = terminal
+            terminateds["agent_bat"] = False
             info["agent_bat"] = self.bat_info
 
         if terminal:
-            terminated["__all__"] = True
-            truncated["__all__"] = True
+            terminateds["__all__"] = False
+            truncateds["__all__"] = True
             for agent in self.agents:
-                truncated[agent] = True
+                truncateds[agent] = True
                 
-        return obs, rew, terminated, truncated, info
+        return obs, rew, terminateds, truncateds, info
 
     def calculate_reward(self, params):
         """
@@ -370,6 +375,19 @@ class DCRL(MultiAgentEnv):
 if __name__ == '__main__':
 
     env = DCRL()
+    env_config = EnvConfig({})
+    try:
+        check_env(env, env_config)
+    except Exception as e:
+        print(
+            "We've added a module for checking environments that "
+            "are used in experiments. Your env may not be set up"
+            "correctly. You can disable env checking for now by setting "
+            "`disable_env_checking` to True in your experiment config "
+            "dictionary. You can run the environment checking module "
+            "standalone by calling ray.rllib.utils.check_env(env)."
+        )
+        raise e
 
     # Set seeds for reproducibility    
     np.random.seed(0)
@@ -389,8 +407,8 @@ if __name__ == '__main__':
             'agent_bat': env.bat_env.action_space.sample()
         }
 
-        _, rewards, terminated, _, _ = env.step(action_dict)
-        done = terminated['__all__']
+        _, rewards, terminated, truncateds, _ = env.step(action_dict)
+        done = truncateds['__all__']
         
         reward_ls += rewards['agent_ls']
         reward_dc += rewards['agent_dc']

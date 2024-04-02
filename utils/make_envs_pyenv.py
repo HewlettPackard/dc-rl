@@ -1,6 +1,8 @@
 import os
 
 import gymnasium as gym
+from gymnasium import spaces
+
 import numpy as np
 import pandas as pd
 
@@ -109,9 +111,9 @@ def make_dc_pyeplus_env(month : int = 1,
         'Facility Total Building Electricity Demand Rate(Whole Building)'  #  'IT POWER'
     ]
         
-    observation_space = gym.spaces.Box(low=np.float32(-2.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
-                                       high=np.float32(5.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
-                                       )
+    observation_space = spaces.Box(low=np.float32(-2.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
+                                    high=np.float32(5.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
+                                    )
     
     ################################################################################
     ########################## Action Variables ####################################
@@ -122,17 +124,11 @@ def make_dc_pyeplus_env(month : int = 1,
     min_temp = 15.0
     max_temp = 21.6
     action_mapping = {
-        0: (-5),
-        1: (-2),
-        2: (-1),
-        3: (-0.5),
-        4: (0),
-        5: (0.5),
-        6: (1),
-        7: (2),
-        8: (5)
+        0: (-1),
+        1: (0),
+        2: (1),
     }
-    action_space = gym.spaces.Discrete(len(action_mapping))
+    action_space = spaces.Discrete(len(action_mapping))
     
     
     ################################################################################

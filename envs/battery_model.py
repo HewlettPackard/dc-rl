@@ -87,6 +87,10 @@ class Battery2:
         # Avisek added
         self.charging_load = 0
 
+    def reset(self):
+        self.current_load = np.round(np.random.uniform(0, self.capacity/4), 4)
+        
+        
     def calc_max_charge(self, T_u):
 
         # energy content in current (next) time step: b_k (b_{k+1}, which is just b_k + p_k*eff_c)
