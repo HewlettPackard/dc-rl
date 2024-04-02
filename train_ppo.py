@@ -1,13 +1,13 @@
 """
 Creates algorithm configuration for PPO and starts training process
 """
-
+#%%
 import os
 
 import ray
 from ray.rllib.algorithms.ppo import PPOConfig
 from train import train
-from dcrl_eplus_env import DCRLeplus
+# from dcrl_eplus_env import DCRLeplus
 from dcrl_env import DCRL
 from utils.rllib_callbacks import CustomCallbacks
 
@@ -38,7 +38,7 @@ CONFIG = (
                 'individual_reward_weight': 0.8,
                 
                 # Flexible load ratio
-                'flexible_load': 0.1,
+                'flexible_load': 0.2,
                 
                 # Specify reward methods
                 'ls_reward': 'default_ls_reward',
@@ -57,13 +57,13 @@ CONFIG = (
             entropy_coeff=0.05,
             use_gae=True, 
             train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
-            model={'fcnet_hiddens': [128, 64, 16], 'fcnet_activation': 'relu'}, 
+            model={'fcnet_hiddens': [64, 16], 'fcnet_activation': 'relu'}, 
             shuffle_sequences=True
         )
         .callbacks(CustomCallbacks)
         .resources(num_cpus_per_worker=1, num_gpus=0)
     )
-
+#%%
 NAME = "test"
 RESULTS_DIR = './results'
 
@@ -71,7 +71,7 @@ if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
 
     ray.init(ignore_reinit_error=True)
-    #ray.init(local_mode=True, ignore_reinit_error=True)
+    # ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(
         algorithm="PPO",

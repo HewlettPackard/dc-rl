@@ -5,12 +5,12 @@ import numpy as np
 import pandas as pd
 import math 
 
-class DataCenterEnv(gym.Env):
+class CarbonLoadEnv(gym.Env):
     """Custom Environment that simulates load shifting in a data center with forecasted carbon intensity."""
     metadata = {'render.modes': ['human']}
     
     def __init__(self, forecast_hours=1, relative_ci=False, include_past_ci=False, queue_max_len=500):
-        super(DataCenterEnv, self).__init__()
+        super(CarbonLoadEnv, self).__init__()
         
         self.forecast_intervals = forecast_hours
         self.relative_ci = relative_ci  # Flag to control CI representation

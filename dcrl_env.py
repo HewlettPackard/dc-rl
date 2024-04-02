@@ -153,7 +153,7 @@ class DCRL(MultiAgentEnv):
         self.t_m = Time_Manager(self.init_day)
         self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=flexible_load, init_day=self.init_day)
         self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file)
-        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file)
+        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=4)
 
         # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
@@ -190,7 +190,7 @@ class DCRL(MultiAgentEnv):
         self.dc_env.set_ambient_temp(temp)
         
         # Update the workload of the load shifting environment
-        self.ls_env.update_workload(day_workload, workload)
+        self.ls_env.update_workload(workload)
         
         # Reset all the environments
         ls_s, self.ls_info = self.ls_env.reset()
@@ -204,8 +204,8 @@ class DCRL(MultiAgentEnv):
         self.dc_state = np.hstack((t_i, self.dc_state, workload, ci_i_future[0], batSoC))
         var_to_LS_energy = get_energy_variables(self.dc_state)
         
-        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, current workload, energy variables from DC, battery SoC]
-        self.ls_state = np.hstack((t_i, ls_s, ci_i_future, workload, var_to_LS_energy, batSoC))
+        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, energy variables from DC, battery SoC]
+        self.ls_state = np.hstack((t_i, ls_s, ci_i_future, var_to_LS_energy, batSoC))
         
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
         self.bat_state = np.hstack((t_i, bat_s, ci_i_future))
@@ -264,7 +264,7 @@ class DCRL(MultiAgentEnv):
             action = self.base_agents["agent_ls"].do_nothing_action()
             
         # Now, update the load shifting environment/agent first.
-        self.ls_env.update_workload(day_workload, workload)
+        self.ls_env.update_workload(workload)
         
         # Do a step
         self.ls_state, _, self.ls_terminated, self.ls_truncated, self.ls_info = self.ls_env.step(action)
@@ -309,7 +309,9 @@ class DCRL(MultiAgentEnv):
         
         # We need to update the LS state with the DC energy variables and the final battery SoC.
         var_to_LS_energy = get_energy_variables(self.dc_state)
-        self.ls_state = np.hstack((t_i, self.ls_state, ci_i_future, workload, var_to_LS_energy, batSoC))
+        
+        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, energy variables from DC, battery SoC]
+        self.ls_state = np.hstack((t_i, self.ls_state, ci_i_future, var_to_LS_energy, batSoC))
         
         # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
         # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict

@@ -15,24 +15,30 @@ import utils.dc_config_reader as DC_Config
 import itertools
 
 def make_ls_env(month,
+                n_vars_ci: int = 4,
                 n_vars_energy : int = 4,
                 n_vars_battery : int = 1,
-                test_mode=False,):
+                queue_max_len: int = 500,
+                test_mode = False):
     """Method to build the Load shifting environment
 
     Args:
         month (int): Month of the year in which the agent is training.
         n_vars_energy (int, optional): Number of variables from the Energy environment. Defaults to 4.
         n_vars_battery (int, optional): Number of variables from the Battery environment. Defaults to 1.
+        queue_max_len (int, optional): The size of the queue where the tasks are stored to be processed latter. Default to 500.
 
     Returns:
         CarbonLoadEnv: Load Shifting environment
     """
     
-    return CarbonLoadEnv(n_vars_energy=n_vars_energy,
+    return CarbonLoadEnv(n_vars_ci=n_vars_ci,
+                         n_vars_energy=n_vars_energy,
                          n_vars_battery=n_vars_battery,
-                         test_mode=test_mode,
-                         )
+                         queue_max_len=queue_max_len,
+                         test_mode=test_mode)
+    
+    
 
 def make_bat_fwd_env(month,
                     max_bat_cap_Mw : float = 2.0,

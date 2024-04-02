@@ -216,6 +216,7 @@ class dc_gymenv(gym.Env):
         """
         Updates the current CPU workload. fraction between 0.0 and 1.0
         """
+        assert 0.0 < cpu_load < 1.0, 'CPU load out of bounds'
         self.cpu_load_frac = cpu_load
     
     def set_ambient_temp(self, ambient_temp):
