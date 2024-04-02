@@ -27,7 +27,7 @@ DCRL-green is a framework for testing multi-agent Reinforcement Learning (MARL) 
 
 Main contributions of DCRL-Green:
 
-- the first OpenAI framework, in our knowledge, focused on carbon footprint reduction for data centers
+- the first OpenAI framework, to the best of our knowledge, focused on carbon footprint reduction for data centers
 - modular design meaning users can utilize pre-defined modules for load shifting, energy and battery or build their own 
 - scalable architecture that allows multiple different types of modules and connections between them
 - robust data center model that provides in-depth customization to fit users' needs 
