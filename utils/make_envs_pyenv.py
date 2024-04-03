@@ -45,6 +45,7 @@ def make_ls_env(month,
 def make_bat_fwd_env(month,
                     max_bat_cap_Mw : float = 2.0,
                     charging_rate : float = 0.5,
+                    max_dc_pw_MW : float = 7.23
                     ):
     """Method to build the Battery environment.
 
@@ -59,6 +60,7 @@ def make_bat_fwd_env(month,
     """
     init_day = get_init_day(month)
     env_config= {'n_fwd_steps':4,
+                 'max_dc_pw_MW':max_dc_pw_MW,
                  'max_bat_cap':max_bat_cap_Mw,
                  'charging_rate':charging_rate,
                  'start_point':init_day,
@@ -111,8 +113,8 @@ def make_dc_pyeplus_env(month : int = 1,
         'Facility Total Building Electricity Demand Rate(Whole Building)'  #  'IT POWER'
     ]
         
-    observation_space = spaces.Box(low=np.float32(-2.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
-                                    high=np.float32(5.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
+    observation_space = spaces.Box(low=np.float32(0.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
+                                    high=np.float32(1.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
                                     )
     
     ################################################################################
@@ -199,8 +201,10 @@ def make_dc_pyeplus_env(month : int = 1,
                     )
     
     dc_env.NormalizeObservation()
+    max_dc_pw = ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][1]+\
+        ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][1]
     
-    return dc_env
+    return dc_env, max_dc_pw
     
     
     
