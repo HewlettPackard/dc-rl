@@ -104,6 +104,7 @@ class dc_gymenv(gym.Env):
         self.CRAC_Fan_load, self.CRAC_cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = None, None, None, None, None
         self.CT_Cooling_load = self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
+        self.water_usage = None
         
         self.raw_curr_state = self.get_obs()
         
@@ -161,6 +162,17 @@ class dc_gymenv(gym.Env):
                                                                                                                                                                        data_center_full_load=data_center_total_ITE_Load,
                                                                                                                                                                        DC_Config=self.DC_Config)
         
+        # Set the additional attributes for the cooling tower water usage calculation
+        self.dc.hot_water_temp = avg_CRAC_return_temp  # °C
+        self.dc.cold_water_temp = self.raw_curr_stpt  # °C
+        self.dc.wet_bulb_temp = self.wet_bulb  # °C from weather data
+
+        # Calculate the cooling tower water usage
+        self.water_usage = self.dc.calculate_cooling_tower_water_usage()
+        # water_usage_meth2 = DataCenter.calculate_water_consumption_15min(self.CRAC_Cooling_load,  self.dc.hot_water_temp, self.dc.cold_water_temp)
+        # print(f"Estimated cooling tower water usage method1 (liters per 15 min): {water_usage}")
+        # print(f"Estimated cooling tower water usage method2 (liters per 15 min): {water_usage_meth2}")
+
         # calculate reward
         self.reward = 0
                 
@@ -183,6 +195,7 @@ class dc_gymenv(gym.Env):
             'dc_int_temperature': np.mean(self.rackwise_outlet_temp),
             'dc_CW_pump_power_kW': self.CW_pump_load,
             'dc_CT_pump_power_kW': self.CT_pump_load,
+            'dc_water_usage': self.water_usage,
         }
         
 
@@ -247,11 +260,12 @@ class dc_gymenv(gym.Env):
         assert 0.0 <= cpu_load <= 1.0, 'CPU load out of bounds'
         self.cpu_load_frac = cpu_load
     
-    def set_ambient_temp(self, ambient_temp):
+    def set_ambient_temp(self, ambient_temp, wet_bulb):
         """
         Updates the external temperature.
         """
         self.ambient_temp = ambient_temp
+        self.wet_bulb = wet_bulb
         
     def set_bat_SoC(self, bat_SoC):
         """

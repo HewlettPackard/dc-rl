@@ -185,11 +185,11 @@ class DCRL(MultiAgentEnv):
         # Reset the managers
         t_i = self.t_m.reset() # Time manager
         workload, day_workload = self.workload_m.reset() # Workload manager
-        temp, norm_temp = self.weather_m.reset() # Weather manager
+        temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.reset() # Weather manager
         ci_i, ci_i_future = self.ci_m.reset() # CI manager. ci_i -> CI in the current timestep.
         
         # Set the external ambient temperature to data center environment
-        self.dc_env.set_ambient_temp(temp)
+        self.dc_env.set_ambient_temp(temp, wet_bulb)
         
         # Update the workload of the load shifting environment
         self.ls_env.update_workload(workload)
@@ -248,7 +248,7 @@ class DCRL(MultiAgentEnv):
         # Step in the managers
         day, hour, t_i, terminal = self.t_m.step()
         workload, day_workload = self.workload_m.step()
-        temp, norm_temp = self.weather_m.step()
+        temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.step()
         ci_i, ci_i_future = self.ci_m.step()
 
         # Transform the actions if the algorithm uses continuous action space. Like RLLib with MADDPG.
@@ -280,7 +280,7 @@ class DCRL(MultiAgentEnv):
         # Update the data center environment/agent.
         shifted_wkld = self.ls_info['ls_shifted_workload']
         self.dc_env.set_shifted_wklds(shifted_wkld)
-        self.dc_env.set_ambient_temp(temp)
+        self.dc_env.set_ambient_temp(temp, wet_bulb)
         
         # Do a step in the data center environment
         # By default, the reward is ignored. The reward is calculated after the battery env step with the total energy usage.

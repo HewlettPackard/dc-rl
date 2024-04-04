@@ -173,6 +173,14 @@ class DataCenter_ITModel():
         
         self.total_datacenter_full_load()
         
+        self.tower_flow_rate = np.round(DC_ITModel_config.CT_WATER_FLOW_RATE * 3600, 4)  # m³/hr
+        self.hot_water_temp = None  # °C
+        self.cold_water_temp = None  # °C
+        self.wet_bulb_temp = None  # °C
+        self.cycles_of_concentration = 5
+        self.drift_rate = 0.01
+        
+        
         
     def compute_datacenter_IT_load_outlet_temp(self,ITE_load_pct_list, CRAC_setpoint):
         
@@ -212,8 +220,38 @@ class DataCenter_ITModel():
         x = [rack_item.get_current_rack_load() for rack_item in self.racks_list]
         self.total_DC_full_load = sum(x)
 
+    def calculate_cooling_tower_water_usage(self):
+        """
+        Calculate the estimated water usage of the cooling tower.
 
-def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp,data_center_full_load, DC_Config, ctafr= None):
+        This function uses the attributes set in the class to estimate the water usage based 
+        [Sharma, R.K., Shah, A., Bash, C.E., Christian, T., & Patel, C.D. (2009). Water efficiency management in datacenters: Metrics and methodology. 2009 IEEE International Symposium on Sustainable Systems and Technology, 1-6.]
+        [Mohammed Shublaq, Ahmad K. Sleiti., (2020).  Experimental analysis of water evaporation losses in cooling towers using filters]
+        https://spxcooling.com/water-calculator/
+        """
+        # We're assuming m³/hr, which is standard
+
+        # Calculate the range (difference between hot and cold water temperature)
+        range_temp = self.hot_water_temp - self.cold_water_temp
+        
+        y_intercept = 0.3528 * range_temp + 0.101
+        
+        # The water usage estimation formula would need to be derived from the graph you provided.
+        
+        norm_water_usage = 0.044 * self.wet_bulb_temp + y_intercept
+        
+        water_usage = np.clip(norm_water_usage, 0, None)
+        
+        water_usage += water_usage * self.drift_rate  # adjust for drift
+
+        # Convert m³/hr to the desired unit (e.g., liters per 15 minutes) if necessary
+        # There are 1000 liters in a cubic meter. There are 4 15-minute intervals in an hour.
+        water_usage_liters_per_15min = (water_usage * 1000) / 4
+
+        return water_usage_liters_per_15min
+
+
+def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp,data_center_full_load, DC_Config, ctafr=None):
     """Calculate the HVAV power attributes
 
         Args:
@@ -248,8 +286,8 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp,data_
     v_air = m_air/DC_Config.RHO_AIR
     if ctafr is None:
         ctafr = DC_Config.CT_REFRENCE_AIR_FLOW_RATE
-    CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(v_air/ctafr)**3  
-    
+    CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(v_air/ctafr)**3
+        
     return CRAC_Fan_load, CT_Fan_pwr, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
 
 def chiller_sizing(DC_Config, min_CRAC_setpoint = 16, ambient_temp = 40.0):

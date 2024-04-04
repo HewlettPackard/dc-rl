@@ -38,7 +38,7 @@ CONFIG = (
                 'individual_reward_weight': 0.8,
                 
                 # Flexible load ratio
-                'flexible_load': 0.2,
+                'flexible_load': 0.4,
                 
                 # Specify reward methods
                 'ls_reward': 'default_ls_reward',
@@ -65,7 +65,7 @@ CONFIG = (
     )
 #%%
 NAME = "test"
-RESULTS_DIR = './results'
+RESULTS_DIR = '/lustre/guillant/dcrlv2/dc-rl/results/'
 
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
@@ -78,4 +78,4 @@ if __name__ == '__main__':
         config=CONFIG,
         results_dir=RESULTS_DIR,
         name=NAME,
-    )dc
+    )

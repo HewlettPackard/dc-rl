@@ -1,9 +1,13 @@
 import os
 import numpy as np
 import pandas as pd
+import psychrolib as psy
 
 file_path = os.path.abspath(__file__)
 PATH = os.path.split(os.path.dirname(file_path))[0]
+
+# Set the unit system for psychrolib
+psy.SetUnitSystem(psy.SI)
 
 class CoherentNoise:
     """Class to add coherent noise to the data.
@@ -376,7 +380,7 @@ class Weather_Manager():
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
             temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.
     """
-    def __init__(self, filename='', location='NY', init_day=0, weight=0.01, desired_std_dev=0.5, temp_column=6):
+    def __init__(self, filename='', location='NY', init_day=0, weight=0.02, desired_std_dev=0.75, temp_column=6, rh_column=8, pres_column=9):
         """Manager of the weather data.
 
         Args:
@@ -390,32 +394,46 @@ class Weather_Manager():
         # Load weather data from a CSV file
 
         if not location == '':
-            temperature_data = pd.read_csv(PATH+f'/data/Weather/{location}', skiprows=8, header=None).values[:,temp_column]
+            weather_data = pd.read_csv(PATH+f'/data/Weather/{location}', skiprows=8, header=None).values
         else:
-            temperature_data = pd.read_csv(PATH+f'/data/Weather/{filename}', skiprows=8, header=None).values[:,temp_column]
+            weather_data = pd.read_csv(PATH+f'/data/Weather/{filename}', skiprows=8, header=None).values
         
-        temperature_data = temperature_data.astype(float)
+        temperature_data = weather_data[:,temp_column].astype(float)
+        relative_humidity_data = weather_data[:,rh_column].astype(float)  # Added for relative humidity
+        pressure_data = weather_data[:,pres_column].astype(float)  # Added for atmospheric pressure
+                
+        self.wet_bulb_data = [psy.GetTWetBulbFromRelHum(t, rh / 100, p) for t, rh, p in zip(temperature_data, relative_humidity_data, pressure_data)]
+
+        # Normalize wet bulb temperature data
+        self.min_wb_temp = 0
+        self.max_wb_temp = 40
+
         self.init_day = init_day
         # One year data=24*365=8760
         x = range(0, len(temperature_data))
-        xtemperature_new = np.linspace(0, len(temperature_data), len(temperature_data)*4)
+        self.timestep_per_hour = 4
+
+        xtemperature_new = np.linspace(0, len(temperature_data), len(temperature_data)*self.timestep_per_hour )
         
-        self.min_temp = -10
+        self.min_temp = 0
         self.max_temp = 40
         
-        # Interpolate the carbon data to increase the number of data points
+        # Interpolate the data to increase the number of data points
+        self.wet_bulb_data = np.interp(xtemperature_new, x, self.wet_bulb_data)
+        self.norm_wet_bulb_data = normalize(self.wet_bulb_data, self.min_wb_temp, self.max_wb_temp)
+
         self.temperature_data = np.interp(xtemperature_new, x, temperature_data)
         self.norm_temp_data = normalize(self.temperature_data, self.min_temp, self.max_temp)
 
         self.time_step = 0
         
         # Save a copy of the original data
-        self.original_data = self.temperature_data.copy()
-        
+        self.original_temp_data = self.temperature_data.copy()
+        self.original_wb_data = self.wet_bulb_data.copy()
+
         # Initialize CoherentNoise process
-        self.coherent_noise = CoherentNoise(base=self.original_data[0], weight=weight, desired_std_dev=desired_std_dev)
+        self.coherent_noise = CoherentNoise(base=0, weight=weight, desired_std_dev=desired_std_dev)
                 
-        self.timestep_per_hour = 4
         self.time_steps_day = self.timestep_per_hour*24
 
     # Function to return all weather data
@@ -438,12 +456,20 @@ class Weather_Manager():
         self.time_step = self.init_day*self.time_steps_day
         
         # Add noise to the temperature data using the CoherentNoise
-        self.temperature_data = self.original_data + self.coherent_noise.generate(len(self.original_data))
-        
+        coh_noise = self.coherent_noise.generate(len(self.original_temp_data))
+        self.temperature_data = self.original_temp_data + coh_noise
+        self.wet_bulb_data = self.original_wb_data + coh_noise
+
         self.temperature_data = np.clip(self.temperature_data, self.min_temp, self.max_temp)
         self.norm_temp_data = normalize(self.temperature_data, self.min_temp, self.max_temp)
+        
+        self.wet_bulb_data = np.clip(self.wet_bulb_data, self.min_wb_temp, self.max_wb_temp)
+        self.norm_wet_bulb_data = normalize(self.wet_bulb_data, self.min_wb_temp, self.max_wb_temp)
 
-        return self.temperature_data[self.time_step], self.norm_temp_data[self.time_step]
+        # return self.temperature_data[self.time_step], self.norm_temp_data[self.time_step]
+        return (self.temperature_data[self.time_step], self.norm_temp_data[self.time_step],
+                self.wet_bulb_data[self.time_step], self.norm_wet_bulb_data[self.time_step])  # Added wet bulb temp
+    
     
     # Function to advance the time step and return the weather at the new time step
     def step(self):
@@ -460,4 +486,6 @@ class Weather_Manager():
             self.time_step = self.init_day*self.time_steps_day
             
         # assert self.time_step < len(self.temperature_data), 'Episode length is longer than the provide Temperature_data'
-        return self.temperature_data[self.time_step], self.norm_temp_data[self.time_step]
+        # return self.temperature_data[self.time_step], self.norm_temp_data[self.time_step]
+        return (self.temperature_data[self.time_step], self.norm_temp_data[self.time_step],
+                self.wet_bulb_data[self.time_step], self.norm_wet_bulb_data[self.time_step])  # Added wet bulb temp

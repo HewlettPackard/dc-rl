@@ -9,3 +9,4 @@ __pycache__/
 /pydcm
 data/pydcmresults
 .vscode/
+test.png

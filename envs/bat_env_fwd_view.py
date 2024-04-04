@@ -20,15 +20,15 @@ class BatteryEnvFwd(gym.Env):
         n_fwd_steps = env_config['n_fwd_steps']
         max_bat_cap = env_config['max_bat_cap']
         charging_rate = env_config['charging_rate']
-        self.observation_space = spaces.Box(low=np.float32(0 * np.ones(1 + 1 + 4 + n_fwd_steps)),
-                                                high=np.float32(1 * np.ones(1 + 1 + 4 + n_fwd_steps)))
+        self.observation_space = spaces.Box(low=np.float32(-1.0 * np.ones(1 + 1 + 4 + n_fwd_steps)),
+                                            high=np.float32(1.0 * np.ones(1 + 1 + 4 + n_fwd_steps)))
         
         self.max_dc_pw = 7.24
         self.action_space = spaces.Discrete(3)
         self._action_to_direction = {0: 'charge', 1: 'discharge', 2: 'idle'}
         
         other_states_max = np.array([self.max_dc_pw, max_bat_cap])
-        other_states_min = np.array([0.1, 0])
+        other_states_min = np.array([0.01, 0])
         
         self.observation_max = other_states_max
         self.observation_min = other_states_min
