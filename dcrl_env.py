@@ -119,8 +119,8 @@ class DCRL(MultiAgentEnv):
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
         self.ls_env = make_ls_env(self.month, test_mode = self.evaluation_mode)
-        self.dc_env = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
-        self.bat_env = make_bat_fwd_env(self.month, max_bat_cap_Mw=self.max_bat_cap_Mw)
+        self.dc_env, max_dc_pw = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
+        self.bat_env = make_bat_fwd_env(self.month, max_dc_pw_MW = max_dc_pw/1e6, max_bat_cap_Mw=self.max_bat_cap_Mw)
 
         self._obs_space_in_preferred_format = True
         
