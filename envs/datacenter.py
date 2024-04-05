@@ -246,7 +246,7 @@ class DataCenter_ITModel():
 
         # Convert m³/hr to the desired unit (e.g., liters per 15 minutes) if necessary
         # There are 1000 liters in a cubic meter. There are 4 15-minute intervals in an hour.
-        water_usage_liters_per_15min = (water_usage * 1000) / 4
+        water_usage_liters_per_15min = np.round((water_usage * 1000) / 4, 4)
 
         return water_usage_liters_per_15min
 

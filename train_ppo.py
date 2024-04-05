@@ -15,7 +15,7 @@ from utils.rllib_callbacks import CustomCallbacks
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
 NUM_AGENTS = 3
-NUM_WORKERS = 24
+NUM_WORKERS = 12
 
 CONFIG = (
         PPOConfig()
@@ -57,11 +57,11 @@ CONFIG = (
             entropy_coeff=0.05,
             use_gae=True, 
             train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
-            model={'fcnet_hiddens': [16, 16], 'fcnet_activation': 'relu'}, 
+            model={'fcnet_hiddens': [32, 16]}, 
             shuffle_sequences=True
         )
         .callbacks(CustomCallbacks)
-        .resources(num_cpus_per_worker=1, num_gpus=0)
+        .resources(num_gpus=0)
     )
 #%%
 NAME = "test"
@@ -70,7 +70,8 @@ RESULTS_DIR = '/lustre/guillant/dcrlv2/dc-rl/results/'
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
 
-    ray.init(ignore_reinit_error=True)
+    ray.init(ignore_reinit_error=True, num_cpus=NUM_WORKERS+1)
+    # ray.init(logging_level='debug', num_cpus=NUM_WORKERS)
     # ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(
@@ -79,3 +80,4 @@ if __name__ == '__main__':
         results_dir=RESULTS_DIR,
         name=NAME,
     )
+# %%
