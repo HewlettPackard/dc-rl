@@ -345,7 +345,8 @@ class DCRL(MultiAgentEnv):
             rew["agent_bat"] = self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_reward
             terminateds["agent_bat"] = False
             info["agent_bat"] = self.bat_info
-
+        
+        info["__common__"] = reward_params
         if terminal:
             terminateds["__all__"] = False
             truncateds["__all__"] = True

@@ -57,7 +57,7 @@ CONFIG = (
             entropy_coeff=0.05,
             use_gae=True, 
             train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
-            model={'fcnet_hiddens': [32, 16]}, 
+            model={'fcnet_hiddens': [64, 64]}, 
             shuffle_sequences=True
         )
         .callbacks(CustomCallbacks)
@@ -70,8 +70,8 @@ RESULTS_DIR = '/lustre/guillant/dcrlv2/dc-rl/results/'
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
 
-    ray.init(ignore_reinit_error=True, num_cpus=NUM_WORKERS+1)
-    # ray.init(logging_level='debug', num_cpus=NUM_WORKERS)
+    ray.init(ignore_reinit_error=True, num_cpus=64)
+    # ray.init(logging_level='debug', num_cpus=NUM_WORKERS+1)
     # ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(

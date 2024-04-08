@@ -47,7 +47,7 @@ class BaseHVACAgent:
         Returns:
             action (int): The action (do nothing) to be taken.
         """
-        return np.int64(4)
+        return np.int64(1)
 
 class BaseBatteryAgent:
     """

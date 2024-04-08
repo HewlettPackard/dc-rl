@@ -88,7 +88,7 @@ class Battery2:
         self.charging_load = 0
 
     def reset(self):
-        self.current_load = np.round(np.random.uniform(0, self.capacity/4), 4)
+        self.current_load = 0#np.round(np.random.uniform(0, self.capacity/4), 4)
         
         
     def calc_max_charge(self, T_u):

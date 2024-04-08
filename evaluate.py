@@ -6,7 +6,7 @@ import ray
 
 from utils.checkpoint_finder import get_best_checkpoint
 
-CHECKPOINT = get_best_checkpoint('results/test/A2C_DCRL_6c1e5_00000_0_2023-07-07_15-41-33')
+CHECKPOINT = get_best_checkpoint('results/test/PPO_DCRL_10e48_00000_0_2024-04-05_08-49-20')
 NUM_RUNS = 4
 
 if __name__ == '__main__':
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     config = state['config'].copy(copy_frozen=False)
     config['env_config']['evaluation'] = True
     config.evaluation_interval = 1
-    config.evaluation_num_workers = os.cpu_count() // 2
+    config.evaluation_num_workers = 25
     
     # Number of episodes per location. 
     # 1 episode is 1 month, so (12 months * num_runs)
@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
     data = []
     
-    for location in ['az', 'wa', 'ny']:
+    for location in ['ny']:
 
         print(f"Evaluating for {location}...\n")
 
@@ -62,3 +62,12 @@ if __name__ == '__main__':
         floatfmt='.3f'
         )
     )
+
+'''
+
+Evaluation finished. Average of 4 runs:
+Location      CO2(MT)    Energy(MW)
+----------  ---------  ------------
+ny          17350.018        33.156
+
+'''
