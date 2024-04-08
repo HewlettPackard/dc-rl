@@ -164,7 +164,7 @@ class Workload_Manager():
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
             flexible_workload_ratio (float, optional): Ratio of the flexible workload amount. Defaults to 0.1.
     """
-    def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.001, desired_std_dev=0.025, flexible_workload_ratio=0.1):
+    def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.01, desired_std_dev=0.025, flexible_workload_ratio=0.1):
         """Manager of the DC workload
 
         Args:
@@ -225,8 +225,13 @@ class Workload_Manager():
         self.time_step = self.init_day*self.time_steps_day
         self.init_time_step = self.time_step
         
+        baseline = np.random.random() - 0.5
+        
         # Add noise to the workload data using the CoherentNoise 
-        self.cpu_smooth = self.original_data * 0.7 + self.coherent_noise.generate(len(self.original_data)) * 0.3
+        self.cpu_smooth = self.original_data * 0.7 + self.coherent_noise.generate(len(self.original_data)) * 0.3 + baseline
+        
+        num_roll_weeks = np.random.randint(0, 52) # Random roll the workload because is independed on the month, so I am rolling across weeks (52 weeks in a year)
+        self.cpu_smooth =  np.roll(self.cpu_smooth, num_roll_weeks*self.timestep_per_hour*24*7)
 
         self.cpu_smooth = np.clip(self.cpu_smooth, 0, 1)
         self.cpu_base_smooth = self.cpu_smooth * (1-self.flexible_workload_ratio)
@@ -243,16 +248,18 @@ class Workload_Manager():
             float: Amount of daily flexible workload
         """
         self.time_step += 1
-        data_load = 0
-        if self.time_step % self.time_steps_day == 0 and self.time_step != self.init_time_step:
-            self.storage_load = np.sum(self.cpu_smooth[self.time_step:self.time_step+self.time_steps_day]*self.flexible_workload_ratio)
-            data_load = self.storage_load
         
         # If it tries to read further, restart from the inital day
-        if self.time_step >= len(self.cpu_smooth):
+        if self.time_step - 1 >= len(self.cpu_smooth):
             self.time_step = self.init_time_step
         # assert self.time_step < len(self.cpu_smooth), f'Episode length: {self.time_step} is longer than the provide cpu_smooth: {len(self.cpu_smooth)}'
-        return self.cpu_base_smooth[self.time_step], data_load
+        return self.cpu_base_smooth[self.time_step - 1]
+    
+    def get_current_workload(self):        
+        return self.cpu_base_smooth[self.time_step]
+    
+    def set_current_workload(self, workload):         
+        self.cpu_base_smooth[self.time_step] = workload
 
 
 # Class to manage carbon intensity data
@@ -332,6 +339,9 @@ class CI_Manager():
         self.carbon_smooth = self.original_data + self.coherent_noise.generate(len(self.original_data))
         
         self.carbon_smooth = np.clip(self.carbon_smooth, 0, None)
+        
+        num_roll_days = np.random.randint(0, 14) # Random roll the workload some days. I can roll the carbon intensity up to 14 days.
+        self.carbon_smooth =  np.roll(self.carbon_smooth, num_roll_days*self.timestep_per_hour*24)
 
         self.min_ci = min(self.carbon_smooth)
         self.max_ci = max(self.carbon_smooth)
@@ -352,17 +362,19 @@ class CI_Manager():
         self.time_step +=1
         
         # If it tries to read further, restart from the initial index
-        if self.time_step >= len(self.carbon_smooth):
+        if self.time_step - 1 >= len(self.carbon_smooth):
             self.time_step = self.init_day*self.time_steps_day
             
         # assert self.time_step < len(self.carbon_smooth), 'Eposide length is longer than the provide CI_data'
-        if self.time_step + self.future_steps > len(self.carbon_smooth):
-            data = self.norm_carbon[self.time_step]*np.ones(shape=(self.future_steps))
+        if self.time_step - 1 + self.future_steps > len(self.carbon_smooth):
+            data = self.norm_carbon[self.time_step-1]*np.ones(shape=(self.future_steps))
         else:
-            data = self.norm_carbon[self.time_step:self.time_step+self.future_steps]
+            data = self.norm_carbon[(self.time_step-1):self.time_step-1+self.future_steps]
 
-        return self.carbon_smooth[self.time_step], data
-
+        return self.carbon_smooth[self.time_step-1], data
+    
+    def get_current_ci(self):
+        return self.carbon_smooth[self.time_step]
 
 # Class to manage weather data
 # Where to obtain other weather files:
@@ -459,6 +471,10 @@ class Weather_Manager():
         coh_noise = self.coherent_noise.generate(len(self.original_temp_data))
         self.temperature_data = self.original_temp_data + coh_noise
         self.wet_bulb_data = self.original_wb_data + coh_noise
+        
+        num_roll_days = np.random.randint(0, 14) # Random roll the workload some days. I can roll the carbon intensity up to 14 days.
+        self.temperature_data =  np.roll(self.temperature_data, num_roll_days*self.timestep_per_hour*24)
+        self.wet_bulb_data =  np.roll(self.wet_bulb_data, num_roll_days*self.timestep_per_hour*24)
 
         self.temperature_data = np.clip(self.temperature_data, self.min_temp, self.max_temp)
         self.norm_temp_data = normalize(self.temperature_data, self.min_temp, self.max_temp)
@@ -482,10 +498,13 @@ class Weather_Manager():
         self.time_step += 1
         
         # If it tries to read further, restart from the initial index
-        if self.time_step >= len(self.temperature_data):
+        if self.time_step - 1 >= len(self.temperature_data):
             self.time_step = self.init_day*self.time_steps_day
             
         # assert self.time_step < len(self.temperature_data), 'Episode length is longer than the provide Temperature_data'
         # return self.temperature_data[self.time_step], self.norm_temp_data[self.time_step]
-        return (self.temperature_data[self.time_step], self.norm_temp_data[self.time_step],
-                self.wet_bulb_data[self.time_step], self.norm_wet_bulb_data[self.time_step])  # Added wet bulb temp
+        return (self.temperature_data[self.time_step - 1], self.norm_temp_data[self.time_step - 1],
+                self.wet_bulb_data[self.time_step - 1], self.norm_wet_bulb_data[self.time_step - 1])  # Added wet bulb temp
+        
+    def get_current_weather(self):
+        return self.temperature_data[self.time_step]
