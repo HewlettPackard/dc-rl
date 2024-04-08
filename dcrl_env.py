@@ -33,7 +33,10 @@ class EnvConfig(dict):
         'cintensity_file': 'NYIS_NG_&_avgCI.csv',
         'weather_file': 'USA_NY_New.York-Kennedy.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-
+        
+        # Capacity (MWh) of the datacenter
+        'datacenter_capacity_mwh': 1,
+        
         # Maximum battery capacity
         'max_bat_cap_Mw': 2,
         
@@ -96,6 +99,8 @@ class DCRL(MultiAgentEnv):
         self.collab_reward = (1 - self.indv_reward) / 2
         
         self.flexible_load = env_config['flexible_load']
+
+        self.datacenter_capacity = env_config['datacenter_capacity_mwh']
 
         # Assign month according to worker index, if available
         if hasattr(env_config, 'worker_index'):
@@ -247,7 +252,7 @@ class DCRL(MultiAgentEnv):
 
         # Step in the managers
         day, hour, t_i, terminal = self.t_m.step()
-        workload, day_workload = self.workload_m.step()
+        workload = self.workload_m.step()
         temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.step()
         ci_i, ci_i_future = self.ci_m.step()
 
@@ -318,7 +323,7 @@ class DCRL(MultiAgentEnv):
         # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
         # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
         info_dict = {**self.bat_info, **self.ls_info, **self.dc_info}
-        add_info = {"outside_temp": temp, "day": day, "hour": hour, "day_workload": day_workload, "norm_CI": ci_i_future[0]}
+        add_info = {"outside_temp": temp, "day": day, "hour": hour, "norm_CI": ci_i_future[0]}
         reward_params = {**info_dict, **add_info}
         self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
         
@@ -373,6 +378,13 @@ class DCRL(MultiAgentEnv):
         bat_reward = self.bat_reward_method(params)
         return ls_reward, dc_reward, bat_reward
 
+    def get_hierarchical_variables(self):
+        return self.datacenter_capacity, self.workload_m.get_current_workload(), self.weather_m.get_current_weather(), self.ci_m.get_current_ci()
+        
+    def set_hierarchical_workload(self, workload):
+        self.workload_m.set_current_workload(workload)
+        
+        
 if __name__ == '__main__':
 
     env = DCRL()
