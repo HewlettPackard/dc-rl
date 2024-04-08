@@ -15,7 +15,7 @@ from utils.rllib_callbacks import CustomCallbacks
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
 NUM_AGENTS = 3
-NUM_WORKERS = 12
+NUM_WORKERS = 24
 
 CONFIG = (
         PPOConfig()

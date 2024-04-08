@@ -247,7 +247,7 @@ class DCRL(MultiAgentEnv):
 
         # Step in the managers
         day, hour, t_i, terminal = self.t_m.step()
-        workload, day_workload = self.workload_m.step()
+        workload = self.workload_m.step()
         temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.step()
         ci_i, ci_i_future = self.ci_m.step()
 
@@ -318,7 +318,7 @@ class DCRL(MultiAgentEnv):
         # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
         # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
         info_dict = {**self.bat_info, **self.ls_info, **self.dc_info}
-        add_info = {"outside_temp": temp, "day": day, "hour": hour, "day_workload": day_workload, "norm_CI": ci_i_future[0]}
+        add_info = {"outside_temp": temp, "day": day, "hour": hour, "norm_CI": ci_i_future[0]}
         reward_params = {**info_dict, **add_info}
         self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
         
