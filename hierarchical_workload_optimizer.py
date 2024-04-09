@@ -30,7 +30,7 @@ class WorkloadOptimizer:
                 self.transfer_matrix[from_dc][to_dc] = 0
                 
 
-        max_cap = 0.95
+        max_cap = 0.95 # To prevent to loss tasks when posponed
         for i in range(len(sorted_dcs)):
             receiver_id, receiver_state = sorted_dcs[i]
             receiver_capacity = receiver_state[0] * (max_cap - receiver_state[1])
@@ -60,7 +60,4 @@ class WorkloadOptimizer:
         }
 
         return new_workloads, self.transfer_matrix
-
-    def get_transfer_matrix(self):
-        return self.transfer_matrix
 
