@@ -253,6 +253,28 @@ def temperature_efficiency_reward(params: dict) -> float:
             reward = -abs(current_temperature - max_temp)
     return reward
 
+def water_usage_efficiency_reward(params: dict) -> float:
+    """
+    Calculates a reward value based on the efficiency of water usage in the data center.
+    
+    A lower value of water usage results in a higher reward, promoting sustainability
+    and efficiency in water consumption.
+
+    Args:
+        params (dict): Dictionary containing parameters:
+            dc_water_usage (float): The amount of water used by the data center in a given period.
+
+    Returns:
+        float: Reward value. The reward is higher for lower values of water usage, 
+        promoting reduced water consumption.
+    """
+    dc_water_usage = params['dc_water_usage']
+    
+    # Calculate the reward. This is a simple inverse relationship; many other functions could be applied.
+    # Adjust the scalar as needed to fit the scale of your rewards or to emphasize the importance of water savings.
+    reward = -0.01 * dc_water_usage
+    
+    return reward
 
 # Other reward methods can be added here.
 
@@ -267,6 +289,7 @@ REWARD_METHOD_MAP = {
     'energy_efficiency_reward' : energy_efficiency_reward,
     'energy_PUE_reward' : energy_PUE_reward,
     'temperature_efficiency_reward' : temperature_efficiency_reward,
+    'water_usage_efficiency_reward' : water_usage_efficiency_reward,
 }
 
 def get_reward_method(reward_method : str = 'default_dc_reward'):
