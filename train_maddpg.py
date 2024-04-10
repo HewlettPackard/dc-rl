@@ -42,7 +42,7 @@ CONFIG = (
                 'individual_reward_weight': 0.8,
                 
                 # Flexible load ratio
-                'flexible_load': 0.1,
+                'flexible_load': 0.4,
                 
                 # Specify reward methods
                 'ls_reward': 'default_ls_reward',
@@ -55,7 +55,7 @@ CONFIG = (
         .training(
             gamma=0.99, 
             lr=1e-7,
-            model={'fcnet_hiddens':[128, 64, 16], 'fcnet_activation': 'relu'},
+            model={'fcnet_hiddens':[16, 8], 'fcnet_activation': 'relu'},
             train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
             use_local_critic=False,
         )

@@ -15,7 +15,7 @@ from utils.rllib_callbacks import CustomCallbacks
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
 NUM_AGENTS = 3
-NUM_WORKERS = 12
+NUM_WORKERS = 24
 
 CONFIG = (
         PPOConfig()
@@ -57,7 +57,7 @@ CONFIG = (
             entropy_coeff=0.05,
             use_gae=True, 
             train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
-            model={'fcnet_hiddens': [64, 64]}, 
+            model={'fcnet_hiddens': [16, 8]}, 
             shuffle_sequences=True
         )
         .callbacks(CustomCallbacks)
