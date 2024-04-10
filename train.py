@@ -72,7 +72,7 @@ def train(
         run_config=air.RunConfig(stop={"timesteps_total": 1_000_000_000},
             verbose=0,
             local_dir=results_dir,
-            storage_path=results_dir,
+            # storage_path=results_dir,
             name=name,
             checkpoint_config=ray.air.CheckpointConfig(
                 checkpoint_frequency=5,

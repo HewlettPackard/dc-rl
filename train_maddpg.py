@@ -7,7 +7,7 @@ import os
 import ray
 
 from dcrl_env import DCRL
-from dcrl_eplus_env import DCRLeplus
+# from dcrl_eplus_env import DCRLeplus
 from maddpg import MADDPGConfigStable, MADDPGStable
 from train import train
 from utils.rllib_callbacks import CustomCallbacks
@@ -21,7 +21,7 @@ NUM_WORKERS = 24
 CONFIG = (
         MADDPGConfigStable()
         .environment(
-            env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
+            env=DCRL,
             env_config={
                 # Agents active
                 'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
@@ -42,7 +42,7 @@ CONFIG = (
                 'individual_reward_weight': 0.8,
                 
                 # Flexible load ratio
-                'flexible_load': 0.1,
+                'flexible_load': 0.4,
                 
                 # Specify reward methods
                 'ls_reward': 'default_ls_reward',
@@ -53,9 +53,9 @@ CONFIG = (
         .framework("tf")
         .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
-            gamma=0.99, 
-            lr=1e-7,
-            model={'fcnet_hiddens':[128, 64, 16], 'fcnet_activation': 'relu'},
+            gamma=0.995, 
+            lr=1e-6,
+            model={'fcnet_hiddens':[16, 8]},
             train_batch_size=24 * TIMESTEP_PER_HOUR * COLLECTED_DAYS * NUM_WORKERS * NUM_AGENTS,
             use_local_critic=False,
         )
@@ -64,12 +64,12 @@ CONFIG = (
     )
 
 NAME = "test"
-RESULTS_DIR = './results'
+RESULTS_DIR = '/lustre/guillant/dcrlv2/dc-rl/results/'
 
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
 
-    ray.init(ignore_reinit_error=True)
+    ray.init(ignore_reinit_error=True, num_cpus=64)
     # ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(

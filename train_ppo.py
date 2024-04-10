@@ -20,7 +20,7 @@ NUM_WORKERS = 24
 CONFIG = (
         PPOConfig()
         .environment(
-            env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
+            env=DCRL,
             env_config={
                 # Agents active
                 'agents': ['agent_ls', 'agent_dc', 'agent_bat'],

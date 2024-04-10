@@ -46,6 +46,9 @@ class CustomCallbacks(DefaultCallbacks):
             env_index (int): The index of the environment within the worker task.
             **kwargs: additional arguments that can be passed.
         """
+        # print(f'Logging env base with month: {base_env.envs[0].month}')
+        # print(f'Logging env worker with month: {worker.env.month}')
+
         net_energy = base_env.envs[0].bat_info["bat_total_energy_with_battery_KWh"]
         CO2_footprint = base_env.envs[0].bat_info["bat_CO2_footprint"]
         load_left = base_env.envs[0].ls_info["ls_unasigned_day_load_left"]
