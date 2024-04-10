@@ -33,7 +33,16 @@ class EnvConfig(dict):
         'cintensity_file': 'NYIS_NG_&_avgCI.csv',
         'weather_file': 'USA_NY_New.York-Kennedy.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-
+        
+        # Capacity (MWh) of the datacenter
+        'datacenter_capacity_mwh': 1,
+        
+        # Timezone shift
+        'timezone_shift': 0,
+        
+        # Days per simulated episode
+        'days_per_episode': 30,
+        
         # Maximum battery capacity
         'max_bat_cap_Mw': 2,
         
@@ -97,6 +106,10 @@ class DCRL(MultiAgentEnv):
         
         self.flexible_load = env_config['flexible_load']
 
+        self.datacenter_capacity = env_config['datacenter_capacity_mwh']
+        self.timezone_shift = env_config['timezone_shift']
+        self.days_per_episode = env_config['days_per_episode']
+
         # Assign month according to worker index, if available
         if hasattr(env_config, 'worker_index'):
             self.month = int((env_config.worker_index - 1) % 12)
@@ -152,10 +165,10 @@ class DCRL(MultiAgentEnv):
 
         # Create the managers: date/hour/time manager, workload manager, weather manager, and CI manager.
         self.init_day = get_init_day(self.month)
-        self.t_m = Time_Manager(self.init_day)
-        self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=flexible_load, init_day=self.init_day)
-        self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file)
-        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=4)
+        self.t_m = Time_Manager(self.init_day, timezone_shift=self.timezone_shift, days_per_episode=self.days_per_episode)
+        self.workload_m = Workload_Manager(init_day=self.init_day, workload_filename=self.workload_file, timezone_shift=self.timezone_shift)
+        self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file, timezone_shift=self.timezone_shift)
+        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=4, timezone_shift=self.timezone_shift)
 
         # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
@@ -184,7 +197,7 @@ class DCRL(MultiAgentEnv):
 
         # Reset the managers
         t_i = self.t_m.reset() # Time manager
-        workload, day_workload = self.workload_m.reset() # Workload manager
+        workload = self.workload_m.reset() # Workload manager
         temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.reset() # Weather manager
         ci_i, ci_i_future = self.ci_m.reset() # CI manager. ci_i -> CI in the current timestep.
         
@@ -373,6 +386,13 @@ class DCRL(MultiAgentEnv):
         bat_reward = self.bat_reward_method(params)
         return ls_reward, dc_reward, bat_reward
 
+    def get_hierarchical_variables(self):
+        return self.datacenter_capacity, self.workload_m.get_current_workload(), self.weather_m.get_current_weather(), self.ci_m.get_current_ci()
+        
+    def set_hierarchical_workload(self, workload):
+        self.workload_m.set_current_workload(workload)
+        
+        
 if __name__ == '__main__':
 
     env = DCRL()

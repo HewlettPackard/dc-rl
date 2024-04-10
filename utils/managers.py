@@ -106,7 +106,7 @@ class Time_Manager():
             init_day (int, optional): Day to start from. Defaults to 0.
             days_per_episode (int, optional): Number of days that an episode would last. Defaults to 30.
     """
-    def __init__(self, init_day=0, days_per_episode=30):
+    def __init__(self, init_day=0, days_per_episode=30, timezone_shift=0):
         """Class to manage the time dimenssion over an episode
 
         Args:
@@ -116,6 +116,7 @@ class Time_Manager():
         self.init_day = init_day
         self.timestep_per_hour = 4
         self.days_per_episode = days_per_episode
+        self.timezone_shift = timezone_shift
 
     def reset(self):
         """Reset time manager to initial day
@@ -124,7 +125,7 @@ class Time_Manager():
             List[float]: Hour and day in sine and cosine form
         """
         self.day = self.init_day
-        self.hour = 0
+        self.hour = self.timezone_shift
         return sc_obs(self.hour, self.day)
         
     def step(self):
@@ -135,7 +136,7 @@ class Time_Manager():
             bool: Signal if the episode has reach the end.
         """
         if self.hour >= 24:
-            self.hour=0
+            self.hour = 0
             self.day += 1
         self.hour += 1/self.timestep_per_hour
         return self.day, self.hour, sc_obs(self.hour, self.day), self.isterminal()
@@ -147,24 +148,14 @@ class Time_Manager():
             bool: Signals if a state is terminal or not
         """
         done = False
-        if self.day > self.init_day+self.days_per_episode:
+        if self.day > self.init_day+self.days_per_episode - 1:
             done = True
         return done
 
 
 # Class to manage CPU workload data
 class Workload_Manager():
-    """Manager of the DC workload
-
-        Args:
-            workload_filename (str, optional): Filename of the CPU data. Defaults to ''. Should be a .csv file containing the CPU hourly normalized workload data between 0 and 1. Should contains 'cpu_load' column.
-            init_day (int, optional): Initial day of the episode. Defaults to 0.
-            future_steps (int, optional): Number of steps of the workload forecast. Defaults to 4.
-            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
-            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
-            flexible_workload_ratio (float, optional): Ratio of the flexible workload amount. Defaults to 0.1.
-    """
-    def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.01, desired_std_dev=0.025, flexible_workload_ratio=0.1):
+    def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.01, desired_std_dev=0.025, timezone_shift=0):
         """Manager of the DC workload
 
         Args:
@@ -175,7 +166,6 @@ class Workload_Manager():
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
             flexible_workload_ratio (float, optional): Ratio of the flexible workload amount. Defaults to 0.1.
         """
-        assert 0 <= flexible_workload_ratio <= 1, "flexible_workload_ratio should be between 0 and 1 (inclusive)."
 
         # Load CPU data from a CSV file
         # One year data=24*365=8760
@@ -191,13 +181,16 @@ class Workload_Manager():
         self.future_steps = future_steps
         self.timestep_per_hour = 4
         self.time_steps_day = self.timestep_per_hour*24
-        self.flexible_workload_ratio = flexible_workload_ratio
         self.init_day = init_day
+        self.timezone_shift = timezone_shift
 
         # Interpolate the CPU data to increase the number of data points
         x = range(0, len(cpu_data_list))
         xcpu_new = np.linspace(0, len(cpu_data_list), len(cpu_data_list)*self.timestep_per_hour)  
         self.cpu_smooth = np.interp(xcpu_new, x, cpu_data_list)
+        
+        # Shift the data to match the timezone shift
+        self.cpu_smooth =  np.roll(self.cpu_smooth, -1*self.timezone_shift*self.timestep_per_hour)
         
         # Save a copy of the original data
         self.original_data = self.cpu_smooth.copy()
@@ -214,6 +207,32 @@ class Workload_Manager():
         """
         return np.array(self.cpu_smooth)
 
+    def scale_array(self, arr):
+        """
+        Scales the input array so that approximately 90% of its values
+        fall within the range of 0.2 to 0.8, based on the 5th and 95th percentiles.
+        
+        Parameters:
+        arr (np.array): The input numpy array to be scaled.
+        
+        Returns:
+        np.array: The scaled numpy array.
+        """
+        
+        # Calculate the 5th and 95th percentiles of the array
+        p5 = np.percentile(arr, 5)
+        p95 = np.percentile(arr, 95)
+        
+        # Scale the array based on the percentiles, without clipping
+        # This ensures values outside the 5th to 95th percentile range naturally
+        # fall outside the 0.2 to 0.8 range.
+        scaled_arr = 0.2 + ((arr - p5) * (0.8 - 0.2) / (p95 - p5))
+        
+        # Clip values to be within 0 to 1
+        scaled_arr = np.clip(scaled_arr, 0, 1)
+        
+        return scaled_arr
+
     # Function to reset the time step and return the workload at the first time step
     def reset(self):
         """Reset Workload_Manager
@@ -225,19 +244,17 @@ class Workload_Manager():
         self.time_step = self.init_day*self.time_steps_day
         self.init_time_step = self.time_step
         
-        baseline = np.random.random() - 0.5
+        baseline = np.random.random()*0.5 - 0.25
         
         # Add noise to the workload data using the CoherentNoise 
-        self.cpu_smooth = self.original_data * 0.7 + self.coherent_noise.generate(len(self.original_data)) * 0.3 + baseline
+        cpu_smooth = self.original_data * 0.7 + self.coherent_noise.generate(len(self.original_data)) * 0.3 + baseline
+        
+        self.cpu_smooth = self.scale_array(cpu_smooth)
         
         num_roll_weeks = np.random.randint(0, 52) # Random roll the workload because is independed on the month, so I am rolling across weeks (52 weeks in a year)
         self.cpu_smooth =  np.roll(self.cpu_smooth, num_roll_weeks*self.timestep_per_hour*24*7)
 
-        self.cpu_smooth = np.clip(self.cpu_smooth, 0, 1)
-        self.cpu_base_smooth = self.cpu_smooth * (1-self.flexible_workload_ratio)
-        self.storage_load = np.sum(self.cpu_smooth[self.time_step:self.time_step+self.time_steps_day]*self.flexible_workload_ratio)
-
-        return self.cpu_base_smooth[self.time_step], self.storage_load
+        return self.cpu_smooth[self.time_step]
         
     # Function to advance the time step and return the workload at the new time step
     def step(self):
@@ -253,13 +270,13 @@ class Workload_Manager():
         if self.time_step - 1 >= len(self.cpu_smooth):
             self.time_step = self.init_time_step
         # assert self.time_step < len(self.cpu_smooth), f'Episode length: {self.time_step} is longer than the provide cpu_smooth: {len(self.cpu_smooth)}'
-        return self.cpu_base_smooth[self.time_step - 1]
+        return self.cpu_smooth[self.time_step - 1]
     
     def get_current_workload(self):        
-        return self.cpu_base_smooth[self.time_step]
+        return self.cpu_smooth[self.time_step]
     
     def set_current_workload(self, workload):         
-        self.cpu_base_smooth[self.time_step] = workload
+        self.cpu_smooth[self.time_step] = workload
 
 
 # Class to manage carbon intensity data
@@ -274,7 +291,7 @@ class CI_Manager():
             weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
     """
-    def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5):
+    def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5, timezone_shift=0):
         """Manager of the carbon intesity data
 
         Args:
@@ -296,7 +313,8 @@ class CI_Manager():
         
         carbon_data_list = carbon_data_list.astype(float)
         self.init_day = init_day
-        
+        self.timezone_shift = timezone_shift
+
         self.timestep_per_hour = 4
         self.time_steps_day = self.timestep_per_hour*24
         
@@ -306,11 +324,14 @@ class CI_Manager():
         # Interpolate the carbon data to increase the number of data points
         self.carbon_smooth = np.interp(xcarbon_new, x, carbon_data_list)
         
+        # Shift the data to match the timezone shift
+        self.carbon_smooth =  np.roll(self.carbon_smooth, -1*self.timezone_shift*self.timestep_per_hour)
+
         # Save a copy of the original data
         self.original_data = self.carbon_smooth.copy()
         
         self.time_step = 0
-        
+
         # Initialize CoherentNoise process
         self.coherent_noise = CoherentNoise(base=self.original_data[0], weight=weight, desired_std_dev=desired_std_dev)
         
@@ -392,7 +413,7 @@ class Weather_Manager():
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
             temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.
     """
-    def __init__(self, filename='', location='NY', init_day=0, weight=0.02, desired_std_dev=0.75, temp_column=6, rh_column=8, pres_column=9):
+    def __init__(self, filename='', location='NY', init_day=0, weight=0.02, desired_std_dev=0.75, temp_column=6, rh_column=8, pres_column=9, timezone_shift=0):
         """Manager of the weather data.
 
         Args:
@@ -438,7 +459,12 @@ class Weather_Manager():
         self.norm_temp_data = normalize(self.temperature_data, self.min_temp, self.max_temp)
 
         self.time_step = 0
+        self.timezone_shift = timezone_shift
         
+        # Shift the data to match the timezone shift
+        self.temperature_data =  np.roll(self.temperature_data, -1*self.timezone_shift*self.timestep_per_hour)
+        self.wet_bulb_data =  np.roll(self.wet_bulb_data, -1*self.timezone_shift*self.timestep_per_hour)
+
         # Save a copy of the original data
         self.original_temp_data = self.temperature_data.copy()
         self.original_wb_data = self.wet_bulb_data.copy()
