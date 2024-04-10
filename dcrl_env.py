@@ -46,6 +46,9 @@ class EnvConfig(dict):
         # Maximum battery capacity
         'max_bat_cap_Mw': 2,
         
+        # Data center configuration file
+        'dc_config_file': 'dc_config.json',
+        
         # weight of the individual reward (1=full individual, 0=full collaborative, default=0.8)
         'individual_reward_weight': 0.8,
         
@@ -107,6 +110,7 @@ class DCRL(MultiAgentEnv):
         self.flexible_load = env_config['flexible_load']
 
         self.datacenter_capacity_mw = env_config['datacenter_capacity_mw']
+        self.dc_config_file = env_config['dc_config_file']
         self.timezone_shift = env_config['timezone_shift']
         self.days_per_episode = env_config['days_per_episode']
 
@@ -132,7 +136,7 @@ class DCRL(MultiAgentEnv):
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
         self.ls_env = make_ls_env(self.month, test_mode = self.evaluation_mode)
-        self.dc_env, max_dc_pw = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, datacenter_capacity_mw=self.datacenter_capacity_mw) 
+        self.dc_env, max_dc_pw = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file) 
         self.bat_env = make_bat_fwd_env(self.month, max_dc_pw_MW = max_dc_pw/1e6, max_bat_cap_Mw=self.max_bat_cap_Mw)
 
         self._obs_space_in_preferred_format = True
@@ -387,7 +391,7 @@ class DCRL(MultiAgentEnv):
         return ls_reward, dc_reward, bat_reward
 
     def get_hierarchical_variables(self):
-        return self.datacenter_capacity, self.workload_m.get_current_workload(), self.weather_m.get_current_weather(), self.ci_m.get_current_ci()
+        return self.datacenter_capacity_mw, self.workload_m.get_current_workload(), self.weather_m.get_current_weather(), self.ci_m.get_current_ci()
         
     def set_hierarchical_workload(self, workload):
         self.workload_m.set_current_workload(workload)

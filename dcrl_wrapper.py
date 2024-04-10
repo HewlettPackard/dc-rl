@@ -13,7 +13,8 @@ config1 = {# Agents active
           'cintensity_file': 'AZPS_NG_&_avgCI.csv',
           'weather_file': 'USA_AZ_Tucson-Davis-Monthan.epw',
           'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-          'datacenter_capacity_mwh' : 1.1,
+          'dc_config_file': 'dc_config_dc3.json',
+          'datacenter_capacity_mw' : 1.1,
           'timezone_shift': 8,
           'month': 0,
           'days_per_episode': 365}
@@ -25,7 +26,8 @@ config2 = {# Agents active
           'cintensity_file': 'NYIS_NG_&_avgCI.csv',
           'weather_file': 'USA_NY_New.York-Kennedy.epw',
           'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-          'datacenter_capacity_mwh' : 1,
+            'dc_config_file': 'dc_config_dc2.json',
+          'datacenter_capacity_mw' : 1,
           'timezone_shift': 0,
           'month': 0,
           'days_per_episode': 365}
@@ -37,7 +39,8 @@ config3 = {# Agents active
           'cintensity_file': 'WAAT_NG_&_avgCI.csv',
           'weather_file': 'USA_WA_Port.Angeles-Fairchild.epw',
           'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-          'datacenter_capacity_mwh' : 0.9,
+            'dc_config_file': 'dc_config_dc1.json',
+          'datacenter_capacity_mw' : 0.9,
           'timezone_shift': 16,
           'month': 0,
           'days_per_episode': 365}

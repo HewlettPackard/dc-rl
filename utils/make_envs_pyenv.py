@@ -73,6 +73,7 @@ def make_dc_pyeplus_env(month : int = 1,
                         location : str = 'NYIS',
                         weather_filename: str = 'USA_NY_New.York-Kennedy.epw',
                         workload_filename: str = 'Alibaba_CPU_Data_Hourly_1.csv',
+                        dc_config_file: str = 'dc_config_file',
                         datacenter_capacity_mw: int = 1,
                         max_bat_cap_Mw : float = 2.0,
                         add_cpu_usage : bool = True,
@@ -140,7 +141,7 @@ def make_dc_pyeplus_env(month : int = 1,
     ################################################################################
     
     # from DC_Config, scale the variable number of CPUs to have a similar value to "datacenter_capacity_mw"
-    dc_config = DC_Config(dc_config_path='dc_config.json', datacenter_capacity_mw=datacenter_capacity_mw)  # Specify the relative or absolute path
+    dc_config = DC_Config(dc_config_file=dc_config_file, datacenter_capacity_mw=datacenter_capacity_mw)  # Specify the relative or absolute path
 
     # Perform Cooling Tower Sizing
     # This step determines the potential maximum loading of the CT
