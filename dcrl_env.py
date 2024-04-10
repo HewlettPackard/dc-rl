@@ -34,8 +34,8 @@ class EnvConfig(dict):
         'weather_file': 'USA_NY_New.York-Kennedy.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         
-        # Capacity (MWh) of the datacenter
-        'datacenter_capacity_mwh': 1,
+        # Capacity (MW) of the datacenter
+        'datacenter_capacity_mw': 1,
         
         # Timezone shift
         'timezone_shift': 0,
@@ -106,7 +106,7 @@ class DCRL(MultiAgentEnv):
         
         self.flexible_load = env_config['flexible_load']
 
-        self.datacenter_capacity = env_config['datacenter_capacity_mwh']
+        self.datacenter_capacity_mw = env_config['datacenter_capacity_mw']
         self.timezone_shift = env_config['timezone_shift']
         self.days_per_episode = env_config['days_per_episode']
 
@@ -132,7 +132,7 @@ class DCRL(MultiAgentEnv):
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
         self.ls_env = make_ls_env(self.month, test_mode = self.evaluation_mode)
-        self.dc_env, max_dc_pw = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
+        self.dc_env, max_dc_pw = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, datacenter_capacity_mw=self.datacenter_capacity_mw) 
         self.bat_env = make_bat_fwd_env(self.month, max_dc_pw_MW = max_dc_pw/1e6, max_bat_cap_Mw=self.max_bat_cap_Mw)
 
         self._obs_space_in_preferred_format = True

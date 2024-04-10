@@ -12,7 +12,7 @@ from envs.dc_gym import dc_gymenv
 from utils.utils_cf import get_init_day
 
 import envs.datacenter as DataCenter
-import utils.dc_config_reader as DC_Config
+from utils.dc_config_reader import DC_Config
 
 import itertools
 
@@ -73,6 +73,7 @@ def make_dc_pyeplus_env(month : int = 1,
                         location : str = 'NYIS',
                         weather_filename: str = 'USA_NY_New.York-Kennedy.epw',
                         workload_filename: str = 'Alibaba_CPU_Data_Hourly_1.csv',
+                        datacenter_capacity_mw: int = 1,
                         max_bat_cap_Mw : float = 2.0,
                         add_cpu_usage : bool = True,
                         add_CI : bool = True,
@@ -90,6 +91,7 @@ def make_dc_pyeplus_env(month : int = 1,
                                         'USA_NY_New.York-Kennedy.epw'.
         workload_filename (str, optional): Filename that stores the default CPU workload data. Files should be stored under ./data/Workload. Defaults to
                                         'Alibaba_CPU_Data_Hourly_1.csv'.
+        datacenter_capacity_mw (int, optional): Maximum capacity (MW) of the data center. This value will scale the number of servers installed in the data center.
         max_bat_cap_Mw (float, optional): The battery capacity in Megawatts for the installed battery. Defaults to 2.0.
         add_cpu_usage (bool, optional): Boolean Flag to indicate whether cpu usage is part of the environment statespace. Defaults to True.
         add_CI (bool, optional): Boolean Flag to indicate whether Carbon Intensity is part of the environment statespace. Defaults to True.
@@ -137,25 +139,28 @@ def make_dc_pyeplus_env(month : int = 1,
     ########################## Variable Ranges #####################################
     ################################################################################
     
+    # from DC_Config, scale the variable number of CPUs to have a similar value to "datacenter_capacity_mw"
+    dc_config = DC_Config(dc_config_path='dc_config.json', datacenter_capacity_mw=datacenter_capacity_mw)  # Specify the relative or absolute path
+
     # Perform Cooling Tower Sizing
     # This step determines the potential maximum loading of the CT
     # setting a higher ambient temp here will cause the CT to consume less power for cooling water under normal ambient temperature
     # setting a lower value of min_CRAC_setpoint will cause the CT to consume more power for higher crac setpoints during normal use
-    ctafr, ct_rated_load = DataCenter.chiller_sizing(DC_Config, min_CRAC_setpoint = 14.0, ambient_temp = 40.0)  # we assume 14 so that there is no oob error
-    DC_Config.CT_REFRENCE_AIR_FLOW_RATE = ctafr
-    DC_Config.CT_FAN_REF_P = ct_rated_load
+    ctafr, ct_rated_load = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint = 14.0, ambient_temp = 40.0)  # we assume 14 so that there is no oob error
+    dc_config.CT_REFRENCE_AIR_FLOW_RATE = ctafr
+    dc_config.CT_FAN_REF_P = ct_rated_load
     
     # Perform sizing of ITE power and ambient temperature
     # Find highest and lowest values of ITE power, rackwise outlet temperature
-    dc = DataCenter.DataCenter_ITModel(num_racks=DC_Config.NUM_RACKS, rack_supply_approach_temp_list=DC_Config.RACK_SUPPLY_APPROACH_TEMP_LIST,
-                                    rack_CPU_config=DC_Config.RACK_CPU_CONFIG, max_W_per_rack=DC_Config.MAX_W_PER_RACK, DC_ITModel_config=DC_Config)
+    dc = DataCenter.DataCenter_ITModel(num_racks=dc_config.NUM_RACKS, rack_supply_approach_temp_list=dc_config.RACK_SUPPLY_APPROACH_TEMP_LIST,
+                                    rack_CPU_config=dc_config.RACK_CPU_CONFIG, max_W_per_rack=dc_config.MAX_W_PER_RACK, DC_ITModel_config=dc_config)
     raw_curr_stpt_list = range(16,23)
     cpu_load_list = range(0,110,10) # We assume same data center load for all servers; Here it will be max
     p = itertools.product(raw_curr_stpt_list,cpu_load_list)
     dc_ambient_temp_list = []
     total_ite_pwr = []
     for raw_curr_stpt, cpu_load in p:
-        ITE_load_pct_list = [cpu_load for i in range(DC_Config.NUM_RACKS)] 
+        ITE_load_pct_list = [cpu_load for i in range(dc_config.NUM_RACKS)] 
         rackwise_cpu_pwr, rackwise_itfan_pwr, rackwise_outlet_temp = \
             dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=raw_curr_stpt)
         total_ite_pwr.append(sum(rackwise_cpu_pwr) + sum(rackwise_itfan_pwr))
@@ -196,7 +201,7 @@ def make_dc_pyeplus_env(month : int = 1,
                     min_temp=min_temp,
                     max_temp=max_temp,
                     action_definition=action_definition,
-                    DC_Config = DC_Config,
+                    DC_Config=dc_config,
                     episode_length_in_time=episode_length_in_time
                     )
     

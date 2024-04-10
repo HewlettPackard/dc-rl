@@ -15,7 +15,7 @@ from utils.rllib_callbacks import CustomCallbacks
 TIMESTEP_PER_HOUR = 4
 COLLECTED_DAYS = 7
 NUM_AGENTS = 3
-NUM_WORKERS = 24
+NUM_WORKERS = 1
 
 CONFIG = (
         PPOConfig()
@@ -31,6 +31,9 @@ CONFIG = (
                 'weather_file': 'USA_NY_New.York-Kennedy.epw',
                 'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
 
+                # Data Center maximum capacity
+                'datacenter_capacity_mw': 1,
+                
                 # Battery capacity
                 'max_bat_cap_Mw': 2,
                 
@@ -71,9 +74,9 @@ RESULTS_DIR = '/lustre/guillant/dcrlv2/dc-rl/results/'
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
 
-    ray.init(ignore_reinit_error=True, num_cpus=64)
+    # ray.init(ignore_reinit_error=True, num_cpus=64)
     # ray.init(logging_level='debug', num_cpus=NUM_WORKERS+1)
-    # ray.init(local_mode=True, ignore_reinit_error=True)
+    ray.init(local_mode=True, ignore_reinit_error=True)
 
     train(
         algorithm="PPO",
