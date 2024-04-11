@@ -15,7 +15,7 @@
                                             -2.5, -2.5, -2.5, -2.5, -2.5,
                                             -3.7, -3.7, -3.7, -3.7, -3.7
                                             ],
-        "CPUS_PER_RACK" : 1e6                                                                                                                                                  
+        "CPUS_PER_RACK" : 400                                                                                                                                                  
     },
     "hvac_configuration" : 
     {
