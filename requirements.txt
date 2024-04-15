@@ -9,6 +9,8 @@ ray[rllib]==2.4.0
 gymnasium
 dm_tree
 tensorflow_probability
+tqdm
+psychrolib
 
 # Sinergym requirements
 xlsxwriter
