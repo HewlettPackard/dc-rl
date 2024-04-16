@@ -83,7 +83,7 @@ def default_bat_reward(params: dict) -> float:
     dcload_min = params['bat_dcload_min']
     dcload_max = params['bat_dcload_max']
     
-    norm_net_dc_load = (total_energy_with_battery / 1e3 - dcload_min) / (dcload_max - dcload_min)
+    norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
     rew_footprint = -1.0 * norm_CI * norm_net_dc_load #Added scalar to line up with dc reward
 
     return rew_footprint
