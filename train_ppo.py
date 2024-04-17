@@ -65,7 +65,7 @@ CONFIG = (
     )
 #%%
 NAME = "test"
-RESULTS_DIR = '/lustre/guillant/dcrlv2/dc-rl/results/'
+RESULTS_DIR = './results/'
 
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
