@@ -147,9 +147,9 @@ def make_dc_pyeplus_env(month : int = 1,
 
     # Perform Cooling Tower Sizing
     # This step determines the potential maximum loading of the CT
-    # setting a higher ambient temp here will cause the CT to consume less power for cooling water under normal ambient temperature
-    # setting a lower value of min_CRAC_setpoint will cause the CT to consume more power for higher crac setpoints during normal use
-    ctafr, ct_rated_load = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint = 14.0, ambient_temp = 40.0)  # we assume 14 so that there is no oob error
+    # setting a higher ambient temp here will cause the CT to consume less power for cooling water under normal ambient temperature. Lower amb temp -> higher HVAC power
+    # setting a lower value of min_CRAC_setpoint will cause the CT to consume more power for higher crac setpoints during normal use. Lower min_CRAC_set -> higher HVAC power
+    ctafr, ct_rated_load = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint=14.0, ambient_temp=40.0)  # we assume 14 so that there is no oob error
     dc_config.CT_REFRENCE_AIR_FLOW_RATE = ctafr
     dc_config.CT_FAN_REF_P = ct_rated_load
     
@@ -190,7 +190,7 @@ def make_dc_pyeplus_env(month : int = 1,
         
         'Site Outdoor Air Drybulb Temperature(Environment)': [-10.0, 40.0], #6
         'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [10.0, 30.0],  # reasonable range for setpoint; can be updated based on need #7
-        'Zone Air Temperature(West Zone)':[0.9*min(dc_ambient_temp_list),1.1*max(dc_ambient_temp_list)],
+        'Zone Air Temperature(West Zone)':[0.9*min(dc_ambient_temp_list), 1.1*max(dc_ambient_temp_list)],
         'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0.0, 1.1*ct_rated_load],  # this is cooling tower power
         'Facility Total Electricity Demand Rate(Whole Building)': [0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr) +  1.1*ct_rated_load],  # TODO: This is not a part of the observation variables right now
         'Facility Total Building Electricity Demand Rate(Whole Building)':[0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr)],  # this is it power
