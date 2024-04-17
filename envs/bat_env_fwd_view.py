@@ -12,7 +12,7 @@ class BatteryEnvFwd(gym.Env):
         Args:
             env_config (dict): Customizable environment confing.
                 n_fwd_steps(int): Number of forward forecast steps available
-                max_bat_cap(float): Maximun battery capacity in MW
+                max_bat_cap(float): Maximun battery capacity in MWh
                 charging_rate(float): Rate of charge of the battery
                 reward_metod(function): Method used to calculate the reward
         """

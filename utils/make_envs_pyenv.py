@@ -43,15 +43,17 @@ def make_ls_env(month,
     
 
 def make_bat_fwd_env(month,
-                    max_bat_cap_Mw : float = 2.0,
+                    max_bat_cap_Mwh : float = 2.0,
                     charging_rate : float = 0.5,
-                    max_dc_pw_MW : float = 7.23
+                    max_dc_pw_MW : float = 7.23,
+                    dcload_max : float = 2.5,
+                    dcload_min : float = 0.1,
                     ):
     """Method to build the Battery environment.
 
     Args:
         month (int): Month of the year in which the agent is training.
-        max_bat_cap_Mw (float, optional): Max battery capacity. Defaults to 2.0.
+        max_bat_cap_Mwh (float, optional): Max battery capacity. Defaults to 2.0.
         charging_rate (float, optional): Charging rate of the battery. Defaults to 0.5.
         reward_method (str, optional): Method used to calculate the rewards. Defaults to 'default_bat_reward'.
 
@@ -61,11 +63,11 @@ def make_bat_fwd_env(month,
     init_day = get_init_day(month)
     env_config= {'n_fwd_steps':4,
                  'max_dc_pw_MW':max_dc_pw_MW,
-                 'max_bat_cap':max_bat_cap_Mw,
+                 'max_bat_cap':max_bat_cap_Mwh,
                  'charging_rate':charging_rate,
                  'start_point':init_day,
-                 'dcload_max': 2.5, 
-                 'dcload_min': 0.1}
+                 'dcload_max':dcload_max, 
+                 'dcload_min':dcload_min}
     bat_env = battery_env_fwd(env_config)
     return bat_env
 
@@ -73,6 +75,7 @@ def make_dc_pyeplus_env(month : int = 1,
                         location : str = 'NYIS',
                         weather_filename: str = 'USA_NY_New.York-Kennedy.epw',
                         workload_filename: str = 'Alibaba_CPU_Data_Hourly_1.csv',
+                        dc_config_file: str = 'dc_config_file.json',
                         datacenter_capacity_mw: int = 1,
                         max_bat_cap_Mw : float = 2.0,
                         add_cpu_usage : bool = True,
@@ -136,11 +139,11 @@ def make_dc_pyeplus_env(month : int = 1,
     
     
     ################################################################################
-    ########################## Variable Ranges #####################################
+    ##########################  System Sizing  #####################################
     ################################################################################
     
     # from DC_Config, scale the variable number of CPUs to have a similar value to "datacenter_capacity_mw"
-    dc_config = DC_Config(dc_config_path='dc_config.json', datacenter_capacity_mw=datacenter_capacity_mw)  # Specify the relative or absolute path
+    dc_config = DC_Config(dc_config_file=dc_config_file, datacenter_capacity_mw=datacenter_capacity_mw)  # Specify the relative or absolute path
 
     # Perform Cooling Tower Sizing
     # This step determines the potential maximum loading of the CT
@@ -166,6 +169,17 @@ def make_dc_pyeplus_env(month : int = 1,
         total_ite_pwr.append(sum(rackwise_cpu_pwr) + sum(rackwise_itfan_pwr))
         dc_ambient_temp_list.append(sum(rackwise_outlet_temp)/len(rackwise_outlet_temp))   
     
+    
+    # This will be battery sizing
+    max_dc_power_w =  1.1*max(total_ite_pwr) + 1.1*ct_rated_load # Watts
+    
+    # By carbon explorer paper, we need a battery to feed the DC by at least 2 hours, so we need the energy metric
+    num_hours_battery = 2
+    num_timestep_hour = 4
+    
+    max_dc_energy = (max_dc_power_w / num_timestep_hour) * (num_timestep_hour * num_hours_battery) # (energy_per_timestep) * (timestep * num_hours) HW
+    max_dc_energy = max_dc_energy / 1e6 # Mhw
+    
     ranges = {
         'sinhour': [-1.0, 1.0], #0
         'coshour': [-1.0, 1.0], #1
@@ -178,13 +192,13 @@ def make_dc_pyeplus_env(month : int = 1,
         'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [10.0, 30.0],  # reasonable range for setpoint; can be updated based on need #7
         'Zone Air Temperature(West Zone)':[0.9*min(dc_ambient_temp_list),1.1*max(dc_ambient_temp_list)],
         'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0.0, 1.1*ct_rated_load],  # this is cooling tower power
-        'Facility Total Electricity Demand Rate(Whole Building)': [1.0e5, 1.0e6],  # TODO: This is not a part of the observation variables right now
+        'Facility Total Electricity Demand Rate(Whole Building)': [0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr) +  1.1*ct_rated_load],  # TODO: This is not a part of the observation variables right now
         'Facility Total Building Electricity Demand Rate(Whole Building)':[0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr)],  # this is it power
         
         'cpuUsage':[0.0, 1.0],
         'carbonIntensity':[0.0, 1000.0],
-        'batterySoC': [0.0, max_bat_cap_Mw*1e6]
-        
+        'batterySoC': [0.0, max_bat_cap_Mw*1e6],
+        'max_battery_energy_Mwh' : max_dc_energy
     }
     
     ################################################################################

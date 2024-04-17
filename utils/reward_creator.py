@@ -20,7 +20,7 @@ def default_ls_reward(params: dict) -> float:
     dcload_max = params['bat_dcload_max']
         
     # Calculate the reward associted to the energy consumption
-    norm_net_dc_load = (total_energy_with_battery / 1e3 - dcload_min) / (dcload_max - dcload_min)
+    norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
     footprint = -1.0 * norm_CI * norm_net_dc_load
 
     # Penalize the agent for each task that was dropped due to queue limit
