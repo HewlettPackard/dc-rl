@@ -15,7 +15,7 @@ class dc_gymenv(gym.Env):
                        action_variables: list,
                        action_space : spaces.Discrete,
                        action_mapping: dict,
-                       ranges : dict[str,list],  # this data frame should be time indexed for the code to work
+                       ranges : dict,  # this data frame should be time indexed for the code to work
                        add_cpu_usage : bool,
                        min_temp : float,
                        max_temp : float,

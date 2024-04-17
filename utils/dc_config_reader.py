@@ -3,19 +3,19 @@ This file is used to read the data center configuration from  user inputs provid
 """
 import json
 import os
-
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 class DC_Config:
-    def __init__(self, dc_config_path='dc_config.json', datacenter_capacity_mw=1):
+    def __init__(self, dc_config_file='dc_config.json', datacenter_capacity_mw=1):
         """
         Initializes a new instance of the DC_Config class, loading configuration
         data from the specified JSON configuration file.
 
         Args:
-            dc_config_path (str): The path to the data center configuration JSON file.
+            dc_config_file (str): The path to the data center configuration JSON file.
         """
         # Determine the full path to the configuration file
-        self.config_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), dc_config_path)
+        self.config_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), dc_config_file)
         
         # Define the maximum compute power capacity of the datacenter on MW
         self.datacenter_capacity_mw = datacenter_capacity_mw
@@ -88,8 +88,21 @@ class DC_Config:
 
         # This list should be of length NUM_RACKS; Here DEFAULT_SERVER_POWER_CHARACTERISTICS is of same length as NUM_RACKS
         assert len(self.DEFAULT_SERVER_POWER_CHARACTERISTICS) == self.NUM_RACKS, "DEFAULT_SERVER_POWER_CHARACTERISTICS should be of length as NUM_RACKS"
-        self.RACK_CPU_CONFIG = [[{'full_load_pwr' : j[0],
-                            'idle_pwr': j[-1]} for _ in range(self.CPUS_PER_RACK)] for j in self.DEFAULT_SERVER_POWER_CHARACTERISTICS]
+        # self.RACK_CPU_CONFIG = [[{'full_load_pwr' : j[0],
+                            # 'idle_pwr': j[-1]} for _ in range(int(self.CPUS_PER_RACK))] for j in self.DEFAULT_SERVER_POWER_CHARACTERISTICS]
+
+        # Parallelize the construction of RACK_CPU_CONFIG
+        def construct_cpu_config(server_power_characteristics):
+            """Function to construct CPU configuration for a single server."""
+            return [{'full_load_pwr': j[0], 'idle_pwr': j[-1]} for _ in range(int(self.CPUS_PER_RACK)) for j in server_power_characteristics]
+        
+        # Use ThreadPoolExecutor to parallelize the operation
+        with ThreadPoolExecutor() as executor:
+            # Submit tasks to the executor
+            futures = [executor.submit(construct_cpu_config, [j]) for j in self.DEFAULT_SERVER_POWER_CHARACTERISTICS]
+            
+            # Wait for the futures to complete and collect the results
+            self.RACK_CPU_CONFIG = [future.result() for future in as_completed(futures)]
 
         # A default value of HP_PROLIANT server for standalone testing
         self.HP_PROLIANT = json_obj["server_characteristics"]['HP_PROLIANT']

@@ -48,49 +48,49 @@ class CPU():
         # max vertical shift in fan flow ratio curve at a given point for 75% change in ITE input load pct
         self.ratio_shift_max_itfan = self.cpu_config.IT_FAN_AIRFLOW_RATIO_LB[1] - self.cpu_config.IT_FAN_AIRFLOW_RATIO_LB[0]
 
-    def compute_instantaneous_cpu_pwr(self, inlet_temp, ITE_load_pct):
-        """Calculate the power consumption of the CPUs at the current step
+    # def compute_instantaneous_cpu_pwr(self, inlet_temp, ITE_load_pct):
+    #     """Calculate the power consumption of the CPUs at the current step
 
-        Args:
-            inlet_temp (float): Room temperature
-            ITE_load_pct (float): Current CPU usage
+    #     Args:
+    #         inlet_temp (float): Room temperature
+    #         ITE_load_pct (float): Current CPU usage
 
-        Returns:
-            cpu_power (float): Current CPU power usage
-        """
-        assert ((inlet_temp>self.cpu_config.INLET_TEMP_RANGE[0]) & (inlet_temp<self.cpu_config.INLET_TEMP_RANGE[1])), f"Server Inlet Temp Outside 16C - 28C range. Current Val {inlet_temp}"
-        base_cpu_power_ratio = self.m_cpu*inlet_temp + self.c_cpu
-        cpu_power_ratio_at_inlet_temp = base_cpu_power_ratio + self.ratio_shift_max_cpu*(ITE_load_pct/100)
-        cpu_power = max(self.idle_pwr, self.full_load_pwr*cpu_power_ratio_at_inlet_temp)
+    #     Returns:
+    #         cpu_power (float): Current CPU power usage
+    #     """
+    #     assert ((inlet_temp>self.cpu_config.INLET_TEMP_RANGE[0]) & (inlet_temp<self.cpu_config.INLET_TEMP_RANGE[1])), f"Server Inlet Temp Outside 16C - 28C range. Current Val {inlet_temp}"
+    #     base_cpu_power_ratio = self.m_cpu*inlet_temp + self.c_cpu
+    #     cpu_power_ratio_at_inlet_temp = base_cpu_power_ratio + self.ratio_shift_max_cpu*(ITE_load_pct/100)
+    #     cpu_power = max(self.idle_pwr, self.full_load_pwr*cpu_power_ratio_at_inlet_temp)
 
-        return cpu_power
+    #     return cpu_power
     
-    def compute_instantaneous_fan_pwr(self, inlet_temp, ITE_load_pct):
-        """Calculate the power consumption of the Fans of the IT equipment at the current step
+    # def compute_instantaneous_fan_pwr(self, inlet_temp, ITE_load_pct):
+    #     """Calculate the power consumption of the Fans of the IT equipment at the current step
 
-        Args:
-            inlet_temp (float): Room temperature
-            ITE_load_pct (float): Current CPU usage
+    #     Args:
+    #         inlet_temp (float): Room temperature
+    #         ITE_load_pct (float): Current CPU usage
 
-        Returns:
-            cpu_power (float): Current Fans power usage
-        """
-        assert ((inlet_temp>self.cpu_config.INLET_TEMP_RANGE[0]) & (inlet_temp<self.cpu_config.INLET_TEMP_RANGE[1])), f"Server Inlet Temp Outside 18C - 27C range. Current Val {inlet_temp}"
-        base_itfan_v_ratio = self.m_itfan*inlet_temp + self.c_itfan
-        self.itfan_v_ratio_at_inlet_temp = base_itfan_v_ratio + self.ratio_shift_max_itfan*(ITE_load_pct/100)
+    #     Returns:
+    #         cpu_power (float): Current Fans power usage
+    #     """
+    #     assert ((inlet_temp>self.cpu_config.INLET_TEMP_RANGE[0]) & (inlet_temp<self.cpu_config.INLET_TEMP_RANGE[1])), f"Server Inlet Temp Outside 18C - 27C range. Current Val {inlet_temp}"
+    #     base_itfan_v_ratio = self.m_itfan*inlet_temp + self.c_itfan
+    #     self.itfan_v_ratio_at_inlet_temp = base_itfan_v_ratio + self.ratio_shift_max_itfan*(ITE_load_pct/100)
 
-        # if ITE_load_pct >= 25.0:
-        #     base_itfan_v_ratio = self.m_itfan*inlet_temp + self.c_itfan
-        #     itfan_v_ratio_at_inlet_temp = base_itfan_v_ratio + self.ratio_shift_max_itfan*((ITE_load_pct-0.0)/100)
-        # else:
-        #     S = self.cpu_config.INLET_TEMP_RANGE[1]*(1-(ITE_load_pct/25.0))+(ITE_load_pct/25.0)*self.cpu_config.INLET_TEMP_RANGE[0]
-        #     itfan_v_ratio_at_inlet_temp = max(0.0, self.m_itfan*(inlet_temp-S))
+    #     # if ITE_load_pct >= 25.0:
+    #     #     base_itfan_v_ratio = self.m_itfan*inlet_temp + self.c_itfan
+    #     #     itfan_v_ratio_at_inlet_temp = base_itfan_v_ratio + self.ratio_shift_max_itfan*((ITE_load_pct-0.0)/100)
+    #     # else:
+    #     #     S = self.cpu_config.INLET_TEMP_RANGE[1]*(1-(ITE_load_pct/25.0))+(ITE_load_pct/25.0)*self.cpu_config.INLET_TEMP_RANGE[0]
+    #     #     itfan_v_ratio_at_inlet_temp = max(0.0, self.m_itfan*(inlet_temp-S))
         
-        itfan_pwr = self.cpu_config.ITFAN_REF_P * (self.itfan_v_ratio_at_inlet_temp/self.cpu_config.ITFAN_REF_V_RATIO)**3  # [4] Eqn (3)
+    #     itfan_pwr = self.cpu_config.ITFAN_REF_P * (self.itfan_v_ratio_at_inlet_temp/self.cpu_config.ITFAN_REF_V_RATIO)**3  # [4] Eqn (3)
 
-        self.v_fan = self.cpu_config.IT_FAN_FULL_LOAD_V*self.itfan_v_ratio_at_inlet_temp
+    #     self.v_fan = self.cpu_config.IT_FAN_FULL_LOAD_V*self.itfan_v_ratio_at_inlet_temp
 
-        return itfan_pwr
+    #     return itfan_pwr
     
 class Rack():
 
@@ -113,7 +113,70 @@ class Rack():
             if self.current_rack_load>= max_W_per_rack:
                 self.CPU_list.pop()
                 break
+            
+        self.num_CPUs = len(self.CPU_list)
+        self.cpu_and_fan_init()
+        self.v_fan_rack = None  # will be later pointing to a 1d np array whose shape is the number of cpus in the rack class
+  
+    def cpu_and_fan_init(self,):
         
+        #common to both cpu and fan 
+        inlet_temp_lb,inlet_temp_ub =[],[]
+        
+        # only for cpu
+        m_cpu,c_cpu,ratio_shift_max_cpu,\
+            idle_pwr, full_load_pwr = [],[],[],[],[]
+            
+        # only for it fan
+        m_itfan,c_itfan,ratio_shift_max_itfan,\
+        ITFAN_REF_P,ITFAN_REF_V_RATIO,IT_FAN_FULL_LOAD_V = \
+            [],[],[],[],[],[]
+        self.m_coefficient = 10 #1 -> 10 
+        self.c_coefficient = 4 #1 -> 5
+        self.it_slope = 20 #100 -> 20
+        self.m_coefficient = 10
+        self.c_coefficient = 5
+        self.it_slope = 20
+            
+        for CPU_item in self.CPU_list:
+            
+            #common to both cpu and fan
+            inlet_temp_lb.append(CPU_item.cpu_config.INLET_TEMP_RANGE[0])
+            inlet_temp_ub.append(CPU_item.cpu_config.INLET_TEMP_RANGE[1])
+            
+            # only for cpu
+            m_cpu.append(CPU_item.m_cpu)
+            c_cpu.append(CPU_item.c_cpu)
+            ratio_shift_max_cpu.append(CPU_item.ratio_shift_max_cpu)
+            idle_pwr.append(CPU_item.idle_pwr)
+            full_load_pwr.append(CPU_item.full_load_pwr)
+            
+            # only for itfan
+            m_itfan.append(CPU_item.m_itfan)
+            c_itfan.append(CPU_item.c_itfan)
+            ratio_shift_max_itfan.append(CPU_item.ratio_shift_max_itfan)
+            ITFAN_REF_P.append(CPU_item.cpu_config.ITFAN_REF_P)
+            ITFAN_REF_V_RATIO.append(CPU_item.cpu_config.ITFAN_REF_V_RATIO)
+            IT_FAN_FULL_LOAD_V.append(CPU_item.cpu_config.IT_FAN_FULL_LOAD_V)
+            
+            
+        # commont to both cpu and itfan
+        self.inlet_temp_lb,self.inlet_temp_ub =np.array(inlet_temp_lb),\
+                                    np.array(inlet_temp_ub)
+        
+        # only for cpu
+        self.m_cpu,self.c_cpu,self.ratio_shift_max_cpu,\
+            self.idle_pwr, self.full_load_pwr = \
+                                    np.array(m_cpu),np.array(c_cpu),\
+                                    np.array(ratio_shift_max_cpu),\
+                                    np.array(idle_pwr), np.array(full_load_pwr)
+        
+        # only for itfan
+        self.m_itfan,self.c_itfan,self.ratio_shift_max_itfan,\
+        self.ITFAN_REF_P,self.ITFAN_REF_V_RATIO,self.IT_FAN_FULL_LOAD_V = \
+            np.array(m_itfan),np.array(c_itfan),np.array(ratio_shift_max_itfan),\
+            np.array(ITFAN_REF_P),np.array(ITFAN_REF_V_RATIO),np.array(IT_FAN_FULL_LOAD_V) 
+            
     def compute_instantaneous_pwr(self,inlet_temp, ITE_load_pct):
         """Calculate the power consumption of the whole rack at the current step
 
@@ -124,24 +187,51 @@ class Rack():
         Returns:
             cpu_power (float): Current CPU power usage
         """
-        tot_cpu_pwr = []
+        # Assuming that all CPUs have the same parameters
+        cpu = self.CPU_list[0]
+        tot_cpu_pwr = cpu.compute_instantaneous_cpu_pwr(inlet_temp, ITE_load_pct)*self.num_CPUs
+
         tot_itfan_pwr = []
         for CPU_item in self.CPU_list:
-            tot_cpu_pwr.append(CPU_item.compute_instantaneous_cpu_pwr(inlet_temp, ITE_load_pct))
             tot_itfan_pwr.append(CPU_item.compute_instantaneous_fan_pwr(inlet_temp, ITE_load_pct))
 
-        return np.array(tot_cpu_pwr).sum(), np.array(tot_itfan_pwr).sum()
+        return tot_cpu_pwr, np.array(tot_itfan_pwr).sum()
+
+    def compute_instantaneous_pwr_vecd(self, inlet_temp, ITE_load_pct):
+        
+        # CPU                                    
+        base_cpu_power_ratio = (self.m_cpu+0.05)*inlet_temp + self.c_cpu
+        cpu_power_ratio_at_inlet_temp = base_cpu_power_ratio + self.ratio_shift_max_cpu*(ITE_load_pct/100)
+        temp_arr = np.concatenate((self.idle_pwr.reshape(1,-1),
+                                   (self.full_load_pwr*cpu_power_ratio_at_inlet_temp).reshape(1,-1)),
+                                  axis=0)
+        cpu_power = np.max(temp_arr,axis=0)
+        
+        # itfan
+        base_itfan_v_ratio = self.m_itfan*self.m_coefficient*inlet_temp + self.c_itfan*self.c_coefficient
+        itfan_v_ratio_at_inlet_temp = base_itfan_v_ratio + self.ratio_shift_max_itfan*(ITE_load_pct/self.it_slope)
+        itfan_pwr = self.ITFAN_REF_P * (itfan_v_ratio_at_inlet_temp/self.ITFAN_REF_V_RATIO)  # [4] Eqn (3)
+        self.v_fan_rack = self.IT_FAN_FULL_LOAD_V*itfan_v_ratio_at_inlet_temp
+        
+        return np.sum(cpu_power),np.sum(itfan_pwr)
+
+    def get_average_rack_fan_v(self,):
+        """Calculate the average fan velocity for each rack
+        Returns:
+            (float): Average fan flow rate for the rack
+        """
+            
+        return np.sum(self.v_fan_rack**(1/3))
     
     def get_total_rack_fan_v(self,):
         """Calculate the total fan velocity for each rack
         Returns:
             (float): Average fan flow rate for the rack
         """
-        fan_v = []
-        for cpu_item in self.CPU_list:
-            fan_v.append(cpu_item.v_fan)
-            
-        return np.array(fan_v).sum()
+        cpu = self.CPU_list[0]
+        fan_v = cpu.v_fan * self.num_CPUs
+        return fan_v
+    
     
     def get_current_rack_load(self,):
         """Returns the total power consumption of the rack
@@ -150,6 +240,14 @@ class Rack():
             float: Total power consumption of the rack
         """
         return self.current_rack_load
+
+    def clamp_supply_approach_temp(self,supply_approach_temperature):
+        """Returns the clamped delta/ supply approach temperature between the range [3.8, 5.3]
+
+        Returns:
+            float: Supply approach temperature
+        """
+        return max(3.8, min(supply_approach_temperature, 5.3))
     
 class DataCenter_ITModel():
 
@@ -167,6 +265,8 @@ class DataCenter_ITModel():
         self.racks_list = []
         self.rack_supply_approach_temp_list = rack_supply_approach_temp_list
         self.rack_CPU_config = rack_CPU_config
+        
+        self.rackwise_inlet_temp = []
         
         for _, CPU_config_list in zip(range(num_racks),self.rack_CPU_config):
             self.racks_list.append(Rack(CPU_config_list, max_W_per_rack = max_W_per_rack, rack_config=self.DC_ITModel_config))
@@ -199,18 +299,20 @@ class DataCenter_ITModel():
         rackwise_cpu_pwr = [] 
         rackwise_itfan_pwr = []
         rackwise_outlet_temp = []
+        rackwise_inlet_temp = []
         
         for rack, rack_supply_approach_temp, ITE_load_pct \
                                 in zip(self.racks_list, self.rack_supply_approach_temp_list, ITE_load_pct_list):
-            
-            rack_inlet_temp = rack_supply_approach_temp + CRAC_setpoint
-            rack_cpu_power, rack_itfan_power = rack.compute_instantaneous_pwr(rack_inlet_temp,ITE_load_pct)
+            #clamp supply approach temperatures
+            rack_supply_approach_temp = rack.clamp_supply_approach_temp(rack_supply_approach_temp)
+            rack_inlet_temp = rack_supply_approach_temp + CRAC_setpoint 
+            rackwise_inlet_temp.append(rack_inlet_temp)
+            rack_cpu_power, rack_itfan_power = rack.compute_instantaneous_pwr_vecd(rack_inlet_temp,ITE_load_pct)
             rackwise_cpu_pwr.append(rack_cpu_power)
             rackwise_itfan_pwr.append(rack_itfan_power)
-            rackwise_outlet_temp.append(
-                            rack_inlet_temp + \
-                            (rack_cpu_power+rack_itfan_power)/(self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*rack.get_total_rack_fan_v())
-                            )
+            rackwise_outlet_temp.append((rack_inlet_temp + (rack_cpu_power+rack_itfan_power)/(self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*(rack.get_average_rack_fan_v()/25)))*0.75)
+        
+        self.rackwise_inlet_temp = rackwise_inlet_temp
             
         return rackwise_cpu_pwr, rackwise_itfan_pwr, rackwise_outlet_temp
     
