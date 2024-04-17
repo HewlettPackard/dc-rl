@@ -9,4 +9,6 @@ __pycache__/
 /pydcm
 data/pydcmresults
 .vscode/
+sphinx/
 test.png
+venv*/
