@@ -128,10 +128,10 @@ class DCRL(gym.Env):
         n_vars_ci = 8
         self.ls_env = make_ls_env(self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci)
         self.dc_env, _ = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file) 
-        self.bat_env = make_bat_fwd_env(self.month, max_bat_cap_Mwh=self.dc_env.range['max_battery_energy_Mwh'], 
-                                        max_dc_pw_MW=self.dc_env.range['Facility Total Electricity Demand Rate(Whole Building)'][1]/1e6, 
-                                        dcload_max=self.dc_env.range['Facility Total Electricity Demand Rate(Whole Building)'][1],
-                                        dcload_min=self.dc_env.range['Facility Total Electricity Demand Rate(Whole Building)'][0])
+        self.bat_env = make_bat_fwd_env(self.month, max_bat_cap_Mwh=self.dc_env.ranges['max_battery_energy_Mwh'], 
+                                        max_dc_pw_MW=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1]/1e6, 
+                                        dcload_max=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1],
+                                        dcload_min=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][0])
 
         self.bat_env.dcload_max = self.dc_env.power_ub_kW / 4 # Assuming 15 minutes timestep. Kwh
         
