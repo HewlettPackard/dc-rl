@@ -384,7 +384,7 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data
     if ambient_temp < 5:
         return CRAC_Fan_load, 0.0, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
 
-    Cooling_tower_air_delta = max(50 - (10-27), 1)  
+    Cooling_tower_air_delta = max(50 - (ambient_temp-CRAC_setpoint), 1) 
     m_air = CRAC_cooling_load/(DC_Config.C_AIR*Cooling_tower_air_delta) 
     v_air = m_air/DC_Config.RHO_AIR
     
