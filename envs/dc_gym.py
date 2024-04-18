@@ -10,12 +10,12 @@ from utils import reward_creator
 
 class dc_gymenv(gym.Env):
     
-    def __init__(self, observation_variables : list[str],
+    def __init__(self, observation_variables : list,
                        observation_space : spaces.Box,
-                       action_variables: list[str],
+                       action_variables: list,
                        action_space : spaces.Discrete,
                        action_mapping: dict,
-                       ranges : dict[str,list],  # this data frame should be time indexed for the code to work
+                       ranges : dict,  # this data frame should be time indexed for the code to work
                        add_cpu_usage : bool,
                        min_temp : float,
                        max_temp : float,
@@ -82,6 +82,9 @@ class dc_gymenv(gym.Env):
         self.last_action = None
         self.action_scaling_factor = 1  # Starts with a scale factor of 1
         
+        # IT + HVAC
+        self.power_lb_kW = (self.ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][0] + self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]) / 1e3
+        self.power_ub_kW = (self.ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][1] + self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][1]) / 1e3
         
         super().__init__()
     
@@ -187,12 +190,13 @@ class dc_gymenv(gym.Env):
             'dc_ITE_total_power_kW': data_center_total_ITE_Load / 1e3,
             'dc_HVAC_total_power_kW': self.CT_Cooling_load / 1e3,
             'dc_total_power_kW': (data_center_total_ITE_Load + self.CT_Cooling_load) / 1e3,
-            'dc_power_lb_kW': 1000,
-            'dc_power_ub_kW': 7000,
             'dc_crac_setpoint_delta': crac_setpoint_delta,
             'dc_crac_setpoint': self.raw_curr_stpt,
             'dc_cpu_workload_fraction': self.cpu_load_frac,
             'dc_int_temperature': np.mean(self.rackwise_outlet_temp),
+            'dc_exterior_ambient_temp': self.ambient_temp,
+            'dc_power_lb_kW': self.power_lb_kW,
+            'dc_power_ub_kW': self.power_ub_kW,
             'dc_CW_pump_power_kW': self.CW_pump_load,
             'dc_CT_pump_power_kW': self.CT_pump_load,
             'dc_water_usage': self.water_usage,
