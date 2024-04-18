@@ -154,6 +154,7 @@ if __name__ == '__main__':
     top_level_actor = WorkloadOptimizer(env.environments.keys())
     
     max_iterations = 4*24*365
+    # Antonio: Keep in mind that each environment is set to have days_per_episode=30. You can modify this parameter to simulate the whole year
     with tqdm(total=max_iterations) as pbar:
         while not done:
             # breakpoint()
