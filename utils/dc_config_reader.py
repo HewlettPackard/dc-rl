@@ -5,7 +5,6 @@ import json
 import os
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-
 class DC_Config:
     def __init__(self, dc_config_file='dc_config.json', datacenter_capacity_mw=1):
         """
@@ -88,7 +87,6 @@ class DC_Config:
         self.DEFAULT_SERVER_POWER_CHARACTERISTICS = json_obj['server_characteristics']['DEFAULT_SERVER_POWER_CHARACTERISTICS']
 
         # This list should be of length NUM_RACKS; Here DEFAULT_SERVER_POWER_CHARACTERISTICS is of same length as NUM_RACKS
-        # ToDo: Make it faster
         assert len(self.DEFAULT_SERVER_POWER_CHARACTERISTICS) == self.NUM_RACKS, "DEFAULT_SERVER_POWER_CHARACTERISTICS should be of length as NUM_RACKS"
         # self.RACK_CPU_CONFIG = [[{'full_load_pwr' : j[0],
                             # 'idle_pwr': j[-1]} for _ in range(int(self.CPUS_PER_RACK))] for j in self.DEFAULT_SERVER_POWER_CHARACTERISTICS]
@@ -105,7 +103,6 @@ class DC_Config:
             
             # Wait for the futures to complete and collect the results
             self.RACK_CPU_CONFIG = [future.result() for future in as_completed(futures)]
-
 
         # A default value of HP_PROLIANT server for standalone testing
         self.HP_PROLIANT = json_obj["server_characteristics"]['HP_PROLIANT']
