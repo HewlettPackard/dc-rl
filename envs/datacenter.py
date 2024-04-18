@@ -396,7 +396,7 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data
         
     return CRAC_Fan_load, CT_Fan_pwr, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
 
-def chiller_sizing(DC_Config, min_CRAC_setpoint=16, max_ambient_temp=40.0):
+def chiller_sizing(DC_Config, min_CRAC_setpoint=16, max_CRAC_setpoint=22, max_ambient_temp=40.0):
     
     dc = DataCenter_ITModel(num_racks=DC_Config.NUM_RACKS,
                             rack_supply_approach_temp_list=DC_Config.RACK_SUPPLY_APPROACH_TEMP_LIST,
@@ -406,9 +406,9 @@ def chiller_sizing(DC_Config, min_CRAC_setpoint=16, max_ambient_temp=40.0):
     
     cpu_load = 100.0
     ITE_load_pct_list = [cpu_load for i in range(DC_Config.NUM_RACKS)]
-    
+        
     rackwise_cpu_pwr, rackwise_itfan_pwr, rackwise_outlet_temp = \
-                        dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=min_CRAC_setpoint)
+                        dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=max_CRAC_setpoint)
                         
     avg_CRAC_return_temp = calculate_avg_CRAC_return_temp(rack_return_approach_temp_list=DC_Config.RACK_RETURN_APPROACH_TEMP_LIST,
                                                                          rackwise_outlet_temp=rackwise_outlet_temp)
