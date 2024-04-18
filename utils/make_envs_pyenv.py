@@ -149,7 +149,17 @@ def make_dc_pyeplus_env(month : int = 1,
     # This step determines the potential maximum loading of the CT
     # setting a higher ambient temp here will cause the CT to consume less power for cooling water under normal ambient temperature. Lower amb temp -> higher HVAC power
     # setting a lower value of min_CRAC_setpoint will cause the CT to consume more power for higher crac setpoints during normal use. Lower min_CRAC_set -> higher HVAC power
-    ctafr, ct_rated_load = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint=14.0, ambient_temp=40.0)  # we assume 14 so that there is no oob error
+    
+    # dictionary with locations and min_CRAC_setpoint/max_amb_temp
+    if 'NY'.lower() in location.lower():
+        min_CRAC_setpoint = 15.0
+        max_amb_temperature = 30.0
+    else:
+        print('WARNING, using default values for chiller sizing...')
+        min_CRAC_setpoint = 15.0
+        max_amb_temperature = 40.0
+        
+    ctafr, ct_rated_load = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint=min_CRAC_setpoint, max_ambient_temp=max_amb_temperature)
     dc_config.CT_REFRENCE_AIR_FLOW_RATE = ctafr
     dc_config.CT_FAN_REF_P = ct_rated_load
     
