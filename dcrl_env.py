@@ -104,6 +104,7 @@ class DCRL(MultiAgentEnv):
         self.workload_file = env_config['workload_file']
         
         self.max_bat_cap_Mw = env_config['max_bat_cap_Mw']
+        self.dc_config_file = env_config['dc_config_file']
         self.indv_reward = env_config['individual_reward_weight']
         self.collab_reward = (1 - self.indv_reward) / 2
         
