@@ -154,16 +154,41 @@ class dc_gymenv(gym.Env):
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = \
             self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=self.raw_curr_stpt)
             
+        # for a in [0, 100]:
+        #     for b in [15, 23]:
+        #         ITE_load_pct_list = [a for i in range(self.DC_Config.NUM_RACKS)]
+        #         _, _, outlet = self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=b)
+        #         print(f'CPU util: {a}, Setpoint: {b}, Average Outlet Temp: {np.mean(outlet)}')
+            
         avg_CRAC_return_temp = DataCenter.calculate_avg_CRAC_return_temp(rack_return_approach_temp_list=self.DC_Config.RACK_RETURN_APPROACH_TEMP_LIST,
                                                                          rackwise_outlet_temp=self.rackwise_outlet_temp)
         
         data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
         
-        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load,self.CT_pump_load  = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
+        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load  = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
                                                                                                                                                                        avg_CRAC_return_temp=avg_CRAC_return_temp,
                                                                                                                                                                        ambient_temp=self.ambient_temp,
                                                                                                                                                                        data_center_full_load=data_center_total_ITE_Load,
                                                                                                                                                                        DC_Config=self.DC_Config)
+        
+        # for a in [15, 24]:
+        #     for c in [5, 20, 30]:
+        #         for util in [0, 100]:
+        #             ITE_load_pct_list = [util for i in range(self.DC_Config.NUM_RACKS)]
+        #             self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = \
+        #             self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=self.raw_curr_stpt)
+            
+        #             avg_CRAC_return_temp = DataCenter.calculate_avg_CRAC_return_temp(rack_return_approach_temp_list=self.DC_Config.RACK_RETURN_APPROACH_TEMP_LIST,
+        #                                                                 rackwise_outlet_temp=self.rackwise_outlet_temp)
+        
+        #             data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
+        
+        #             _, ct, _, _, _, _ = DataCenter.calculate_HVAC_power(CRAC_setpoint=a,
+        #                                                                     avg_CRAC_return_temp=avg_CRAC_return_temp,
+        #                                                                     ambient_temp=c,
+        #                                                                     data_center_full_load=data_center_total_ITE_Load,
+        #                                                                     DC_Config=self.DC_Config)
+        #             print(f'CRAC setpoint:{a}, CPU util: {util}, Return temp: {avg_CRAC_return_temp}, Amb temp: {c}, HVAC CT power: {ct}')
         
         # Set the additional attributes for the cooling tower water usage calculation
         self.dc.hot_water_temp = avg_CRAC_return_temp  # °C
