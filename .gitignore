@@ -12,3 +12,4 @@ data/pydcmresults
 sphinx/
 test.png
 venv*/
+*.png
