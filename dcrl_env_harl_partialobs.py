@@ -169,7 +169,7 @@ class DCRL(gym.Env):
             self.base_agents["agent_bat"] = BaseBatteryAgent()
             
         # ls_state[0:10]->10 variables
-        # dc_state[4:9] & dc_state[11]->5+1 variables
+        # dc_state[4:9] & bat_state[5]->5+1 variables
 
         # Create the managers: date/hour/time manager, workload manager, weather manager, and CI manager.
         self.init_day = get_init_day(self.month)
