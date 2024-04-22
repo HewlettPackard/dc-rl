@@ -11,3 +11,5 @@ data/pydcmresults
 .vscode/
 test.png
 *.code-workspace
+eda.py
+eda_mp.py
