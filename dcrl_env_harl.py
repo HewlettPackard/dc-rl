@@ -403,12 +403,12 @@ class DCRL(gym.Env):
         pass
 
     def close(self):
-        self.env.close()
+        self.env.close()  # pylint: disable=no-member
         
     def get_avail_actions(self):
-        if self.discrete:
+        if self.discrete:  # pylint: disable=no-member
             avail_actions = []
-            for agent_id in range(self.n_agents):
+            for agent_id in range(self.n_agents):  # pylint: disable=no-member
                 avail_agent = self.get_avail_agent_actions(agent_id)
                 avail_actions.append(avail_agent)
             return avail_actions
@@ -421,15 +421,15 @@ class DCRL(gym.Env):
     
     def state(self):
         states = tuple(
-            self.scenario.observation(
-                self.world.agents[self._index_map[agent]], self.world
+            self.scenario.observation(  # pylint: disable=no-member
+                self.world.agents[self._index_map[agent]], self.world  # pylint: disable=no-member
             ).astype(np.float32)
-            for agent in self.possible_agents
+            for agent in self.possible_agents  # pylint: disable=no-member
         )
         return np.concatenate(states, axis=None)
     
     def get_hierarchical_variables(self):
-        return self.datacenter_capacity, self.workload_m.get_current_workload(), self.weather_m.get_current_weather(), self.ci_m.get_current_ci()
+        return self.datacenter_capacity, self.workload_m.get_current_workload(), self.weather_m.get_current_weather(), self.ci_m.get_current_ci()  # pylint: disable=no-member
         
     def set_hierarchical_workload(self, workload):
         self.workload_m.set_current_workload(workload)
