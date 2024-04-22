@@ -1,3 +1,4 @@
+import numpy as np
 from tqdm import tqdm
 import gymnasium as gym
 from gymnasium.spaces import Dict, Box, Discrete
@@ -116,6 +117,9 @@ class HeirarchicalDCRL(gym.Env):
 
         # Update workload for all DCs
         for env_id, adj_workload in actions.items():
+            if isinstance(adj_workload, np.ndarray):
+                adj_workload = adj_workload[0]
+
             self.environments[env_id].set_hierarchical_workload(round(adj_workload, 6))
 
         # Compute actions for each agent in each environment
@@ -158,28 +162,30 @@ class HeirarchicalDCRL(gym.Env):
             for env_id, env in self.environments.items():
                 heir_obs[env_id] = env.get_hierarchical_variables()
 
-        return heir_obs, done
+        return heir_obs, self.calc_reward(), False, done, {}
 
 if __name__ == '__main__':
     env = HeirarchicalDCRL(DEFAULT_CONFIG)
     done = False
     obs, _ = env.reset()
-    top_level_actor = WorkloadOptimizer(env.environments.keys())
+    greedy_optimizer = WorkloadOptimizer(env.environments.keys())
     
-    max_iterations = 4*24*365
+    max_iterations = 4*24*30
     # Antonio: Keep in mind that each environment is set to have days_per_episode=30. You can modify this parameter to simulate the whole year
     with tqdm(total=max_iterations) as pbar:
         while not done:
-            # breakpoint()
+    
             # Random actions
             # actions = {key: val[0] for key, val in env.action_space.sample().items()}
 
             # Do nothing 
-            # actions = {dc: state[1] for dc, state in obs.items()}
+            actions = {dc: state[1] for dc, state in obs.items()}
 
-            # Rule-based 
-            actions, _ = top_level_actor.compute_adjusted_workload(obs)
-            obs, done = env.step(actions)
+            # Rule-based
+            # actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
+
+            obs, reward, terminated, truncated, info = env.step(actions)
+            done = truncated
 
             # Update the progress bar
             pbar.update(1)
