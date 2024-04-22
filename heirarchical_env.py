@@ -106,8 +106,11 @@ class HeirarchicalDCRL(gym.Env):
 
         return heir_obs, infos
         
-    def calc_reward(self,):
-        pass
+    def calc_reward(self):
+        reward = 0
+        for dc in self.rewards:
+            reward += self.rewards[dc]['agent_bat']
+        return reward
 
     def step(self, actions):
 
@@ -129,6 +132,7 @@ class HeirarchicalDCRL(gym.Env):
 
 
         # Step through each environment with computed low_level_actions
+        self.rewards = {}
         for env_id in self.environments:
             if self.all_done[env_id]:
                 continue
@@ -136,6 +140,8 @@ class HeirarchicalDCRL(gym.Env):
             new_obs, rewards, terminated, truncated, info = self.environments[env_id].step(low_level_actions[env_id])
             self.low_level_observations[env_id] = new_obs
             self.all_done[env_id] = terminated['__all__'] or truncated['__all__']
+
+            self.rewards[env_id] = rewards
 
             # Update metrics for each environment
             env_metrics = self.metrics[env_id]
