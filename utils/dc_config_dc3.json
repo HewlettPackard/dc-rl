@@ -43,9 +43,9 @@
     {
         "CPU_POWER_RATIO_LB" : [0.01, 1.00],
         "CPU_POWER_RATIO_UB" : [0.03, 1.02],
-        "IT_FAN_AIRFLOW_RATIO_LB" : [0.1, 0.6],
-        "IT_FAN_AIRFLOW_RATIO_UB" : [0.6, 0.8],
-        "IT_FAN_FULL_LOAD_V" : 0.015,
+        "IT_FAN_AIRFLOW_RATIO_LB" : [0.01, 0.225],
+        "IT_FAN_AIRFLOW_RATIO_UB" : [0.225, 1.0],
+        "IT_FAN_FULL_LOAD_V" : 0.051,
         "ITFAN_REF_V_RATIO" : 1.0,
         "ITFAN_REF_P" : 10.0,
         "INLET_TEMP_RANGE" : [16, 28],

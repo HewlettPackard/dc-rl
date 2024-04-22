@@ -153,6 +153,10 @@ def make_dc_pyeplus_env(month : int = 1,
     # dictionary with locations and min_CRAC_setpoint/max_amb_temp
     if 'NY'.lower() in location.lower():
         max_amb_temperature = 30.0
+    elif 'AZ'.lower() in location.lower():
+        max_amb_temperature = 40.0
+    elif 'WA'.lower() in location.lower():
+        max_amb_temperature = 20.0
     else:
         print('WARNING, using default values for chiller sizing...')
         max_amb_temperature = 40.0

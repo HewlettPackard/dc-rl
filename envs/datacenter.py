@@ -94,7 +94,7 @@ class CPU():
     
 class Rack():
 
-    def __init__(self, CPU_config_list, max_W_per_rack = 10000,rack_config = None):  # [3] Table 2 Mid-tier data center
+    def __init__(self, CPU_config_list, max_W_per_rack = 10000, rack_config = None):  # [3] Table 2 Mid-tier data center
         """Defines the rack as a collection of CPUs
 
         Args:
@@ -132,11 +132,8 @@ class Rack():
         ITFAN_REF_P,ITFAN_REF_V_RATIO,IT_FAN_FULL_LOAD_V = \
             [],[],[],[],[],[]
         self.m_coefficient = 10 #1 -> 10 
-        self.c_coefficient = 4 #1 -> 5
+        self.c_coefficient = 5 #1 -> 5
         self.it_slope = 20 #100 -> 20
-        self.m_coefficient = 10
-        self.c_coefficient = 5
-        self.it_slope = 20
             
         for CPU_item in self.CPU_list:
             
@@ -199,7 +196,7 @@ class Rack():
 
     def compute_instantaneous_pwr_vecd(self, inlet_temp, ITE_load_pct):
         
-        # CPU                                    
+        # CPU
         base_cpu_power_ratio = (self.m_cpu+0.05)*inlet_temp + self.c_cpu
         cpu_power_ratio_at_inlet_temp = base_cpu_power_ratio + self.ratio_shift_max_cpu*(ITE_load_pct/100)
         temp_arr = np.concatenate((self.idle_pwr.reshape(1,-1),
@@ -221,12 +218,12 @@ class Rack():
             (float): Average fan flow rate for the rack
         """
             
-        return np.sum(self.v_fan_rack)
+        return self.v_fan_rack[0]
     
     def get_total_rack_fan_v(self,):
         """Calculate the total fan velocity for each rack
         Returns:
-            (float): Average fan flow rate for the rack
+            (float): Total fan flow rate for the rack
         """
         return np.sum(self.v_fan_rack)
     
@@ -299,6 +296,13 @@ class DataCenter_ITModel():
         rackwise_outlet_temp = []
         rackwise_inlet_temp = []
         
+        c = 3.097
+        d = 1.302
+        e = 1.201
+        f = 2.027
+        g = 13.633
+        h = -17.428
+        
         for rack, rack_supply_approach_temp, ITE_load_pct \
                                 in zip(self.racks_list, self.rack_supply_approach_temp_list, ITE_load_pct_list):
             #clamp supply approach temperatures
@@ -306,9 +310,20 @@ class DataCenter_ITModel():
             rack_inlet_temp = rack_supply_approach_temp + CRAC_setpoint 
             rackwise_inlet_temp.append(rack_inlet_temp)
             rack_cpu_power, rack_itfan_power = rack.compute_instantaneous_pwr_vecd(rack_inlet_temp,ITE_load_pct)
+            # Max IT Power : 83000
+            # Min IT Power : 28000
             rackwise_cpu_pwr.append(rack_cpu_power)
             rackwise_itfan_pwr.append(rack_itfan_power)
-            rackwise_outlet_temp.append((rack_inlet_temp + (rack_cpu_power+rack_itfan_power)/(self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*(rack.get_total_rack_fan_v()))))
+            
+            power_term = (rack_cpu_power + rack_itfan_power)**d
+            airflow_term = self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*rack.get_total_rack_fan_v()**e * f
+            log_term = h * np.log(max(power_term / airflow_term, 1))  # Log term, avoid log(0)
+            # rackwise_outlet_temp.append((rack_inlet_temp + (rack_cpu_power+rack_itfan_power)/(self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*rack.get_total_rack_fan_v()*a) + b * (rack_cpu_power+rack_itfan_power) - c))
+            outlet_temp = rack_inlet_temp + c * power_term / airflow_term + g + log_term
+            if outlet_temp > 60:
+                print(f'WARNING, the outlet temperature is higher than 60C: {outlet_temp:.3f}')
+            rackwise_outlet_temp.append(outlet_temp)
+
             # rackwise_outlet_temp.append(
             #                     rack_inlet_temp + \
             #                     (rack_cpu_power+rack_itfan_power)/(self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*rack.get_total_rack_fan_v())
@@ -391,7 +406,7 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data
     # Cooling Tower Reference Air FlowRate
     if ctafr is None:
         ctafr = DC_Config.CT_REFRENCE_AIR_FLOW_RATE
-    CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(max(v_air/ctafr, 1))**3
+    CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(min(v_air/ctafr,1))**3
         
     return CRAC_Fan_load, CT_Fan_pwr, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
 
