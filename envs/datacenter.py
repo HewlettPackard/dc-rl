@@ -406,7 +406,7 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data
     # Cooling Tower Reference Air FlowRate
     if ctafr is None:
         ctafr = DC_Config.CT_REFRENCE_AIR_FLOW_RATE
-    CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(min(v_air/ctafr,1))**3
+    CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(min(v_air/ctafr, 1))**3
         
     return CRAC_Fan_load, CT_Fan_pwr, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
 

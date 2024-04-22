@@ -6,69 +6,77 @@ from ray.rllib.algorithms.algorithm import Algorithm
 from dcrl_env import DCRL
 from hierarchical_workload_optimizer import WorkloadOptimizer
 
-config1 = {
-    'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
-    'location': 'az',
-    'cintensity_file': 'AZPS_NG_&_avgCI.csv',
-    'weather_file': 'USA_AZ_Tucson-Davis-Monthan.epw',
-    'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-    'dc_config_file': 'dc_config_dc3.json',
-    'datacenter_capacity_mw' : 1.1,
-    'timezone_shift': 8,
-    'month': 0,
-    'days_per_episode': 30,
-    }
+DEFAULT_CONFIG = {
+    # AZ config
+    'config1' : {
+        'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+        'location': 'az',
+        'cintensity_file': 'AZPS_NG_&_avgCI.csv',
+        'weather_file': 'USA_AZ_Tucson-Davis-Monthan.epw',
+        'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
+        'dc_config_file': 'dc_config_dc3.json',
+        'datacenter_capacity_mw' : 1.1,
+        'timezone_shift': 8,
+        'month': 0,
+        'days_per_episode': 30,
+        },
 
-# NY config
-config2 = {
-    'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
-    'location': 'ny',
-    'cintensity_file': 'NYIS_NG_&_avgCI.csv',
-    'weather_file': 'USA_NY_New.York-Kennedy.epw',
-    'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-    'dc_config_file': 'dc_config_dc2.json',
-    'datacenter_capacity_mw' : 1,
-    'timezone_shift': 0,
-    'month': 0,
-    'days_per_episode': 30
-    }
+    # NY config
+    'config2' : {
+        'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+        'location': 'ny',
+        'cintensity_file': 'NYIS_NG_&_avgCI.csv',
+        'weather_file': 'USA_NY_New.York-Kennedy.epw',
+        'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
+        'dc_config_file': 'dc_config_dc2.json',
+        'datacenter_capacity_mw' : 1,
+        'timezone_shift': 0,
+        'month': 0,
+        'days_per_episode': 30
+        },
 
-# WA config
-config3 = {
-    'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
-    'location': 'wa',
-    'cintensity_file': 'WAAT_NG_&_avgCI.csv',
-    'weather_file': 'USA_WA_Port.Angeles-Fairchild.epw',
-    'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-    'dc_config_file': 'dc_config_dc1.json',
-    'datacenter_capacity_mw' : 0.9,
-    'timezone_shift': 16,
-    'month': 0,
-    'days_per_episode': 30
-    }
+    # WA config
+    'config3' : {
+        'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
+        'location': 'wa',
+        'cintensity_file': 'WAAT_NG_&_avgCI.csv',
+        'weather_file': 'USA_WA_Port.Angeles-Fairchild.epw',
+        'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
+        'dc_config_file': 'dc_config_dc1.json',
+        'datacenter_capacity_mw' : 0.9,
+        'timezone_shift': 16,
+        'month': 0,
+        'days_per_episode': 30
+        },
+    
+    'checkpoint_path': 'results/test/MADDPGStable_DCRL_41ad0_00000_0_2024-04-11_20-08-26/checkpoint_011585',
+}
 
 class HeirarchicalDCRL(gym.Env):
 
-    def __init__(self, config={}):
+    def __init__(self, config):
 
-        DC1 = DCRL(config1)
-        DC2 = DCRL(config2)
-        DC3 = DCRL(config3)
+        # Init all datacenter environments
+        DC1 = DCRL(config['config1'])
+        DC2 = DCRL(config['config2'])
+        DC3 = DCRL(config['config3'])
 
-        # Define the environments
         self.environments = {
             'DC1': DC1,
             'DC2': DC2,
             'DC3': DC3,
         }
 
-        checkpoint_path = 'results/test/MADDPGStable_DCRL_41ad0_00000_0_2024-04-11_20-08-26/checkpoint_011585'
-        self.lower_level_actor = Algorithm.from_checkpoint(checkpoint_path)
+        # Load trained agent
+        self.lower_level_actor = Algorithm.from_checkpoint(config['checkpoint_path'])
 
-        if 'MADDPG' in checkpoint_path:
+        if 'MADDPG' in config['checkpoint_path']:
             for env in self.environments.values():
                 env.actions_are_logits = True
 
+        self.low_level_observations = {}
+
+        # Define observation and action space
         self.action_space = Dict({dc: Box(0, 1, [1]) for dc in self.environments})
         
     def reset(self):
@@ -99,8 +107,7 @@ class HeirarchicalDCRL(gym.Env):
         return heir_obs, infos
         
     def calc_reward(self,):
-
-        return 
+        pass
 
     def step(self, actions):
 
@@ -148,7 +155,7 @@ class HeirarchicalDCRL(gym.Env):
         return heir_obs, done
 
 if __name__ == '__main__':
-    env = HeirarchicalDCRL()
+    env = HeirarchicalDCRL(DEFAULT_CONFIG)
     done = False
     obs, _ = env.reset()
     top_level_actor = WorkloadOptimizer(env.environments.keys())
