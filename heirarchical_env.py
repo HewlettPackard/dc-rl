@@ -76,6 +76,13 @@ class HeirarchicalDCRL(gym.Env):
                 env.actions_are_logits = True
 
         self.low_level_observations = {}
+        
+        # Default agents in case we do not have a trained low-level agent
+        self.base_agents = {
+            "agent_ls": BaseLoadShiftingAgent(), 
+            "agent_dc": BaseHVACAgent(), 
+            "agent_bat": BaseBatteryAgent()
+            }
 
         # Define observation and action space
         self.action_space = Dict({dc: Box(0, 1, [1]) for dc in self.environments})
