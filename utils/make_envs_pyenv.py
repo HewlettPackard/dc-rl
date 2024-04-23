@@ -73,8 +73,6 @@ def make_bat_fwd_env(month,
 
 def make_dc_pyeplus_env(month : int = 1,
                         location : str = 'NYIS',
-                        weather_filename: str = 'USA_NY_New.York-Kennedy.epw',
-                        workload_filename: str = 'Alibaba_CPU_Data_Hourly_1.csv',
                         dc_config_file: str = 'dc_config_file.json',
                         datacenter_capacity_mw: int = 1,
                         max_bat_cap_Mw : float = 2.0,
@@ -90,10 +88,6 @@ def make_dc_pyeplus_env(month : int = 1,
         month (int, optional): The month of the year for which the Environment uses the weather and Carbon Intensity data. Defaults to 1.
         location (str, optional): The geographical location in a standard format for which Carbon Intensity files are accessed. Supported options are 
                                 'NYIS', 'AZPS', 'BPAT'. Defaults to 'NYIS'.
-        weather_filename (str, optional): Filename that stores the weather data. Files should be stored under ./data/Weather. Currently supports .epw file only.  Defaults to
-                                        'USA_NY_New.York-Kennedy.epw'.
-        workload_filename (str, optional): Filename that stores the default CPU workload data. Files should be stored under ./data/Workload. Defaults to
-                                        'Alibaba_CPU_Data_Hourly_1.csv'.
         datacenter_capacity_mw (int, optional): Maximum capacity (MW) of the data center. This value will scale the number of servers installed in the data center.
         max_bat_cap_Mw (float, optional): The battery capacity in Megawatts for the installed battery. Defaults to 2.0.
         add_cpu_usage (bool, optional): Boolean Flag to indicate whether cpu usage is part of the environment statespace. Defaults to True.
@@ -104,7 +98,6 @@ def make_dc_pyeplus_env(month : int = 1,
     Returns:
         envs.dc_gym.dc_gymenv: The environment instantiated with the particular month.
     """
-    carbon_intensity_filename : str = f'{location}_NG_&_avgCI.csv'
     observation_variables = []
     ############################################################################
     ######################### Standard Variables included as default ###########
@@ -155,8 +148,13 @@ def make_dc_pyeplus_env(month : int = 1,
     # setting a lower value of min_CRAC_setpoint will cause the CT to consume more power for higher crac setpoints during normal use. Lower min_CRAC_set -> higher HVAC power
     
     # dictionary with locations and min_CRAC_setpoint/max_amb_temp
+
     if 'NY'.lower() in location.lower():
         max_amb_temperature = 30.0
+    elif 'AZ'.lower() in location.lower():
+        max_amb_temperature = 40.0
+    elif 'WA'.lower() in location.lower():
+        max_amb_temperature = 20.0
     else:
         print('WARNING, using default values for chiller sizing...')
         max_amb_temperature = 40.0

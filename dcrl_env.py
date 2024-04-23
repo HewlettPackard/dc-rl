@@ -135,12 +135,11 @@ class DCRL(MultiAgentEnv):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        n_vars_energy, n_vars_battery = 4,1
+        n_vars_energy, n_vars_battery = 4,1        
         n_vars_ci = 8
-        
-        self.ls_env = make_ls_env(self.month, test_mode = self.evaluation_mode, n_vars_ci=n_vars_ci, queue_max_len=1000)
-        self.dc_env, _ = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file) 
-        self.bat_env = make_bat_fwd_env(self.month, max_bat_cap_Mwh=self.dc_env.ranges['max_battery_energy_Mwh'], 
+        self.ls_env = make_ls_env(month=self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci, queue_max_len=1000)
+        self.dc_env, _ = make_dc_pyeplus_env(month=self.month+1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file) 
+        self.bat_env = make_bat_fwd_env(month=self.month, max_bat_cap_Mwh=self.dc_env.ranges['max_battery_energy_Mwh'], 
                                         max_dc_pw_MW=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1]/1e6, 
                                         dcload_max=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1],
                                         dcload_min=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][0])
@@ -401,7 +400,7 @@ class DCRL(MultiAgentEnv):
         return ls_reward, dc_reward, bat_reward
 
     def get_hierarchical_variables(self):
-        return self.datacenter_capacity, self.workload_m.get_current_workload(), self.weather_m.get_current_weather(), self.ci_m.get_current_ci()
+        return self.datacenter_capacity_mw, self.workload_m.get_current_workload(), self.weather_m.get_current_weather(), self.ci_m.get_current_ci()
         
     def set_hierarchical_workload(self, workload):
         self.workload_m.set_current_workload(workload)
