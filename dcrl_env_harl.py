@@ -131,7 +131,8 @@ class DCRL(gym.Env):
         self.bat_env = make_bat_fwd_env(month=self.month, max_bat_cap_Mwh=self.dc_env.ranges['max_battery_energy_Mwh'], 
                                         max_dc_pw_MW=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1]/1e6, 
                                         dcload_max=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1],
-                                        dcload_min=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][0])
+                                        dcload_min=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][0],
+                                        n_fwd_steps=n_vars_ci)
 
         self.bat_env.dcload_max = self.dc_env.power_ub_kW / 4 # Assuming 15 minutes timestep. Kwh
         
