@@ -82,14 +82,14 @@ class HeirarchicalDCRL(gym.Env):
         
     def reset(self):
         self.low_level_observations = {}
-        heir_obs = {}
+        self.heir_obs = {}
         infos = {}
 
         # Reset environments and store initial observations and infos
         for env_id, env in self.environments.items():
             obs, info = env.reset()
             self.low_level_observations[env_id] = obs
-            heir_obs[env_id] = env.get_hierarchical_variables()
+            self.heir_obs[env_id] = np.array(env.get_hierarchical_variables())
             infos[env_id] = info
         
         # Initialize metrics
@@ -104,8 +104,8 @@ class HeirarchicalDCRL(gym.Env):
         }   
 
         self.all_done = {env_id: False for env_id in self.environments}
-
-        return heir_obs, infos
+        
+        return self.heir_obs, infos
         
     def calc_reward(self):
         reward = 0
@@ -157,12 +157,12 @@ class HeirarchicalDCRL(gym.Env):
         done = any(self.all_done.values())
 
         # Get observations for the next step
-        heir_obs = {}
         if not done:
+            self.heir_obs = {}
             for env_id, env in self.environments.items():
-                heir_obs[env_id] = env.get_hierarchical_variables()
+                self.heir_obs[env_id] = np.array(env.get_hierarchical_variables())
 
-        return heir_obs, self.calc_reward(), False, done, {}
+        return self.heir_obs, self.calc_reward(), False, done, {}
 
 if __name__ == '__main__':
     env = HeirarchicalDCRL(DEFAULT_CONFIG)
