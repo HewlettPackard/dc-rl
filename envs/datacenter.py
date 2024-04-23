@@ -295,13 +295,12 @@ class DataCenter_ITModel():
         rackwise_itfan_pwr = []
         rackwise_outlet_temp = []
         rackwise_inlet_temp = []
-        
-        c = 3.097
-        d = 1.302
-        e = 1.201
-        f = 2.027
-        g = 13.633
-        h = -17.428
+                
+        c = 1.918
+        d = 1.096
+        e = 0.824
+        f = 0.526
+        g = -14.01
         
         for rack, rack_supply_approach_temp, ITE_load_pct \
                                 in zip(self.racks_list, self.rack_supply_approach_temp_list, ITE_load_pct_list):
@@ -309,7 +308,7 @@ class DataCenter_ITModel():
             rack_supply_approach_temp = rack.clamp_supply_approach_temp(rack_supply_approach_temp)
             rack_inlet_temp = rack_supply_approach_temp + CRAC_setpoint 
             rackwise_inlet_temp.append(rack_inlet_temp)
-            rack_cpu_power, rack_itfan_power = rack.compute_instantaneous_pwr_vecd(rack_inlet_temp,ITE_load_pct)
+            rack_cpu_power, rack_itfan_power = rack.compute_instantaneous_pwr_vecd(rack_inlet_temp, ITE_load_pct)
             # Max IT Power : 83000
             # Min IT Power : 28000
             rackwise_cpu_pwr.append(rack_cpu_power)
@@ -317,11 +316,26 @@ class DataCenter_ITModel():
             
             power_term = (rack_cpu_power + rack_itfan_power)**d
             airflow_term = self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*rack.get_total_rack_fan_v()**e * f
-            log_term = h * np.log(max(power_term / airflow_term, 1))  # Log term, avoid log(0)
+            log_term = 0# h * np.log(max(power_term / airflow_term, 1))  # Log term, avoid log(0)
             # rackwise_outlet_temp.append((rack_inlet_temp + (rack_cpu_power+rack_itfan_power)/(self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*rack.get_total_rack_fan_v()*a) + b * (rack_cpu_power+rack_itfan_power) - c))
-            outlet_temp = rack_inlet_temp + c * power_term / airflow_term + g + log_term
+            outlet_temp = rack_inlet_temp + c * power_term / airflow_term + g 
             if outlet_temp > 60:
                 print(f'WARNING, the outlet temperature is higher than 60C: {outlet_temp:.3f}')
+            
+            if outlet_temp - rack_inlet_temp < 2:
+                print(f'There is something wrong with the delta calculation because is too small: {outlet_temp - rack_inlet_temp:.3f}')
+                print(f'Inlet Temp: {rack_inlet_temp:.3f}, Util: {ITE_load_pct}, ITE Power: {rack_cpu_power+rack_itfan_power:.3f}')
+                print(f'Power term: {power_term:.3f}, Airflow term: {airflow_term:.3f}, Log term: {log_term:.3f}')
+                print(f'Delta: {c * power_term / airflow_term + g + log_term:.3f}')
+                raise Exception("Sorry, no numbers below 2")
+
+            if ITE_load_pct > 95 and CRAC_setpoint < 16.5:
+                if outlet_temp - rack_inlet_temp < 2:
+                    print(f'There is something wrong with the delta calculation for MAX is too small: {outlet_temp - rack_inlet_temp:.3f}')
+                    print(f'Inlet Temp: {rack_inlet_temp:.3f}, ITE Power: {rack_cpu_power+rack_itfan_power:.3f}')
+                    print(f'Power term: {power_term:.3f}, Airflow term: {airflow_term:.3f}, Log term: {log_term:.3f}')
+                    print(f'Delta: {c * power_term / airflow_term + g + log_term:.3f}')
+                    raise Exception("Sorry, no numbers below 2")
             rackwise_outlet_temp.append(outlet_temp)
 
             # rackwise_outlet_temp.append(
