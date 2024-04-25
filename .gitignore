@@ -13,3 +13,4 @@ sphinx/
 test.png
 venv*/
 *.png
+eda_mp.py
