@@ -453,8 +453,18 @@ def chiller_sizing(DC_Config, min_CRAC_setpoint=16, max_CRAC_setpoint=22, max_am
     # Cooling Tower Reference Air FlowRate
     ctafr = m_air/DC_Config.RHO_AIR
     
+    '''
     # Assuming that the HVAC consumes 43% of energy on a datacenter, and the rest is IT
-    CT_rated_load = data_center_total_ITE_Load * (43/(100-43))
+    # We assume that on months where temperature is lower than 15C, the HVAC energy consumption is almost 0. (> 60% of time)
+    # Also, the HVAC energy consumption follow the external temperature trend (almost a sin signal).
+    # The average area for a sin period of a sin is 2*pi
+    # The average power consumption of a day where the maximum temperature is raised and the lowest setpoint is used (MaxPower) is 2*pi*MaxPower [W]
+    # The average energy for that day is (2*pi*MaxPower)[W]/24[hours] -> 0.26 * MAxPower [W/h]
+    # So, to obtain an average HVAC energy consumption of 43%, we need to scale the total maximum energy consumption with a factor of 10
+    # This value is obtained after a methodic literature search.
+    '''
+    
+    CT_rated_load = 10 * data_center_total_ITE_Load * (43/(100-43))
     
     return ctafr, CT_rated_load
     
