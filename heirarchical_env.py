@@ -85,8 +85,8 @@ class HeirarchicalDCRL(gym.Env):
             }
 
         # Define observation and action space
-        self.action_space = Dict({dc: Box(0, 1, [1]) for dc in self.environments})
-        
+        self.observation_space = Dict({dc: Box(0, 10000, [4]) for dc in self.datacenters})
+        self.action_space = MultiDiscrete([3, 3])
     def reset(self):
         self.low_level_observations = {}
         self.heir_obs = {}
