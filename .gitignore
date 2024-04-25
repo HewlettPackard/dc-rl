@@ -13,3 +13,5 @@ test.png
 *.code-workspace
 eda.py
 eda_mp.py
+EBA/
+obtain_weather_files.py
