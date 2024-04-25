@@ -48,7 +48,7 @@ def make_bat_fwd_env(month,
                     max_dc_pw_MW : float = 7.23,
                     dcload_max : float = 2.5,
                     dcload_min : float = 0.1,
-                    n_fwd_steps : int = 4.0
+                    n_fwd_steps : int = 4
                     ):
     """Method to build the Battery environment.
 
