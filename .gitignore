@@ -11,7 +11,7 @@ data/pydcmresults
 .vscode/
 test.png
 *.code-workspace
-eda.py
-eda_mp.py
+eda*.py
 EBA/
 obtain_weather_files.py
+EBA.zip
