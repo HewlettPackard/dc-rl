@@ -440,7 +440,7 @@ def chiller_sizing(DC_Config, min_CRAC_setpoint=16, max_CRAC_setpoint=22, max_am
     ctafr = m_air/DC_Config.RHO_AIR
     
     # Assuming that the HVAC consumes 43% of energy on a datacenter, and the rest is IT
-    CT_rated_load = data_center_total_ITE_Load * (43/(100-43))
+    CT_rated_load = 10 * data_center_total_ITE_Load * (43/(100-43))
     
     return ctafr, CT_rated_load
     

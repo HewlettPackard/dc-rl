@@ -48,6 +48,7 @@ def make_bat_fwd_env(month,
                     max_dc_pw_MW : float = 7.23,
                     dcload_max : float = 2.5,
                     dcload_min : float = 0.1,
+                    n_fwd_steps : int = 4,
                     ):
     """Method to build the Battery environment.
 
@@ -61,7 +62,7 @@ def make_bat_fwd_env(month,
         battery_env_fwd: Batery environment.
     """
     init_day = get_init_day(month)
-    env_config= {'n_fwd_steps':4,
+    env_config= {'n_fwd_steps':n_fwd_steps,
                  'max_dc_pw_MW':max_dc_pw_MW,
                  'max_bat_cap':max_bat_cap_Mwh,
                  'charging_rate':charging_rate,

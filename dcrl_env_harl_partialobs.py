@@ -124,17 +124,18 @@ class DCRL(gym.Env):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        n_vars_energy, n_vars_battery = 4,1
+        n_vars_energy, n_vars_battery = 0, 0  # for partial observability (for p.o.)
         n_vars_ci = 8
-        self.ls_env = make_ls_env(month=self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci, queue_max_len=1000)
-        self.dc_env, _ = make_dc_pyeplus_env(month=self.month+1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file) 
+        self.ls_env = make_ls_env(month=self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci, \
+                                    n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, queue_max_len=1000)
+        self.dc_env, _ = make_dc_pyeplus_env(month=self.month+1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, \
+                                            datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file, add_cpu_usage=False)  # for p.o.
         self.bat_env = make_bat_fwd_env(month=self.month, max_bat_cap_Mwh=self.dc_env.ranges['max_battery_energy_Mwh'], 
                                         max_dc_pw_MW=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1]/1e6, 
                                         dcload_max=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1],
                                         dcload_min=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][0],
-                                        n_fwd_steps=4)
-        # TODO : CONSIDER THAT THE BAT_ENV IS NOT CONSIDERING THE VARIABLE N_VARS_CI YET
-        
+                                        n_fwd_steps=n_vars_ci)
+
         self.bat_env.dcload_max = self.dc_env.power_ub_kW / 4 # Assuming 15 minutes timestep. Kwh
         
         self.bat_env.dcload_min = self.dc_env.power_lb_kW / 4 # Assuming 15 minutes timestep. Kwh
@@ -169,7 +170,7 @@ class DCRL(gym.Env):
             self.base_agents["agent_bat"] = BaseBatteryAgent()
             
         # ls_state[0:10]->10 variables
-        # dc_state[4:9] & dc_state[11]->5+1 variables
+        # dc_state[4:9] & bat_state[5]->5+1 variables
 
         # Create the managers: date/hour/time manager, workload manager, weather manager, and CI manager.
         self.init_day = get_init_day(self.month)
@@ -227,16 +228,12 @@ class DCRL(gym.Env):
         ls_s, self.ls_info = self.ls_env.reset()
         self.dc_state, self.dc_info = self.dc_env.reset()
         bat_s, self.bat_info = self.bat_env.reset()
-         
-        # Update the shared observation space
-        batSoC = bat_s[1]
         
-        # dc state -> [time (sine/cosine enconded), original dc observation, current workload, current normalized CI, battery SOC]
-        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, workload, ci_i_future[0], batSoC)))
-        var_to_LS_energy = get_energy_variables(self.dc_state)
+        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
+        self.ls_state = np.float32(np.hstack((t_i, ls_s, ci_i_future)))  # for p.o.
         
-        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, energy variables from DC, battery SoC]
-        self.ls_state = np.float32(np.hstack((t_i, ls_s, ci_i_future, var_to_LS_energy, batSoC)))
+        # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]  # p.o.
+        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, ci_i_future[0])))  # p.o.
         
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
         self.bat_state = np.float32(np.hstack((t_i, bat_s, ci_i_future)))
@@ -328,21 +325,15 @@ class DCRL(gym.Env):
         # Do a step in the battery environment
         self.bat_state, _, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
         
-        # Update the state of the bat state
-        batSoC = self.bat_state[1]
-        self.bat_state = np.float32(np.hstack((t_i, self.bat_state, ci_i_future)))
+        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
+        self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future)))  # for p.o.
         
-        # self.dc_reward = -1.0 * self.bat_info['bat_total_energy_with_battery_KWh'] / 1e3  # The raw reward of the DC is directly the total energy consumption in MWh.
-
         # Update the shared variables
-        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, shifted_wkld, ci_i_future[0], batSoC)))
+        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, ci_i_future[0])))  # for p.o.
         
-        # We need to update the LS state with the DC energy variables and the final battery SoC.
-        var_to_LS_energy = get_energy_variables(self.dc_state)
-        
-        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, energy variables from DC, battery SoC]
-        self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future, var_to_LS_energy, batSoC)))
-        
+        # Update the state of the bat state
+        self.bat_state = np.float32(np.hstack((t_i, self.bat_state, ci_i_future)))
+
         # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
         # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
         info_dict = {**self.bat_info, **self.ls_info, **self.dc_info}
