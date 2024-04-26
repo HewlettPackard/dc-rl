@@ -50,7 +50,7 @@ with tqdm(total=len(month_idxs), desc="Processing", unit="iteration") as pbar:
                             'agents': ['agent_dc'],
                             # Datafiles
                             'location': 'wa',
-                            'cintensity_file': 'WAAT_NG_&_avgCI.csv',
+                            'cintensity_file': 'BPAT_NG_&_avgCI.csv',
                             'weather_file': 'USA_WA_Port.Angeles-Fairchild.epw',
                             'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv'}
                         )

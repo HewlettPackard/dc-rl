@@ -39,7 +39,7 @@ def main():
     config3 = {# Agents active
             'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
             'location': 'wa',
-            'cintensity_file': 'WAAT_NG_&_avgCI.csv',
+            'cintensity_file': 'BPAT_NG_&_avgCI.csv',
             'weather_file': 'USA_WA_Port.Angeles-Fairchild.epw',
             'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
             'dc_config_file': 'dc_config_dc1.json',
