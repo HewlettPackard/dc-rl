@@ -25,7 +25,7 @@ def obtain_paths(location):
     elif "az" in location.lower():
         return ['AZPS', 'USA_AZ_Tucson-Davis-Monthan.epw']
     elif "wa" in location.lower():
-        return ['WAAT', 'USA_WA_Port.Angeles-Fairchild.epw']
+        return ['BPAT', 'USA_WA_Port.Angeles-Fairchild.epw']
     else:
         raise ValueError("Location not found")
 

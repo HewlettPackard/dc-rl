@@ -13,4 +13,8 @@ sphinx/
 test.png
 venv*/
 *.png
-eda_mp.py
+eda*
+*.pdf
+*.zip
+obtain_weather_files.py
+EBA/
