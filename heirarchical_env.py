@@ -1,11 +1,16 @@
+import random
+
+import torch
 import numpy as np
 from tqdm import tqdm
 import gymnasium as gym
-from gymnasium.spaces import Dict, Box, Discrete
+from gymnasium.spaces import Dict, Box, MultiDiscrete
 from ray.rllib.algorithms.algorithm import Algorithm
+from ray.rllib.policy.policy import Policy
 
 from dcrl_env import DCRL
 from hierarchical_workload_optimizer import WorkloadOptimizer
+from utils.base_agents import *
 
 DEFAULT_CONFIG = {
     # AZ config
@@ -40,7 +45,7 @@ DEFAULT_CONFIG = {
     'config3' : {
         'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
         'location': 'wa',
-        'cintensity_file': 'BPAT_NG_&_avgCI.csv',
+        'cintensity_file': 'WAAT_NG_&_avgCI.csv',
         'weather_file': 'USA_WA_Port.Angeles-Fairchild.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc1.json',
