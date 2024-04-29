@@ -30,7 +30,6 @@ warnings.filterwarnings(
 DEFAULT_CONFIG = {
     # AZ config
     'config1' : {
-        'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
         'location': 'az',
         'cintensity_file': 'AZPS_NG_&_avgCI.csv',
         'weather_file': 'USA_AZ_Tucson-Davis-Monthan.epw',
@@ -44,7 +43,6 @@ DEFAULT_CONFIG = {
 
     # NY config
     'config2' : {
-        'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
         'location': 'ny',
         'cintensity_file': 'NYIS_NG_&_avgCI.csv',
         'weather_file': 'USA_NY_New.York-Kennedy.epw',
@@ -58,9 +56,8 @@ DEFAULT_CONFIG = {
 
     # WA config
     'config3' : {
-        'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
         'location': 'wa',
-        'cintensity_file': 'WAAT_NG_&_avgCI.csv',
+        'cintensity_file': 'BPAT_NG_&_avgCI.csv',
         'weather_file': 'USA_WA_Port.Angeles-Fairchild.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc1.json',
@@ -70,7 +67,21 @@ DEFAULT_CONFIG = {
         'days_per_episode': 30
         },
     
-    'checkpoint_path': 'results/test/MADDPGStable_DCRL_41ad0_00000_0_2024-04-11_20-08-26/checkpoint_011585',
+    # List of active low-level agents
+    'active_agents': ['agent_dc'],
+
+    # config for loading trained low-level agents
+    'low_level_actor_config': {
+        'harl': {
+            'algo' : 'happo',
+            'env' : 'dcrl',
+            'exp_name' : 'll_actor',
+            'model_dir': '/lustre/gundechv/dc-rl/seed-00001-2024-04-22-20-59-21/models',
+            },
+        'rllib': {
+            'checkpoint_path': '/lustre/gundechv/dc-rl/maddpg/checkpoint_000000/',
+        }
+    },
 }
 
 class HeirarchicalDCRL(gym.Env):
