@@ -322,16 +322,19 @@ class HeirarchicalDCRL(gym.Env):
         # Get observations for the next step
         if not done:
             self.heir_obs = {}
-            for env_id, env in self.environments.items():
+            for env_id, env in self.datacenters.items():
                 self.heir_obs[env_id] = np.array(env.get_hierarchical_variables())
 
         return self.heir_obs, self.calc_reward(), False, done, {}
 
 if __name__ == '__main__':
+
     env = HeirarchicalDCRL(DEFAULT_CONFIG)
     done = False
-    obs, _ = env.reset()
-    greedy_optimizer = WorkloadOptimizer(env.environments.keys())
+    obs, _ = env.reset(seed=0)
+    total_reward = 0
+    
+    greedy_optimizer = WorkloadOptimizer(env.datacenters.keys())
     
     max_iterations = 4*24*30
     # Antonio: Keep in mind that each environment is set to have days_per_episode=30. You can modify this parameter to simulate the whole year
@@ -340,19 +343,22 @@ if __name__ == '__main__':
     
             # Random actions
             # actions = {key: val[0] for key, val in env.action_space.sample().items()}
+            # actions = env.action_space.sample()
 
-            # Do nothing 
-            actions = {dc: state[1] for dc, state in obs.items()}
+            # Do nothing
+            # actions = {dc: state[1] for dc, state in obs.items()}
 
-            # Rule-based
-            # actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
-
+            # One-step greedy
+            # ci = [obs[dc][-1] for dc in env.datacenters]
+            # actions = np.array([np.argmax(ci), np.argmin(ci)])
+            
+            # Greedy
+            actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
 
             obs, reward, terminated, truncated, info = env.step(actions)
-    obs, _ = env.reset(seed=0)
-    total_reward = 0
-    
-    greedy_optimizer = WorkloadOptimizer(env.datacenters.keys())
+            done = truncated
+            total_reward += reward
+
             # Update the progress bar
             pbar.update(1)
 
@@ -361,10 +367,6 @@ if __name__ == '__main__':
         env_id: {metric: sum(values) / len(values) for metric, values in env_metrics.items()}
         for env_id, env_metrics in env.metrics.items()
     }
-            # actions = env.action_space.sample()
-
-            # Do nothing
-            # actions = {dc: state[1] for dc, state in obs.items()}
 
             # One-step greedy
             # ci = [obs[dc][-1] for dc in env.datacenters]
