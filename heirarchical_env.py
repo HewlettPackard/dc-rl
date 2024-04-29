@@ -1,3 +1,4 @@
+import os
 import random
 import warnings
     
@@ -16,6 +17,7 @@ warnings.filterwarnings(
     category=UserWarning
     )
 
+CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_CONFIG = {
     # AZ config
     'config1' : {
@@ -65,10 +67,10 @@ DEFAULT_CONFIG = {
             'algo' : 'happo',
             'env' : 'dcrl',
             'exp_name' : 'll_actor',
-            'model_dir': './seed-00001-2024-04-22-20-59-21/models',
+            'model_dir': f'{CURR_DIR}/seed-00001-2024-04-22-20-59-21/models',
             },
         'rllib': {
-            'checkpoint_path': './maddpg/checkpoint_000000/',
+            'checkpoint_path': f'{CURR_DIR}/maddpg/checkpoint_000000/',
             'is_maddpg': True
         }
     },
@@ -107,7 +109,7 @@ class HeirarchicalDCRL(gym.Env):
         self.action_space = MultiDiscrete([3, 3])
 
     def reset(self, seed=None, options=None):
-
+        seed = 0
         np.random.seed(seed)
         random.seed(seed)
         torch.manual_seed(seed)
@@ -140,7 +142,7 @@ class HeirarchicalDCRL(gym.Env):
         return self.heir_obs, infos
     
     def step(self, actions):
-        
+
         # Shift workloads between datacenters according to 
         # the actions provided by the agent. This will return a dict with 
         # recommend workloads for all DCs
@@ -195,7 +197,7 @@ class HeirarchicalDCRL(gym.Env):
 
     def compute_adjusted_workloads(self, actions) -> Dict:
         # Translate the recommended workload transfer to actual workload.
-        # This will return a dict with the new workload for the transferer and transferee
+        # This will return a dict with the new workload for the sender and the receiver
 
         datacenters = list(self.datacenters.keys())
         sender, receiver = [datacenters[i] for i in actions]
@@ -249,7 +251,7 @@ if __name__ == '__main__':
             # ci = [obs[dc][-1] for dc in env.datacenters]
             # actions = np.array([np.argmax(ci), np.argmin(ci)])
             
-            # Greedy
+            # Multi-step Greedy
             actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
 
             obs, reward, terminated, truncated, info = env.step(actions)
