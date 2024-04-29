@@ -84,6 +84,96 @@ DEFAULT_CONFIG = {
     },
 }
 
+
+class LowLevelActorBase:
+
+    def __init__(self, config: Dict = {}):
+        
+        self.do_nothing_actors = {
+            "agent_ls": BaseLoadShiftingAgent(), 
+            "agent_dc": BaseHVACAgent(), 
+            "agent_bat": BaseBatteryAgent()
+        }
+    
+    def compute_actions(self, observations: Dict, **kwargs) -> Dict:
+        actions = {env_id: {} for env_id in observations}
+
+        for env_id, obs in observations.items():
+            for agent_id in obs:
+                actions[env_id][agent_id] = self.do_nothing_actors[agent_id].do_nothing_action()
+
+        return actions
+
+class LowLevelActorHARL(LowLevelActorBase):
+
+    def __init__(self, config, active_agents: list = []):
+        super().__init__(config)
+
+        config = config['harl']
+        algo_args, env_args = get_defaults_yaml_args(config["algo"], config["env"])
+        algo_args['train']['n_rollout_threads'] = 1
+        algo_args['eval']['n_eval_rollout_threads'] = 1
+        algo_args['train']['model_dir'] = config['model_dir']
+    
+        self.ll_actors = RUNNER_REGISTRY[config["algo"]](config, algo_args, env_args)
+        self.active_agents = active_agents
+        
+    def compute_actions(self, observations, **kwargs):
+        actions = {}
+        
+        eval_rnn_states = np.zeros((1, 1, 1), dtype=np.float32)
+        eval_masks = np.ones((1, 1), dtype=np.float32)
+        
+        expected_length = self.ll_actors.actor[0].obs_space.shape[0]
+
+        for agent_idx, (agent_id, agent_obs) in enumerate(observations.items()):
+            if agent_id in self.active_agents:
+                additional_length = expected_length - len(agent_obs)
+                
+                # Create an array of 1's with the required additional length
+                ones_to_add = np.ones(additional_length, dtype=agent_obs.dtype)
+
+                # Concatenate the current array with the array of 1's
+                agent_obs = np.concatenate((agent_obs, ones_to_add))
+
+                # eval_rnn_states and eval_masks is only being used on RNN
+                # Obtain the action of each actor
+                # TODO: Make sure that we are asking the correct actor for their agent_id and agent_idx
+                action, _ = self.ll_actors.actor[agent_idx].act(agent_obs, eval_rnn_states, eval_masks, deterministic=True)
+        
+                actions[agent_id] = action.numpy()[0]
+            else:
+                actions[agent_id] = self.do_nothing_actors[agent_id].do_nothing_action()
+
+        return actions
+
+class LowLevelActorRLLIB(LowLevelActorBase):
+
+    def __init__(self, config, active_agents: list = []):
+        super().__init__(config)
+
+        self.active_agents = active_agents
+
+        self.policies = {}
+        for agent_id in self.active_agents:
+            with tf1.Session().as_default():
+                self.policies[agent_id] = Policy.from_checkpoint(
+                    f'{config["rllib"]["checkpoint_path"]}/policies/{agent_id}'
+                    )
+
+        # self.actor = Algorithm.from_checkpoint(config['checkpoint_path'])
+        
+    def compute_actions(self, observations, **kwargs):
+        actions = {}
+        
+        for agent_id, obs in observations.items():
+            if agent_id in self.active_agents:
+                actions[agent_id] = self.policies[agent_id].compute_single_action(obs)[0]
+                # actions[agent_id] = self.actor.compute_single_action(obs, policy_id=agent_id)
+            else:
+                actions[agent_id] = self.do_nothing_actors[agent_id].do_nothing_action()
+
+        return actions
 class HeirarchicalDCRL(gym.Env):
 
     def __init__(self, config):
@@ -93,38 +183,47 @@ class HeirarchicalDCRL(gym.Env):
         DC2 = DCRL(config['config2'])
         DC3 = DCRL(config['config3'])
 
-        self.environments = {
+        self.datacenters = {
             'DC1': DC1,
             'DC2': DC2,
             'DC3': DC3,
         }
 
-        # Load trained agent
-        self.lower_level_actor = Algorithm.from_checkpoint(config['checkpoint_path'])
-
-        if 'MADDPG' in config['checkpoint_path']:
-            for env in self.environments.values():
-                env.actions_are_logits = True
+        # Load trained lower level agent
+        self.lower_level_actor = LowLevelActorHARL(
+            config['low_level_actor_config'],
+            config['active_agents']
+            )
+        
+        # self.lower_level_actor = LowLevelActorRLLIB(
+        #     config['low_level_actor_config'], 
+        #     config['active_agents']
+        #     )
+        
+        
+        # if 'MADDPG' in config['low_level_actor']['rllib']['checkpoint_path']:
+        #     for env in self.datacenters.values():
+        #         env.actions_are_logits = True
 
         self.low_level_observations = {}
-        
-        # Default agents in case we do not have a trained low-level agent
-        self.base_agents = {
-            "agent_ls": BaseLoadShiftingAgent(), 
-            "agent_dc": BaseHVACAgent(), 
-            "agent_bat": BaseBatteryAgent()
-            }
 
         # Define observation and action space
         self.observation_space = Dict({dc: Box(0, 10000, [4]) for dc in self.datacenters})
         self.action_space = MultiDiscrete([3, 3])
-    def reset(self):
+
+    def reset(self, seed=None, options=None):
+
+        np.random.seed(0)
+        random.seed(0)
+        torch.manual_seed(0)
+        tf1.random.set_random_seed(0)
+
         self.low_level_observations = {}
         self.heir_obs = {}
         infos = {}
 
         # Reset environments and store initial observations and infos
-        for env_id, env in self.environments.items():
+        for env_id, env in self.datacenters.items():
             obs, info = env.reset()
             self.low_level_observations[env_id] = obs
             self.heir_obs[env_id] = np.array(env.get_hierarchical_variables())
@@ -137,53 +236,79 @@ class HeirarchicalDCRL(gym.Env):
                 'bat_total_energy_with_battery_KWh': [],
                 'ls_tasks_dropped': [],
                 'dc_water_usage': [],
-            } 
-            for env_id in self.environments
+            }
+            for env_id in self.datacenters
         }   
 
-        self.all_done = {env_id: False for env_id in self.environments}
+        self.all_done = {env_id: False for env_id in self.datacenters}
         
         return self.heir_obs, infos
         
     def calc_reward(self):
         reward = 0
         for dc in self.rewards:
-            reward += self.rewards[dc]['agent_bat']
-        return reward
+            reward += self.infos[dc]['agent_bat']['bat_CO2_footprint']
+        return reward / 1e6
 
+    def compute_adjusted_workloads(self, actions):
+        
+        datacenters = list(self.datacenters.keys())
+        sender, receiver = [datacenters[i] for i in actions]
+
+        s_capacity, s_workload, *_ = self.heir_obs[sender]
+        r_capacity, r_workload, *_ = self.heir_obs[receiver]
+
+        # Convert percentage workload to mwh
+        s_mwh = s_capacity * s_workload
+        r_mwh = r_capacity * r_workload
+
+        # Calculate the amount to move
+        mwh_to_move = min(s_mwh, r_capacity - r_mwh)
+        s_mwh -= mwh_to_move
+        r_mwh += mwh_to_move
+
+        # Convert back to percentage workload
+        s_workload  = s_mwh / s_capacity
+        r_workload = r_mwh / r_capacity
+
+        return {sender: s_workload, receiver: r_workload}
+    
     def step(self, actions):
+        
+        # Shift workloads between datacenters according to 
+        # the actions provided by the agent. This will return a dict with 
+        # recommend workloads for all DCs
+        if isinstance(actions, np.ndarray):
+            actions = self.compute_adjusted_workloads(actions)
 
-        # Update workload for all DCs
+        # Set workload for all DCs accordingly
         for env_id, adj_workload in actions.items():
             if isinstance(adj_workload, np.ndarray):
                 adj_workload = adj_workload[0]
 
-            self.environments[env_id].set_hierarchical_workload(round(adj_workload, 6))
+            self.datacenters[env_id].set_hierarchical_workload(round(adj_workload, 6))
 
         # Compute actions for each agent in each environment
-        low_level_actions = {env_id: {} for env_id in self.environments}
+        low_level_actions = {}
         
         for env_id, env_obs in self.low_level_observations.items():
-            if self.all_done[env_id]:  # Skip if environment is done
-                continue
-
-            for agent_id, agent_obs in env_obs.items():
-                policy_id = agent_id  # Customize policy ID if necessary
-                action = self.lower_level_actor.compute_single_action(agent_obs, policy_id=policy_id)
-                low_level_actions[env_id][agent_id] = action
-
-
-        # Step through each environment with computed low_level_actions
-        self.rewards = {}
-        for env_id in self.environments:
+            # Skip if environment is done
             if self.all_done[env_id]:
                 continue
 
-            new_obs, rewards, terminated, truncated, info = self.environments[env_id].step(low_level_actions[env_id])
+            low_level_actions[env_id] = self.lower_level_actor.compute_actions(env_obs)
+
+        # Step through each environment with computed low_level_actions
+        self.low_level_infos = {}
+        for env_id in self.datacenters:
+            if self.all_done[env_id]:
+                continue
+
+            new_obs, rewards, terminated, truncated, info = self.datacenters[env_id].step(low_level_actions[env_id])
             self.low_level_observations[env_id] = new_obs
             self.all_done[env_id] = terminated['__all__'] or truncated['__all__']
 
-            self.rewards[env_id] = rewards
+            self.low_level_infos[env_id] = info
 
             # Update metrics for each environment
             env_metrics = self.metrics[env_id]
