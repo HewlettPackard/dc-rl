@@ -1,5 +1,7 @@
+import os
 import random
-
+import warnings
+    
 import torch
 import numpy as np
 from tqdm import tqdm
@@ -7,10 +9,23 @@ import gymnasium as gym
 from gymnasium.spaces import Dict, Box, MultiDiscrete
 from ray.rllib.algorithms.algorithm import Algorithm
 from ray.rllib.policy.policy import Policy
+from ray.rllib.utils.framework import try_import_tf
 
+from harl.runners import RUNNER_REGISTRY
+from harl.utils.configs_tools import get_defaults_yaml_args
 from dcrl_env import DCRL
 from hierarchical_workload_optimizer import WorkloadOptimizer
 from utils.base_agents import *
+
+# Boilerplate
+os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+tf1, *_ = try_import_tf()
+tf1.disable_v2_behavior()
+
+warnings.filterwarnings(
+    action="ignore",
+    category=UserWarning
+    )
 
 DEFAULT_CONFIG = {
     # AZ config
