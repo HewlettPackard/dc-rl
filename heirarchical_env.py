@@ -196,9 +196,12 @@ if __name__ == '__main__':
             # Rule-based
             # actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
 
-            obs, reward, terminated, truncated, info = env.step(actions)
-            done = truncated
 
+            obs, reward, terminated, truncated, info = env.step(actions)
+    obs, _ = env.reset(seed=0)
+    total_reward = 0
+    
+    greedy_optimizer = WorkloadOptimizer(env.datacenters.keys())
             # Update the progress bar
             pbar.update(1)
 
@@ -207,18 +210,30 @@ if __name__ == '__main__':
         env_id: {metric: sum(values) / len(values) for metric, values in env_metrics.items()}
         for env_id, env_metrics in env.metrics.items()
     }
+            # actions = env.action_space.sample()
 
-    # Print average metrics for each environment
-    for env_id, env_metrics in average_metrics.items():
-        print(f"Average Metrics for {env_id}:")
-        for metric, value in env_metrics.items():
-            print(f"        {metric}: {value:.2f}")
+            # Do nothing
+            # actions = {dc: state[1] for dc, state in obs.items()}
+
+            # One-step greedy
+            # ci = [obs[dc][-1] for dc in env.datacenters]
+            # actions = np.array([np.argmax(ci), np.argmin(ci)])
+            
+            # Greedy
+            actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
         print()  # Blank line for readability
 
     total_metrics = {}
+            total_reward += reward
     for metric in env_metrics:
         total_metrics[metric] = 0.0
         for env_id in average_metrics:
             total_metrics[metric] += average_metrics[env_id][metric]
 
-        print(f'{metric}: {total_metrics[metric]:,.2f}')
+        print(f'{metric}: {total_metrics[metric]:,.2f}')        print(f"Average Metrics for {env.datacenters[env_id].location}:")
+            print(f"\t{metric}: {value:,.2f}")
+    # Sum metrics across datacenters
+    print("Summed metrics across all DC:")
+        print(f'\t{metric}: {total_metrics[metric]:,.2f}')
+
+    print("Total reward = ", total_reward)
