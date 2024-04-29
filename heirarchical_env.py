@@ -368,25 +368,21 @@ if __name__ == '__main__':
         for env_id, env_metrics in env.metrics.items()
     }
 
-            # One-step greedy
-            # ci = [obs[dc][-1] for dc in env.datacenters]
-            # actions = np.array([np.argmax(ci), np.argmin(ci)])
-            
-            # Greedy
-            actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
+    # Print average metrics for each environment
+    for env_id, env_metrics in average_metrics.items():
+        print(f"Average Metrics for {env.datacenters[env_id].location}:")
+        for metric, value in env_metrics.items():
+            print(f"\t{metric}: {value:,.2f}")
         print()  # Blank line for readability
 
+    # Sum metrics across datacenters
+    print("Summed metrics across all DC:")
     total_metrics = {}
-            total_reward += reward
     for metric in env_metrics:
         total_metrics[metric] = 0.0
         for env_id in average_metrics:
             total_metrics[metric] += average_metrics[env_id][metric]
 
-        print(f'{metric}: {total_metrics[metric]:,.2f}')        print(f"Average Metrics for {env.datacenters[env_id].location}:")
-            print(f"\t{metric}: {value:,.2f}")
-    # Sum metrics across datacenters
-    print("Summed metrics across all DC:")
         print(f'\t{metric}: {total_metrics[metric]:,.2f}')
 
     print("Total reward = ", total_reward)
