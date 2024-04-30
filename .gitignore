@@ -18,3 +18,4 @@ eda*
 *.zip
 obtain_weather_files.py
 EBA/
+*.code-workspace
