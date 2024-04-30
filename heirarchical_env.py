@@ -6,7 +6,7 @@ import torch
 import numpy as np
 from tqdm import tqdm
 import gymnasium as gym
-from gymnasium.spaces import Dict, Box, MultiDiscrete
+from gymnasium.spaces import Dict, Box, MultiDiscrete, Tuple
 
 from dcrl_env import DCRL
 from hierarchical_workload_optimizer import WorkloadOptimizer
@@ -146,7 +146,7 @@ class HeirarchicalDCRL(gym.Env):
         # Shift workloads between datacenters according to 
         # the actions provided by the agent. This will return a dict with 
         # recommend workloads for all DCs
-        if isinstance(actions, np.ndarray):
+        if not isinstance(actions, dict):
             actions = self.compute_adjusted_workloads(actions)
 
         # Set workload for all DCs accordingly
@@ -205,6 +205,9 @@ class HeirarchicalDCRL(gym.Env):
         s_capacity, s_workload, *_ = self.heir_obs[sender]
         r_capacity, r_workload, *_ = self.heir_obs[receiver]
 
+        if sender == receiver:
+            return {sender: s_workload, receiver: r_workload}
+        
         # Convert percentage workload to mwh
         s_mwh = s_capacity * s_workload
         r_mwh = r_capacity * r_workload
@@ -225,10 +228,62 @@ class HeirarchicalDCRL(gym.Env):
         for dc in self.low_level_infos:
             reward += self.low_level_infos[dc]['agent_bat']['bat_CO2_footprint']
         return -1 * reward / 1e6
-    
+
+
+class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
+
+    def __init__(self, config):
+        super().__init__(config)
+        self.action_space = Tuple([MultiDiscrete([3, 3]), Box(0., 1., [1])])
+
+    def compute_adjusted_workloads(self, actions) -> dict:
+        if isinstance(actions, tuple):
+            actions = np.concatenate(actions)
+            
+        datacenters = list(self.datacenters.keys())
+        sender, receiver = [datacenters[int(i)] for i in actions[:2]]
+
+        s_capacity, s_workload, *_ = self.heir_obs[sender]
+        r_capacity, r_workload, *_ = self.heir_obs[receiver]
+
+        if sender == receiver:
+            return {sender: s_workload, receiver: s_workload}
+        
+        # Convert percentage workload to mwh
+        s_mwh = s_capacity * s_workload
+        r_mwh = r_capacity * r_workload
+
+        # Calculate the amount to move
+        max_mwh_to_move = s_mwh*actions[2] if len(actions) == 3 else s_mwh
+        mwh_to_move = min(max_mwh_to_move, r_capacity - r_mwh)
+        s_mwh -= mwh_to_move
+        r_mwh += mwh_to_move
+
+        # Convert back to percentage workload
+        s_workload = s_mwh / s_capacity
+        r_workload = r_mwh / r_capacity
+
+        self.set_hysterisis(mwh_to_move, sender, receiver)
+
+        return {sender: s_workload, receiver: r_workload}
+
+    def set_hysterisis(self, mwh_to_move: float, sender: str, receiver: str):
+        PENALTY = 0.2
+        
+        cost_of_moving_mw = mwh_to_move * PENALTY
+
+        self.datacenters[sender].dc_env.set_workload_hysterisis(cost_of_moving_mw)
+        self.datacenters[receiver].dc_env.set_workload_hysterisis(cost_of_moving_mw)
+
+    def calc_reward(self):
+        return super().calc_reward()
+
+
 if __name__ == '__main__':
 
     env = HeirarchicalDCRL(DEFAULT_CONFIG)
+    # env = HeirarchicalDCRLWithHysterisis(DEFAULT_CONFIG)
+    
     done = False
     obs, _ = env.reset(seed=0)
     total_reward = 0
@@ -241,8 +296,7 @@ if __name__ == '__main__':
         while not done:
     
             # Random actions
-            # actions = {key: val[0] for key, val in env.action_space.sample().items()}
-            # actions = env.action_space.sample()
+            actions = env.action_space.sample()
 
             # Do nothing
             # actions = {dc: state[1] for dc, state in obs.items()}
