@@ -48,50 +48,7 @@ class CPU():
         # max vertical shift in fan flow ratio curve at a given point for 75% change in ITE input load pct
         self.ratio_shift_max_itfan = self.cpu_config.IT_FAN_AIRFLOW_RATIO_LB[1] - self.cpu_config.IT_FAN_AIRFLOW_RATIO_LB[0]
 
-    # def compute_instantaneous_cpu_pwr(self, inlet_temp, ITE_load_pct):
-    #     """Calculate the power consumption of the CPUs at the current step
 
-    #     Args:
-    #         inlet_temp (float): Room temperature
-    #         ITE_load_pct (float): Current CPU usage
-
-    #     Returns:
-    #         cpu_power (float): Current CPU power usage
-    #     """
-    #     assert ((inlet_temp>self.cpu_config.INLET_TEMP_RANGE[0]) & (inlet_temp<self.cpu_config.INLET_TEMP_RANGE[1])), f"Server Inlet Temp Outside 16C - 28C range. Current Val {inlet_temp}"
-    #     base_cpu_power_ratio = self.m_cpu*inlet_temp + self.c_cpu
-    #     cpu_power_ratio_at_inlet_temp = base_cpu_power_ratio + self.ratio_shift_max_cpu*(ITE_load_pct/100)
-    #     cpu_power = max(self.idle_pwr, self.full_load_pwr*cpu_power_ratio_at_inlet_temp)
-
-    #     return cpu_power
-    
-    # def compute_instantaneous_fan_pwr(self, inlet_temp, ITE_load_pct):
-    #     """Calculate the power consumption of the Fans of the IT equipment at the current step
-
-    #     Args:
-    #         inlet_temp (float): Room temperature
-    #         ITE_load_pct (float): Current CPU usage
-
-    #     Returns:
-    #         cpu_power (float): Current Fans power usage
-    #     """
-    #     assert ((inlet_temp>self.cpu_config.INLET_TEMP_RANGE[0]) & (inlet_temp<self.cpu_config.INLET_TEMP_RANGE[1])), f"Server Inlet Temp Outside 18C - 27C range. Current Val {inlet_temp}"
-    #     base_itfan_v_ratio = self.m_itfan*inlet_temp + self.c_itfan
-    #     self.itfan_v_ratio_at_inlet_temp = base_itfan_v_ratio + self.ratio_shift_max_itfan*(ITE_load_pct/100)
-
-    #     # if ITE_load_pct >= 25.0:
-    #     #     base_itfan_v_ratio = self.m_itfan*inlet_temp + self.c_itfan
-    #     #     itfan_v_ratio_at_inlet_temp = base_itfan_v_ratio + self.ratio_shift_max_itfan*((ITE_load_pct-0.0)/100)
-    #     # else:
-    #     #     S = self.cpu_config.INLET_TEMP_RANGE[1]*(1-(ITE_load_pct/25.0))+(ITE_load_pct/25.0)*self.cpu_config.INLET_TEMP_RANGE[0]
-    #     #     itfan_v_ratio_at_inlet_temp = max(0.0, self.m_itfan*(inlet_temp-S))
-        
-    #     itfan_pwr = self.cpu_config.ITFAN_REF_P * (self.itfan_v_ratio_at_inlet_temp/self.cpu_config.ITFAN_REF_V_RATIO)**3  # [4] Eqn (3)
-
-    #     self.v_fan = self.cpu_config.IT_FAN_FULL_LOAD_V*self.itfan_v_ratio_at_inlet_temp
-
-    #     return itfan_pwr
-    
 class Rack():
 
     def __init__(self, CPU_config_list, max_W_per_rack = 10000, rack_config = None):  # [3] Table 2 Mid-tier data center
@@ -383,6 +340,101 @@ class DataCenter_ITModel():
         return water_usage_liters_per_15min
 
 
+def calculate_chiller_power(max_cooling_cap, load, ambient_temp):
+    """
+    Calculate the chiller power consumption based on load and operating conditions.
+    Obtained from:
+        1) https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/testfiles/AirCooledElectricChiller.idf
+        2) https://github.com/NREL/EnergyPlus/issues/763
+        3) https://dmey.github.io/EnergyPlusFortran-Reference/proc/calcelectricchillermodel.html
+        4) https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/tst/EnergyPlus/unit/ChillerElectric.unit.cc#L95
+
+    Args:
+        load (float): The heat load to be removed by the chiller (Watts).
+        ambient_temp (float): Current ambient temperature (Celsius).
+
+    Returns:
+        float: Estimated power consumption of the chiller (Watts).
+    """
+    
+    # Coefficients from https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/tst/EnergyPlus/unit/ChillerElectric.unit.cc#L95
+    capacity_coefficients = [0.94483600, -0.05700880, 0.00185486]
+    power_coefficients = [2.333, -1.975, 0.6121]
+    full_load_factor = [0.03303, 0.6852, 0.2818]
+
+    # Chiller design specifications
+    min_plr = 0.05
+    max_plr = 1.0
+    design_cond_temp = 35.0
+    design_evp_out_temp = 6.67
+    chiller_nominal_cap = max_cooling_cap
+    temp_rise_coef = 2.778
+    rated_cop = 3.0
+    
+    # Calculate the delta temperature for capacity adjustment
+    delta_temp = (ambient_temp - design_cond_temp)/temp_rise_coef - (design_evp_out_temp - design_cond_temp)
+    
+    # Calculate available nominal capacity ratio
+    avail_nom_cap_rat = capacity_coefficients[0] + capacity_coefficients[1] * delta_temp + capacity_coefficients[2] * delta_temp**2
+    
+    # Calculate available chiller capacity
+    available_capacity = chiller_nominal_cap * avail_nom_cap_rat if avail_nom_cap_rat != 0 else 0
+
+    # Calculate power ratio
+    full_power_ratio = power_coefficients[0] + power_coefficients[1] * avail_nom_cap_rat + power_coefficients[2] * avail_nom_cap_rat**2
+    
+    # Determine part load ratio (PLR)
+    part_load_ratio = max(min_plr, min(load / available_capacity, max_plr)) if available_capacity > 0 else 0
+    
+    # Calculate fractional full load power
+    frac_full_load_power = full_load_factor[0] + full_load_factor[1] * part_load_ratio + full_load_factor[2] * part_load_ratio**2
+    
+    # Determine operational part load ratio (OperPartLoadRat)
+    # If the PLR is less than Min PLR calculate the actual PLR for calculations. The power will then adjust for the cycling.
+    if available_capacity > 0:
+        if load / available_capacity < min_plr:
+            oper_part_load_rat = load / available_capacity
+        else:
+            oper_part_load_rat = part_load_ratio
+    else:
+        oper_part_load_rat = 0.0
+    
+    # Operational PLR for actual conditions
+    if oper_part_load_rat < min_plr:
+        frac = min(1.0, oper_part_load_rat / min_plr)
+    else:
+        frac = 1.0
+
+    # Calculate the chiller compressor power
+    power = frac_full_load_power * full_power_ratio * available_capacity / rated_cop * frac
+
+    return power if oper_part_load_rat > 0 else 0
+
+
+# def calculate_chiller_power(CRAC_cooling_load, ambient_temp, DC_Config):
+#     """
+#     Calculate the power consumption of the chiller based on the cooling load and ambient temperature.
+
+#     Args:
+#         CRAC_cooling_load (float): Cooling load from the CRAC units that needs to be handled by the chiller.
+#         ambient_temp (float): Current ambient temperature outside the data center.
+#         DC_Config (config): Configuration of the data center containing COP related constants.
+
+#     Returns:
+#         float: Chiller power consumption in Watts.
+#     """
+#     # Coefficient of Performance calculation
+#     COP_base = DC_Config.CHILLER_COP
+#     k = DC_Config.CHILLER_COP_K
+#     T_nominal = DC_Config.CHILLER_COP_T_NOMINAL
+#     COP = COP_base - k * (ambient_temp - T_nominal)
+
+#     # Chiller power consumption calculation
+#     chiller_power = CRAC_cooling_load / COP if COP != 0 else 0
+
+#     return chiller_power
+
+
 def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data_center_full_load, DC_Config, ctafr=None):
     """Calculate the HVAV power attributes
 
@@ -398,34 +450,48 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data
             CRAC_cooling_load (float): CRAC cooling load
             Compressor_load (float): Chiller compressor load
         """
-
+    # Air system calculations
     m_sys = DC_Config.RHO_AIR * DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu * data_center_full_load
-    CRAC_cooling_load = m_sys*DC_Config.C_AIR*max(0.0,avg_CRAC_return_temp-CRAC_setpoint) 
-    CRAC_Fan_load = DC_Config.CRAC_FAN_REF_P*(DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu/DC_Config.CRAC_REFRENCE_AIR_FLOW_RATE_pu)**3  
-    Compressor_load = CRAC_cooling_load/DC_Config.CHILLER_COP
-
-    #compute chilled water pump power
-    power_consumed_CW = (DC_Config.CW_PRESSURE_DROP*DC_Config.CW_WATER_FLOW_RATE)/DC_Config.CW_PUMP_EFFICIENCY
+    CRAC_cooling_load = m_sys * DC_Config.C_AIR * max(0.0, avg_CRAC_return_temp - CRAC_setpoint)
+    CRAC_Fan_load = DC_Config.CRAC_FAN_REF_P * (DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu / DC_Config.CRAC_REFRENCE_AIR_FLOW_RATE_pu)**3
     
-    #compute Cooling tower pump power
+    chiller_power = calculate_chiller_power(DC_Config.CT_FAN_REF_P, CRAC_cooling_load, ambient_temp)
+
+    # Chiller power calculation
+    power_consumed_CW = (DC_Config.CW_PRESSURE_DROP * DC_Config.CW_WATER_FLOW_RATE) / DC_Config.CW_PUMP_EFFICIENCY
+
+    # Chilled water pump power calculation
     power_consumed_CT = (DC_Config.CT_PRESSURE_DROP*DC_Config.CT_WATER_FLOW_RATE)/DC_Config.CT_PUMP_EFFICIENCY
 
     if ambient_temp < 5:
-        return CRAC_Fan_load, 0.0, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
+        return CRAC_Fan_load, 0.0, CRAC_cooling_load, chiller_power, power_consumed_CW, power_consumed_CT
 
-    Cooling_tower_air_delta = max(50 - (ambient_temp-CRAC_setpoint), 1) 
-    m_air = CRAC_cooling_load/(DC_Config.C_AIR*Cooling_tower_air_delta) 
-    v_air = m_air/DC_Config.RHO_AIR
+    # Cooling tower fan power calculations
+    Cooling_tower_air_delta = max(50 - (ambient_temp - CRAC_setpoint), 1)
+    m_air = CRAC_cooling_load / (DC_Config.C_AIR * Cooling_tower_air_delta)
+    v_air = m_air / DC_Config.RHO_AIR
     
-    # Cooling Tower Reference Air FlowRate
+    # Reference cooling tower air flow rate
     if ctafr is None:
         ctafr = DC_Config.CT_REFRENCE_AIR_FLOW_RATE
-    CT_Fan_pwr = DC_Config.CT_FAN_REF_P*(min(v_air/ctafr,1))**3
-        
-    return CRAC_Fan_load, CT_Fan_pwr, CRAC_cooling_load, Compressor_load, power_consumed_CW, power_consumed_CT
+    CT_Fan_pwr = DC_Config.CT_FAN_REF_P * (min(v_air / ctafr, 1))**3
+    
+    # ToDo: exploring the new chiller_power method
+    return CRAC_Fan_load, CT_Fan_pwr, CRAC_cooling_load, chiller_power, power_consumed_CW, power_consumed_CT
 
 def chiller_sizing(DC_Config, min_CRAC_setpoint=16, max_CRAC_setpoint=22, max_ambient_temp=40.0):
+    '''
+    Calculates the chiller sizing for a data center based on the given configuration and parameters.
     
+    Parameters:
+        DC_Config (object): The data center configuration object.
+        min_CRAC_setpoint (float): The minimum CRAC setpoint temperature in degrees Celsius. Default is 16.
+        max_CRAC_setpoint (float): The maximum CRAC setpoint temperature in degrees Celsius. Default is 22.
+        max_ambient_temp (float): The maximum ambient temperature in degrees Celsius. Default is 40.0.
+    
+    Returns:
+        tuple: A tuple containing the cooling tower reference air flow rate (ctafr) and the rated load of the cooling tower (CT_rated_load).
+    '''
     dc = DataCenter_ITModel(num_racks=DC_Config.NUM_RACKS,
                             rack_supply_approach_temp_list=DC_Config.RACK_SUPPLY_APPROACH_TEMP_LIST,
                             rack_CPU_config=DC_Config.RACK_CPU_CONFIG,
@@ -464,7 +530,7 @@ def chiller_sizing(DC_Config, min_CRAC_setpoint=16, max_CRAC_setpoint=22, max_am
     # This value is obtained after a methodic literature search.
     '''
     
-    CT_rated_load = 10 * data_center_total_ITE_Load * (43/(100-43))
+    CT_rated_load = CRAC_cooling_load #2 * data_center_total_ITE_Load * (43/(100-43))
     
     return ctafr, CT_rated_load
     
