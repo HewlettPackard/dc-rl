@@ -12,8 +12,8 @@ DEFAULT_CONFIG = {
     'config1' : {
         'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
         'location': 'az',
-        'cintensity_file': 'AZPS_NG_&_avgCI.csv',
-        'weather_file': 'USA_AZ_Tucson-Davis-Monthan.epw',
+        'cintensity_file': 'AZ_NG_&_avgCI.csv',
+        'weather_file': 'USA_AZ_Phoenix-Sky.Harbor.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc3.json',
         'datacenter_capacity_mw' : 1.1,
@@ -26,8 +26,8 @@ DEFAULT_CONFIG = {
     'config2' : {
         'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
         'location': 'ny',
-        'cintensity_file': 'NYIS_NG_&_avgCI.csv',
-        'weather_file': 'USA_NY_New.York-Kennedy.epw',
+        'cintensity_file': 'NY_NG_&_avgCI.csv',
+        'weather_file': 'USA_NY_New.York-LaGuardia.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc2.json',
         'datacenter_capacity_mw' : 1,
@@ -39,9 +39,9 @@ DEFAULT_CONFIG = {
     # WA config
     'config3' : {
         'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
-        'location': 'wa',
-        'cintensity_file': 'BPAT_NG_&_avgCI.csv',
-        'weather_file': 'USA_WA_Port.Angeles-Fairchild.epw',
+        'location': 'ca',
+        'cintensity_file': 'CA_NG_&_avgCI.csv',
+        'weather_file': 'USA_CA_San.Jose-Mineta.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc1.json',
         'datacenter_capacity_mw' : 0.9,

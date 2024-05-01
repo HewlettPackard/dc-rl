@@ -20,12 +20,22 @@ def obtain_paths(location):
     Returns:
         List[string]: Naming for the data files
     """
-    if "ny" in location.lower():
-        return ['NYIS', 'USA_NY_New.York-Kennedy.epw']
-    elif "az" in location.lower():
-        return ['AZPS', 'USA_AZ_Tucson-Davis-Monthan.epw']
+    if 'az' in location.lower():
+        return ['AZ', 'USA_AZ_Phoenix-Sky.Harbor.epw']
+    elif 'ca' in location.lower():
+        return ['CA', 'USA_CA_San.Jose-Mineta.epw']
+    elif 'ga' in location.lower():
+        return ['GA', 'USA_GA_Atlanta-Hartsfield-Jackson.epw']
+    elif 'il' in location.lower():
+        return ['IL', 'USA_IL_Chicago.OHare.epw']
+    elif 'ny' in location.lower():
+        return ['NY', 'USA_NY_New.York-LaGuardia.epw']
+    elif 'tx' in location.lower():
+        return ['TX', 'USA_TX_Dallas-Fort.Worth.epw']
+    elif 'va' in location.lower():
+        return ['VA', 'USA_VA_Leesburg.Exec.epw']
     elif "wa" in location.lower():
-        return ['BPAT', 'USA_WA_Port.Angeles-Fairchild.epw']
+        return ['WA', 'USA_WA_Seattle-Tacoma.epw']
     else:
         raise ValueError("Location not found")
 
@@ -55,7 +65,7 @@ def get_init_day(start_month=0):
     assert 0 <= start_month <= 11, "start_month should be between 0 and 11 (inclusive, 0-based, 0=January, 11=December)."
 
     # Read the CSV file and parse dates from the 'timestamp' column
-    df = pd.read_csv(PATH+'/data/CarbonIntensity/NYIS_NG_&_avgCI.csv', parse_dates=['timestamp'], usecols=['timestamp'])
+    df = pd.read_csv(PATH+'/data/CarbonIntensity/NY_NG_&_avgCI.csv', parse_dates=['timestamp'], usecols=['timestamp'])
     
     # Extract the month from each timestamp and add it as a new column to the DataFrame
     df['month'] = pd.DatetimeIndex(df['timestamp']).month

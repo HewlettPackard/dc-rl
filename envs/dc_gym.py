@@ -188,8 +188,10 @@ class dc_gymenv(gym.Env):
         # add info dictionary 
         self.info = {
             'dc_ITE_total_power_kW': data_center_total_ITE_Load / 1e3,
-            'dc_HVAC_total_power_kW': self.CT_Cooling_load / 1e3,
-            'dc_total_power_kW': (data_center_total_ITE_Load + self.CT_Cooling_load) / 1e3,
+            'dc_CT_total_power_kW': self.CT_Cooling_load / 1e3,
+            'dc_Compressor_total_power_kW': self.Compressor_load / 1e3,
+            'dc_HVAC_total_power_kW': (self.CT_Cooling_load + self.Compressor_load) / 1e3,
+            'dc_total_power_kW': (data_center_total_ITE_Load + self.CT_Cooling_load + self.Compressor_load) / 1e3,
             'dc_crac_setpoint_delta': crac_setpoint_delta,
             'dc_crac_setpoint': self.raw_curr_stpt,
             'dc_cpu_workload_fraction': self.cpu_load_frac,
