@@ -350,9 +350,10 @@ def calculate_chiller_power(max_cooling_cap, load, ambient_temp):
         4) https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/tst/EnergyPlus/unit/ChillerElectric.unit.cc#L95
 
     Args:
+        max_cooling_cap (float): Maximum cooling capacity of the chiller (Watts).
         load (float): The heat load to be removed by the chiller (Watts).
         ambient_temp (float): Current ambient temperature (Celsius).
-
+        
     Returns:
         float: Estimated power consumption of the chiller (Watts).
     """
@@ -407,6 +408,9 @@ def calculate_chiller_power(max_cooling_cap, load, ambient_temp):
 
     # Calculate the chiller compressor power
     power = frac_full_load_power * full_power_ratio * available_capacity / rated_cop * frac
+
+    #  Total heat rejection is the sum of the cooling capacity and the power input
+    total_heat_rejection = load + power
 
     return power if oper_part_load_rat > 0 else 0
 
