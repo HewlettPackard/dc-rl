@@ -19,29 +19,29 @@ warnings.filterwarnings(
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_CONFIG = {
-    # AZ config
-    'config1' : {
-        'location': 'az',
-        'cintensity_file': 'AZ_NG_&_avgCI.csv',
-        'weather_file': 'USA_AZ_Phoenix-Sky.Harbor.epw',
-        'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-        'dc_config_file': 'dc_config_dc3.json',
-        'datacenter_capacity_mw' : 1.1,
-        'timezone_shift': 8,
-        'month': 0,
-        'days_per_episode': 30,
-        },
-
     # NY config
-    'config2' : {
+    'config1' : {
         'location': 'ny',
         'cintensity_file': 'NY_NG_&_avgCI.csv',
         'weather_file': 'USA_NY_New.York-LaGuardia.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
+        'dc_config_file': 'dc_config_dc3.json',
+        'datacenter_capacity_mw' : 1,
+        'timezone_shift': 8,
+        'month': 7,
+        'days_per_episode': 30
+        },
+
+    # GA config
+    'config2' : {
+        'location': 'ga',
+        'cintensity_file': 'GA_NG_&_avgCI.csv',
+        'weather_file': 'USA_GA_New.York-LaGuardia.epw',
+        'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc2.json',
         'datacenter_capacity_mw' : 1,
         'timezone_shift': 0,
-        'month': 0,
+        'month': 7,
         'days_per_episode': 30
         },
 
@@ -54,7 +54,7 @@ DEFAULT_CONFIG = {
         'dc_config_file': 'dc_config_dc1.json',
         'datacenter_capacity_mw' : 0.9,
         'timezone_shift': 16,
-        'month': 0,
+        'month': 7,
         'days_per_episode': 30
         },
     
