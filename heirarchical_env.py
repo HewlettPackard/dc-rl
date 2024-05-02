@@ -25,9 +25,9 @@ DEFAULT_CONFIG = {
         'cintensity_file': 'NY_NG_&_avgCI.csv',
         'weather_file': 'USA_NY_New.York-LaGuardia.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-        'dc_config_file': 'dc_config_dc3.json',
+        'dc_config_file': 'dc_config_dc2.json',
         'datacenter_capacity_mw' : 1,
-        'timezone_shift': 8,
+        'timezone_shift': 0,
         'month': 7,
         'days_per_episode': 30
         },
@@ -195,6 +195,9 @@ class HeirarchicalDCRL(gym.Env):
 
         return self.heir_obs, self.calc_reward(), False, done, {}
 
+    def set_hierarchical_workload(self, dc_id: str, workload: float):
+        workload = round(workload, 6)
+        self.datacenters[dc_id].workload_m.set_current_workload(workload)
     def compute_adjusted_workloads(self, actions) -> Dict:
         # Translate the recommended workload transfer to actual workload.
         # This will return a dict with the new workload for the sender and the receiver
