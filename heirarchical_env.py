@@ -25,9 +25,9 @@ DEFAULT_CONFIG = {
         'cintensity_file': 'NY_NG_&_avgCI.csv',
         'weather_file': 'USA_NY_New.York-LaGuardia.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-        'dc_config_file': 'dc_config_dc2.json',
+        'dc_config_file': 'dc_config_dc3.json',
         'datacenter_capacity_mw' : 1,
-        'timezone_shift': 0,
+        'timezone_shift': 8,
         'month': 7,
         'days_per_episode': 30
         },
@@ -80,6 +80,8 @@ class HeirarchicalDCRL(gym.Env):
 
     def __init__(self, config):
 
+        self.config = config
+
         # Init all datacenter environments
         DC1 = DCRL(config['config1'])
         DC2 = DCRL(config['config2'])
@@ -103,9 +105,10 @@ class HeirarchicalDCRL(gym.Env):
             )
         
         self.low_level_observations = {}
+        self.low_level_infos = {}
 
         # Define observation and action space
-        self.observation_space = Dict({dc: Box(0, 10000, [4]) for dc in self.datacenters})
+        self.observation_space = Dict({dc: Box(0, 10000, [5]) for dc in self.datacenters})
         self.action_space = MultiDiscrete([3, 3])
 
     def reset(self, seed=None, options=None):
@@ -123,9 +126,10 @@ class HeirarchicalDCRL(gym.Env):
         for env_id, env in self.datacenters.items():
             obs, info = env.reset()
             self.low_level_observations[env_id] = obs
-            self.heir_obs[env_id] = np.array(env.get_hierarchical_variables())
-            infos[env_id] = info
-        
+            self.low_level_infos[env_id] = info
+            
+            self.heir_obs[env_id] = self.get_dc_variables(env_id)
+            
         # Initialize metrics
         self.metrics = {
             env_id: {
@@ -135,11 +139,11 @@ class HeirarchicalDCRL(gym.Env):
                 'dc_water_usage': [],
             }
             for env_id in self.datacenters
-        }   
+        }
 
         self.all_done = {env_id: False for env_id in self.datacenters}
         
-        return self.heir_obs, infos
+        return self.heir_obs, self.low_level_infos
     
     def step(self, actions):
 
@@ -154,9 +158,9 @@ class HeirarchicalDCRL(gym.Env):
             if isinstance(adj_workload, np.ndarray):
                 adj_workload = adj_workload[0]
 
-            self.datacenters[env_id].set_hierarchical_workload(round(adj_workload, 6))
+            self.set_hierarchical_workload(env_id, adj_workload)
 
-        # Compute actions for each agent in each environment
+        # Compute actions for each dc_id in each environment
         low_level_actions = {}
         
         for env_id, env_obs in self.low_level_observations.items():
@@ -190,14 +194,28 @@ class HeirarchicalDCRL(gym.Env):
         # Get observations for the next step
         if not done:
             self.heir_obs = {}
-            for env_id, env in self.datacenters.items():
-                self.heir_obs[env_id] = np.array(env.get_hierarchical_variables())
+            for env_id in self.datacenters:
+                self.heir_obs[env_id] = self.get_dc_variables(env_id)
 
         return self.heir_obs, self.calc_reward(), False, done, {}
+
+    def get_dc_variables(self, dc_id: str):
+        dc = self.datacenters[dc_id]
+
+        obs = {
+            'dc_capacity': dc.datacenter_capacity_mw,
+            'current_workload': dc.workload_m.get_current_workload(),
+            'weather': dc.weather_m.get_current_weather(),
+            'total_power_kw': self.low_level_infos[dc_id]['agent_dc'].get('dc_total_power_kW', 0),
+            'ci': dc.ci_m.get_current_ci(),
+        }
+
+        return np.array(list(obs.values()))
 
     def set_hierarchical_workload(self, dc_id: str, workload: float):
         workload = round(workload, 6)
         self.datacenters[dc_id].workload_m.set_current_workload(workload)
+
     def compute_adjusted_workloads(self, actions) -> Dict:
         # Translate the recommended workload transfer to actual workload.
         # This will return a dict with the new workload for the sender and the receiver
@@ -232,7 +250,6 @@ class HeirarchicalDCRL(gym.Env):
             reward += self.low_level_infos[dc]['agent_bat']['bat_CO2_footprint']
         return -1 * reward / 1e6
 
-
 class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
 
     def __init__(self, config):
@@ -259,6 +276,7 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
         # Calculate the amount to move
         max_mwh_to_move = s_mwh*actions[2] if len(actions) == 3 else s_mwh
         mwh_to_move = min(max_mwh_to_move, r_capacity - r_mwh)
+
         s_mwh -= mwh_to_move
         r_mwh += mwh_to_move
 
@@ -271,7 +289,7 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
         return {sender: s_workload, receiver: r_workload}
 
     def set_hysterisis(self, mwh_to_move: float, sender: str, receiver: str):
-        PENALTY = 0.2
+        PENALTY = 0.6
         
         cost_of_moving_mw = mwh_to_move * PENALTY
 
@@ -284,8 +302,9 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
 
 if __name__ == '__main__':
 
-    env = HeirarchicalDCRL(DEFAULT_CONFIG)
-    # env = HeirarchicalDCRLWithHysterisis(DEFAULT_CONFIG)
+    # env = HeirarchicalDCRL(DEFAULT_CONFIG)
+    # DEFAULT_CONFIG['config3']['days_per_episode'] = 365
+    env = HeirarchicalDCRLWithHysterisis(DEFAULT_CONFIG)
     
     done = False
     obs, _ = env.reset(seed=0)
@@ -299,17 +318,17 @@ if __name__ == '__main__':
         while not done:
     
             # Random actions
-            actions = env.action_space.sample()
+            # actions = env.action_space.sample()
 
             # Do nothing
             # actions = {dc: state[1] for dc, state in obs.items()}
 
             # One-step greedy
-            # ci = [obs[dc][-1] for dc in env.datacenters]
-            # actions = np.array([np.argmax(ci), np.argmin(ci)])
+            ci = [obs[dc][-1] for dc in env.datacenters]
+            actions = np.array([np.argmax(ci), np.argmin(ci)])
             
             # Multi-step Greedy
-            actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
+            # actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
 
             obs, reward, terminated, truncated, info = env.step(actions)
             done = truncated
