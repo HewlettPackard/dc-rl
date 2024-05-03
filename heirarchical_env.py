@@ -6,7 +6,8 @@ import torch
 import numpy as np
 from tqdm import tqdm
 import gymnasium as gym
-from gymnasium.spaces import Dict, Box, MultiDiscrete, Tuple
+from gymnasium.spaces import Dict, Box, MultiDiscrete, Tuple, Discrete
+from ray.rllib.env.env_context import EnvContext
 
 from dcrl_env import DCRL
 from hierarchical_workload_optimizer import WorkloadOptimizer
@@ -150,8 +151,8 @@ class HeirarchicalDCRL(gym.Env):
         # Shift workloads between datacenters according to 
         # the actions provided by the agent. This will return a dict with 
         # recommend workloads for all DCs
-        if not isinstance(actions, dict):
-            actions = self.compute_adjusted_workloads(actions)
+        # if not isinstance(actions, dict):
+        actions = self.compute_adjusted_workloads(actions)
 
         # Set workload for all DCs accordingly
         for env_id, adj_workload in actions.items():
@@ -254,14 +255,18 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
 
     def __init__(self, config):
         super().__init__(config)
-        self.action_space = Tuple([MultiDiscrete([3, 3]), Box(0., 1., [1])])
+        
+        self.action_space = Dict({
+            "sender": Discrete(3),
+            "receiver": Discrete(3),
+            "workload_to_move": Box(0., 1., [1])
+        })
 
     def compute_adjusted_workloads(self, actions) -> dict:
-        if isinstance(actions, tuple):
-            actions = np.concatenate(actions)
-            
+
         datacenters = list(self.datacenters.keys())
-        sender, receiver = [datacenters[int(i)] for i in actions[:2]]
+        sender = datacenters[actions['sender']] 
+        receiver = datacenters[actions['receiver']]
 
         s_capacity, s_workload, *_ = self.heir_obs[sender]
         r_capacity, r_workload, *_ = self.heir_obs[receiver]
@@ -274,7 +279,8 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
         r_mwh = r_capacity * r_workload
 
         # Calculate the amount to move
-        max_mwh_to_move = s_mwh*actions[2] if len(actions) == 3 else s_mwh
+        max_mwh_to_move = s_mwh * actions['workload_to_move'][0]
+
         mwh_to_move = min(max_mwh_to_move, r_capacity - r_mwh)
 
         s_mwh -= mwh_to_move
