@@ -6,7 +6,8 @@ import torch
 import numpy as np
 from tqdm import tqdm
 import gymnasium as gym
-from gymnasium.spaces import Dict, Box, MultiDiscrete
+from gymnasium.spaces import Dict, Box, MultiDiscrete, Tuple, Discrete
+from ray.rllib.env.env_context import EnvContext
 
 from dcrl_env import DCRL
 from hierarchical_workload_optimizer import WorkloadOptimizer
@@ -19,42 +20,42 @@ warnings.filterwarnings(
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_CONFIG = {
-    # AZ config
+    # NY config
     'config1' : {
-        'location': 'az',
-        'cintensity_file': 'AZPS_NG_&_avgCI.csv',
-        'weather_file': 'USA_AZ_Tucson-Davis-Monthan.epw',
+        'location': 'ny',
+        'cintensity_file': 'NY_NG_&_avgCI.csv',
+        'weather_file': 'USA_NY_New.York-LaGuardia.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc3.json',
-        'datacenter_capacity_mw' : 1.1,
+        'datacenter_capacity_mw' : 1,
         'timezone_shift': 8,
-        'month': 0,
-        'days_per_episode': 30,
+        'month': 7,
+        'days_per_episode': 30
         },
 
-    # NY config
+    # GA config
     'config2' : {
-        'location': 'ny',
-        'cintensity_file': 'NYIS_NG_&_avgCI.csv',
-        'weather_file': 'USA_NY_New.York-Kennedy.epw',
+        'location': 'ga',
+        'cintensity_file': 'GA_NG_&_avgCI.csv',
+        'weather_file': 'USA_GA_New.York-LaGuardia.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc2.json',
         'datacenter_capacity_mw' : 1,
         'timezone_shift': 0,
-        'month': 0,
+        'month': 7,
         'days_per_episode': 30
         },
 
     # WA config
     'config3' : {
-        'location': 'wa',
-        'cintensity_file': 'BPAT_NG_&_avgCI.csv',
-        'weather_file': 'USA_WA_Port.Angeles-Fairchild.epw',
+        'location': 'ca',
+        'cintensity_file': 'CA_NG_&_avgCI.csv',
+        'weather_file': 'USA_CA_San.Jose-Mineta.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc1.json',
         'datacenter_capacity_mw' : 0.9,
         'timezone_shift': 16,
-        'month': 0,
+        'month': 7,
         'days_per_episode': 30
         },
     
@@ -80,6 +81,8 @@ class HeirarchicalDCRL(gym.Env):
 
     def __init__(self, config):
 
+        self.config = config
+
         # Init all datacenter environments
         DC1 = DCRL(config['config1'])
         DC2 = DCRL(config['config2'])
@@ -103,17 +106,21 @@ class HeirarchicalDCRL(gym.Env):
             )
         
         self.low_level_observations = {}
+        self.low_level_infos = {}
 
         # Define observation and action space
-        self.observation_space = Dict({dc: Box(0, 10000, [4]) for dc in self.datacenters})
+        self.observation_space = Dict({dc: Box(0, 10000, [5]) for dc in self.datacenters})
         self.action_space = MultiDiscrete([3, 3])
 
     def reset(self, seed=None, options=None):
-        seed = 0
-        np.random.seed(seed)
-        random.seed(seed)
-        torch.manual_seed(seed)
-        # tf1.random.set_random_seed(0)
+
+        # Set seed if we are not in rllib
+        if seed is not None:
+            seed = 12
+            np.random.seed(seed)
+            random.seed(seed)
+            torch.manual_seed(seed)
+            # tf1.random.set_random_seed(0)
 
         self.low_level_observations = {}
         self.heir_obs = {}
@@ -123,9 +130,10 @@ class HeirarchicalDCRL(gym.Env):
         for env_id, env in self.datacenters.items():
             obs, info = env.reset()
             self.low_level_observations[env_id] = obs
-            self.heir_obs[env_id] = np.array(env.get_hierarchical_variables())
-            infos[env_id] = info
-        
+            self.low_level_infos[env_id] = info
+            
+            self.heir_obs[env_id] = self.get_dc_variables(env_id)
+            
         # Initialize metrics
         self.metrics = {
             env_id: {
@@ -135,28 +143,28 @@ class HeirarchicalDCRL(gym.Env):
                 'dc_water_usage': [],
             }
             for env_id in self.datacenters
-        }   
+        }
 
         self.all_done = {env_id: False for env_id in self.datacenters}
         
-        return self.heir_obs, infos
+        return self.heir_obs, self.low_level_infos
     
     def step(self, actions):
 
         # Shift workloads between datacenters according to 
         # the actions provided by the agent. This will return a dict with 
         # recommend workloads for all DCs
-        if isinstance(actions, np.ndarray):
-            actions = self.compute_adjusted_workloads(actions)
+        # if not isinstance(actions, dict):
+        actions = self.compute_adjusted_workloads(actions)
 
         # Set workload for all DCs accordingly
         for env_id, adj_workload in actions.items():
             if isinstance(adj_workload, np.ndarray):
                 adj_workload = adj_workload[0]
 
-            self.datacenters[env_id].set_hierarchical_workload(round(adj_workload, 6))
+            self.set_hierarchical_workload(env_id, adj_workload)
 
-        # Compute actions for each agent in each environment
+        # Compute actions for each dc_id in each environment
         low_level_actions = {}
         
         for env_id, env_obs in self.low_level_observations.items():
@@ -190,10 +198,27 @@ class HeirarchicalDCRL(gym.Env):
         # Get observations for the next step
         if not done:
             self.heir_obs = {}
-            for env_id, env in self.datacenters.items():
-                self.heir_obs[env_id] = np.array(env.get_hierarchical_variables())
+            for env_id in self.datacenters:
+                self.heir_obs[env_id] = self.get_dc_variables(env_id)
 
         return self.heir_obs, self.calc_reward(), False, done, {}
+
+    def get_dc_variables(self, dc_id: str):
+        dc = self.datacenters[dc_id]
+
+        obs = {
+            'dc_capacity': dc.datacenter_capacity_mw,
+            'current_workload': dc.workload_m.get_current_workload(),
+            'weather': dc.weather_m.get_current_weather(),
+            'total_power_kw': self.low_level_infos[dc_id]['agent_dc'].get('dc_total_power_kW', 0),
+            'ci': dc.ci_m.get_current_ci(),
+        }
+
+        return np.array(list(obs.values()))
+
+    def set_hierarchical_workload(self, dc_id: str, workload: float):
+        workload = round(workload, 6)
+        self.datacenters[dc_id].workload_m.set_current_workload(workload)
 
     def compute_adjusted_workloads(self, actions) -> Dict:
         # Translate the recommended workload transfer to actual workload.
@@ -205,6 +230,9 @@ class HeirarchicalDCRL(gym.Env):
         s_capacity, s_workload, *_ = self.heir_obs[sender]
         r_capacity, r_workload, *_ = self.heir_obs[receiver]
 
+        if sender == receiver:
+            return {sender: s_workload, receiver: r_workload}
+        
         # Convert percentage workload to mwh
         s_mwh = s_capacity * s_workload
         r_mwh = r_capacity * r_workload
@@ -225,10 +253,68 @@ class HeirarchicalDCRL(gym.Env):
         for dc in self.low_level_infos:
             reward += self.low_level_infos[dc]['agent_bat']['bat_CO2_footprint']
         return -1 * reward / 1e6
-    
+
+class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
+
+    def __init__(self, config):
+        super().__init__(config)
+        
+        self.action_space = Dict({
+            "sender": Discrete(3),
+            "receiver": Discrete(3),
+            "workload_to_move": Box(0., 1., [1])
+        })
+
+    def compute_adjusted_workloads(self, actions) -> dict:
+
+        datacenters = list(self.datacenters.keys())
+        sender = datacenters[actions['sender']] 
+        receiver = datacenters[actions['receiver']]
+
+        s_capacity, s_workload, *_ = self.heir_obs[sender]
+        r_capacity, r_workload, *_ = self.heir_obs[receiver]
+
+        if sender == receiver:
+            return {sender: s_workload, receiver: s_workload}
+        
+        # Convert percentage workload to mwh
+        s_mwh = s_capacity * s_workload
+        r_mwh = r_capacity * r_workload
+
+        # Calculate the amount to move
+        max_mwh_to_move = s_mwh * actions['workload_to_move'][0]
+
+        mwh_to_move = min(max_mwh_to_move, r_capacity - r_mwh)
+
+        s_mwh -= mwh_to_move
+        r_mwh += mwh_to_move
+
+        # Convert back to percentage workload
+        s_workload = s_mwh / s_capacity
+        r_workload = r_mwh / r_capacity
+
+        self.set_hysterisis(mwh_to_move, sender, receiver)
+
+        return {sender: s_workload, receiver: r_workload}
+
+    def set_hysterisis(self, mwh_to_move: float, sender: str, receiver: str):
+        PENALTY = 0.6
+        
+        cost_of_moving_mw = mwh_to_move * PENALTY
+
+        self.datacenters[sender].dc_env.set_workload_hysterisis(cost_of_moving_mw)
+        self.datacenters[receiver].dc_env.set_workload_hysterisis(cost_of_moving_mw)
+
+    def calc_reward(self):
+        return super().calc_reward()
+
+
 if __name__ == '__main__':
 
-    env = HeirarchicalDCRL(DEFAULT_CONFIG)
+    # env = HeirarchicalDCRL(DEFAULT_CONFIG)
+    # DEFAULT_CONFIG['config3']['days_per_episode'] = 365
+    env = HeirarchicalDCRLWithHysterisis(DEFAULT_CONFIG)
+    
     done = False
     obs, _ = env.reset(seed=0)
     total_reward = 0
@@ -241,18 +327,17 @@ if __name__ == '__main__':
         while not done:
     
             # Random actions
-            # actions = {key: val[0] for key, val in env.action_space.sample().items()}
             # actions = env.action_space.sample()
-
+            
             # Do nothing
-            # actions = {dc: state[1] for dc, state in obs.items()}
+            actions = {'sender': 0, 'receiver': 0, 'workload_to_move': np.array([0.0])}
 
             # One-step greedy
             # ci = [obs[dc][-1] for dc in env.datacenters]
-            # actions = np.array([np.argmax(ci), np.argmin(ci)])
+            # actions = {'sender': np.argmax(ci), 'receiver': np.argmin(ci), 'workload_to_move': np.array([1.])}
             
             # Multi-step Greedy
-            actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
+            # actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
 
             obs, reward, terminated, truncated, info = env.step(actions)
             done = truncated

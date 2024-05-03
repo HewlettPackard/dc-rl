@@ -86,6 +86,7 @@ class dc_gymenv(gym.Env):
         self.power_lb_kW = (self.ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][0] + self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]) / 1e3
         self.power_ub_kW = (self.ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][1] + self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][1]) / 1e3
         
+        self.workload_hysterisis = 0
         super().__init__()
     
     def reset(self, *, seed=None, options=None):
@@ -185,11 +186,13 @@ class dc_gymenv(gym.Env):
         # Update the last action
         self.last_action = crac_setpoint_delta
         
-        # add info dictionary 
+        # add info dictionary
         self.info = {
             'dc_ITE_total_power_kW': data_center_total_ITE_Load / 1e3,
-            'dc_HVAC_total_power_kW': self.CT_Cooling_load / 1e3,
-            'dc_total_power_kW': (data_center_total_ITE_Load + self.CT_Cooling_load) / 1e3,
+            'dc_CT_total_power_kW': self.CT_Cooling_load / 1e3,
+            'dc_Compressor_total_power_kW': self.Compressor_load / 1e3,
+            'dc_HVAC_total_power_kW': (self.CT_Cooling_load + self.Compressor_load) / 1e3,
+            'dc_total_power_kW': (data_center_total_ITE_Load + self.CT_Cooling_load + self.Compressor_load + self.workload_hysterisis) / 1e3,
             'dc_crac_setpoint_delta': crac_setpoint_delta,
             'dc_crac_setpoint': self.raw_curr_stpt,
             'dc_cpu_workload_fraction': self.cpu_load_frac,
@@ -276,3 +279,6 @@ class dc_gymenv(gym.Env):
         Updates the battery state of charge.
         """
         self.bat_SoC = bat_SoC
+
+    def set_workload_hysterisis(self, power):
+        self.workload_hysterisis = power * 1e6

@@ -1,3 +1,4 @@
+
 """
 This file is used to read the data center configuration from  user inputs provided inside dc_config.json. It also performs some auxiliary steps to calculate the server power specifications based on the given parameters.
 """
@@ -130,10 +131,12 @@ class DC_Config:
         self.CRAC_FAN_REF_P = json_obj['hvac_configuration']['CRAC_FAN_REF_P']
 
         # Chiller Stats
-        self.CHILLER_COP = json_obj['hvac_configuration']['CHILLER_COP']
+        self.CHILLER_COP = json_obj['hvac_configuration']['CHILLER_COP_BASE']
         self.CW_PRESSURE_DROP = json_obj['hvac_configuration']['CW_PRESSURE_DROP'] #Pa 
         self.CW_WATER_FLOW_RATE = json_obj['hvac_configuration']['CW_WATER_FLOW_RATE'] #m3/s
         self.CW_PUMP_EFFICIENCY = json_obj['hvac_configuration']['CW_PUMP_EFFICIENCY'] #%
+        self.CHILLER_COP_K = json_obj['hvac_configuration']['CHILLER_COP_K']
+        self.CHILLER_COP_T_NOMINAL = json_obj['hvac_configuration']['CHILLER_COP_T_NOMINAL']
 
         # Cooling Tower parameters
         self.CT_FAN_REF_P = json_obj['hvac_configuration']['CT_FAN_REF_P']

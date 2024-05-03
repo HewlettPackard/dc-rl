@@ -5,24 +5,28 @@ from ray import air, tune
 from ray.rllib.algorithms.ppo import PPO, PPOConfig
 from ray.rllib.utils.filter import MeanStdFilter
 
-from heirarchical_env import HeirarchicalDCRL, DEFAULT_CONFIG
+from heirarchical_env import (
+    HeirarchicalDCRL, 
+    HeirarchicalDCRLWithHysterisis, 
+    DEFAULT_CONFIG
+)
 from utils.rllib_callbacks import CustomCallbacks
 from create_trainable import create_wrapped_trainable
 
-NUM_WORKERS = 2
+NUM_WORKERS = 4
 NAME = "test_heir"
 RESULTS_DIR = './results/'
 
 CONFIG = (
         PPOConfig()
         .environment(
-            env=HeirarchicalDCRL,
+            env=HeirarchicalDCRLWithHysterisis,
             env_config=DEFAULT_CONFIG
         )
         .framework("torch")
         .rollouts(
             num_rollout_workers=NUM_WORKERS,
-            rollout_fragment_length=1,
+            rollout_fragment_length=2,
             # observation_filter='MeanStdFilter'
             )
         .training(
@@ -33,18 +37,17 @@ CONFIG = (
             clip_param=0.1,
             entropy_coeff=0.0,
             use_gae=True,
-            train_batch_size=1000,
+            train_batch_size=2048,
             num_sgd_iter=5,
             model={'fcnet_hiddens': [64, 64]}, 
             shuffle_sequences=True
         )
         .resources(num_gpus=0)
+        .debugging(seed=0)
     )
 
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
-
-    # ray.init(ignore_reinit_error=True)
     # ray.init(logging_level='debug', num_cpus=NUM_WORKERS+1)
     ray.init(ignore_reinit_error=True)
 
