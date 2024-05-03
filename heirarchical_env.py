@@ -113,11 +113,14 @@ class HeirarchicalDCRL(gym.Env):
         self.action_space = MultiDiscrete([3, 3])
 
     def reset(self, seed=None, options=None):
-        seed = 0
-        np.random.seed(seed)
-        random.seed(seed)
-        torch.manual_seed(seed)
-        # tf1.random.set_random_seed(0)
+
+        # Set seed if we are not in rllib
+        if seed is not None:
+            seed = 12
+            np.random.seed(seed)
+            random.seed(seed)
+            torch.manual_seed(seed)
+            # tf1.random.set_random_seed(0)
 
         self.low_level_observations = {}
         self.heir_obs = {}
@@ -325,13 +328,13 @@ if __name__ == '__main__':
     
             # Random actions
             # actions = env.action_space.sample()
-
+            
             # Do nothing
-            # actions = {dc: state[1] for dc, state in obs.items()}
+            actions = {'sender': 0, 'receiver': 0, 'workload_to_move': np.array([0.0])}
 
             # One-step greedy
-            ci = [obs[dc][-1] for dc in env.datacenters]
-            actions = np.array([np.argmax(ci), np.argmin(ci)])
+            # ci = [obs[dc][-1] for dc in env.datacenters]
+            # actions = {'sender': np.argmax(ci), 'receiver': np.argmin(ci), 'workload_to_move': np.array([1.])}
             
             # Multi-step Greedy
             # actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
