@@ -399,14 +399,8 @@ class DCRL(MultiAgentEnv):
         dc_reward = self.dc_reward_method(params)
         bat_reward = self.bat_reward_method(params)
         return ls_reward, dc_reward, bat_reward
+        
 
-    def get_hierarchical_variables(self):
-        return self.datacenter_capacity_mw, self.workload_m.get_current_workload(), self.weather_m.get_current_weather(), self.ci_m.get_current_ci()
-        
-    def set_hierarchical_workload(self, workload):
-        self.workload_m.set_current_workload(workload)
-        
-        
 if __name__ == '__main__':
 
     env = DCRL()
