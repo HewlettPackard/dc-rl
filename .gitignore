@@ -18,3 +18,4 @@ eda*
 *.zip
 obtain_weather_files.py
 EBA/
+plot_cpu_utilization_hierarchical.py

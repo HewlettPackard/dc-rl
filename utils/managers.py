@@ -205,7 +205,7 @@ class Workload_Manager():
         Returns:
             List[float]: CPU data
         """
-        return np.array(self.cpu_smooth)
+        return np.array(self.cpu_smooth[self.time_step:])
 
     def scale_array(self, arr):
         """
@@ -346,7 +346,7 @@ class CI_Manager():
         Returns:
             List[float]: Total carbon intesity
         """
-        return self.carbon_smooth
+        return self.carbon_smooth[self.time_step:]
 
     def reset(self):
         """Reset CI_Manager
@@ -482,7 +482,7 @@ class Weather_Manager():
         Returns:
             List[form]: Total temperature data
         """
-        return self.temperature_data
+        return self.temperature_data[self.time_step:]
 
     # Function to reset the time step and return the weather at the first time step
     def reset(self):
