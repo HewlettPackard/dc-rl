@@ -110,13 +110,16 @@ class HeirarchicalDCRL(gym.Env):
 
         # Define observation and action space
         self.observation_space = Dict({dc: Box(0, 10000, [5]) for dc in self.datacenters})
-        self.action_space = MultiDiscrete([3, 3])
+        self.action_space = Dict({
+            "sender": Discrete(3),
+            "receiver": Discrete(3)
+        })
 
     def reset(self, seed=None, options=None):
 
         # Set seed if we are not in rllib
         if seed is not None:
-            seed = 12
+            seed = 0
             np.random.seed(seed)
             random.seed(seed)
             torch.manual_seed(seed)
@@ -153,15 +156,13 @@ class HeirarchicalDCRL(gym.Env):
 
         # Shift workloads between datacenters according to 
         # the actions provided by the agent. This will return a dict with 
-        # recommend workloads for all DCs
-        # if not isinstance(actions, dict):
-        actions = self.compute_adjusted_workloads(actions)
+        # recommended workloads for all DCs
+        adj_workloads = self.compute_adjusted_workloads(actions)
 
         # Set workload for all DCs accordingly
-        for env_id, adj_workload in actions.items():
+        for env_id, adj_workload in adj_workloads.items():
             if isinstance(adj_workload, np.ndarray):
                 adj_workload = adj_workload[0]
-
             self.set_hierarchical_workload(env_id, adj_workload)
 
         # Compute actions for each dc_id in each environment
@@ -225,7 +226,8 @@ class HeirarchicalDCRL(gym.Env):
         # This will return a dict with the new workload for the sender and the receiver
 
         datacenters = list(self.datacenters.keys())
-        sender, receiver = [datacenters[i] for i in actions]
+        sender = datacenters[actions['sender']] 
+        receiver = datacenters[actions['receiver']]
 
         s_capacity, s_workload, *_ = self.heir_obs[sender]
         r_capacity, r_workload, *_ = self.heir_obs[receiver]
