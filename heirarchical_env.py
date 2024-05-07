@@ -218,28 +218,49 @@ class HeirarchicalDCRL(gym.Env):
         return np.array(list(obs.values()))
 
     def set_hierarchical_workload(self, dc_id: str, workload: float):
-        workload = round(workload, 6)
-        self.datacenters[dc_id].workload_m.set_current_workload(workload)
+        # self.datacenters[dc_id].workload_m.set_current_workload(workload)
+        workload_m = self.datacenters[dc_id].workload_m
+        workload_m.cpu_smooth[workload_m.time_step] = workload
 
-    def compute_adjusted_workloads(self, actions) -> Dict:
+    def move_hierarchical_workload(self, dc_id: str, workload: float):
+
+        workload_m = self.datacenters[dc_id].workload_m
+        remaining_workload = workload
+
+        # Minimum number of timesteps to spread the workload over
+        # it could extend beyond this incase where the capacity is not available
+        N = 4
+
+        # We move the workload starting from the next time step
+        i = 1
+        while remaining_workload > 0:
+            workload_at_i = workload_m.cpu_smooth[workload_m.time_step + i]
+            workload_to_move = min(1 - workload_at_i, workload / N, remaining_workload)
+            workload_m.cpu_smooth[workload_m.time_step + i] += workload_to_move
+            remaining_workload -= workload_to_move
+            i += 1
+
+            # Break if we are close to the end of the episode
+            if workload_m.time_step + i >= len(workload_m.cpu_smooth):
+                break
+
+    def compute_adjusted_workloads(self, actions) -> dict:
         # Translate the recommended workload transfer to actual workload.
         # This will return a dict with the new workload for the sender and the receiver
 
         datacenters = list(self.datacenters.keys())
-        sender = datacenters[actions['sender']] 
+        sender = datacenters[actions['sender']]
         receiver = datacenters[actions['receiver']]
 
         s_capacity, s_workload, *_ = self.heir_obs[sender]
         r_capacity, r_workload, *_ = self.heir_obs[receiver]
 
-        if sender == receiver:
-            return {sender: s_workload, receiver: r_workload}
-        
         # Convert percentage workload to mwh
         s_mwh = s_capacity * s_workload
         r_mwh = r_capacity * r_workload
 
-        # Calculate the amount to move
+        # Calculate the amount to move depending on the capacity 
+        # available in the receiver
         mwh_to_move = min(s_mwh, r_capacity - r_mwh)
         s_mwh -= mwh_to_move
         r_mwh += mwh_to_move
@@ -250,7 +271,7 @@ class HeirarchicalDCRL(gym.Env):
 
         return {sender: s_workload, receiver: r_workload}
 
-    def calc_reward(self):
+    def calc_reward(self) -> float:
         reward = 0
         for dc in self.low_level_infos:
             reward += self.low_level_infos[dc]['agent_bat']['bat_CO2_footprint']
@@ -276,18 +297,12 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
         s_capacity, s_workload, *_ = self.heir_obs[sender]
         r_capacity, r_workload, *_ = self.heir_obs[receiver]
 
-        if sender == receiver:
-            return {sender: s_workload, receiver: s_workload}
-        
         # Convert percentage workload to mwh
         s_mwh = s_capacity * s_workload
         r_mwh = r_capacity * r_workload
 
         # Calculate the amount to move
-        max_mwh_to_move = s_mwh * actions['workload_to_move'][0]
-
-        mwh_to_move = min(max_mwh_to_move, r_capacity - r_mwh)
-
+        mwh_to_move = s_mwh * actions['workload_to_move'][0]
         s_mwh -= mwh_to_move
         r_mwh += mwh_to_move
 
@@ -314,9 +329,7 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
 if __name__ == '__main__':
 
     # env = HeirarchicalDCRL(DEFAULT_CONFIG)
-    # DEFAULT_CONFIG['config3']['days_per_episode'] = 365
     env = HeirarchicalDCRLWithHysterisis(DEFAULT_CONFIG)
-    
     done = False
     obs, _ = env.reset(seed=0)
     total_reward = 0
