@@ -18,3 +18,6 @@ eda*
 *.zip
 obtain_weather_files.py
 EBA/
+*.code-workspace
+/seed-*
+plot_cpu_utilization_hierarchical.py
