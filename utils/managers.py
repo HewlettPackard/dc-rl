@@ -247,7 +247,7 @@ class Workload_Manager():
         baseline = np.random.random()*0.5 - 0.25
         
         # Add noise to the workload data using the CoherentNoise 
-        cpu_data = self.original_data * np.random.uniform(0.8, 1.2, len(self.original_data))
+        cpu_data = self.original_data * np.random.uniform(0.9, 1.1, len(self.original_data))
         cpu_smooth = cpu_data * 0.7 + self.coherent_noise.generate(len(cpu_data)) * 0.3 + baseline
         
         self.cpu_smooth = self.scale_array(cpu_smooth)
