@@ -95,15 +95,15 @@ class HeirarchicalDCRL(gym.Env):
         }
 
         # Load trained lower level agent
-        # self.lower_level_actor = LowLevelActorHARL(
-        #     config['low_level_actor_config'],
-        #     config['active_agents']
-        #     )
-        
-        self.lower_level_actor = LowLevelActorRLLIB(
-            config['low_level_actor_config'], 
+        self.lower_level_actor = LowLevelActorHARL(
+            config['low_level_actor_config'],
             config['active_agents']
             )
+        
+        # self.lower_level_actor = LowLevelActorRLLIB(
+        #     config['low_level_actor_config'], 
+        #     config['active_agents']
+        #     )
         
         self.low_level_observations = {}
         self.low_level_infos = {}
@@ -119,7 +119,6 @@ class HeirarchicalDCRL(gym.Env):
 
         # Set seed if we are not in rllib
         if seed is not None:
-            seed = 0
             np.random.seed(seed)
             random.seed(seed)
             torch.manual_seed(seed)
@@ -155,15 +154,17 @@ class HeirarchicalDCRL(gym.Env):
     def step(self, actions):
 
         # Shift workloads between datacenters according to 
-        # the actions provided by the agent. This will return a dict with 
-        # recommended workloads for all DCs
-        adj_workloads = self.compute_adjusted_workloads(actions)
-
-        # Set workload for all DCs accordingly
-        for env_id, adj_workload in adj_workloads.items():
-            if isinstance(adj_workload, np.ndarray):
-                adj_workload = adj_workload[0]
-            self.set_hierarchical_workload(env_id, adj_workload)
+        # the actions provided by the agent.
+        datacenter_ids = list(self.datacenters.keys())
+        sender, receiver = datacenter_ids[actions['sender']], datacenter_ids[actions['receiver']]
+        if sender != receiver:
+            adjusted_workloads = self.compute_adjusted_workloads(actions)
+            
+            # Set reduced workload for the sender
+            self.set_hierarchical_workload(sender, adjusted_workloads[sender])
+            
+            # Move the workload to the receiver
+            self.move_hierarchical_workload(receiver, adjusted_workloads[receiver])
 
         # Compute actions for each dc_id in each environment
         low_level_actions = {}
@@ -172,7 +173,6 @@ class HeirarchicalDCRL(gym.Env):
             # Skip if environment is done
             if self.all_done[env_id]:
                 continue
-
             low_level_actions[env_id] = self.lower_level_actor.compute_actions(env_obs)
 
         # Step through each environment with computed low_level_actions
@@ -204,7 +204,7 @@ class HeirarchicalDCRL(gym.Env):
 
         return self.heir_obs, self.calc_reward(), False, done, {}
 
-    def get_dc_variables(self, dc_id: str):
+    def get_dc_variables(self, dc_id: str) -> np.ndarray:
         dc = self.datacenters[dc_id]
 
         obs = {
