@@ -13,7 +13,7 @@ from gymnasium.spaces import Dict, Box, MultiDiscrete, Tuple, Discrete
 from hierarchical_workload_optimizer import WorkloadOptimizer
 from dcrl_env_harl_partialobs import DCRL as DCRLPartObs
 
-sys.path.insert(0, f'{os.path.dirname(os.path.abspath(__file__))}/heterogeneous_dcrl')
+sys.path.insert(0, f'{os.path.dirname(os.path.abspath(__file__))}/heterogeneous_dcrl')  # default foldername if you git clone heterogeneous_dcrl
 from harl.runners import RUNNER_REGISTRY
 from harl.utils.configs_tools import get_defaults_yaml_args
 from utils.base_agents import *
