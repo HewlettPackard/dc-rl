@@ -13,7 +13,7 @@ from gymnasium.spaces import Dict, Box, MultiDiscrete, Tuple, Discrete
 from hierarchical_workload_optimizer import WorkloadOptimizer
 from dcrl_env_harl_partialobs import DCRL as DCRLPartObs
 
-sys.path.insert(0, f'{os.path.dirname(os.path.abspath(__file__))}/heterogeneous_dcrl')  # default foldername if you git clone heterogeneous_dcrl
+sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'heterogeneous_dcrl')))  # default foldername if you git clone heterogeneous_dcrl
 from harl.runners import RUNNER_REGISTRY
 from harl.utils.configs_tools import get_defaults_yaml_args
 from utils.base_agents import *
@@ -70,7 +70,7 @@ DEFAULT_CONFIG = {
     # config for loading trained low-level agents
     'low_level_actor_config': {
         'harl': {
-            'algo' : 'happo',
+            'algo' : 'haa2c',
             'env' : 'dcrl',
             'exp_name' : 'll_actor',
             'model_dir': f'{CURR_DIR}/seed-00001-2024-05-01-21-50-12/models',
@@ -110,6 +110,9 @@ class LowLevelActorHARL(LowLevelActorBase):
             saved_config = json.load(file)
         algo_args, env_args = saved_config['algo_args'], saved_config['env_args']
         
+        
+        algo_args, env_args = get_defaults_yaml_args(config["algo"], config["env"])
+
         algo_args, env_args = get_defaults_yaml_args(config["algo"], config["env"])
         algo_args['train']['n_rollout_threads'] = 1
         algo_args['eval']['n_eval_rollout_threads'] = 1
@@ -185,7 +188,6 @@ class HARL_HeirarchicalDCRL(gym.Env):
 
         # Set seed if we are not in rllib
         if seed is not None:
-            seed = 12
             np.random.seed(seed)
             random.seed(seed)
             torch.manual_seed(seed)
@@ -197,6 +199,8 @@ class HARL_HeirarchicalDCRL(gym.Env):
         # Reset environments and store initial observations and infos
         for env_id, env in self.datacenters.items():
             obs, info, available_actions = env.reset()
+            # small change for now to convert list to dictionary
+            obs = {'agent_ls': obs[0], 'agent_dc': obs[1], 'agent_bat': obs[2]}
             self.low_level_observations[env_id] = obs
             self.low_level_infos[env_id] = info
             
@@ -217,24 +221,129 @@ class HARL_HeirarchicalDCRL(gym.Env):
         
         return self.heir_obs, self.low_level_infos
     
-    def step(self, action: Any) -> tuple[Any, SupportsFloat, bool, bool, dict[str, Any]]:
-        return super().step(action)
+    def step(self, actions):
+
+        # Shift workloads between datacenters according to 
+        # the actions provided by the agent.
+        datacenter_ids = list(self.datacenters.keys())
+        sender, receiver = datacenter_ids[actions['sender']], datacenter_ids[actions['receiver']]
+        if sender != receiver:
+            adjusted_workloads = self.compute_adjusted_workloads(actions)
+            
+            # Set reduced workload for the sender
+            self.set_hierarchical_workload(sender, adjusted_workloads[sender])
+            
+            # Move the workload to the receiver
+            self.move_hierarchical_workload(receiver, adjusted_workloads[receiver])
+
+        # Compute actions for each dc_id in each environment
+        low_level_actions = {}
+        
+        for env_id, env_obs in self.low_level_observations.items():
+            # Skip if environment is done
+            if self.all_done[env_id]:
+                continue
+            low_level_actions[env_id] = self.lower_level_actor.compute_actions(env_obs)
+
+        # Step through each environment with computed low_level_actions
+        self.low_level_infos = {}
+        for env_id in self.datacenters:
+            if self.all_done[env_id]:
+                continue
+
+            new_obs, rewards, terminated, truncated, info = self.datacenters[env_id].step(low_level_actions[env_id])
+            self.low_level_observations[env_id] = new_obs
+            self.all_done[env_id] = terminated['__all__'] or truncated['__all__']
+
+            self.low_level_infos[env_id] = info
+
+            # Update metrics for each environment
+            env_metrics = self.metrics[env_id]
+            env_metrics['bat_CO2_footprint'].append(info['agent_bat']['bat_CO2_footprint'])
+            env_metrics['bat_total_energy_with_battery_KWh'].append(info['agent_bat']['bat_total_energy_with_battery_KWh'])
+            env_metrics['ls_tasks_dropped'].append(info['agent_ls']['ls_tasks_dropped'])
+            env_metrics['dc_water_usage'].append(info['agent_dc']['dc_water_usage'])
+
+        done = any(self.all_done.values())
+
+        # Get observations for the next step
+        if not done:
+            self.heir_obs = {}
+            for env_id in self.datacenters:
+                self.heir_obs[env_id] = self.get_dc_variables(env_id)
+
+        return self.heir_obs, self.calc_reward(), False, done, {}
     
     def set_hierarchical_workload(self, dc_id: str, workload: float):
-        pass
+        # self.datacenters[dc_id].workload_m.set_current_workload(workload)
+        workload_m = self.datacenters[dc_id].workload_m
+        workload_m.cpu_smooth[workload_m.time_step] = workload
+
+    def move_hierarchical_workload(self, dc_id: str, workload: float):
+
+        workload_m = self.datacenters[dc_id].workload_m
+        remaining_workload = workload
+
+        # Minimum number of timesteps to spread the workload over
+        # it could extend beyond this incase where the capacity is not available
+        N = 4
+
+        # We move the workload starting from the next time step
+        i = 1
+        while remaining_workload > 0:
+            workload_at_i = workload_m.cpu_smooth[workload_m.time_step + i]
+            workload_to_move = min(1 - workload_at_i, workload / N, remaining_workload)
+            workload_m.cpu_smooth[workload_m.time_step + i] += workload_to_move
+            remaining_workload -= workload_to_move
+            i += 1
+
+            # Break if we are close to the end of the episode
+            if workload_m.time_step + i >= len(workload_m.cpu_smooth):
+                break
     
     def compute_adjusted_workloads(self, actions) -> dict:
-        pass
+
+        datacenters = list(self.datacenters.keys())
+        sender = datacenters[actions['sender']] 
+        receiver = datacenters[actions['receiver']]
+
+        s_capacity, s_workload, *_ = self.heir_obs[sender]
+        r_capacity, r_workload, *_ = self.heir_obs[receiver]
+
+        # Convert percentage workload to mwh
+        s_mwh = s_capacity * s_workload
+        r_mwh = r_capacity * r_workload
+
+        # Calculate the amount to move
+        mwh_to_move = s_mwh * actions['workload_to_move'][0]
+        s_mwh -= mwh_to_move
+        r_mwh += mwh_to_move
+
+        # Convert back to percentage workload
+        s_workload = s_mwh / s_capacity
+        r_workload = r_mwh / r_capacity
+
+        self.set_hysterisis(mwh_to_move, sender, receiver)
+
+        return {sender: s_workload, receiver: r_workload}
     
     def set_hysterisis(self, mwh_to_move: float, sender: str, receiver: str):
-        pass
+        PENALTY = 0.6
+        
+        cost_of_moving_mw = mwh_to_move * PENALTY
+
+        self.datacenters[sender].dc_env.set_workload_hysterisis(cost_of_moving_mw)
+        self.datacenters[receiver].dc_env.set_workload_hysterisis(cost_of_moving_mw)
     
     def calc_reward(self):
-        pass
+        reward = 0
+        for dc in self.low_level_infos:
+            reward += self.low_level_infos[dc]['agent_bat']['bat_CO2_footprint']
+        return -1 * reward / 1e6
     
-    def get_dc_variables(self, dc_id: str):
-        
+    def get_dc_variables(self, dc_id: str) -> np.ndarray:
         dc = self.datacenters[dc_id]
+
         obs = {
             'dc_capacity': dc.datacenter_capacity_mw,
             'current_workload': dc.workload_m.get_current_workload(),
@@ -264,14 +373,14 @@ def main():
             # actions = env.action_space.sample()
             
             # Do nothing
-            actions = {'sender': 0, 'receiver': 0, 'workload_to_move': np.array([0.0])}
+            # actions = {'sender': 0, 'receiver': 0, 'workload_to_move': np.array([0.0])}
 
             # One-step greedy
             # ci = [obs[dc][-1] for dc in env.datacenters]
             # actions = {'sender': np.argmax(ci), 'receiver': np.argmin(ci), 'workload_to_move': np.array([1.])}
             
             # Multi-step Greedy
-            # actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
+            actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
 
             obs, reward, terminated, truncated, info = env.step(actions)
             done = truncated
