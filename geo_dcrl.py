@@ -200,7 +200,8 @@ class HARL_HeirarchicalDCRL(gym.Env):
         for env_id, env in self.datacenters.items():
             obs, info, available_actions = env.reset()
             # small change for now to convert list to dictionary
-            obs = {'agent_ls': obs[0], 'agent_dc': obs[1], 'agent_bat': obs[2]}
+            if isinstance(obs, list):
+                obs = {'agent_ls': obs[0], 'agent_dc': obs[1], 'agent_bat': obs[2]}
             self.low_level_observations[env_id] = obs
             self.low_level_infos[env_id] = info
             
