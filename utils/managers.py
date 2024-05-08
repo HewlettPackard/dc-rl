@@ -535,3 +535,44 @@ class Weather_Manager():
         
     def get_current_weather(self):
         return self.temperature_data[self.time_step]
+
+class GeoLag_Workload_Manager(Workload_Manager):
+    def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.01, desired_std_dev=0.025, timezone_shift=0, sustained_duration : int = 4):
+        super().__init__(workload_filename, init_day, future_steps, weight, desired_std_dev, timezone_shift)
+        self.N = sustained_duration  # period over which a non-base workload is executed in steps
+        self.l_nonbase = 0
+        self.s_or_r = 0
+        
+    def get_current_workload(self):
+        self.s_or_r = super().get_current_workload() + self.l_nonbase/self.N
+        return self.s_or_r
+    
+    def set_current_workload(self, workload):
+        # unlike previous workload manager class, 
+        # advance time here
+        # we only update the non-base workload component if this dc is receiving load
+        # we only update the smoothed workload if this dc is sending load
+        
+        
+        self.time_step += 1
+        # If it tries to read further, restart from the inital day
+        if self.time_step >= len(self.cpu_smooth):
+            self.time_step = self.init_time_step
+        
+        self.l_nonbase = (1-1/self.N) * self.l_nonbase
+        
+        if workload > 0:
+            self.l_nonbase += (workload >= self.s_or_r) * (workload - self.s_or_r)
+            self.cpu_smooth[self.time_step] -= (workload < self.s_or_r) * (self.s_or_r - workload)
+
+        
+    
+    # Function to to provide the load to be serviced by the data center
+    def step(self):
+        """Step function for the Workload_Manager
+
+        Returns:
+            float: CPU workload at current time step
+        """
+        # assert self.time_step < len(self.cpu_smooth), f'Episode length: {self.time_step} is longer than the provide cpu_smooth: {len(self.cpu_smooth)}'
+        return self.cpu_smooth[self.time_step] + self.l_nonbase/self.N
