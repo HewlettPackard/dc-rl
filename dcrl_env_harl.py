@@ -240,20 +240,20 @@ class DCRL(gym.Env):
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
         self.bat_state = np.float32(np.hstack((t_i, bat_s, ci_i_future)))
 
-        states = []
+        # states should be a dictionary with agent names as keys and their observations as values
+        states = {}
         infos = {}
         # Update states and infos considering the agents defined in the environment config self.agents.
         if "agent_ls" in self.agents:
-            states.append(self.ls_state)
+            states["agent_ls"] = self.ls_state
             infos["agent_ls"] = self.ls_info
         if "agent_dc" in self.agents:
-            states.append(self.dc_state)
+            states["agent_dc"] = self.dc_state
             infos["agent_dc"] = self.dc_info
         if "agent_bat" in self.agents:
-            states.append(self.bat_state)
+            states["agent_bat"] = self.bat_state
             infos["agent_bat"] = self.bat_info
 
-        
         available_actions = None
         
         return states, infos, available_actions 
