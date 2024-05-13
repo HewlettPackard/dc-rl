@@ -47,14 +47,14 @@ CONFIG = (
 
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
-    ray.init(logging_level='debug', num_cpus=NUM_WORKERS+1)
-    # ray.init(ignore_reinit_error=True)
+    # ray.init(logging_level='debug', num_cpus=NUM_WORKERS+1)
+    ray.init(ignore_reinit_error=True)
 
     tune.Tuner(
         create_wrapped_trainable(PPO),
         param_space=CONFIG.to_dict(),
         run_config=air.RunConfig(
-            stop={"timesteps_total": 100_000},
+            stop={"timesteps_total": 100_000_000},
             verbose=0,
             local_dir=RESULTS_DIR,
             # storage_path=RESULTS_DIR,
@@ -67,3 +67,4 @@ if __name__ == '__main__':
             ),
         )
     ).fit()
+
