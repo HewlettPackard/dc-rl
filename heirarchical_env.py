@@ -26,10 +26,12 @@ DEFAULT_CONFIG = {
         'weather_file': 'USA_NY_New.York-LaGuardia.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc3.json',
-        'datacenter_capacity_mw' : 1,
+        'datacenter_capacity_mw' : 1.0,
         'timezone_shift': 8,
         'month': 7,
-        'days_per_episode': 30
+        'days_per_episode': 30,
+        'partial_obs': True,
+        'nonoverlapping_shared_obs_space': True
         },
 
     # GA config
@@ -39,10 +41,12 @@ DEFAULT_CONFIG = {
         'weather_file': 'USA_GA_New.York-LaGuardia.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc2.json',
-        'datacenter_capacity_mw' : 1,
+        'datacenter_capacity_mw' : 1.0,
         'timezone_shift': 0,
         'month': 7,
-        'days_per_episode': 30
+        'days_per_episode': 30,
+        'partial_obs': True,
+        'nonoverlapping_shared_obs_space': True
         },
 
     # WA config
@@ -52,10 +56,12 @@ DEFAULT_CONFIG = {
         'weather_file': 'USA_CA_San.Jose-Mineta.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc1.json',
-        'datacenter_capacity_mw' : 0.9,
+        'datacenter_capacity_mw' : 1.0,
         'timezone_shift': 16,
         'month': 7,
-        'days_per_episode': 30
+        'days_per_episode': 30,
+        'partial_obs': True,
+        'nonoverlapping_shared_obs_space': True
         },
     
     # List of active low-level agents
@@ -67,7 +73,7 @@ DEFAULT_CONFIG = {
             'algo' : 'happo',
             'env' : 'dcrl',
             'exp_name' : 'll_actor',
-            'model_dir': f'{CURR_DIR}/seed-00001-2024-04-22-20-59-21/models',
+            'model_dir': '/lustre/guillant/HARL/results/dcrl/ny/hatrpo/installtest/seed-00001-2024-05-06-09-36-17/models',
             },
         'rllib': {
             'checkpoint_path': f'{CURR_DIR}/maddpg/checkpoint_000000/',
@@ -109,13 +115,19 @@ class HeirarchicalDCRL(gym.Env):
 
         # Define observation and action space
         self.observation_space = Dict({dc: Box(0, 10000, [5]) for dc in self.datacenters})
+        # Define the components of a single transfer action
+        transfer_action = Dict({
+            'sender': Discrete(3),  # sender
+            'receiver': Discrete(3),  # receiver
+        })
+
+        # Define the action space for two transfers
         self.action_space = Dict({
-            "sender": Discrete(3),
-            "receiver": Discrete(3)
+            'transfer_1': transfer_action,
         })
 
     def reset(self, seed=None, options=None):
-
+        self.not_computed_workload = 0
         # Set seed if we are not in rllib
         if seed is not None:
             np.random.seed(seed)
@@ -134,7 +146,10 @@ class HeirarchicalDCRL(gym.Env):
             self.low_level_infos[env_id] = info
             
             self.heir_obs[env_id] = self.get_dc_variables(env_id)
-            
+        
+        self.start_index_manager = env.workload_m.time_step
+        self.simulated_days = env.days_per_episode
+
         # Initialize metrics
         self.metrics = {
             env_id: {
@@ -151,22 +166,42 @@ class HeirarchicalDCRL(gym.Env):
         return self.heir_obs, self.low_level_infos
     
     def step(self, actions):
-
-        # Shift workloads between datacenters according to 
-        # the actions provided by the agent.
-        datacenter_ids = list(self.datacenters.keys())
-        sender, receiver = datacenter_ids[actions['sender']], datacenter_ids[actions['receiver']]
-        if sender != receiver:
-            adjusted_workloads = self.compute_adjusted_workloads(actions)
+        # Iterate through each action and perform the transfer
+        for key, action in actions.items():
+            # Shift workloads between datacenters according to 
+            # the actions provided by the agent.
+            datacenter_ids = list(self.datacenters.keys())
             
-            # Set reduced workload for the sender
-            self.set_hierarchical_workload(sender, adjusted_workloads[sender])
+            sender = datacenter_ids[action['sender']]
+            receiver = datacenter_ids[action['receiver']]
             
-            # Move the workload to the receiver
-            self.move_hierarchical_workload(receiver, adjusted_workloads[receiver])
+            if sender != receiver:
+                # Calculate the available capacity of the receiver datacenter for the next 4 hours
+                available_capacity = self.datacenters[receiver].get_available_capacity(4*4)  # 4 hours in 15-minute steps
+                
+                # Only move the workload if the receiver has enough capacity
+                if available_capacity >= action['workload_to_move'][0] * self.datacenters[sender].datacenter_capacity_mw:
+                    adjusted_workloads = self.compute_adjusted_workloads(action)
+                    
+                    # Set reduced workload for the sender
+                    self.set_hierarchical_workload(sender, adjusted_workloads[sender])
+                    
+                    # Move the workload to the receiver
+                    self.move_hierarchical_workload(receiver, adjusted_workloads[receiver])
 
         # Compute actions for each dc_id in each environment
         low_level_actions = {}
+        
+        # We need to update the low level observations with the new workloads for each datacenter.
+        # So, for each DC in the environment, we need to update the workload on agent_ls and on agent_dc.
+        # Now, we are hardcoding the positon of that variables in the arrays and modifiying them directly.
+        # This is not ideal, but it is a quick fix for now.
+        for datacenter_id in list(self.datacenters.keys()):
+            curr_workload = self.datacenters[datacenter_id].workload_m.get_current_workload()
+            # On agent_ls, the workload is the 5th element of the array (sine/cos hour day, workload, queue, etc)
+            # On agent_dc, the workload is the 10th element of the array
+            self.low_level_observations[datacenter_id]['agent_ls'][4] = curr_workload
+            self.low_level_observations[datacenter_id]['agent_dc'][9] = curr_workload
         
         for env_id, env_obs in self.low_level_observations.items():
             # Skip if environment is done
@@ -222,8 +257,11 @@ class HeirarchicalDCRL(gym.Env):
         workload_m.cpu_smooth[workload_m.time_step] = workload
 
     def move_hierarchical_workload(self, dc_id: str, workload: float):
-
         workload_m = self.datacenters[dc_id].workload_m
+        
+        # From the workload, remove the original workload to be computed on only shift the actual workload comming from the sender
+        workload = workload - workload_m.cpu_smooth[workload_m.time_step]
+        
         remaining_workload = workload
 
         # Minimum number of timesteps to spread the workload over
@@ -233,15 +271,23 @@ class HeirarchicalDCRL(gym.Env):
         # We move the workload starting from the next time step
         i = 1
         while remaining_workload > 0:
+            # Break if we are close to the end of the episode
+            # len(workload_m.cpu_smooth) has one year of data
+            # workload_m.time_step considers the start month to obtain the index (Jan=0, Feb=4*24*30, Mar=2*4*24*30,
+            # Apr=3*4*24*30, May=4*4*24*30, Jun=5*4*24*30, Jul=6*4*24*30, Aug=7*4*24*30, Sep=8*4*24*30,
+            # Oct=9*4*24*30, Nov=10*4*24*30, Dec=11*4*24*30)
+            if workload_m.time_step + i >= self.start_index_manager + 4*24*self.simulated_days:
+                print("Warning: Reached end of episode while moving workload")
+                # print(f"DC: {dc_id}, Time step: {workload_m.time_step}, Remaining workload: {remaining_workload}")
+                self.not_computed_workload += remaining_workload
+                break
+            
             workload_at_i = workload_m.cpu_smooth[workload_m.time_step + i]
             workload_to_move = min(1 - workload_at_i, workload / N, remaining_workload)
             workload_m.cpu_smooth[workload_m.time_step + i] += workload_to_move
             remaining_workload -= workload_to_move
             i += 1
 
-            # Break if we are close to the end of the episode
-            if workload_m.time_step + i >= len(workload_m.cpu_smooth):
-                break
 
     def compute_adjusted_workloads(self, actions) -> dict:
         # Translate the recommended workload transfer to actual workload.
@@ -276,15 +322,22 @@ class HeirarchicalDCRL(gym.Env):
             reward += self.low_level_infos[dc]['agent_bat']['bat_CO2_footprint']
         return -1 * reward / 1e6
 
+
 class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
 
     def __init__(self, config):
         super().__init__(config)
         
+        # Define the components of a single transfer action
+        transfer_action = Dict({
+            'sender': Discrete(3),  # sender
+            'receiver': Discrete(3),  # receiver
+            'workload_to_move': Box(low=0.0, high=1.0, shape=(1,), dtype=float)  # workload_to_move
+        })
+
+        # Define the action space for two transfers
         self.action_space = Dict({
-            "sender": Discrete(3),
-            "receiver": Discrete(3),
-            "workload_to_move": Box(0., 1., [1])
+            'transfer_1': transfer_action,
         })
 
     def compute_adjusted_workloads(self, actions) -> dict:
@@ -325,6 +378,26 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
         return super().calc_reward()
 
 
+class HeirarchicalDCRLWithHysterisisMultistep(HeirarchicalDCRLWithHysterisis):
+
+    def __init__(self, config):
+        super().__init__(config)
+        
+        # Define the components of a single transfer action
+        transfer_action = Dict({
+            'sender': Discrete(3),  # sender
+            'receiver': Discrete(3),  # receiver
+            'workload_to_move': Box(low=0.0, high=1.0, shape=(1,), dtype=float)  # workload_to_move
+        })
+
+        # Define the action space for two transfers
+        self.action_space = Dict({
+            'transfer_1': transfer_action,
+            'transfer_2': transfer_action
+        })
+
+
+    
 if __name__ == '__main__':
 
     # env = HeirarchicalDCRL(DEFAULT_CONFIG)
@@ -344,15 +417,33 @@ if __name__ == '__main__':
             # actions = env.action_space.sample()
             
             # Do nothing
-            actions = {'sender': 0, 'receiver': 0, 'workload_to_move': np.array([0.0])}
+            # actions = {'sender': 0, 'receiver': 0, 'workload_to_move': np.array([0.0])}
 
             # One-step greedy
             # ci = [obs[dc][-1] for dc in env.datacenters]
             # actions = {'sender': np.argmax(ci), 'receiver': np.argmin(ci), 'workload_to_move': np.array([1.])}
-            
-            # Multi-step Greedy
-            # actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
+            # actions = {'transfer_1': actions} Used on Do nothing and One-step greedy
 
+            # Multi-step Greedy
+            actions, transfer_matrix = greedy_optimizer.compute_adjusted_workload(obs)
+
+            # Create a dictionary of actions from the transfer matrix
+            actions = {}
+            transfer_id = 1  # To keep track of each transfer action
+            # Convert dict_keys to a list for indexing
+            datacenter_keys = list(env.datacenters.keys())
+            for sender, receivers in transfer_matrix.items():
+                for receiver, amount in receivers.items():
+                    if amount > 0:  # Only consider positive transfers
+                        sender_index = datacenter_keys.index(receiver)
+                        receiver_index = datacenter_keys.index(sender)
+                        actions[f'transfer_{transfer_id}'] = {
+                            'sender': sender_index,
+                            'receiver': receiver_index,
+                            'workload_to_move': np.array([amount], dtype=float)
+                        }
+                        transfer_id += 1
+                
             obs, reward, terminated, truncated, info = env.step(actions)
             done = truncated
             total_reward += reward
