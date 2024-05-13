@@ -7,26 +7,27 @@ from ray.rllib.utils.filter import MeanStdFilter
 
 from heirarchical_env import (
     HeirarchicalDCRL, 
-    HeirarchicalDCRLWithHysterisis, 
+    HeirarchicalDCRLWithHysterisis,
+    HeirarchicalDCRLWithHysterisisMultistep, 
     DEFAULT_CONFIG
 )
 from utils.rllib_callbacks import CustomCallbacks
 from create_trainable import create_wrapped_trainable
 
 NUM_WORKERS = 4
-NAME = "test_heir"
+NAME = "MultiStep"
 RESULTS_DIR = './results/'
 
 CONFIG = (
         PPOConfig()
         .environment(
-            env=HeirarchicalDCRLWithHysterisis,
+            env=HeirarchicalDCRLWithHysterisisMultistep,
             env_config=DEFAULT_CONFIG
         )
         .framework("torch")
         .rollouts(
             num_rollout_workers=NUM_WORKERS,
-            rollout_fragment_length=2,
+            rollout_fragment_length=10,
             # observation_filter='MeanStdFilter'
             )
         .training(
@@ -49,8 +50,9 @@ CONFIG = (
 if __name__ == '__main__':
     os.environ["RAY_DEDUP_LOGS"] = "0"
     # ray.init(logging_level='debug', num_cpus=NUM_WORKERS+1)
+    # ray.init(local_mode=True, ignore_reinit_error=True)
     ray.init(ignore_reinit_error=True)
-
+    
     tune.Tuner(
         create_wrapped_trainable(PPO),
         param_space=CONFIG.to_dict(),
