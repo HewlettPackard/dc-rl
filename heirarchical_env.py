@@ -6,8 +6,7 @@ import torch
 import numpy as np
 from tqdm import tqdm
 import gymnasium as gym
-from gymnasium.spaces import Dict, Box, MultiDiscrete, Tuple, Discrete
-from ray.rllib.env.env_context import EnvContext
+from gymnasium.spaces import Dict, Box, Discrete
 
 from dcrl_env import DCRL
 from hierarchical_workload_optimizer import WorkloadOptimizer

@@ -1,15 +1,15 @@
 import os
 import sys
 import random
-import numpy as np
 import json
-
-import warnings
-import torch
 import numpy as np
+import warnings
 from tqdm import tqdm
+
+import torch
 import gymnasium as gym
 from gymnasium.spaces import Dict, Box, MultiDiscrete, Tuple, Discrete
+
 from hierarchical_workload_optimizer import WorkloadOptimizer
 from dcrl_env_harl_partialobs import DCRL as DCRLPartObs
 
@@ -150,7 +150,7 @@ class LowLevelActorHARL(LowLevelActorBase):
 
         return actions
 
-class HARL_HeirarchicalDCRL(gym.Env):
+class HARL_HierarchicalDCRL(gym.Env):
     
     def __init__(self, config): 
 
@@ -227,15 +227,18 @@ class HARL_HeirarchicalDCRL(gym.Env):
         # Shift workloads between datacenters according to 
         # the actions provided by the agent.
         datacenter_ids = list(self.datacenters.keys())
-        sender, receiver = datacenter_ids[actions['sender']], datacenter_ids[actions['receiver']]
-        if sender != receiver:
-            adjusted_workloads = self.compute_adjusted_workloads(actions)
-            
-            # Set reduced workload for the sender
-            self.set_hierarchical_workload(sender, adjusted_workloads[sender])
-            
-            # Move the workload to the receiver
-            self.move_hierarchical_workload(receiver, adjusted_workloads[receiver])
+        if isinstance(actions, dict):
+           actions = [actions]
+        for action in actions:
+            sender, receiver = datacenter_ids[action['sender']], datacenter_ids[action['receiver']]
+            if sender != receiver:
+                adjusted_workloads = self.compute_adjusted_workloads(action)
+                
+                # Set reduced workload for the sender
+                self.set_hierarchical_workload(sender, adjusted_workloads[sender])
+                
+                # Move the workload to the receiver
+                self.move_hierarchical_workload(receiver, adjusted_workloads[receiver])
 
         # Compute actions for each dc_id in each environment
         low_level_actions = {}
@@ -355,10 +358,43 @@ class HARL_HeirarchicalDCRL(gym.Env):
 
         return np.array(list(obs.values()))
 
+class HARL_HierarchicalDCRL_v2(HARL_HierarchicalDCRL):
+    def __init__(self,config) -> None:
+        super().__init__(config)
+        self.num_datacenters = len(self.datacenters)
+        self.num_actions = int((self.num_datacenters-1)*(self.num_datacenters)/2)
+        # Update the action with a signed value
+        self.action_space = Box(-1, 1, shape=(self.num_actions,))
+        
+    def step(self, actions):
+        
+        # actions is an array of floats in the range (-1.0, 1.0) of "ordered data centers" in the format
+        # [DC1<->DC2, DC1<->DC3, ..., DC1<->DCN... DC2<->DC3...DC2<->DCN....DC(N-1)<->DCN] where N = self.num_datacenters
+        # have to return as a list of same length as actions with each element being a dictionary of sender, receiver and workload_to_move
+        
+        def convert_actions(actions):
+            new_actions = []
+            for i in range(self.num_datacenters-1):
+                offset = int(self.num_datacenters*i - i*(i+1)/2)
+                for j in range(self.num_datacenters-(i+1)):
+                    # depending on the sign choose the sender and receiver
+                    # if positive, i is sender and j+i+1 is receiver
+                    # if negative, j+i+1 is sender and i is receiver
+                    if actions[offset+j] >= 0:
+                        new_actions.append({'sender': i, 'receiver': j+i+1, 'workload_to_move': np.array([actions[offset+j]])})
+                    else:
+                        new_actions.append({'sender': j+i+1, 'receiver': i, 'workload_to_move': np.array([-actions[offset+j]])})
+                        
+            return new_actions
+        
+        actions = convert_actions(actions)
+        
+        return super().step(actions)
 
 def main():
     """Main function."""
-    env = HARL_HeirarchicalDCRL(DEFAULT_CONFIG)
+    # env = HARL_HierarchicalDCRL(DEFAULT_CONFIG)
+    env = HARL_HierarchicalDCRL_v2(DEFAULT_CONFIG)
     done = False
     obs, _ = env.reset(seed=0)
     total_reward = 0
@@ -372,18 +408,32 @@ def main():
     
             # Random actions
             # actions = env.action_space.sample()
+            # actions = np.random.uniform(-1, 1, env.action_space.shape)  # for environement v2
             
             # Do nothing
             # actions = {'sender': 0, 'receiver': 0, 'workload_to_move': np.array([0.0])}
+            # actions = np.zeros(env.action_space.shape)  # for environement v2
 
             # One-step greedy
             # ci = [obs[dc][-1] for dc in env.datacenters]
-            # actions = {'sender': np.argmax(ci), 'receiver': np.argmin(ci), 'workload_to_move': np.array([1.])}
+            # actions = {'sender': np.argmax(ci), 'receiver': np.argmin(ci), 'workload_to_move': np.array([1.])}                                                                    
             
             # Multi-step Greedy
-            actions, _ = greedy_optimizer.compute_adjusted_workload(obs)
-
-            obs, reward, terminated, truncated, info = env.step(actions)
+            actions = np.zeros(env.action_space.shape)  # for environement v2
+            _, transfer_matrix = greedy_optimizer.compute_adjusted_workload(obs)
+            for send_key,val_dict in transfer_matrix.items():
+                for receive_key,val in val_dict.items():
+                    if val!=0:
+                        i,k = int(send_key[-1])-1, int(receive_key[-1])-1
+                        if i > k:  # the ordering is not right; reverse it and als; also assuming val!= also weeds out i = k case
+                            i,k = k,i
+                            multiplier = -1
+                        j = k-i-1
+                        offset = int(env.num_datacenters*i - i*(i+1)/2)
+                        actions[offset+j] = val*multiplier
+            actions = actions.clip(-1,1)
+            
+            obs, reward, _, truncated, _ = env.step(actions)
             done = truncated
             total_reward += reward
 
