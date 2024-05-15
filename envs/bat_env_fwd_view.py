@@ -75,7 +75,7 @@ class BatteryEnvFwd(gym.Env):
             'Grid_CI': 0,
             'total_energy_with_battery': 0,
             'CO2_footprint': 0,
-            'avg_CI': 0,
+            'bat_avg_CI': 0,
             'battery SOC': self.battery.current_load,
             'total_energy_with_battery': 0
         }

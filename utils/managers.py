@@ -396,7 +396,12 @@ class CI_Manager():
         return self.carbon_smooth[self.time_step-1], data
     
     def get_current_ci(self):
-        return self.carbon_smooth[self.time_step]
+        # Normalize the carbon_smooth with min=250 and max=870
+        min_ci = 600
+        max_ci = 900
+        return (self.carbon_smooth[self.time_step] - min_ci)/(max_ci - min_ci)
+        # return self.carbon_smooth[self.time_step]
+        # return self.norm_carbon[self.time_step]
 
 # Class to manage weather data
 # Where to obtain other weather files:
@@ -534,7 +539,8 @@ class Weather_Manager():
                 self.wet_bulb_data[self.time_step - 1], self.norm_wet_bulb_data[self.time_step - 1])  # Added wet bulb temp
         
     def get_current_weather(self):
-        return self.temperature_data[self.time_step]
+        # return self.temperature_data[self.time_step]
+        return self.norm_temp_data[self.time_step]
 
 class GeoLag_Workload_Manager(Workload_Manager):
     def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.01, desired_std_dev=0.025, timezone_shift=0, sustained_duration : int = 4):

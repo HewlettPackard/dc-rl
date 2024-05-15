@@ -392,6 +392,35 @@ class DCRL(gym.Env):
         bat_reward = self.bat_reward_method(params)
         return ls_reward, dc_reward, bat_reward
 
+    def get_available_capacity(self, time_steps: int) -> float:
+        """
+        Calculate the available capacity of the datacenter over the next time_steps.
+
+        Args:
+            time_steps (int): Number of 15-minute time steps to consider.
+
+        Returns:
+            float: The available capacity in MW.
+        """
+        # Initialize the available capacity
+        available_capacity = 0
+
+        # Retrieve the current workload and the datacenter's total capacity
+        current_step = self.workload_m.time_step
+        max_capacity = self.datacenter_capacity_mw
+
+        # Calculate the remaining capacity over each time step
+        for step in range(1, time_steps + 1):
+            # Make sure we're not exceeding the total steps available in workload data
+            if current_step + step < len(self.workload_m.cpu_smooth):
+                current_workload = self.workload_m.cpu_smooth[current_step + step]
+                remaining_capacity = (1 - current_workload)*max_capacity
+                available_capacity += max(0, remaining_capacity)
+                # print(f"Step: {step}, Current Workload: {current_workload}, Remaining Capacity: {remaining_capacity}, Available Capacity: {available_capacity}")
+
+        # Return the average capacity over the given time steps
+        return available_capacity
+    
     def render(self):
         pass
 

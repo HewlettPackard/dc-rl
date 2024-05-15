@@ -8,7 +8,7 @@ from tqdm import tqdm
 import gymnasium as gym
 from gymnasium.spaces import Dict, Box, Discrete
 
-from dcrl_env import DCRL
+from dcrl_env_harl_partialobs import DCRL
 from hierarchical_workload_optimizer import WorkloadOptimizer
 from low_level_wrapper import LowLevelActorRLLIB, LowLevelActorHARL
 
@@ -21,9 +21,9 @@ CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_CONFIG = {
     # NY config
     'config1' : {
-        'location': 'ny',
-        'cintensity_file': 'NY_NG_&_avgCI.csv',
-        'weather_file': 'USA_NY_New.York-LaGuardia.epw',
+        'location': 'tx',
+        'cintensity_file': 'TX_NG_&_avgCI.csv',
+        'weather_file': 'USA_AZ_Phoenix-Sky.Harbor.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc3.json',
         'datacenter_capacity_mw' : 1.0,
@@ -38,7 +38,7 @@ DEFAULT_CONFIG = {
     'config2' : {
         'location': 'ga',
         'cintensity_file': 'GA_NG_&_avgCI.csv',
-        'weather_file': 'USA_GA_New.York-LaGuardia.epw',
+        'weather_file': 'USA_GA_Atlanta-Hartsfield-Jackson.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc2.json',
         'datacenter_capacity_mw' : 1.0,
@@ -51,9 +51,9 @@ DEFAULT_CONFIG = {
 
     # WA config
     'config3' : {
-        'location': 'ca',
-        'cintensity_file': 'CA_NG_&_avgCI.csv',
-        'weather_file': 'USA_CA_San.Jose-Mineta.epw',
+        'location': 'va',
+        'cintensity_file': 'VA_NG_&_avgCI.csv',
+        'weather_file': 'UUSA_VA_Leesburg.Exec.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc1.json',
         'datacenter_capacity_mw' : 1.0,
@@ -112,9 +112,11 @@ class HeirarchicalDCRL(gym.Env):
         
         self.low_level_observations = {}
         self.low_level_infos = {}
+        
+        self._max_episode_steps = 4*24*DEFAULT_CONFIG['config1']['days_per_episode']
 
         # Define observation and action space
-        self.observation_space = Dict({dc: Box(0, 10000, [5]) for dc in self.datacenters})
+        self.observation_space = Dict({dc: Box(-10, 10, [3]) for dc in self.datacenters})
         # Define the components of a single transfer action
         transfer_action = Dict({
             'sender': Discrete(3),  # sender
@@ -141,7 +143,7 @@ class HeirarchicalDCRL(gym.Env):
 
         # Reset environments and store initial observations and infos
         for env_id, env in self.datacenters.items():
-            obs, info = env.reset()
+            obs, info, _ = env.reset()
             self.low_level_observations[env_id] = obs
             self.low_level_infos[env_id] = info
             
@@ -174,13 +176,14 @@ class HeirarchicalDCRL(gym.Env):
             
             sender = datacenter_ids[action['sender']]
             receiver = datacenter_ids[action['receiver']]
+            sender_workload = self.heir_obs[sender][0]
             
             if sender != receiver:
                 # Calculate the available capacity of the receiver datacenter for the next 4 hours
                 available_capacity = self.datacenters[receiver].get_available_capacity(4*4)  # 4 hours in 15-minute steps
                 
                 # Only move the workload if the receiver has enough capacity
-                if available_capacity >= action['workload_to_move'][0] * self.datacenters[sender].datacenter_capacity_mw:
+                if available_capacity >= action['workload_to_move'][0] * sender_workload * self.datacenters[sender].datacenter_capacity_mw:
                     adjusted_workloads = self.compute_adjusted_workloads(action)
                     
                     # Set reduced workload for the sender
@@ -241,6 +244,7 @@ class HeirarchicalDCRL(gym.Env):
     def get_dc_variables(self, dc_id: str) -> np.ndarray:
         dc = self.datacenters[dc_id]
 
+        # TODO: check if the variables are normalized with the same values or with min_max values
         obs = {
             'dc_capacity': dc.datacenter_capacity_mw,
             'current_workload': dc.workload_m.get_current_workload(),
@@ -260,6 +264,8 @@ class HeirarchicalDCRL(gym.Env):
         workload_m = self.datacenters[dc_id].workload_m
         
         # From the workload, remove the original workload to be computed on only shift the actual workload comming from the sender
+        # Workload contains the workload from receiver and sender.
+        # To obtain the original sender workload, I remove the original receiver workload
         workload = workload - workload_m.cpu_smooth[workload_m.time_step]
         
         remaining_workload = workload
@@ -377,6 +383,15 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
     def calc_reward(self):
         return super().calc_reward()
 
+    def get_dc_variables(self, dc_id: str) -> np.ndarray:
+        dc = self.datacenters[dc_id]
+
+        # TODO: check if the variables are normalized with the same values or with min_max values
+        obs = {
+            'current_workload': dc.workload_m.get_current_workload(),
+            'weather': dc.weather_m.get_current_weather(),
+            'ci': dc.ci_m.get_current_ci(),
+        }
 
 class HeirarchicalDCRLWithHysterisisMultistep(HeirarchicalDCRLWithHysterisis):
 
