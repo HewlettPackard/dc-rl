@@ -14,7 +14,8 @@ from utils.base_agents import *
 # Boilerplate
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 tf1, *_ = try_import_tf()
-tf1.disable_v2_behavior()
+if tf1 is not None:
+    tf1.disable_v2_behavior()
 
 class LowLevelActorBase:
     "Base class for trained low level agents within a DCRL environment"

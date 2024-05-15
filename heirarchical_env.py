@@ -176,14 +176,15 @@ class HeirarchicalDCRL(gym.Env):
             
             sender = datacenter_ids[action['sender']]
             receiver = datacenter_ids[action['receiver']]
-            sender_workload = self.heir_obs[sender][0]
             
             if sender != receiver:
                 # Calculate the available capacity of the receiver datacenter for the next 4 hours
                 available_capacity = self.datacenters[receiver].get_available_capacity(4*4)  # 4 hours in 15-minute steps
                 
                 # Only move the workload if the receiver has enough capacity
-                if available_capacity >= action['workload_to_move'][0] * sender_workload * self.datacenters[sender].datacenter_capacity_mw:
+                curr_workload = self.datacenters[sender].workload_m.get_current_workload()
+                workload_to_move = curr_workload * action['workload_to_move'][0] * self.datacenters[sender].datacenter_capacity_mw
+                if available_capacity >= workload_to_move:
                     adjusted_workloads = self.compute_adjusted_workloads(action)
                     
                     # Set reduced workload for the sender
