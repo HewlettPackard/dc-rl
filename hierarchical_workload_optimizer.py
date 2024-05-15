@@ -61,3 +61,25 @@ class WorkloadOptimizer:
 
         return new_workloads, self.transfer_matrix
 
+    def compute_actions(self, obs: dict) -> dict:
+
+        _, transfer_matrix = self.compute_adjusted_workload(obs)
+        
+        # Create a dictionary of actions from the transfer matrix
+        actions = {}
+        transfer_id = 1  # To keep track of each transfer action
+        # Convert dict_keys to a list for indexing
+        # self.dc_ids = list(obs.keys())
+        for sender, receivers in transfer_matrix.items():
+            for receiver, amount in receivers.items():
+                if amount > 0:  # Only consider positive transfers
+                    sender_index = self.dc_ids.index(receiver)
+                    receiver_index = self.dc_ids.index(sender)
+                    actions[f'transfer_{transfer_id}'] = {
+                        'sender': sender_index,
+                        'receiver': receiver_index,
+                        'workload_to_move': np.array([amount], dtype=float)
+                    }
+                    transfer_id += 1
+
+        return actions
