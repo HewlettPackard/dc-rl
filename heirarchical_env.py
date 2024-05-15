@@ -422,7 +422,7 @@ if __name__ == '__main__':
     obs, _ = env.reset(seed=0)
     total_reward = 0
     
-    greedy_optimizer = WorkloadOptimizer(env.datacenters.keys())
+    greedy_optimizer = WorkloadOptimizer(list(env.datacenters.keys()))
     
     max_iterations = 4*24*30
     # Antonio: Keep in mind that each environment is set to have days_per_episode=30. You can modify this parameter to simulate the whole year
@@ -433,32 +433,30 @@ if __name__ == '__main__':
             # actions = env.action_space.sample()
             
             # Do nothing
-            # actions = {'sender': 0, 'receiver': 0, 'workload_to_move': np.array([0.0])}
+            """
+            actions = {
+                'transfer_1': {
+                    'sender': 0,
+                    'receiver': 0,
+                    'workload_to_move': np.array([0.0])
+                    }
+                }
+            """
 
             # One-step greedy
-            # ci = [obs[dc][-1] for dc in env.datacenters]
-            # actions = {'sender': np.argmax(ci), 'receiver': np.argmin(ci), 'workload_to_move': np.array([1.])}
-            # actions = {'transfer_1': actions} Used on Do nothing and One-step greedy
+            """
+            ci = [obs[dc][-1] for dc in env.datacenters]
+            actions = {
+                'transfer_1': {
+                       'sender': np.argmax(ci), 
+                       'receiver': np.argmin(ci), 
+                       'workload_to_move': np.array([1.])
+                       }
+                }
+            """
 
             # Multi-step Greedy
-            actions, transfer_matrix = greedy_optimizer.compute_adjusted_workload(obs)
-
-            # Create a dictionary of actions from the transfer matrix
-            actions = {}
-            transfer_id = 1  # To keep track of each transfer action
-            # Convert dict_keys to a list for indexing
-            datacenter_keys = list(env.datacenters.keys())
-            for sender, receivers in transfer_matrix.items():
-                for receiver, amount in receivers.items():
-                    if amount > 0:  # Only consider positive transfers
-                        sender_index = datacenter_keys.index(receiver)
-                        receiver_index = datacenter_keys.index(sender)
-                        actions[f'transfer_{transfer_id}'] = {
-                            'sender': sender_index,
-                            'receiver': receiver_index,
-                            'workload_to_move': np.array([amount], dtype=float)
-                        }
-                        transfer_id += 1
+            actions = greedy_optimizer.compute_actions(obs)
                 
             obs, reward, terminated, truncated, info = env.step(actions)
             done = truncated
