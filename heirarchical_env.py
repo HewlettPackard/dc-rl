@@ -254,7 +254,7 @@ class HeirarchicalDCRL(gym.Env):
             'ci': dc.ci_m.get_current_ci(),
         }
 
-        return np.array(list(obs.values()))
+        return obs
 
     def set_hierarchical_workload(self, dc_id: str, workload: float):
         # self.datacenters[dc_id].workload_m.set_current_workload(workload)
