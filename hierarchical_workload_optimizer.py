@@ -19,10 +19,13 @@ class WorkloadOptimizer:
         :return: A dictionary with the recommended workload adjustments for each data center.
         """
         # Implement the optimization logic here.
-        total_mwh = {dc_id: state[0] * state[1] for dc_id, state in dc_states.items()}
+        total_mwh = {
+            dc_id: state['dc_capacity'] * state['curr_workload'] 
+            for dc_id, state in dc_states.items()
+            }
         
         # Sort data centers by their carbon intensity (from lowest to highest)
-        sorted_dcs = sorted(dc_states.items(), key=lambda x: x[1][3])
+        sorted_dcs = sorted(dc_states.items(), key=lambda x: x[1]['ci'])
         
         # Reset the transfer matrix to zero for each computation
         for from_dc in self.dc_ids:
@@ -33,7 +36,7 @@ class WorkloadOptimizer:
         max_cap = 0.90 # To prevent to loss tasks when posponed
         for i in range(len(sorted_dcs)):
             receiver_id, receiver_state = sorted_dcs[i]
-            receiver_capacity = receiver_state[0] * (max_cap - receiver_state[1])
+            receiver_capacity = receiver_state['dc_capacity'] * (max_cap - receiver_state['curr_workload'])
             
             for j in range(len(sorted_dcs) - 1, i, -1):
                 sender_id, sender_state = sorted_dcs[j]
@@ -51,11 +54,17 @@ class WorkloadOptimizer:
                     break
 
         # Calculate net MWh added or removed for each data center
-        net_mwh_changes = {dc_id: sum(row[dc_id] for row in self.transfer_matrix.values()) - sum(self.transfer_matrix[dc_id].values()) for dc_id in self.dc_ids}
-
+        net_mwh_changes = {
+            dc_id: sum(row[dc_id] for row in self.transfer_matrix.values())
+            - sum(self.transfer_matrix[dc_id].values())
+            for dc_id in self.dc_ids
+        }
+        
         # Convert the net MWh change into workload percentage and adjust the original workload percentages
         new_workloads = {
-            dc_id: dc_states[dc_id][1] + net_mwh_changes[dc_id] / dc_states[dc_id][0] if dc_states[dc_id][0] > 0 else 0
+
+            dc_id: (dc_states[dc_id]['curr_workload'] + net_mwh_changes[dc_id]) / dc_states[dc_id]['dc_capacity'] 
+            if dc_states[dc_id]['dc_capacity'] > 0 else 0
             for dc_id in self.dc_ids
         }
 
