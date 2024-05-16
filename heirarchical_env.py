@@ -395,10 +395,13 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
 
         # TODO: check if the variables are normalized with the same values or with min_max values
         obs = {
-            'current_workload': dc.workload_m.get_current_workload(),
+            'dc_capacity': dc.datacenter_capacity_mw,
+            'curr_workload': dc.workload_m.get_current_workload(),
             'weather': dc.weather_m.get_current_weather(),
             'ci': dc.ci_m.get_current_ci(),
         }
+
+        return obs
 
 class HeirarchicalDCRLWithHysterisisMultistep(HeirarchicalDCRLWithHysterisis):
 
