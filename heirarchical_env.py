@@ -248,7 +248,7 @@ class HeirarchicalDCRL(gym.Env):
         # TODO: check if the variables are normalized with the same values or with min_max values
         obs = {
             'dc_capacity': dc.datacenter_capacity_mw,
-            'current_workload': dc.workload_m.get_current_workload(),
+            'curr_workload': dc.workload_m.get_current_workload(),
             'weather': dc.weather_m.get_current_weather(),
             'total_power_kw': self.low_level_infos[dc_id]['agent_dc'].get('dc_total_power_kW', 0),
             'ci': dc.ci_m.get_current_ci(),
@@ -304,8 +304,11 @@ class HeirarchicalDCRL(gym.Env):
         sender = datacenters[actions['sender']]
         receiver = datacenters[actions['receiver']]
 
-        s_capacity, s_workload, *_ = self.heir_obs[sender]
-        r_capacity, r_workload, *_ = self.heir_obs[receiver]
+        s_capacity = self.heir_obs[sender]['dc_capacity']
+        s_workload = self.heir_obs[sender]['curr_workload']
+
+        r_capacity = self.heir_obs[receiver]['dc_capacity']
+        r_workload = self.heir_obs[receiver]['curr_workload']
 
         # Convert percentage workload to mwh
         s_mwh = s_capacity * s_workload
@@ -353,8 +356,11 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
         sender = datacenters[actions['sender']] 
         receiver = datacenters[actions['receiver']]
 
-        s_capacity, s_workload, *_ = self.heir_obs[sender]
-        r_capacity, r_workload, *_ = self.heir_obs[receiver]
+        s_capacity = self.heir_obs[sender]['dc_capacity']
+        s_workload = self.heir_obs[sender]['curr_workload']
+
+        r_capacity = self.heir_obs[receiver]['dc_capacity']
+        r_workload = self.heir_obs[receiver]['curr_workload']
 
         # Convert percentage workload to mwh
         s_mwh = s_capacity * s_workload
