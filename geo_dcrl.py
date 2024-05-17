@@ -20,7 +20,7 @@ from hierarchical_workload_optimizer import WorkloadOptimizer
 from dcrl_env_harl_partialobs import DCRL as DCRLPartObs
 
 from utils.base_agents import *
-
+from utils.helper_methods import idx_to_source_sink_mapper
 
 DEFAULT_CONFIG['low_level_actor_config'] = {
         'harl': {
@@ -157,10 +157,124 @@ class HARL_HierarchicalDCRL(HeirarchicalDCRLWithHysterisis):
 
         return super().step(actions)
 
+class HARL_HierarchicalDCRL_v2(HARL_HierarchicalDCRL):
+    
+    def __init__(self, config):
+        super().__init__(config)
+         # Re-Define observation(antonio recommended to only look at currworkload, weather and ci; see redefined get_dc_variables)
+        self.observation_space = Dict({dc: Box(-10, 10, [3]) for dc in self.datacenters})
+        
+        self.idx_to_source_sink = idx_to_source_sink_mapper(self.num_datacenters)  # maps from idx of actions array to source and sink DC (0 indexed)
+        self.base_workload_on_next_step = {}
+    
+    def step(self, actions):
+        
+        self.overassigned_workload = self.safety_enforcement(actions)
+        
+        # Compute actions for each dc_id in each environment
+        low_level_actions = {}
+        
+        # We need to update the low level observations with the new workloads for each datacenter.
+        # So, for each DC in the environment, we need to update the workload on agent_ls and on agent_dc.
+        # Now, we are hardcoding the positon of that variables in the arrays and modifiying them directly.
+        # This is not ideal, but it is a quick fix for now.
+        for datacenter_id in list(self.datacenters.keys()):
+            curr_workload = self.datacenters[datacenter_id].workload_m.get_current_workload()
+            # On agent_ls, the workload is the 5th element of the array (sine/cos hour day, workload, queue, etc)
+            # On agent_dc, the workload is the 10th element of the array
+            self.low_level_observations[datacenter_id]['agent_ls'][4] = curr_workload
+            self.low_level_observations[datacenter_id]['agent_dc'][9] = curr_workload
+        
+        for env_id, env_obs in self.low_level_observations.items():
+            # Skip if environment is done
+            if self.all_done[env_id]:
+                continue
+            low_level_actions[env_id] = self.lower_level_actor.compute_actions(env_obs)
+
+        # Step through each environment with computed low_level_actions
+        self.low_level_infos = {}
+        for env_id in self.datacenters:
+            if self.all_done[env_id]:
+                continue
+
+            new_obs, _, terminated, truncated, info = self.datacenters[env_id].step(low_level_actions[env_id])
+            self.low_level_observations[env_id] = new_obs
+            self.all_done[env_id] = terminated['__all__'] or truncated['__all__']
+
+            self.low_level_infos[env_id] = info
+
+            # Update metrics for each environment
+            env_metrics = self.metrics[env_id]
+            env_metrics['bat_CO2_footprint'].append(info['agent_bat']['bat_CO2_footprint'])
+            env_metrics['bat_total_energy_with_battery_KWh'].append(info['agent_bat']['bat_total_energy_with_battery_KWh'])
+            env_metrics['ls_tasks_dropped'].append(info['agent_ls']['ls_tasks_dropped'])
+            env_metrics['dc_water_usage'].append(info['agent_dc']['dc_water_usage'])
+
+        done = any(self.all_done.values())
+
+        # Get observations for the next step
+        if not done:
+            self.heir_obs = {}
+            for env_id in self.datacenters:
+                self.heir_obs[env_id] = self.get_dc_variables(env_id)
+
+        return self.heir_obs, self.calc_reward(), False, done, {}
+
+    def workload_mapper(self, origin_dc, target_dc, action):
+        """
+        Translates the workload values from origin dc scale to target dc scale
+        """
+        assert (action >= 0) & (action <= 1), "action should be a positive fraction"
+        return action*origin_dc.datacenter_capacity_mw/target_dc.datacenter_capacity_mw
+
+    def safety_enforcement(self,actions):
+        
+        # actions is an array of floats in the range (-1.0, 1.0) of length n(n-1)/2 where n = self.num_datacenters
+        # obtain the indices of actions in sorted order after considering the absolute values and start with the highest value
+        largest_action_idxs = np.argsort(np.abs(actions))[::-1]
+        
+        # base_workload_on_next_step for all dcs
+        self.base_workload_on_next_step = {dc : self.datacenters[dc].workload_m.get_n_step_future_workload(n=1) for dc in self.datacenters}
+        for _, base_workload in self.base_workload_on_next_step.items():
+            assert (base_workload >= 0) & (base_workload <= 1), "base_workload should be positive and a fraction"
+        
+        overassigned_workload = []
+        for idx in largest_action_idxs:
+            
+            # determine direction of transfer
+            s,r = "DC"+str(self.idx_to_source_sink[idx][0]+1), "DC"+str(self.idx_to_source_sink[idx][1]+1)
+            (sender, receiver) = (s, r) if actions[idx] > 0 else (r, s)
+            
+            # determine the effective workload to be moved and update self.base_workload_on_next_step for both sender and receiver
+            effective_movement = min(1.0-self.base_workload_on_next_step[receiver],
+                                    self.workload_mapper(self.datacenters[sender], self.datacenters[receiver], 
+                                                         min(np.abs(actions[idx]), self.base_workload_on_next_step[sender]))
+                                     )
+            self.base_workload_on_next_step[receiver] += effective_movement
+            self.base_workload_on_next_step[sender] -= self.workload_mapper(self.datacenters[receiver], self.datacenters[sender], effective_movement)
+            
+            # keep track of overassigned workload
+            overassigned_workload.append((sender, receiver,
+                                          self.workload_mapper(self.datacenters[sender], self.datacenters[receiver], np.abs(actions[idx]))-effective_movement))
+        
+        # update individual datacenters with the base_workload_on_next_step
+        for dc, base_workload in self.base_workload_on_next_step.items():
+            self.datacenters[dc].workload_m.set_n_step_future_workload(n = 1, workload = base_workload)
+        
+        return overassigned_workload
+
+    def get_dc_variables(self, dc_id: str) -> np.ndarray:
+        dc = self.datacenters[dc_id]
+
+        obs = np.array([dc.workload_m.get_current_workload(),
+                        dc.weather_m.get_current_weather(),
+                        dc.ci_m.get_current_ci()])
+        return obs
+
 def main():
     """Main function."""
     # env = HARL_HierarchicalDCRL(DEFAULT_CONFIG)
-    env = HARL_HierarchicalDCRL(DEFAULT_CONFIG)
+    env = HARL_HierarchicalDCRL_v2(DEFAULT_CONFIG)
     done = False
     obs, _ = env.reset(seed=0)
     total_reward = 0
@@ -186,6 +300,10 @@ def main():
             
             # Multi-step Greedy
             actions = np.zeros(env.action_space.shape)  # for environement v2
+            obs = {dcname: {'dc_capacity' : dc.datacenter_capacity_mw, 
+                        'curr_workload':obs[dcname][0], 
+                        'ci':obs[dcname][1]}
+                   for dcname,dc in env.datacenters.items()}
             _, transfer_matrix = greedy_optimizer.compute_adjusted_workload(obs)
             for send_key,val_dict in transfer_matrix.items():
                 for receive_key,val in val_dict.items():
@@ -194,6 +312,8 @@ def main():
                         if i > k:  # the ordering is not right; reverse it and als; also assuming val!= also weeds out i = k case
                             i,k = k,i
                             multiplier = -1
+                        else:
+                            multiplier = 1
                         j = k-i-1
                         offset = int(env.num_datacenters*i - i*(i+1)/2)
                         actions[offset+j] = val*multiplier

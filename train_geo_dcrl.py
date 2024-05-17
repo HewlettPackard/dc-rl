@@ -5,20 +5,20 @@ from ray import air, tune
 from ray.rllib.algorithms.ppo import PPO, PPOConfig
 
 from geo_dcrl import (
-    HARL_HierarchicalDCRL,
+    HARL_HierarchicalDCRL, HARL_HierarchicalDCRL_v2,
     DEFAULT_CONFIG
 )
 # from utils.rllib_callbacks import CustomCallbacks
 from create_trainable import create_wrapped_trainable
 
 NUM_WORKERS = 4
-NAME = "simulexchange"
+NAME = "HARL_HierarchicalDCRL_v2"
 RESULTS_DIR = './results/'
 
 CONFIG = (
         PPOConfig()
         .environment(
-            env=HARL_HierarchicalDCRL,
+            env=HARL_HierarchicalDCRL_v2,
             env_config=DEFAULT_CONFIG
         )
         .framework("torch")
