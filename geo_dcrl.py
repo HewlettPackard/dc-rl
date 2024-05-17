@@ -259,7 +259,7 @@ class HARL_HierarchicalDCRL_v2(HARL_HierarchicalDCRL):
             self.base_workload_on_curr_step[sender] -= self.workload_mapper(self.datacenters[receiver], self.datacenters[sender], effective_movement)
 
             # set hysterisis
-            self.set_hysterisis(effective_movement*self.datacenter[receiver].datacenter_capacity_mw, sender, receiver)
+            self.set_hysterisis(effective_movement*self.datacenters[receiver].datacenter_capacity_mw, sender, receiver)
             
             # keep track of overassigned workload
             overassigned_workload.append((sender, receiver,
