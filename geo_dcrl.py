@@ -166,6 +166,7 @@ class HARL_HierarchicalDCRL_v2(HARL_HierarchicalDCRL):
         
         self.idx_to_source_sink = idx_to_source_sink_mapper(self.num_datacenters)  # maps from idx of actions array to source and sink DC (0 indexed)
         self.base_workload_on_next_step = {}
+        self.base_workload_on_curr_step = {}
     
     def step(self, actions):
         
@@ -235,8 +236,11 @@ class HARL_HierarchicalDCRL_v2(HARL_HierarchicalDCRL):
         
         # base_workload_on_next_step for all dcs
         self.base_workload_on_next_step = {dc : self.datacenters[dc].workload_m.get_n_step_future_workload(n=1) for dc in self.datacenters}
+        self.base_workload_on_curr_step = {dc : self.datacenters[dc].workload_m.get_n_step_future_workload(n=0) for dc in self.datacenters}
         for _, base_workload in self.base_workload_on_next_step.items():
-            assert (base_workload >= 0) & (base_workload <= 1), "base_workload should be positive and a fraction"
+            assert (base_workload >= 0) & (base_workload <= 1), "base_workload next_step should be positive and a fraction"
+        for _, base_workload in self.base_workload_on_curr_step.items():
+            assert (base_workload >= 0) & (base_workload <= 1), "base_workload curr_step should be positive and a fraction"
         
         overassigned_workload = []
         for idx in largest_action_idxs:
@@ -245,18 +249,22 @@ class HARL_HierarchicalDCRL_v2(HARL_HierarchicalDCRL):
             s,r = "DC"+str(self.idx_to_source_sink[idx][0]+1), "DC"+str(self.idx_to_source_sink[idx][1]+1)
             (sender, receiver) = (s, r) if actions[idx] > 0 else (r, s)
             
-            # determine the effective workload to be moved and update self.base_workload_on_next_step for both sender and receiver
+            # determine the effective workload to be moved and update self.base_workload_on_curr_step for sender and 
+            # self.base_workload_on_next_step for receiver
             effective_movement = min(1.0-self.base_workload_on_next_step[receiver],
                                     self.workload_mapper(self.datacenters[sender], self.datacenters[receiver], 
-                                                         min(np.abs(actions[idx]), self.base_workload_on_next_step[sender]))
+                                                         min(np.abs(actions[idx]), self.base_workload_on_curr_step[sender]))
                                      )
             self.base_workload_on_next_step[receiver] += effective_movement
-            self.base_workload_on_next_step[sender] -= self.workload_mapper(self.datacenters[receiver], self.datacenters[sender], effective_movement)
+            self.base_workload_on_curr_step[sender] -= self.workload_mapper(self.datacenters[receiver], self.datacenters[sender], effective_movement)
             
             # keep track of overassigned workload
             overassigned_workload.append((sender, receiver,
                                           self.workload_mapper(self.datacenters[sender], self.datacenters[receiver], np.abs(actions[idx]))-effective_movement))
         
+        # update individual datacenters with the base_workload_on_curr_step
+        for dc, base_workload in self.base_workload_on_curr_step.items():
+            self.datacenters[dc].workload_m.set_n_step_future_workload(n = 0, workload = base_workload)
         # update individual datacenters with the base_workload_on_next_step
         for dc, base_workload in self.base_workload_on_next_step.items():
             self.datacenters[dc].workload_m.set_n_step_future_workload(n = 1, workload = base_workload)
