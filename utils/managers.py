@@ -271,10 +271,23 @@ class Workload_Manager():
         if self.time_step - 1 >= len(self.cpu_smooth):
             self.time_step = self.init_time_step
         # assert self.time_step < len(self.cpu_smooth), f'Episode length: {self.time_step} is longer than the provide cpu_smooth: {len(self.cpu_smooth)}'
-        return self.cpu_smooth[self.time_step - 1]
+        return self.cpu_smooth[max(self.time_step - 1,0)]  # to avoid logical error
     
     def get_current_workload(self):        
         return self.cpu_smooth[self.time_step]
+    
+    def get_n_step_future_workload(self,n):
+        if (self.time_step + n) >= len(self.cpu_smooth):
+            return self.cpu_smooth[self.init_time_step + (self.time_step + (n-1) - len(self.cpu_smooth))]
+        else:
+            return self.cpu_smooth[self.time_step + n]
+        
+    def set_n_step_future_workload(self,n,workload):
+        if (self.time_step + n) >= len(self.cpu_smooth):
+            self.cpu_smooth[self.init_time_step + (self.time_step + (n-1) - len(self.cpu_smooth))] = workload
+        else:
+            self.cpu_smooth[self.time_step + n] = workload
+            
     
     def set_current_workload(self, workload):         
         self.cpu_smooth[self.time_step] = workload

@@ -93,3 +93,24 @@ class pyeplus_callback(DefaultCallbacks):
         episode.custom_metrics["avg_power_per_episode_kW"] = average_net_energy
         episode.custom_metrics["avg_crac_stpt_delta_per_episode"] = average_dc_actions
             
+def idx_to_source_sink_mapper(nodes):
+    """
+    Given the number of ordered nodes, it creates a dense graph and populates a
+    dictionary where the key is an index that maps to a tuple of the source and sink node ids with source value always being less than sink value
+    Note: The source and sink nodes are the 0 indexed nodes in the graph 
+    eg 
+    idx :   0, 1, 2, 3, 4, 5, 6, 7, 8, 9
+    source: 0, 0, 0, 0, 1, 1, 1, 2, 2, 3 : start iteration with this until i = 0 to N-2 ie range(N-1)
+    ctr :   0, 1, 2, 3, 0, 1, 2, 0, 1, 0 : start iteration with this until ctr = 0 to [N-(i+2)] ie range(N-(i+1)) for each i from above
+    sink:   1, 2, 3, 4, 2, 3, 4, 3, 4, 4 : get this by adding ctr to source+1 ie sink = source+ctr+1
+    """
+    
+    source_sink_idx = {}
+    
+    for source_idx in range(nodes-1):
+        offset = int(nodes*source_idx - source_idx*(source_idx+1)/2)
+        for counter in range(nodes-(source_idx+1)):
+            
+            source_sink_idx[offset+counter] = (source_idx, source_idx+counter+1)
+            
+    return source_sink_idx
