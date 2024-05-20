@@ -20,7 +20,7 @@ from hierarchical_workload_optimizer import WorkloadOptimizer
 from dcrl_env_harl_partialobs import DCRL as DCRLPartObs
 
 from utils.base_agents import *
-from utils.helper_methods import idx_to_source_sink_mapper
+from utils.helper_methods import idx_to_source_sink_mapper, RunningStats, non_linear_combine
 
 DEFAULT_CONFIG['low_level_actor_config'] = {
         'harl': {
@@ -167,6 +167,9 @@ class HARL_HierarchicalDCRL_v2(HARL_HierarchicalDCRL):
         self.idx_to_source_sink = idx_to_source_sink_mapper(self.num_datacenters)  # maps from idx of actions array to source and sink DC (0 indexed)
         self.base_workload_on_next_step = {}
         self.base_workload_on_curr_step = {}
+        
+        self.stats1 = RunningStats()
+        self.stats2 = RunningStats()
     
     def step(self, actions):
         
@@ -282,6 +285,12 @@ class HARL_HierarchicalDCRL_v2(HARL_HierarchicalDCRL):
                         dc.ci_m.get_current_ci()])
         return obs
 
+    def calc_reward(self):
+        cfp_reward =  super().calc_reward()  # includes both dcrl reward and hysterisis reward
+        workload_violation_rwd = -1.0*sum([i[-1] for i in self.overassigned_workload])  # excess workload is penalized
+        combined_reward = non_linear_combine(cfp_reward, workload_violation_rwd, self.stats1, self.stats2)
+        return combined_reward
+        
 def main():
     """Main function."""
     # env = HARL_HierarchicalDCRL(DEFAULT_CONFIG)
