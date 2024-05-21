@@ -1,5 +1,5 @@
 from typing import Dict, Optional, Union
-
+import math
 import numpy as np
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
 from ray.rllib.env.base_env import BaseEnv
@@ -114,3 +114,60 @@ def idx_to_source_sink_mapper(nodes):
             source_sink_idx[offset+counter] = (source_idx, source_idx+counter+1)
             
     return source_sink_idx
+
+class RunningStats:
+    def __init__(self, epsilon=1e-8):
+        self.n = 0
+        self.mu = 0
+        self.M2 = 0
+        self.epsilon = epsilon
+
+    def update(self, x):
+        self.n += 1
+        delta = x - self.mu
+        self.mu += delta / self.n
+        delta2 = x - self.mu
+        self.M2 += delta * delta2
+
+    @property
+    def mean(self):
+        return self.mu
+
+    @property
+    def variance(self):
+        return self.M2 / self.n if self.n > 1 else 0
+
+    @property
+    def stddev(self):
+        return max(self.variance ** 0.5, self.epsilon)
+
+def non_linear_combine(x1, x2, stats1, stats2):
+    stats1.update(x1)
+    stats2.update(x2)
+    
+    if (stats1.n < 2) or (stats2.n < 2):
+        return x1 + x2  # or some initial handling
+    
+    # Z-score normalization
+    z1 = (x1 - stats1.mean) / stats1.stddev
+    z2 = (x2 - stats2.mean) / stats2.stddev
+
+    # Non-linear transformation
+    f1 = 1 / (1 + math.exp(-z1))
+    f2 = 1 / (1 + math.exp(-z2))
+
+    # Combine
+    return f1 + f2
+
+if __file__ == "__main__":
+
+    # Initialize running stats for two reward components
+    stats1 = RunningStats()
+    stats2 = RunningStats()
+
+    # Example usage
+    x1 = 10  # new observation for reward component 1
+    x2 = 5   # new observation for reward component 2
+
+    combined_reward = non_linear_combine(x1, x2, stats1, stats2)
+    print(combined_reward)

@@ -12,7 +12,7 @@ from geo_dcrl import (
 from create_trainable import create_wrapped_trainable
 
 NUM_WORKERS = 4
-NAME = "HARL_HierarchicalDCRL_v2"
+NAME = "HARL_HierarchicalDCRL_v2_LSTM_PPO_LR_and_EntCoeff_Sche"
 RESULTS_DIR = './results/'
 
 CONFIG = (
@@ -30,14 +30,15 @@ CONFIG = (
         .training(
             gamma=0.99,
             # gamma=0.0, 
-            lr=1e-4,
+            # lr=1e-6,
+            lr_schedule = [[0, 1e-4], [2000000, 1e-6]],
             kl_coeff=0.2,
             clip_param=0.1,
-            entropy_coeff=0.0,
+            entropy_coeff_schedule=[[0,0.01],[2000000,0.0]],
             use_gae=True,
             train_batch_size=2048,
             num_sgd_iter=5,
-            model={'fcnet_hiddens': [64, 64]},
+            model={'fcnet_hiddens': [64, 64], "use_lstm": True,"max_seq_len": 96, "lstm_cell_size": 64},
             shuffle_sequences=True
         )
         .resources(num_gpus=0)
