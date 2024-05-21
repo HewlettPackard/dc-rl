@@ -70,10 +70,10 @@ DEFAULT_CONFIG = {
     # config for loading trained low-level agents
     'low_level_actor_config': {
         'harl': {
-            'algo' : 'happo',
+            'algo' : 'haa2c',
             'env' : 'dcrl',
             'exp_name' : 'll_actor',
-            'model_dir': '/lustre/guillant/HARL/results/dcrl/ny/hatrpo/installtest/seed-00001-2024-05-06-09-36-17/models',
+            'model_dir': f'{CURR_DIR}/seed-00001-2024-05-01-21-50-12',
             },
         'rllib': {
             'checkpoint_path': f'{CURR_DIR}/maddpg/checkpoint_000000/',
