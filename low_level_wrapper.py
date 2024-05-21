@@ -1,6 +1,7 @@
 import os
 import sys
 sys.path.insert(0, f'{os.path.dirname(os.path.abspath(__file__))}/HARL')
+sys.path.insert(0, f'{os.path.dirname(os.path.abspath(__file__))}/heterogeneous_dcrl')
 from typing import Dict
 import json
 
