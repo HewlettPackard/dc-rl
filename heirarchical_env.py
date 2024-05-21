@@ -1,7 +1,7 @@
 import os
 import random
 import warnings
-    
+
 import torch
 import numpy as np
 from tqdm import tqdm
@@ -99,6 +99,8 @@ class HeirarchicalDCRL(gym.Env):
             'DC3': DC3,
         }
 
+        self.datacenter_ids = list(self.datacenters.keys())
+        
         # Load trained lower level agent
         self.lower_level_actor = LowLevelActorHARL(
             config['low_level_actor_config'],
@@ -116,11 +118,13 @@ class HeirarchicalDCRL(gym.Env):
         self._max_episode_steps = 4*24*DEFAULT_CONFIG['config1']['days_per_episode']
 
         # Define observation and action space
-        self.observation_space = Dict({dc: Box(-10, 10, [3]) for dc in self.datacenters})
+        self.observation_space = Dict({dc: Box(-10, 10, [5]) for dc in self.datacenters})
+
         # Define the components of a single transfer action
         transfer_action = Dict({
-            'sender': Discrete(3),  # sender
-            'receiver': Discrete(3),  # receiver
+            'sender': Discrete(3), 
+            'receiver': Discrete(3),
+            'workload_to_move': Box(low=0.0, high=1.0, shape=(1,), dtype=float)
         })
 
         # Define the action space for two transfers
@@ -168,30 +172,8 @@ class HeirarchicalDCRL(gym.Env):
         return self.heir_obs, self.low_level_infos
     
     def step(self, actions):
-        # Iterate through each action and perform the transfer
-        for key, action in actions.items():
-            # Shift workloads between datacenters according to 
-            # the actions provided by the agent.
-            datacenter_ids = list(self.datacenters.keys())
-            
-            sender = datacenter_ids[action['sender']]
-            receiver = datacenter_ids[action['receiver']]
-            
-            if sender != receiver:
-                # Calculate the available capacity of the receiver datacenter for the next 4 hours
-                available_capacity = self.datacenters[receiver].get_available_capacity(4*4)  # 4 hours in 15-minute steps
-                
-                # Only move the workload if the receiver has enough capacity
-                curr_workload = self.datacenters[sender].workload_m.get_current_workload()
-                workload_to_move = curr_workload * action['workload_to_move'][0] * self.datacenters[sender].datacenter_capacity_mw
-                if available_capacity >= workload_to_move:
-                    adjusted_workloads = self.compute_adjusted_workloads(action)
-                    
-                    # Set reduced workload for the sender
-                    self.set_hierarchical_workload(sender, adjusted_workloads[sender])
-                    
-                    # Move the workload to the receiver
-                    self.move_hierarchical_workload(receiver, adjusted_workloads[receiver])
+        
+        self.overassigned_workload = self.safety_enforcement(actions)
 
         # Compute actions for each dc_id in each environment
         low_level_actions = {}
@@ -200,7 +182,7 @@ class HeirarchicalDCRL(gym.Env):
         # So, for each DC in the environment, we need to update the workload on agent_ls and on agent_dc.
         # Now, we are hardcoding the positon of that variables in the arrays and modifiying them directly.
         # This is not ideal, but it is a quick fix for now.
-        for datacenter_id in list(self.datacenters.keys()):
+        for datacenter_id in self.datacenters:
             curr_workload = self.datacenters[datacenter_id].workload_m.get_current_workload()
             # On agent_ls, the workload is the 5th element of the array (sine/cos hour day, workload, queue, etc)
             # On agent_dc, the workload is the 10th element of the array
@@ -256,129 +238,66 @@ class HeirarchicalDCRL(gym.Env):
 
         return obs
 
-    def set_hierarchical_workload(self, dc_id: str, workload: float):
-        # self.datacenters[dc_id].workload_m.set_current_workload(workload)
-        workload_m = self.datacenters[dc_id].workload_m
-        workload_m.cpu_smooth[workload_m.time_step] = workload
+    def workload_mapper(self, origin_dc, target_dc, action):
+        """
+        Translates the workload values from origin dc scale to target dc scale
+        """
+        assert (action >= 0) & (action <= 1), "action should be a positive fraction"
+        return action * (origin_dc.datacenter_capacity_mw / target_dc.datacenter_capacity_mw)
 
-    def move_hierarchical_workload(self, dc_id: str, workload: float):
-        workload_m = self.datacenters[dc_id].workload_m
+    def safety_enforcement(self, actions: dict):
         
-        # From the workload, remove the original workload to be computed on only shift the actual workload comming from the sender
-        # Workload contains the workload from receiver and sender.
-        # To obtain the original sender workload, I remove the original receiver workload
-        workload = workload - workload_m.cpu_smooth[workload_m.time_step]
+        # Sort dictionary by workload_to_move
+        actions = dict(sorted(actions.items(), key = lambda x: x[1]['workload_to_move'], reverse=True))
+
+        # base_workload_on_next_step for all dcs
+        self.base_workload_on_next_step = {dc : self.datacenters[dc].workload_m.get_n_step_future_workload(n=1) for dc in self.datacenters}
+        self.base_workload_on_curr_step = {dc : self.datacenters[dc].workload_m.get_n_step_future_workload(n=0) for dc in self.datacenters}
+        # for _, base_workload in self.base_workload_on_next_step.items():
+        #     assert (base_workload >= 0) & (base_workload <= 1), "base_workload next_step should be positive and a fraction"
+        # for _, base_workload in self.base_workload_on_curr_step.items():
+        #     assert (base_workload >= 0) & (base_workload <= 1), "base_workload curr_step should be positive and a fraction"
         
-        remaining_workload = workload
+        overassigned_workload = []
+        for _, action in actions.items():
 
-        # Minimum number of timesteps to spread the workload over
-        # it could extend beyond this incase where the capacity is not available
-        N = 4
+            sender = self.datacenter_ids[action['sender']]
+            receiver = self.datacenter_ids[action['receiver']]
+            workload_to_move = action['workload_to_move'][0]
 
-        # We move the workload starting from the next time step
-        i = 1
-        while remaining_workload > 0:
-            # Break if we are close to the end of the episode
-            # len(workload_m.cpu_smooth) has one year of data
-            # workload_m.time_step considers the start month to obtain the index (Jan=0, Feb=4*24*30, Mar=2*4*24*30,
-            # Apr=3*4*24*30, May=4*4*24*30, Jun=5*4*24*30, Jul=6*4*24*30, Aug=7*4*24*30, Sep=8*4*24*30,
-            # Oct=9*4*24*30, Nov=10*4*24*30, Dec=11*4*24*30)
-            if workload_m.time_step + i >= self.start_index_manager + 4*24*self.simulated_days:
-                print("Warning: Reached end of episode while moving workload")
-                # print(f"DC: {dc_id}, Time step: {workload_m.time_step}, Remaining workload: {remaining_workload}")
-                self.not_computed_workload += remaining_workload
-                break
+            sender_capacity = self.datacenters[sender].datacenter_capacity_mw
+            receiver_capacity = self.datacenters[receiver].datacenter_capacity_mw
+
+            # determine the effective workload to be moved and update 
+            workload_to_move_mwh = workload_to_move * self.base_workload_on_curr_step[sender] * sender_capacity
+            receiver_available_mwh = (1.0 - self.base_workload_on_next_step[receiver]) * receiver_capacity
+            effective_movement_mwh = min(workload_to_move_mwh, receiver_available_mwh)
             
-            workload_at_i = workload_m.cpu_smooth[workload_m.time_step + i]
-            workload_to_move = min(1 - workload_at_i, workload / N, remaining_workload)
-            workload_m.cpu_smooth[workload_m.time_step + i] += workload_to_move
-            remaining_workload -= workload_to_move
-            i += 1
+            self.base_workload_on_curr_step[sender] -= effective_movement_mwh / sender_capacity
+            self.base_workload_on_next_step[receiver] += effective_movement_mwh / receiver_capacity
 
-
-    def compute_adjusted_workloads(self, actions) -> dict:
-        # Translate the recommended workload transfer to actual workload.
-        # This will return a dict with the new workload for the sender and the receiver
-
-        datacenters = list(self.datacenters.keys())
-        sender = datacenters[actions['sender']]
-        receiver = datacenters[actions['receiver']]
-
-        s_capacity = self.heir_obs[sender]['dc_capacity']
-        s_workload = self.heir_obs[sender]['curr_workload']
-
-        r_capacity = self.heir_obs[receiver]['dc_capacity']
-        r_workload = self.heir_obs[receiver]['curr_workload']
-
-        # Convert percentage workload to mwh
-        s_mwh = s_capacity * s_workload
-        r_mwh = r_capacity * r_workload
-
-        # Calculate the amount to move depending on the capacity 
-        # available in the receiver
-        mwh_to_move = min(s_mwh, r_capacity - r_mwh)
-        s_mwh -= mwh_to_move
-        r_mwh += mwh_to_move
-
-        # Convert back to percentage workload
-        s_workload  = s_mwh / s_capacity
-        r_workload = r_mwh / r_capacity
-
-        return {sender: s_workload, receiver: r_workload}
-
-    def calc_reward(self) -> float:
-        reward = 0
-        for dc in self.low_level_infos:
-            reward += self.low_level_infos[dc]['agent_bat']['bat_CO2_footprint']
-        return -1 * reward / 1e6
-
-
-class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
-
-    def __init__(self, config):
-        super().__init__(config)
+            # set hysterisis
+            self.set_hysterisis(effective_movement_mwh, sender, receiver)
+            
+            # keep track of overassigned workload
+            overassigned_workload.append(
+                (
+                    sender, 
+                    receiver,
+                    (workload_to_move_mwh - effective_movement_mwh) / receiver_capacity
+                )
+            )
         
-        # Define the components of a single transfer action
-        transfer_action = Dict({
-            'sender': Discrete(3),  # sender
-            'receiver': Discrete(3),  # receiver
-            'workload_to_move': Box(low=0.0, high=1.0, shape=(1,), dtype=float)  # workload_to_move
-        })
+        # update individual datacenters with the base_workload_on_curr_step
+        for dc, base_workload in self.base_workload_on_curr_step.items():
+            self.datacenters[dc].workload_m.set_n_step_future_workload(n = 0, workload = base_workload)
 
-        # Define the action space for two transfers
-        self.action_space = Dict({
-            'transfer_1': transfer_action,
-        })
-
-    def compute_adjusted_workloads(self, actions) -> dict:
-
-        datacenters = list(self.datacenters.keys())
-        sender = datacenters[actions['sender']] 
-        receiver = datacenters[actions['receiver']]
-
-        s_capacity = self.heir_obs[sender]['dc_capacity']
-        s_workload = self.heir_obs[sender]['curr_workload']
-
-        r_capacity = self.heir_obs[receiver]['dc_capacity']
-        r_workload = self.heir_obs[receiver]['curr_workload']
-
-        # Convert percentage workload to mwh
-        s_mwh = s_capacity * s_workload
-        r_mwh = r_capacity * r_workload
-
-        # Calculate the amount to move
-        mwh_to_move = s_mwh * actions['workload_to_move'][0]
-        s_mwh -= mwh_to_move
-        r_mwh += mwh_to_move
-
-        # Convert back to percentage workload
-        s_workload = s_mwh / s_capacity
-        r_workload = r_mwh / r_capacity
-
-        self.set_hysterisis(mwh_to_move, sender, receiver)
-
-        return {sender: s_workload, receiver: r_workload}
-
+        # update individual datacenters with the base_workload_on_next_step
+        for dc, base_workload in self.base_workload_on_next_step.items():
+            self.datacenters[dc].workload_m.set_n_step_future_workload(n = 1, workload = base_workload)
+        
+        return overassigned_workload
+    
     def set_hysterisis(self, mwh_to_move: float, sender: str, receiver: str):
         PENALTY = 0.6
         
@@ -387,23 +306,13 @@ class HeirarchicalDCRLWithHysterisis(HeirarchicalDCRL):
         self.datacenters[sender].dc_env.set_workload_hysterisis(cost_of_moving_mw)
         self.datacenters[receiver].dc_env.set_workload_hysterisis(cost_of_moving_mw)
 
-    def calc_reward(self):
-        return super().calc_reward()
+    def calc_reward(self) -> float:
+        reward = 0
+        for dc in self.low_level_infos:
+            reward += self.low_level_infos[dc]['agent_bat']['bat_CO2_footprint']
+        return -1 * reward / 1e6
 
-    def get_dc_variables(self, dc_id: str) -> np.ndarray:
-        dc = self.datacenters[dc_id]
-
-        # TODO: check if the variables are normalized with the same values or with min_max values
-        obs = {
-            'dc_capacity': dc.datacenter_capacity_mw,
-            'curr_workload': dc.workload_m.get_current_workload(),
-            'weather': dc.weather_m.get_current_weather(),
-            'ci': dc.ci_m.get_current_ci(),
-        }
-
-        return obs
-
-class HeirarchicalDCRLWithHysterisisMultistep(HeirarchicalDCRLWithHysterisis):
+class HeirarchicalDCRLWithHysterisisMultistep(HeirarchicalDCRL):
 
     def __init__(self, config):
         super().__init__(config)
@@ -425,8 +334,8 @@ class HeirarchicalDCRLWithHysterisisMultistep(HeirarchicalDCRLWithHysterisis):
     
 if __name__ == '__main__':
 
-    # env = HeirarchicalDCRL(DEFAULT_CONFIG)
-    env = HeirarchicalDCRLWithHysterisis(DEFAULT_CONFIG)
+    env = HeirarchicalDCRL(DEFAULT_CONFIG)
+    
     done = False
     obs, _ = env.reset(seed=0)
     total_reward = 0
@@ -439,7 +348,7 @@ if __name__ == '__main__':
         while not done:
     
             # Random actions
-            # actions = env.action_space.sample()
+            actions = env.action_space.sample()
             
             # Do nothing
             """
@@ -465,7 +374,7 @@ if __name__ == '__main__':
             """
 
             # Multi-step Greedy
-            actions = greedy_optimizer.compute_actions(obs)
+            # actions = greedy_optimizer.compute_actions(obs)
                 
             obs, reward, terminated, truncated, info = env.step(actions)
             done = truncated
