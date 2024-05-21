@@ -2,6 +2,7 @@ import os
 import sys
 sys.path.insert(0, f'{os.path.dirname(os.path.abspath(__file__))}/HARL')
 from typing import Dict
+import json
 
 import numpy as np
 from ray.rllib.policy.policy import Policy
@@ -43,12 +44,15 @@ class LowLevelActorHARL(LowLevelActorBase):
         super().__init__(config)
 
         config = config['harl']
-        algo_args, env_args = get_defaults_yaml_args(config["algo"], config["env"])
+        with open(os.path.join(config['model_dir'], 'config.json'), encoding='utf-8') as file:
+            saved_config = json.load(file)
+        algo_args, env_args = saved_config['algo_args'], saved_config['env_args']
+
         algo_args['train']['n_rollout_threads'] = 1
         algo_args['eval']['n_eval_rollout_threads'] = 1
-        algo_args['train']['model_dir'] = config['model_dir']
+        algo_args['train']['model_dir'] = os.path.join(config['model_dir'], 'models')
     
-        self.ll_actors = RUNNER_REGISTRY[config["algo"]](config, algo_args, env_args)
+        self.ll_actors = RUNNER_REGISTRY[saved_config["main_args"]["algo"]](config, algo_args, env_args)
         self.active_agents = active_agents
         
     def compute_actions(self, observations, **kwargs):
