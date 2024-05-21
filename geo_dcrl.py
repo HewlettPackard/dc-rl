@@ -47,12 +47,6 @@ class HierarchicalDCRLCombinatorial(HeirarchicalDCRL):
         actions = self.action_wrapper(actions)
         
         return super().step(actions)
-
-    def calc_reward(self):
-        cfp_reward =  super().calc_reward()  # includes both dcrl reward and hysterisis reward
-        workload_violation_rwd = -1.0*sum([i[-1] for i in self.overassigned_workload])  # excess workload is penalized
-        combined_reward = non_linear_combine(cfp_reward, workload_violation_rwd, self.stats1, self.stats2)
-        return combined_reward
         
 def main():
     """Main function."""
