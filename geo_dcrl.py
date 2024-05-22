@@ -1,7 +1,7 @@
 import numpy as np
 from tqdm import tqdm
 from gymnasium.spaces import Box
-
+from utils.helper_methods import non_linear_combine, RunningStats
 from heirarchical_env import HeirarchicalDCRL, DEFAULT_CONFIG
 
 class HierarchicalDCRLCombinatorial(HeirarchicalDCRL):
@@ -11,12 +11,16 @@ class HierarchicalDCRLCombinatorial(HeirarchicalDCRL):
         super().__init__(config)
 
         N = len(self.datacenters)
+        self.num_datacenters = N
         
         # Define action space:
         # We consider every combination of N datacenters. The sign determintes the direction 
         # of transfer 
         num_actions = N * (N - 1) // 2
         self.action_space = Box(-1, 1, shape=([num_actions]))
+        
+        self.stats1 = RunningStats()
+        self.stats2 = RunningStats()
     
     def action_wrapper(self, actions):
         # actions is an array of floats in the range (-1.0, 1.0) of "ordered data centers" in the format
@@ -47,7 +51,33 @@ class HierarchicalDCRLCombinatorial(HeirarchicalDCRL):
         actions = self.action_wrapper(actions)
         
         return super().step(actions)
-        
+    
+    def calc_reward(self):
+        cfp_reward =  super().calc_reward()  # includes both dcrl reward and hysterisis reward
+        workload_violation_rwd = -1.0*sum([i[-1] for i in self.overassigned_workload])  # excess workload is penalized
+        combined_reward = non_linear_combine(cfp_reward, workload_violation_rwd, self.stats1, self.stats2)  # cfp_reward + workload_violation_rwd  # 
+        return combined_reward
+
+    def get_dc_variables(self, dc_id: str) -> np.ndarray:
+        dc = self.datacenters[dc_id]
+
+        # TODO: check if the variables are normalized with the same values or with min_max values
+        obs = np.array([
+            dc.datacenter_capacity_mw,
+            dc.workload_m.get_current_workload(),
+            dc.weather_m.get_current_weather(),
+            self.low_level_infos[dc_id]['agent_dc'].get('dc_total_power_kW', 0)/1000.0,
+            dc.ci_m.get_current_ci(),
+        ])
+        # obs = {
+        #     'dc_capacity': dc.datacenter_capacity_mw,
+        #     'curr_workload': dc.workload_m.get_current_workload(),
+        #     'weather': dc.weather_m.get_current_weather(),
+        #     'total_power_kw': self.low_level_infos[dc_id]['agent_dc'].get('dc_total_power_kW', 0),
+        #     'ci': dc.ci_m.get_current_ci(),
+        # }
+
+        return obs        
 def main():
     """Main function."""
     
