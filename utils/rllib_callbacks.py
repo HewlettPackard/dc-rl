@@ -2,6 +2,13 @@ from typing import Dict
 
 import numpy as np
 from ray.rllib.algorithms.callbacks import DefaultCallbacks
+from ray.rllib.env.base_env import BaseEnv
+from ray.rllib.env.env_context import EnvContext
+from ray.rllib.evaluation import RolloutWorker
+from ray.rllib.evaluation.episode import Episode
+from ray.rllib.evaluation.episode_v2 import EpisodeV2
+from ray.rllib.policy import Policy
+from ray.rllib.utils.typing import EnvType, PolicyID
 
 
 class CustomCallbacks(DefaultCallbacks):
@@ -107,3 +114,23 @@ class CustomCallbacks(DefaultCallbacks):
         episode.custom_metrics["total_tasks_dropped"] = total_tasks_dropped
 
         episode.custom_metrics["total_water_usage"] = total_water_usage
+        
+class HierarchicalDCRL_Callback(DefaultCallbacks):
+    """
+    Callback to log Hierarchical DCRL specific values
+    """
+
+    def on_episode_step(self, *, worker: RolloutWorker, base_env: BaseEnv, policies: Dict[str, Policy] | None = None, episode: Episode | EpisodeV2, env_index: int | None = None, **kwargs) -> None:
+
+        episode.custom_metrics["runningstats/mu1"] = base_env.vector_env.envs[0].stats1.mu
+        episode.custom_metrics["runningstats/sigma_1"] = base_env.vector_env.envs[0].stats1.stddev
+        episode.custom_metrics["runningstats/mu2"] = base_env.vector_env.envs[0].stats2.mu
+        episode.custom_metrics["runningstats/sigma_2"] = base_env.vector_env.envs[0].stats2.stddev
+        episode.custom_metrics["runningstats/cfp_reward"] = base_env.vector_env.envs[0].cfp_reward
+        episode.custom_metrics["runningstats/workload_violation_rwd"] = base_env.vector_env.envs[0].workload_violation_rwd
+        episode.custom_metrics["runningstats/combined_reward"] = base_env.vector_env.envs[0].combined_reward
+        episode.custom_metrics["runningstats/hysterisis_cost"] = base_env.vector_env.envs[0].cost_of_moving_mw
+        ax1,ax2,ax3 = base_env.vector_env.envs[0].action_choice
+        episode.custom_metrics["runningstats/ax1"] = ax1
+        episode.custom_metrics["runningstats/ax2"] = ax2
+        episode.custom_metrics["runningstats/ax3"] = ax3
