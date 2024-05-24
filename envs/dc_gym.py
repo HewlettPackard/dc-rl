@@ -67,7 +67,7 @@ class dc_gymenv(gym.Env):
         
         
         self.CRAC_Fan_load, self.CRAC_cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = None, None, None, None, None
-        self.CT_Cooling_load = self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]
+        self.HVAC_load = self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         self.cpu_load_frac = 0.5
         self.bat_SoC = 300*1e3  # all units are SI
@@ -106,7 +106,7 @@ class dc_gymenv(gym.Env):
         super().reset(seed=self.seed)
 
         self.CRAC_Fan_load, self.CRAC_cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = None, None, None, None, None
-        self.CT_Cooling_load = self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]
+        self.HVAC_load = self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         self.water_usage = None
         
@@ -165,7 +165,7 @@ class dc_gymenv(gym.Env):
                                                                                                                                                                        ambient_temp=self.ambient_temp,
                                                                                                                                                                        data_center_full_load=data_center_total_ITE_Load,
                                                                                                                                                                        DC_Config=self.DC_Config)
-        
+        self.HVAC_load = self.CT_Cooling_load + self.Compressor_load
         # Set the additional attributes for the cooling tower water usage calculation
         self.dc.hot_water_temp = avg_CRAC_return_temp  # °C
         self.dc.cold_water_temp = self.raw_curr_stpt  # °C
@@ -248,7 +248,7 @@ class dc_gymenv(gym.Env):
             zone_air_temp = sum(self.rackwise_outlet_temp)/len(self.rackwise_outlet_temp)
 
         # 'Facility Total HVAC Electricity Demand Rate(Whole Building)'  ie 'HVAC POWER'
-        hvac_power = self.CT_Cooling_load
+        hvac_power = self.HVAC_load
 
         # 'Facility Total Building Electricity Demand Rate(Whole Building)' ie 'IT POWER'
         if self.rackwise_cpu_pwr:

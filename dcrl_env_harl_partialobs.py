@@ -240,21 +240,35 @@ class DCRL(gym.Env):
 
         # states should be a dictionary with agent names as keys and their observations as values
         states = {}
-        infos = {}
+        self.infos = {}
         # Update states and infos considering the agents defined in the environment config self.agents.
         if "agent_ls" in self.agents:
             states["agent_ls"] = self.ls_state
-            infos["agent_ls"] = self.ls_info
+        self.infos["agent_ls"] = self.ls_info
         if "agent_dc" in self.agents:
             states["agent_dc"] = self.dc_state
-            infos["agent_dc"] = self.dc_info
+        self.infos["agent_dc"] = self.dc_info
         if "agent_bat" in self.agents:
             states["agent_bat"] = self.bat_state
-            infos["agent_bat"] = self.bat_info
+        self.infos["agent_bat"] = self.bat_info
 
-        available_actions = None
+        # Common information
+        self.infos['__common__'] = {}
+        self.infos['__common__']['time'] = t_i
+        self.infos['__common__']['workload'] = workload
+        self.infos['__common__']['weather'] = temp
+        self.infos['__common__']['ci'] = ci_i
+        self.infos['__common__']['ci_future'] = ci_i_future
         
-        return states, infos, available_actions 
+        # Store the states
+        self.infos['__common__']['states'] = {}
+        self.infos['__common__']['states']['agent_ls'] = self.ls_state
+        self.infos['__common__']['states']['agent_dc'] = self.dc_state
+        self.infos['__common__']['states']['agent_bat'] = self.bat_state
+        
+        available_actions = None
+                
+        return states, self.infos, available_actions 
 
             
 
@@ -309,6 +323,7 @@ class DCRL(gym.Env):
         
         # Do a step in the data center environment
         # By default, the reward is ignored. The reward is calculated after the battery env step with the total energy usage.
+        # dc_state -> [self.ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power]
         self.dc_state, _, self.dc_terminated, self.dc_truncated, self.dc_info = self.dc_env.step(action)
 
         # Finally, the battery environment/agent.
@@ -329,9 +344,11 @@ class DCRL(gym.Env):
         self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future)))  # for p.o.
         
         # Update the shared variables
+        # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]
         self.dc_state = np.float32(np.hstack((t_i, self.dc_state, ci_i_future[0])))  # for p.o.
         
         # Update the state of the bat state
+        # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
         self.bat_state = np.float32(np.hstack((t_i, self.bat_state, ci_i_future)))
 
         # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
@@ -346,32 +363,46 @@ class DCRL(gym.Env):
             obs['agent_ls'] = self.ls_state
             rew["agent_ls"] = self.indv_reward * self.ls_reward + self.collab_reward * self.bat_reward + self.collab_reward * self.dc_reward
             terminateds["agent_ls"] = False
-            info["agent_ls"] = self.ls_info
             truncateds["agent_ls"] = False
+        info["agent_ls"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
 
         # If agent_dc is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_dc" in self.agents:
             obs["agent_dc"] = self.dc_state
             rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_reward + self.collab_reward * self.bat_reward
             terminateds["agent_dc"] = False
-            info["agent_dc"] = {**self.dc_info, **add_info}
             truncateds["agent_dc"] = False
+        info["agent_dc"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
 
          # If agent_bat is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_bat" in self.agents:
             obs["agent_bat"] = self.bat_state
             rew["agent_bat"] = self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_reward
             terminateds["agent_bat"] = False
-            info["agent_bat"] = self.bat_info
             truncateds["agent_bat"] = False
-            
+        info["agent_bat"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
+
         info["__common__"] = reward_params
         if terminal:
             terminateds["__all__"] = False
             truncateds["__all__"] = True
             for agent in self.agents:
                 truncateds[agent] = True
-                
+            
+        # Common information
+        self.infos['__common__'] = {}
+        self.infos['__common__']['time'] = t_i
+        self.infos['__common__']['workload'] = workload
+        self.infos['__common__']['weather'] = temp
+        self.infos['__common__']['ci'] = ci_i
+        self.infos['__common__']['ci_future'] = ci_i_future
+    
+        # Store the states
+        self.infos['__common__']['states'] = {}
+        self.infos['__common__']['states']['agent_ls'] = self.ls_state
+        self.infos['__common__']['states']['agent_dc'] = self.dc_state
+        self.infos['__common__']['states']['agent_bat'] = self.bat_state
+
         return obs, rew, terminateds, truncateds, info
 
     def calculate_reward(self, params):
@@ -391,35 +422,6 @@ class DCRL(gym.Env):
         dc_reward = self.dc_reward_method(params)
         bat_reward = self.bat_reward_method(params)
         return ls_reward, dc_reward, bat_reward
-
-    def get_available_capacity(self, time_steps: int) -> float:
-        """
-        Calculate the available capacity of the datacenter over the next time_steps.
-
-        Args:
-            time_steps (int): Number of 15-minute time steps to consider.
-
-        Returns:
-            float: The available capacity in MW.
-        """
-        # Initialize the available capacity
-        available_capacity = 0
-
-        # Retrieve the current workload and the datacenter's total capacity
-        current_step = self.workload_m.time_step
-        max_capacity = self.datacenter_capacity_mw
-
-        # Calculate the remaining capacity over each time step
-        for step in range(1, time_steps + 1):
-            # Make sure we're not exceeding the total steps available in workload data
-            if current_step + step < len(self.workload_m.cpu_smooth):
-                current_workload = self.workload_m.cpu_smooth[current_step + step]
-                remaining_capacity = (1 - current_workload)*max_capacity
-                available_capacity += max(0, remaining_capacity)
-                # print(f"Step: {step}, Current Workload: {current_workload}, Remaining Capacity: {remaining_capacity}, Available Capacity: {available_capacity}")
-
-        # Return the average capacity over the given time steps
-        return available_capacity
     
     def render(self):
         pass

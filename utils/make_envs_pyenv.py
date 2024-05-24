@@ -48,7 +48,7 @@ def make_bat_fwd_env(month,
                     max_dc_pw_MW : float = 7.23,
                     dcload_max : float = 2.5,
                     dcload_min : float = 0.1,
-                    n_fwd_steps : int = 4,
+                    n_fwd_steps : int = 4
                     ):
     """Method to build the Battery environment.
 
@@ -111,10 +111,14 @@ def make_dc_pyeplus_env(month : int = 1,
         # TODO: Will add sum of IT POWER  and HVAC Power Here if AGP wants it
         'Facility Total Building Electricity Demand Rate(Whole Building)'  #  'IT POWER'
     ]
-        
-    observation_space = spaces.Box(low=np.float32(0.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
-                                    high=np.float32(1.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
-                                    )
+    if add_cpu_usage:    
+        observation_space = spaces.Box(low=np.float32(0.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
+                                        high=np.float32(1.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
+                                        )
+    else:
+        observation_space = spaces.Box(low=np.float32(0.0*np.ones(len(observation_variables)+num_sin_cos_vars+1)),  # p.o.
+                                        high=np.float32(1.0*np.ones(len(observation_variables)+num_sin_cos_vars+1)),  # p.o. here we add 1 to only include current CI
+                                        )
     
     ################################################################################
     ########################## Action Variables ####################################
@@ -145,6 +149,7 @@ def make_dc_pyeplus_env(month : int = 1,
     # setting a lower value of min_CRAC_setpoint will cause the CT to consume more power for higher crac setpoints during normal use. Lower min_CRAC_set -> higher HVAC power
     
     # dictionary with locations and min_CRAC_setpoint/max_amb_temp
+
     if 'NY'.lower() in location.lower():
         max_amb_temperature = 30.0
     elif 'AZ'.lower() in location.lower():
@@ -158,6 +163,7 @@ def make_dc_pyeplus_env(month : int = 1,
     ctafr, ct_rated_load = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint=min_temp, max_CRAC_setpoint=max_temp, max_ambient_temp=max_amb_temperature)
     dc_config.CT_REFRENCE_AIR_FLOW_RATE = ctafr
     dc_config.CT_FAN_REF_P = ct_rated_load
+    
     
     # Perform sizing of ITE power and ambient temperature
     # Find highest and lowest values of ITE power, rackwise outlet temperature
@@ -176,14 +182,22 @@ def make_dc_pyeplus_env(month : int = 1,
         dc_ambient_temp_list.append(sum(rackwise_outlet_temp)/len(rackwise_outlet_temp))   
     
     
+    # Calculate the maximum power consumption of the chiller
+    # Assuming the worst-case scenario with the highest load and ambient temperature
+    max_cooling_cap = ct_rated_load  # Maximum cooling capacity of the chiller
+    highest_ambient_temp = max_amb_temperature  # Highest ambient temperature
+    max_load = max(total_ite_pwr)  # Maximum load from your previous calculations
+
+    chiller_max_load = DataCenter.calculate_chiller_power(max_cooling_cap, max_load, highest_ambient_temp)
+
     # This will be battery sizing
-    max_dc_power_w =  1.1*max(total_ite_pwr) + 1.1*ct_rated_load # Watts
+    max_dc_power_w =  1.1*max(total_ite_pwr) + 1.1*ct_rated_load + 1.1*chiller_max_load # Watts
     
-    # By carbon explorer paper, we need a battery to feed the DC by at least 2 hours, so we need the energy metric
-    num_hours_battery = 2
+    # By carbon explorer paper, we need a battery to feed the DC by at least 1 hours, so we need the energy metric
+    num_hours_battery = 1
     num_timestep_hour = 4
     
-    max_dc_energy = (max_dc_power_w / num_timestep_hour) * (num_timestep_hour * num_hours_battery) # (energy_per_timestep) * (timestep * num_hours) HW
+    max_dc_energy = (max_dc_power_w / num_timestep_hour) * (num_timestep_hour * num_hours_battery) # (energy_per_timestep) * (timestep * num_hours) Wh
     max_dc_energy = max_dc_energy / 1e6 # Mhw
     
     ranges = {
@@ -195,10 +209,10 @@ def make_dc_pyeplus_env(month : int = 1,
         'dayOTY':[1.0, 366.0], #5 
         
         'Site Outdoor Air Drybulb Temperature(Environment)': [-10.0, 40.0], #6
-        'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [10.0, 30.0],  # reasonable range for setpoint; can be updated based on need #7
+        'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [15.0, 30.0],  # reasonable range for setpoint; can be updated based on need #7
         'Zone Air Temperature(West Zone)':[0.9*min(dc_ambient_temp_list), 1.1*max(dc_ambient_temp_list)],
-        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0.0, 1.1*ct_rated_load],  # this is cooling tower power
-        'Facility Total Electricity Demand Rate(Whole Building)': [0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr) +  1.1*ct_rated_load],  # TODO: This is not a part of the observation variables right now
+        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0.0, 1.1*ct_rated_load + 1.1*chiller_max_load],  # this is cooling tower power and chiller power
+        'Facility Total Electricity Demand Rate(Whole Building)': [0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr) +  1.1*ct_rated_load + 1.1*chiller_max_load],  # TODO: This is not a part of the observation variables right now
         'Facility Total Building Electricity Demand Rate(Whole Building)':[0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr)],  # this is it power
         
         'cpuUsage':[0.0, 1.0],
@@ -230,6 +244,3 @@ def make_dc_pyeplus_env(month : int = 1,
         ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][1]
     
     return dc_env, max_dc_pw
-    
-    
-    
