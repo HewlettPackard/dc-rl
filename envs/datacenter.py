@@ -415,30 +415,6 @@ def calculate_chiller_power(max_cooling_cap, load, ambient_temp):
     return power if oper_part_load_rat > 0 else 0
 
 
-# def calculate_chiller_power(CRAC_cooling_load, ambient_temp, DC_Config):
-#     """
-#     Calculate the power consumption of the chiller based on the cooling load and ambient temperature.
-
-#     Args:
-#         CRAC_cooling_load (float): Cooling load from the CRAC units that needs to be handled by the chiller.
-#         ambient_temp (float): Current ambient temperature outside the data center.
-#         DC_Config (config): Configuration of the data center containing COP related constants.
-
-#     Returns:
-#         float: Chiller power consumption in Watts.
-#     """
-#     # Coefficient of Performance calculation
-#     COP_base = DC_Config.CHILLER_COP
-#     k = DC_Config.CHILLER_COP_K
-#     T_nominal = DC_Config.CHILLER_COP_T_NOMINAL
-#     COP = COP_base - k * (ambient_temp - T_nominal)
-
-#     # Chiller power consumption calculation
-#     chiller_power = CRAC_cooling_load / COP if COP != 0 else 0
-
-#     return chiller_power
-
-
 def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data_center_full_load, DC_Config, ctafr=None):
     """Calculate the HVAV power attributes
 

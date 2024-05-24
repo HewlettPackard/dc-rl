@@ -64,7 +64,8 @@ class BatteryEnvFwd(gym.Env):
             info (dict): A dictionary that containing additional information about the environment state
         """
         self.battery.reset() # Reset the battery with a random current_load between 0 and 25% max capacity
-        
+        self.energy_added_removed = []
+
         self.dcload = self.dcload_min
         self.raw_obs = self._hist_data_collector()
         
@@ -191,7 +192,7 @@ class BatteryEnvFwd(gym.Env):
             self.var_to_dc = battery.charge(battery.capacity, self.charging_rate_modifier(battery) * 15 / 60)
         elif battery_action == 'discharge':
             discharge_energy = battery.discharge(battery.capacity, self.discharging_rate_modifier(battery) * 15 / 60,
-                                                 self.dcload * 0.25)
+                                                 self.dcload / 4)
             self.var_to_dc = -discharge_energy
         else:
             discharge_energy = 0
@@ -213,11 +214,14 @@ class BatteryEnvFwd(gym.Env):
         """
         if a_t == 'charge':
             self.total_energy_with_battery = dc_load * 1e3 * 0.25 + self.battery.charging_load * 1e3
+            self.energy_added_removed.append(self.battery.charging_load * 1e3)
             self.battery.charging_load = 0  # *Added*
+
             CO2_footprint = (self.total_energy_with_battery) * ci
         elif a_t == 'discharge':
             assert dc_load * 1e3 * 0.25 >= discharge_energy * 1e3, "Battery discharge rate should not be higher than the datacenter energy consumption rate"
             self.total_energy_with_battery = dc_load * 1e3 * 0.25 - discharge_energy * 1e3
+            self.energy_added_removed.append(-1.0*discharge_energy * 1e3)
             CO2_footprint = max(self.total_energy_with_battery, 0) * ci  # (KWh) * gCO2/KWh
         else:
             self.total_energy_with_battery = dc_load * 1e3 * 0.25
@@ -225,8 +229,11 @@ class BatteryEnvFwd(gym.Env):
 
         return CO2_footprint
 
+    def sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+    
     def charging_rate_modifier(self, battery):
-        """Calculates the battery state depeding charging rate
+        """Calculates the battery state depending on the charging rate
 
         Args:
             battery (batt.Battery2): Battery model
@@ -234,17 +241,17 @@ class BatteryEnvFwd(gym.Env):
         Returns:
             charging_rate (float): Battery charging rate
         """
-        # https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range
         curr_load = battery.current_load
         bat_max, bat_min = battery.capacity, 0
-        sigmoid_max, sigmoid_min = 4, -4
-        scaled_curr_load = (curr_load - bat_min) * (sigmoid_max - sigmoid_min) / (bat_max - bat_min) + sigmoid_min
-        charging_rate = 0.3
+        scaled_curr_load = (curr_load - bat_min) / (bat_max - bat_min)  # Scale current load to [0, 1]
 
-        return charging_rate
+        # Use a sigmoid function to model the charging rate
+        charging_rate = 0.5*(1 - self.sigmoid(10* (scaled_curr_load - 0.5)))  # Shift and scale sigmoid to model charging rate
+
+        return np.round(charging_rate, 4)
 
     def discharging_rate_modifier(self, battery):
-        """Calculates the battery state depeding discharging rate
+        """Calculates the battery state depending on the discharging rate
 
         Args:
             battery (batt.Battery2): Battery model
@@ -252,13 +259,12 @@ class BatteryEnvFwd(gym.Env):
         Returns:
             discharging_rate (float): Battery discharging rate
         """
-        # https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range
         curr_load = battery.current_load
         bat_max, bat_min = battery.capacity, 0
-        sigmoid_max, sigmoid_min = 4, -4
-        scaled_curr_load = (curr_load - bat_min) * (sigmoid_max - sigmoid_min) / (bat_max - bat_min) + sigmoid_min
-        discharging_rate = 0.3
+        scaled_curr_load = (curr_load - bat_min) / (bat_max - bat_min)  # Scale current load to [0, 1]
 
-        return discharging_rate
-        
+        # Use a sigmoid function to model the discharging rate
+        discharging_rate = 4*self.sigmoid(10 * (scaled_curr_load - 0.25))  # Shift and scale sigmoid to model discharging rate
+
+        return max(0.5, discharging_rate)
         

@@ -9,6 +9,7 @@ from gymnasium import spaces
 from utils import reward_creator
 from utils.base_agents import (BaseBatteryAgent, BaseHVACAgent,
                                BaseLoadShiftingAgent)
+from utils.rbc_agents import RBCBatteryAgent
 from utils.make_envs_pyenv import (make_bat_fwd_env, make_dc_pyeplus_env,
                                    make_ls_env)
 from utils.managers import (CI_Manager, Time_Manager, Weather_Manager,
@@ -86,6 +87,8 @@ class DCRL(gym.Env):
 
         # create environments and agents
         self.agents = env_config['agents']
+        self.rbc_agents = env_config.get('rbc_agents', [])
+        
         self.location = env_config['location']
         
         self.ci_file = env_config['cintensity_file']
@@ -145,7 +148,9 @@ class DCRL(gym.Env):
         self.observation_space = []
         self.action_space = []
         
+        # Do nothing controllers
         self.base_agents = {}
+        
         flexible_load = 0
         
         # Create the observation/action space if the agent is used for training.
@@ -240,21 +245,35 @@ class DCRL(gym.Env):
 
         # states should be a dictionary with agent names as keys and their observations as values
         states = {}
-        infos = {}
+        self.infos = {}
         # Update states and infos considering the agents defined in the environment config self.agents.
         if "agent_ls" in self.agents:
             states["agent_ls"] = self.ls_state
-            infos["agent_ls"] = self.ls_info
+        self.infos["agent_ls"] = self.ls_info
         if "agent_dc" in self.agents:
             states["agent_dc"] = self.dc_state
-            infos["agent_dc"] = self.dc_info
+        self.infos["agent_dc"] = self.dc_info
         if "agent_bat" in self.agents:
             states["agent_bat"] = self.bat_state
-            infos["agent_bat"] = self.bat_info
+        self.infos["agent_bat"] = self.bat_info
 
+        # Common information
+        self.infos['__common__'] = {}
+        self.infos['__common__']['time'] = t_i
+        self.infos['__common__']['workload'] = workload
+        self.infos['__common__']['weather'] = temp
+        self.infos['__common__']['ci'] = ci_i
+        self.infos['__common__']['ci_future'] = ci_i_future
+        
+        # Store the states
+        self.infos['__common__']['states'] = {}
+        self.infos['__common__']['states']['agent_ls'] = self.ls_state
+        self.infos['__common__']['states']['agent_dc'] = self.dc_state
+        self.infos['__common__']['states']['agent_bat'] = self.bat_state
+        
         available_actions = None
         
-        return states, infos, available_actions 
+        return states
 
             
 
@@ -309,6 +328,7 @@ class DCRL(gym.Env):
         
         # Do a step in the data center environment
         # By default, the reward is ignored. The reward is calculated after the battery env step with the total energy usage.
+        # dc_state -> [self.ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power]
         self.dc_state, _, self.dc_terminated, self.dc_truncated, self.dc_info = self.dc_env.step(action)
 
         # Finally, the battery environment/agent.
@@ -329,9 +349,11 @@ class DCRL(gym.Env):
         self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future)))  # for p.o.
         
         # Update the shared variables
+        # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]
         self.dc_state = np.float32(np.hstack((t_i, self.dc_state, ci_i_future[0])))  # for p.o.
         
         # Update the state of the bat state
+        # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
         self.bat_state = np.float32(np.hstack((t_i, self.bat_state, ci_i_future)))
 
         # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
@@ -346,32 +368,46 @@ class DCRL(gym.Env):
             obs['agent_ls'] = self.ls_state
             rew["agent_ls"] = self.indv_reward * self.ls_reward + self.collab_reward * self.bat_reward + self.collab_reward * self.dc_reward
             terminateds["agent_ls"] = False
-            info["agent_ls"] = self.ls_info
             truncateds["agent_ls"] = False
+        info["agent_ls"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
 
         # If agent_dc is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_dc" in self.agents:
             obs["agent_dc"] = self.dc_state
             rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_reward + self.collab_reward * self.bat_reward
             terminateds["agent_dc"] = False
-            info["agent_dc"] = {**self.dc_info, **add_info}
             truncateds["agent_dc"] = False
+        info["agent_dc"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
 
          # If agent_bat is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_bat" in self.agents:
             obs["agent_bat"] = self.bat_state
             rew["agent_bat"] = self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_reward
             terminateds["agent_bat"] = False
-            info["agent_bat"] = self.bat_info
             truncateds["agent_bat"] = False
-            
+        info["agent_bat"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
+
         info["__common__"] = reward_params
         if terminal:
             terminateds["__all__"] = False
             truncateds["__all__"] = True
             for agent in self.agents:
                 truncateds[agent] = True
-                
+        
+        # Common information
+        self.infos['__common__'] = {}
+        self.infos['__common__']['time'] = t_i
+        self.infos['__common__']['workload'] = workload
+        self.infos['__common__']['weather'] = temp
+        self.infos['__common__']['ci'] = ci_i
+        self.infos['__common__']['ci_future'] = ci_i_future
+        
+        # Store the states
+        self.infos['__common__']['states'] = {}
+        self.infos['__common__']['states']['agent_ls'] = self.ls_state
+        self.infos['__common__']['states']['agent_dc'] = self.dc_state
+        self.infos['__common__']['states']['agent_bat'] = self.bat_state
+        
         return obs, rew, terminateds, truncateds, info
 
     def calculate_reward(self, params):

@@ -164,6 +164,7 @@ def make_dc_pyeplus_env(month : int = 1,
     dc_config.CT_REFRENCE_AIR_FLOW_RATE = ctafr
     dc_config.CT_FAN_REF_P = ct_rated_load
     
+    
     # Perform sizing of ITE power and ambient temperature
     # Find highest and lowest values of ITE power, rackwise outlet temperature
     dc = DataCenter.DataCenter_ITModel(num_racks=dc_config.NUM_RACKS, rack_supply_approach_temp_list=dc_config.RACK_SUPPLY_APPROACH_TEMP_LIST,
@@ -181,14 +182,22 @@ def make_dc_pyeplus_env(month : int = 1,
         dc_ambient_temp_list.append(sum(rackwise_outlet_temp)/len(rackwise_outlet_temp))   
     
     
+    # Calculate the maximum power consumption of the chiller
+    # Assuming the worst-case scenario with the highest load and ambient temperature
+    max_cooling_cap = ct_rated_load  # Maximum cooling capacity of the chiller
+    highest_ambient_temp = max_amb_temperature  # Highest ambient temperature
+    max_load = max(total_ite_pwr)  # Maximum load from your previous calculations
+
+    chiller_max_load = DataCenter.calculate_chiller_power(max_cooling_cap, max_load, highest_ambient_temp)
+
     # This will be battery sizing
-    max_dc_power_w =  1.1*max(total_ite_pwr) + 1.1*ct_rated_load # Watts
+    max_dc_power_w =  1.1*max(total_ite_pwr) + 1.1*ct_rated_load + 1.1*chiller_max_load # Watts
     
-    # By carbon explorer paper, we need a battery to feed the DC by at least 2 hours, so we need the energy metric
-    num_hours_battery = 2
+    # By carbon explorer paper, we need a battery to feed the DC by at least 1 hours, so we need the energy metric
+    num_hours_battery = 1
     num_timestep_hour = 4
     
-    max_dc_energy = (max_dc_power_w / num_timestep_hour) * (num_timestep_hour * num_hours_battery) # (energy_per_timestep) * (timestep * num_hours) HW
+    max_dc_energy = (max_dc_power_w / num_timestep_hour) * (num_timestep_hour * num_hours_battery) # (energy_per_timestep) * (timestep * num_hours) Wh
     max_dc_energy = max_dc_energy / 1e6 # Mhw
     
     ranges = {
@@ -200,10 +209,10 @@ def make_dc_pyeplus_env(month : int = 1,
         'dayOTY':[1.0, 366.0], #5 
         
         'Site Outdoor Air Drybulb Temperature(Environment)': [-10.0, 40.0], #6
-        'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [10.0, 30.0],  # reasonable range for setpoint; can be updated based on need #7
+        'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [15.0, 30.0],  # reasonable range for setpoint; can be updated based on need #7
         'Zone Air Temperature(West Zone)':[0.9*min(dc_ambient_temp_list), 1.1*max(dc_ambient_temp_list)],
-        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0.0, 1.1*ct_rated_load],  # this is cooling tower power
-        'Facility Total Electricity Demand Rate(Whole Building)': [0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr) +  1.1*ct_rated_load],  # TODO: This is not a part of the observation variables right now
+        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0.0, 1.1*ct_rated_load + 1.1*chiller_max_load],  # this is cooling tower power and chiller power
+        'Facility Total Electricity Demand Rate(Whole Building)': [0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr) +  1.1*ct_rated_load + 1.1*chiller_max_load],  # TODO: This is not a part of the observation variables right now
         'Facility Total Building Electricity Demand Rate(Whole Building)':[0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr)],  # this is it power
         
         'cpuUsage':[0.0, 1.0],

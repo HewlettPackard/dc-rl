@@ -4,41 +4,41 @@
 
 import numpy as np
 
-class Battery:
-    capacity = 0 # Max MWh storage capacity
-    current_load = 0 # Current load in the battery, in MWh
+# class Battery:
+#     capacity = 0 # Max MWh storage capacity
+#     current_load = 0 # Current load in the battery, in MWh
 
-    def __init__(self, capacity, current_load=0):
-        self.capacity = capacity
-        self.current_load = current_load
+#     def __init__(self, capacity, current_load=0):
+#         self.capacity = capacity
+#         self.current_load = current_load
 
-    # charge the battery based on an hourly load
-    # returns the total load after charging with input_load
-    def charge(self, input_load):
-        self.current_load = self.current_load + input_load
-        if(self.current_load > self.capacity):
-            self.current_load = self.capacity
-        return self.current_load
+#     # charge the battery based on an hourly load
+#     # returns the total load after charging with input_load
+#     def charge(self, input_load):
+#         self.current_load = self.current_load + input_load
+#         if(self.current_load > self.capacity):
+#             self.current_load = self.capacity
+#         return self.current_load
 
-    # returns how much energy is discharged when
-    # output_load is drawn from the battery in an hour
-    def discharge(self, output_load):
-        self.current_load = self.current_load - output_load
-        if(self.current_load < 0): # not enough battery load
-            lacking_amount = self.current_load
-            self.current_load = 0
-            return output_load + lacking_amount
-        return output_load
+#     # returns how much energy is discharged when
+#     # output_load is drawn from the battery in an hour
+#     def discharge(self, output_load):
+#         self.current_load = self.current_load - output_load
+#         if(self.current_load < 0): # not enough battery load
+#             lacking_amount = self.current_load
+#             self.current_load = 0
+#             return output_load + lacking_amount
+#         return output_load
 
-    def is_full(self):
-        return (self.capacity == self.current_load)
+#     def is_full(self):
+#         return (self.capacity == self.current_load)
     
-    # calculate the minimum battery capacity required
-    # to be able to charge it with input_load
-    # amount of energy within an hour and
-    # expand the existing capacity with that amount
-    def find_and_init_capacity(self, input_load):
-        self.capacity = self.capacity + input_load
+#     # calculate the minimum battery capacity required
+#     # to be able to charge it with input_load
+#     # amount of energy within an hour and
+#     # expand the existing capacity with that amount
+#     def find_and_init_capacity(self, input_load):
+#         self.capacity = self.capacity + input_load
 
 # Battery model that includes efficiency and 
 # linear charging/discharging rate limits with respect to battery capacity
@@ -69,7 +69,7 @@ class Battery2:
     # defaults for lithium NMC cell
     def __init__(self, capacity, current_load=0,
                  eff_c = 1, eff_d = 1,
-                 c_lim = 3, d_lim = 3,
+                 c_lim = 0.1, d_lim = 1,
                  upper_u = -0.04, upper_v = 1,
                  lower_u = 0.01, lower_v = 0):
         self.capacity = capacity
@@ -119,14 +119,14 @@ class Battery2:
         max_charge = self.calc_max_charge(T_u)
         # Avisek added
         self.charging_load = min(max_charge, input_load) * self.eff_c * T_u
-        self.current_load = np.round(self.current_load + self.charging_load, 4) # 4 decimals to round to avoid overflow in rounding numbers
+        self.current_load = np.round(self.current_load + self.charging_load, 8) # 4 decimals to round to avoid overflow in rounding numbers
         return self.current_load
 
     # returns how much energy is discharged when
     # output_load is drawn from the battery over T_u hours (default T_u is 1/60)
     def discharge(self, output_load, T_u, dc_load):
         max_discharge = self.calc_max_discharge(T_u, dc_load)
-        self.current_load = np.round(self.current_load - (min(max_discharge, output_load) * self.eff_d * T_u), 4)
+        self.current_load = np.round(self.current_load - (min(max_discharge, output_load) * self.eff_d * T_u), 8)
         if(max_discharge < output_load): # not enough battery load
             return max_discharge*T_u
         return output_load*T_u
@@ -153,132 +153,132 @@ class Battery2:
             else:
                 break
     
-# return True if battery can meet all demand, False otherwise
-def sim_battery_247(df_ren, df_dc_pow, b):
+# # return True if battery can meet all demand, False otherwise
+# def sim_battery_247(df_ren, df_dc_pow, b):
 
-    points_per_hour = 60
-
-
-    for i in range(df_dc_pow.shape[0]):
-        ren_mw = df_ren[i]
-        df_dc = df_dc_pow["avg_dc_power_mw"][i]
-        net_load = ren_mw - df_dc
-
-        actual_discharge = 0
-        # Apply the net power points_per_hour times
-        for j in range(points_per_hour):
-
-            # surplus, charge
-            if net_load > 0:
-                b.charge(net_load, 1/points_per_hour)
-
-            else:
-                # deficit, discharge
-                actual_discharge += b.discharge(-net_load, 1/points_per_hour)
-                # if we couldnt discharge enough, exit
-        # check if actual dicharge was sufficient to meet net load (with some tolerance for imprecision)
-        if net_load < 0 and actual_discharge < -net_load - 0.0001:
-            return False
-    return True
+#     points_per_hour = 60
 
 
+#     for i in range(df_dc_pow.shape[0]):
+#         ren_mw = df_ren[i]
+#         df_dc = df_dc_pow["avg_dc_power_mw"][i]
+#         net_load = ren_mw - df_dc
 
-# binary search for smallest battery size that meets all demand    
-def calculate_247_battery_capacity_b2_sim(df_ren, df_dc_pow, max_bsize):
+#         actual_discharge = 0
+#         # Apply the net power points_per_hour times
+#         for j in range(points_per_hour):
 
-    # first check special case, no battery:
-    if sim_battery_247(df_ren, df_dc_pow, Battery2(0,0)):
-        return 0
+#             # surplus, charge
+#             if net_load > 0:
+#                 b.charge(net_load, 1/points_per_hour)
 
-    l = 0
-    u = max_bsize
-    while u - l > 0.1:
-        med = (u + l) / 2
-        if sim_battery_247(df_ren, df_dc_pow, Battery2(med,med)):
-            u = med
-        else:
-            l = med
+#             else:
+#                 # deficit, discharge
+#                 actual_discharge += b.discharge(-net_load, 1/points_per_hour)
+#                 # if we couldnt discharge enough, exit
+#         # check if actual dicharge was sufficient to meet net load (with some tolerance for imprecision)
+#         if net_load < 0 and actual_discharge < -net_load - 0.0001:
+#             return False
+#     return True
 
-    # check if max size was too small
-    if u == max_bsize:
-        return np.nan
-    return med
 
-# binary search for smallest battery size that meets all demand    
-def calculate_247_battery_capacity_b1_sim(df_ren, df_dc_pow, max_bsize):
 
-    # first check special case, no battery:
-    if sim_battery_247(df_ren, df_dc_pow, Battery(0,0)):
-        return 0
+# # binary search for smallest battery size that meets all demand    
+# def calculate_247_battery_capacity_b2_sim(df_ren, df_dc_pow, max_bsize):
 
-    l = 0
-    u = max_bsize
-    while u - l > 0.1:
-        med = (u + l) / 2
-        if sim_battery_247(df_ren, df_dc_pow, Battery(med,med)):
-            u = med
-        else:
-            l = med
+#     # first check special case, no battery:
+#     if sim_battery_247(df_ren, df_dc_pow, Battery2(0,0)):
+#         return 0
 
-    # check if max size was too small
-    if u == max_bsize:
-        return np.nan
-    return med
+#     l = 0
+#     u = max_bsize
+#     while u - l > 0.1:
+#         med = (u + l) / 2
+#         if sim_battery_247(df_ren, df_dc_pow, Battery2(med,med)):
+#             u = med
+#         else:
+#             l = med
+
+#     # check if max size was too small
+#     if u == max_bsize:
+#         return np.nan
+#     return med
+
+# # binary search for smallest battery size that meets all demand    
+# def calculate_247_battery_capacity_b1_sim(df_ren, df_dc_pow, max_bsize):
+
+#     # first check special case, no battery:
+#     if sim_battery_247(df_ren, df_dc_pow, Battery(0,0)):
+#         return 0
+
+#     l = 0
+#     u = max_bsize
+#     while u - l > 0.1:
+#         med = (u + l) / 2
+#         if sim_battery_247(df_ren, df_dc_pow, Battery(med,med)):
+#             u = med
+#         else:
+#             l = med
+
+#     # check if max size was too small
+#     if u == max_bsize:
+#         return np.nan
+#     return med
         
-# Takes renewable supply and dc power as input dataframes
-# returns how much battery capacity is needed to make
-# dc operate on renewables 24/7
-def calculate_247_battery_capacity(df_ren, df_dc_pow):
-    battery_cap = 0 # return value stored here, capacity needed
-    b = Battery(0) # start with an empty battery
+# # Takes renewable supply and dc power as input dataframes
+# # returns how much battery capacity is needed to make
+# # dc operate on renewables 24/7
+# def calculate_247_battery_capacity(df_ren, df_dc_pow):
+#     battery_cap = 0 # return value stored here, capacity needed
+#     b = Battery(0) # start with an empty battery
 
-    for i in range(df_dc_pow.shape[0]):
-        ren_mw = df_ren[i]
-        df_dc = df_dc_pow["avg_dc_power_mw"][i]
+#     for i in range(df_dc_pow.shape[0]):
+#         ren_mw = df_ren[i]
+#         df_dc = df_dc_pow["avg_dc_power_mw"][i]
 
-        if df_dc > ren_mw:  # if there's not enough renewable supply, need to discharge
-            if(b.capacity == 0):
-                b.find_and_init_capacity(df_dc - ren_mw) # find how much battery cap needs to be
-            else:
-                load_before = b.current_load
-                if(load_before == 0):
-                    b.find_and_init_capacity(df_dc - ren_mw)
-                else:
-                    drawn_amount = b.discharge(df_dc - ren_mw)
-                    if(drawn_amount < (df_dc - ren_mw)):
-                        b.find_and_init_capacity((df_dc - ren_mw) - drawn_amount)
-        else:  # there's excess renewable supply, charge batteries
-            if b.capacity > 0:
-                b.charge(ren_mw-df_dc)
-            elif b.is_full():
-                b = Battery(0)
+#         if df_dc > ren_mw:  # if there's not enough renewable supply, need to discharge
+#             if(b.capacity == 0):
+#                 b.find_and_init_capacity(df_dc - ren_mw) # find how much battery cap needs to be
+#             else:
+#                 load_before = b.current_load
+#                 if(load_before == 0):
+#                     b.find_and_init_capacity(df_dc - ren_mw)
+#                 else:
+#                     drawn_amount = b.discharge(df_dc - ren_mw)
+#                     if(drawn_amount < (df_dc - ren_mw)):
+#                         b.find_and_init_capacity((df_dc - ren_mw) - drawn_amount)
+#         else:  # there's excess renewable supply, charge batteries
+#             if b.capacity > 0:
+#                 b.charge(ren_mw-df_dc)
+#             elif b.is_full():
+#                 b = Battery(0)
 
-        if b.capacity > 0 and battery_cap != np.nan:
-            battery_cap = max(battery_cap, b.capacity)
+#         if b.capacity > 0 and battery_cap != np.nan:
+#             battery_cap = max(battery_cap, b.capacity)
  
-    return battery_cap
+#     return battery_cap
 
-# Takes battery capacity, renewable supply and dc power as input dataframes
-# and calculates how much battery can increase renewable coverage
-# returns the non renewable amount that battery cannot cover
-def apply_battery(battery_capacity, df_ren, df_dc_pow):
-    b = Battery2(battery_capacity, battery_capacity)
-    tot_non_ren_mw = 0 # store the mw amount battery cannot supply here
+# # Takes battery capacity, renewable supply and dc power as input dataframes
+# # and calculates how much battery can increase renewable coverage
+# # returns the non renewable amount that battery cannot cover
+# def apply_battery(battery_capacity, df_ren, df_dc_pow):
+#     b = Battery2(battery_capacity, battery_capacity)
+#     tot_non_ren_mw = 0 # store the mw amount battery cannot supply here
 
-    points_per_hour = 60
-    for i in range(df_dc_pow.shape[0]):
-        ren_mw = df_ren[i]
-        df_dc = df_dc_pow["avg_dc_power_mw"][i]
-        gap = df_dc - ren_mw
-        discharged_amount = 0
-        for j in range(points_per_hour):
-            # lack or excess renewable supply
-            if gap > 0: #discharging from battery
-                discharged_amount += b.discharge(gap, 1/points_per_hour)
-            else: # charging the battery
-                b.charge(-gap, 1/points_per_hour)
-                df_ren[i] += gap * (1 / points_per_hour) # decrease the available renewable energy
-        if gap > 0:
-            tot_non_ren_mw = tot_non_ren_mw + gap - discharged_amount
-            df_ren[i] += discharged_amount  # increase the renewables available by the discharged
-    return tot_non_ren_mw, df_ren
+#     points_per_hour = 60
+#     for i in range(df_dc_pow.shape[0]):
+#         ren_mw = df_ren[i]
+#         df_dc = df_dc_pow["avg_dc_power_mw"][i]
+#         gap = df_dc - ren_mw
+#         discharged_amount = 0
+#         for j in range(points_per_hour):
+#             # lack or excess renewable supply
+#             if gap > 0: #discharging from battery
+#                 discharged_amount += b.discharge(gap, 1/points_per_hour)
+#             else: # charging the battery
+#                 b.charge(-gap, 1/points_per_hour)
+#                 df_ren[i] += gap * (1 / points_per_hour) # decrease the available renewable energy
+#         if gap > 0:
+#             tot_non_ren_mw = tot_non_ren_mw + gap - discharged_amount
+#             df_ren[i] += discharged_amount  # increase the renewables available by the discharged
+#     return tot_non_ren_mw, df_ren
