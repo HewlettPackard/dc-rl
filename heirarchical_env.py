@@ -118,7 +118,19 @@ class HeirarchicalDCRL(gym.Env):
         self._max_episode_steps = 4*24*DEFAULT_CONFIG['config1']['days_per_episode']
 
         # Define observation and action space
-        self.observation_space = Dict({dc: Box(-10, 10, [5]) for dc in self.datacenters})
+        # List of observations that we get from each DC
+        self.observations = [
+            'dc_capacity',
+            'curr_workload',
+            'weather',
+            # 'total_power_kw',
+            'ci',
+        ]
+        # This is the observation for each DC
+        dc_observation_space = Dict({obs: Box(-10**4, 10**4) for obs in self.observations})
+        
+        # Observation space for this environment
+        self.observation_space = Dict({dc: dc_observation_space for dc in self.datacenters})
 
         # Define the components of a single transfer action
         transfer_action = Dict({
@@ -133,8 +145,9 @@ class HeirarchicalDCRL(gym.Env):
         })
 
     def reset(self, seed=None, options=None):
-        self.not_computed_workload = 0
+        
         # Set seed if we are not in rllib
+        seed = 0
         if seed is not None:
             np.random.seed(seed)
             random.seed(seed)
@@ -143,7 +156,6 @@ class HeirarchicalDCRL(gym.Env):
 
         self.low_level_observations = {}
         self.heir_obs = {}
-        infos = {}
 
         # Reset environments and store initial observations and infos
         for env_id, env in self.datacenters.items():
@@ -235,7 +247,9 @@ class HeirarchicalDCRL(gym.Env):
             'total_power_kw': self.low_level_infos[dc_id]['agent_dc'].get('dc_total_power_kW', 0),
             'ci': dc.ci_m.get_current_ci(),
         }
-
+        
+        obs = {key: np.asarray([val]) for (key, val) in obs.items() if key in self.observations}
+        
         return obs
 
     def workload_mapper(self, origin_dc, target_dc, action):
@@ -248,7 +262,8 @@ class HeirarchicalDCRL(gym.Env):
     def safety_enforcement(self, actions: dict):
         
         # Sort dictionary by workload_to_move
-        actions = dict(sorted(actions.items(), key = lambda x: x[1]['workload_to_move'], reverse=True))
+        actions = dict(
+            sorted(actions.items(), key=lambda x: x[1]['workload_to_move'], reverse=True))
 
         # base_workload_on_next_step for all dcs
         self.base_workload_on_next_step = {dc : self.datacenters[dc].workload_m.get_n_step_future_workload(n=1) for dc in self.datacenters}
