@@ -19,11 +19,11 @@ warnings.filterwarnings(
 
 CURR_DIR = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_CONFIG = {
-    # NY config
+    # DC1
     'config1' : {
-        'location': 'tx',
-        'cintensity_file': 'TX_NG_&_avgCI.csv',
-        'weather_file': 'USA_AZ_Phoenix-Sky.Harbor.epw',
+        'location': 'ny',
+        'cintensity_file': 'NY_NG_&_avgCI.csv',
+        'weather_file': 'USA_NY_New.York-LaGuardia.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc3.json',
         'datacenter_capacity_mw' : 1.0,
@@ -34,7 +34,7 @@ DEFAULT_CONFIG = {
         'nonoverlapping_shared_obs_space': True
         },
 
-    # GA config
+    # DC2
     'config2' : {
         'location': 'ga',
         'cintensity_file': 'GA_NG_&_avgCI.csv',
@@ -49,11 +49,11 @@ DEFAULT_CONFIG = {
         'nonoverlapping_shared_obs_space': True
         },
 
-    # WA config
+    # DC3
     'config3' : {
-        'location': 'va',
-        'cintensity_file': 'VA_NG_&_avgCI.csv',
-        'weather_file': 'UUSA_VA_Leesburg.Exec.epw',
+        'location': 'ca',
+        'cintensity_file': 'CA_NG_&_avgCI.csv',
+        'weather_file': 'USA_CA_San.Jose-Mineta.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
         'dc_config_file': 'dc_config_dc1.json',
         'datacenter_capacity_mw' : 1.0,
