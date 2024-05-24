@@ -167,6 +167,7 @@ class HeirarchicalDCRL(gym.Env):
         
         self.start_index_manager = env.workload_m.time_step
         self.simulated_days = env.days_per_episode
+        self.total_computed_workload = 0
 
         # Initialize metrics
         self.metrics = {
@@ -266,13 +267,14 @@ class HeirarchicalDCRL(gym.Env):
             sorted(actions.items(), key=lambda x: x[1]['workload_to_move'], reverse=True))
 
         # base_workload_on_next_step for all dcs
-        self.base_workload_on_next_step = {dc : self.datacenters[dc].workload_m.get_n_step_future_workload(n=1) for dc in self.datacenters}
         self.base_workload_on_curr_step = {dc : self.datacenters[dc].workload_m.get_n_step_future_workload(n=0) for dc in self.datacenters}
+        self.base_workload_on_next_step = {dc : self.datacenters[dc].workload_m.get_n_step_future_workload(n=1) for dc in self.datacenters}
+        
         # for _, base_workload in self.base_workload_on_next_step.items():
         #     assert (base_workload >= 0) & (base_workload <= 1), "base_workload next_step should be positive and a fraction"
         # for _, base_workload in self.base_workload_on_curr_step.items():
         #     assert (base_workload >= 0) & (base_workload <= 1), "base_workload curr_step should be positive and a fraction"
-        
+
         overassigned_workload = []
         for _, action in actions.items():
 
