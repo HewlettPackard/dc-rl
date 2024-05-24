@@ -21,6 +21,14 @@ class HierarchicalDCRLCombinatorial(HeirarchicalDCRL):
         
         self.stats1 = RunningStats()
         self.stats2 = RunningStats()
+        
+        self.cfp_reward =  0.0  # includes both dcrl reward and hysterisis reward
+        self.workload_violation_rwd = 0.0 # excess workload is penalized
+        self.combined_reward = 0.0  # cfp_reward + workload_violation_rwd
+        self.cost_of_moving_mw = 0.0
+        self.action_choice = 0.0
+        self.overassigned_wkld_penalty = config["overassigned_wkld_penalty"]
+        self.hysterisis_penalty = config["hysterisis_penalty"]
     
     def action_wrapper(self, actions):
         # actions is an array of floats in the range (-1.0, 1.0) of "ordered data centers" in the format
@@ -48,15 +56,16 @@ class HierarchicalDCRLCombinatorial(HeirarchicalDCRL):
             return new_actions
         
     def step(self, actions):
+        self.action_choice = actions
         actions = self.action_wrapper(actions)
         
         return super().step(actions)
     
     def calc_reward(self):
-        cfp_reward =  super().calc_reward()  # includes both dcrl reward and hysterisis reward
-        workload_violation_rwd = -1.0*sum([i[-1] for i in self.overassigned_workload])  # excess workload is penalized
-        combined_reward = non_linear_combine(cfp_reward, workload_violation_rwd, self.stats1, self.stats2)  # cfp_reward + workload_violation_rwd  # 
-        return combined_reward
+        self.cfp_reward =  super().calc_reward()  # includes both dcrl reward and hysterisis reward
+        self.workload_violation_rwd = 1.0*self.overassigned_wkld_penalty*sum([i[-1] for i in self.overassigned_workload])  # excess workload is penalized
+        self.combined_reward = non_linear_combine(self.cfp_reward, self.workload_violation_rwd, self.stats1, self.stats2)  # cfp_reward + workload_violation_rwd  # 
+        return self.combined_reward
 
     def get_dc_variables(self, dc_id: str) -> np.ndarray:
         dc = self.datacenters[dc_id]
@@ -77,7 +86,16 @@ class HierarchicalDCRLCombinatorial(HeirarchicalDCRL):
         #     'ci': dc.ci_m.get_current_ci(),
         # }
 
-        return obs        
+        return obs
+    
+    def set_hysterisis(self, mwh_to_move: float, sender: str, receiver: str):
+        PENALTY = self.hysterisis_penalty
+        
+        self.cost_of_moving_mw = mwh_to_move * PENALTY
+
+        self.datacenters[sender].dc_env.set_workload_hysterisis(self.cost_of_moving_mw)
+        self.datacenters[receiver].dc_env.set_workload_hysterisis(self.cost_of_moving_mw)
+            
 def main():
     """Main function."""
     
