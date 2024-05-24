@@ -428,4 +428,4 @@ if __name__ == '__main__':
         print(f'\t{metric}: {total_metrics[metric]:,.2f}')
 
     print("Total reward = ", total_reward)
-    print("Total computed workload = ", env.total_computed_worload)
+    print("Total computed workload = ", env.total_computed_workload)
