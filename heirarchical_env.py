@@ -311,6 +311,9 @@ class HeirarchicalDCRL(gym.Env):
         for dc, base_workload in self.base_workload_on_next_step.items():
             self.datacenters[dc].workload_m.set_n_step_future_workload(n = 1, workload = base_workload)
         
+        # Keep track of the computed workload
+        self.total_computed_workload += sum([workload for workload in self.base_workload_on_curr_step.values()])
+
         return overassigned_workload
     
     def set_hysterisis(self, mwh_to_move: float, sender: str, receiver: str):
