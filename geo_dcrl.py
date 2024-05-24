@@ -63,30 +63,30 @@ class HierarchicalDCRLCombinatorial(HeirarchicalDCRL):
     
     def calc_reward(self):
         self.cfp_reward =  super().calc_reward()  # includes both dcrl reward and hysterisis reward
-        self.workload_violation_rwd = 1.0*self.overassigned_wkld_penalty*sum([i[-1] for i in self.overassigned_workload])  # excess workload is penalized
+        self.workload_violation_rwd = -1.0*self.overassigned_wkld_penalty*sum([i[-1] for i in self.overassigned_workload])  # excess workload is penalized
         self.combined_reward = non_linear_combine(self.cfp_reward, self.workload_violation_rwd, self.stats1, self.stats2)  # cfp_reward + workload_violation_rwd  # 
         return self.combined_reward
 
-    def get_dc_variables(self, dc_id: str) -> np.ndarray:
-        dc = self.datacenters[dc_id]
+    # def get_dc_variables(self, dc_id: str) -> np.ndarray:
+    #     dc = self.datacenters[dc_id]
 
-        # TODO: check if the variables are normalized with the same values or with min_max values
-        obs = np.array([
-            dc.datacenter_capacity_mw,
-            dc.workload_m.get_current_workload(),
-            dc.weather_m.get_current_weather(),
-            self.low_level_infos[dc_id]['agent_dc'].get('dc_total_power_kW', 0)/1000.0,
-            dc.ci_m.get_current_ci(),
-        ])
-        # obs = {
-        #     'dc_capacity': dc.datacenter_capacity_mw,
-        #     'curr_workload': dc.workload_m.get_current_workload(),
-        #     'weather': dc.weather_m.get_current_weather(),
-        #     'total_power_kw': self.low_level_infos[dc_id]['agent_dc'].get('dc_total_power_kW', 0),
-        #     'ci': dc.ci_m.get_current_ci(),
-        # }
+    #     # TODO: check if the variables are normalized with the same values or with min_max values
+    #     obs = np.array([
+    #         dc.datacenter_capacity_mw,
+    #         dc.workload_m.get_current_workload(),
+    #         dc.weather_m.get_current_weather(),
+    #         self.low_level_infos[dc_id]['agent_dc'].get('dc_total_power_kW', 0)/1000.0,
+    #         dc.ci_m.get_current_ci(),
+    #     ])
+    #     # obs = {
+    #     #     'dc_capacity': dc.datacenter_capacity_mw,
+    #     #     'curr_workload': dc.workload_m.get_current_workload(),
+    #     #     'weather': dc.weather_m.get_current_weather(),
+    #     #     'total_power_kw': self.low_level_infos[dc_id]['agent_dc'].get('dc_total_power_kW', 0),
+    #     #     'ci': dc.ci_m.get_current_ci(),
+    #     # }
 
-        return obs
+    #     return obs
     
     def set_hysterisis(self, mwh_to_move: float, sender: str, receiver: str):
         PENALTY = self.hysterisis_penalty
