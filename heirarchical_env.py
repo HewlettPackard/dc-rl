@@ -357,45 +357,46 @@ if __name__ == '__main__':
     env = HeirarchicalDCRL(DEFAULT_CONFIG)
     
     done = False
-    obs, _ = env.reset(seed=0)
+    obs, info = env.reset(seed=0)
     total_reward = 0
-    
+
     greedy_optimizer = WorkloadOptimizer(list(env.datacenters.keys()))
     
+    agent = 2
     max_iterations = 4*24*30
-    # Antonio: Keep in mind that each environment is set to have days_per_episode=30. You can modify this parameter to simulate the whole year
+    
     with tqdm(total=max_iterations) as pbar:
         while not done:
-    
+            
             # Random actions
-            actions = env.action_space.sample()
+            if agent == 0:
+                actions = env.action_space.sample()
             
             # Do nothing
-            """
-            actions = {
-                'transfer_1': {
-                    'sender': 0,
-                    'receiver': 0,
-                    'workload_to_move': np.array([0.0])
+            elif agent == 1:
+                actions = {
+                    'transfer_1': {
+                        'sender': 0,
+                        'receiver': 0,
+                        'workload_to_move': np.array([0.0])
+                        }
                     }
-                }
-            """
 
             # One-step greedy
-            """
-            ci = [obs[dc][-1] for dc in env.datacenters]
-            actions = {
-                'transfer_1': {
-                       'sender': np.argmax(ci), 
-                       'receiver': np.argmin(ci), 
-                       'workload_to_move': np.array([1.])
-                       }
-                }
-            """
+            elif agent == 2:
+                ci = [obs[dc]['ci'] for dc in env.datacenters]
+                actions = {
+                    'transfer_1': {
+                        'sender': np.argmax(ci),
+                        'receiver': np.argmin(ci),
+                        'workload_to_move': np.array([1.])
+                        }
+                    }
 
             # Multi-step Greedy
-            # actions = greedy_optimizer.compute_actions(obs)
-                
+            else:
+                actions = greedy_optimizer.compute_actions(obs)
+            
             obs, reward, terminated, truncated, info = env.step(actions)
             done = truncated
             total_reward += reward
@@ -427,3 +428,4 @@ if __name__ == '__main__':
         print(f'\t{metric}: {total_metrics[metric]:,.2f}')
 
     print("Total reward = ", total_reward)
+    print("Total computed workload = ", env.total_computed_worload)
