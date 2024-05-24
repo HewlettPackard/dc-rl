@@ -3,18 +3,22 @@ import os
 import ray
 from ray import air, tune
 from ray.rllib.algorithms.ppo import PPO, PPOConfig
-
+from utils.rllib_callbacks import HierarchicalDCRL_Callback
 from geo_dcrl import (
     HierarchicalDCRLCombinatorial,
     DEFAULT_CONFIG
 )
-# from utils.rllib_callbacks import CustomCallbacks
 from create_trainable import create_wrapped_trainable
 
 NUM_WORKERS = 4
-NAME = "HDCRL-Combinatorial"
+NAME = "train_geo_dcrl_v2"
 RESULTS_DIR = './results/'
 NUM_TRAINING_STEPS = 300_000_000
+GAMMA = 0.50
+OVERASSIGNED_WORKLOAD_PENALTY = 0.0
+HYSTERISIS_PENALTY = 0.00
+DEFAULT_CONFIG.update({"overassigned_wkld_penalty": OVERASSIGNED_WORKLOAD_PENALTY,
+                       "hysterisis_penalty":HYSTERISIS_PENALTY})
 CONFIG = (
         PPOConfig()
         .environment(
@@ -28,11 +32,11 @@ CONFIG = (
             # observation_filter='MeanStdFilter'
             )
         .training(
-            gamma=0.5,
+            gamma=GAMMA,
             lr=1e-5,
             kl_coeff=0.2,
             clip_param=0.1,
-            entropy_coeff_schedule=0.2,  # [[0,0.02],[NUM_TRAINING_STEPS,0.0]],
+            entropy_coeff_schedule =[[0,0.01],[NUM_TRAINING_STEPS,0.0]],
             use_gae=True,
             train_batch_size=2048,
             num_sgd_iter=5,
@@ -41,6 +45,7 @@ CONFIG = (
         )
         .resources(num_gpus=0)
         .debugging(seed=0)
+        .callbacks(HierarchicalDCRL_Callback)
     )
 
 if __name__ == '__main__':
