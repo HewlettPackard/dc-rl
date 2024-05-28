@@ -32,9 +32,9 @@ class HeirarchicalDCRL_RLLib(HeirarchicalDCRL):
         # self.datacenters = {
         #     'DC1': DC1,
         # }
-        #self.observation_space = Dict({"high_level_policy": {dc: self.dc_observation_space for dc in self.datacenters}})
-        self.observation_space = self.dc_observation_space
-        
+        #self.observation_space = Dict({"high_level_agent": {dc: self.dc_observation_space for dc in self.datacenters}})
+        #self.observation_space = self.observation_space
+
     def reset(self, seed=None, options=None):
         
         # Set seed if we are not in rllib
@@ -73,12 +73,13 @@ class HeirarchicalDCRL_RLLib(HeirarchicalDCRL):
             for env_id in self.datacenters
         }
         #print("HEIRARCHICAL DCRL RLLIB RESET")
-        #obs = {}
-        #obs['high_level_agent'] = self.flatten_obs(self.heir_obs)
+        obs = {}
+        obs['high_level_agent'] = self.heir_obs
         self.all_done = {env_id: False for env_id in self.datacenters}
         #print(self.flatten_obs(self.heir_obs))
        
-        return self.flatten_obs(self.heir_obs), self.low_level_infos
+        #return self.flatten_obs(self.heir_obs), self.low_level_infos
+        return obs, self.low_level_infos
     
     def flatten_obs(self, obs):
         f_obs = {}
@@ -101,12 +102,11 @@ class HeirarchicalDCRL_RLLib(HeirarchicalDCRL):
     def _high_level_step(self, action):
         print("HIGH LEVEL STEP")
         logger.debug("High level agent sets goal")
-        
-        self.current_goal = action
+
         self.steps_remaining_at_level = 5
         self.num_high_level_steps += 1
         self.cumulative_reward = 0
-        self.overassigned_workload = self.safety_enforcement(actions)
+        self.overassigned_workload = self.safety_enforcement(action)
         obs, rew = {}, {}
         for env_id in self.datacenters:
             obs[env_id] = self.get_dc_variables(env_id)
