@@ -65,7 +65,7 @@ DEFAULT_CONFIG = {
         },
     
     # List of active low-level agents
-    'active_agents': ['agent_dc'],
+    'active_agents': ['agent_ls'],
 
     # config for loading trained low-level agents
     'low_level_actor_config': {
@@ -127,10 +127,10 @@ class HeirarchicalDCRL(gym.Env):
             'ci',
         ]
         # This is the observation for each DC
-        dc_observation_space = Dict({obs: Box(-10**4, 10**4) for obs in self.observations})
+        self.dc_observation_space = Dict({obs: Box(-10**4, 10**4) for obs in self.observations})
         
         # Observation space for this environment
-        self.observation_space = Dict({dc: dc_observation_space for dc in self.datacenters})
+        self.observation_space = Dict({dc: self.dc_observation_space for dc in self.datacenters})
 
         # Define the components of a single transfer action
         transfer_action = Dict({
@@ -428,4 +428,4 @@ if __name__ == '__main__':
         print(f'\t{metric}: {total_metrics[metric]:,.2f}')
 
     print("Total reward = ", total_reward)
-    print("Total computed workload = ", env.total_computed_worload)
+    print("Total computed workload = ", env.total_computed_workload)
