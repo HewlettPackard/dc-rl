@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>envs package &mdash; DCRL-Green 0.0.1 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <title>envs package &mdash; Sustain-DC 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/clipboard.min.js"></script>
-        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -37,7 +37,7 @@
           
           
           <a href="../index.html" class="icon icon-home">
-            DCRL-Green
+            Sustain-DC
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -61,10 +61,10 @@
 <li class="toctree-l3"><a class="reference internal" href="dcrl_eplus_env.html">dcrl_eplus_env module</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">envs package</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-envs.bat_env_fwd_view">envs.bat_env_fwd_view module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-envs.carbon_ls">envs.carbon_ls module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#envs-bat-env-fwd-view-module">envs.bat_env_fwd_view module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#envs-carbon-ls-module">envs.carbon_ls module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-envs.datacenter">envs.datacenter module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#module-envs.dc_gym">envs.dc_gym module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#envs-dc-gym-module">envs.dc_gym module</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#module-envs">Module contents</a></li>
 </ul>
 </li>
@@ -89,7 +89,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">DCRL-Green</a>
+          <a href="../index.html">Sustain-DC</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -110,256 +110,31 @@
            <div itemprop="articleBody">
              
   <section id="envs-package">
-<h1>envs package<a class="headerlink" href="#envs-package" title="Permalink to this headline"></a></h1>
+<h1>envs package<a class="headerlink" href="#envs-package" title="Link to this heading"></a></h1>
 <section id="submodules">
-<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline"></a></h2>
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
 </section>
-<section id="module-envs.bat_env_fwd_view">
-<span id="envs-bat-env-fwd-view-module"></span><h2>envs.bat_env_fwd_view module<a class="headerlink" href="#module-envs.bat_env_fwd_view" title="Permalink to this headline"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.bat_env_fwd_view.</span></span><span class="sig-name descname"><span class="pre">BatteryEnvFwd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gymnasium.core.Env</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.CO2_footprint">
-<span class="sig-name descname"><span class="pre">CO2_footprint</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dc_load</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">a_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">discharge_energy</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.CO2_footprint"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.CO2_footprint" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates carbon footprint</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>dc_load</strong> (<em>float</em>) – Total energy consumption of the DC.</p></li>
-<li><p><strong>ci</strong> (<em>float</em>) – Carbon intensity at current time step.</p></li>
-<li><p><strong>a_t</strong> (<em>string</em>) – Agent’s action.</p></li>
-<li><p><strong>discharge_energy</strong> (<em>float</em>) – Amount of energy to be discharged</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Carbon footprint produced at the current time step</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>CO2_footprint (float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.charging_rate_modifier">
-<span class="sig-name descname"><span class="pre">charging_rate_modifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">battery</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.charging_rate_modifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.charging_rate_modifier" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates the battery state depeding charging rate</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>battery</strong> (<em>batt.Battery2</em>) – Battery model</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Battery charging rate</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>charging_rate (float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.discharging_rate_modifier">
-<span class="sig-name descname"><span class="pre">discharging_rate_modifier</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">battery</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.discharging_rate_modifier"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.discharging_rate_modifier" title="Permalink to this definition"></a></dt>
-<dd><p>Calculates the battery state depeding discharging rate</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>battery</strong> (<em>batt.Battery2</em>) – Battery model</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Battery discharging rate</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>discharging_rate (float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.reset" title="Permalink to this definition"></a></dt>
-<dd><p>Reset <cite>BatteryEnvFwd</cite> to initial state.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – Random seed.</p></li>
-<li><p><strong>options</strong> (<em>dict</em><em>, </em><em>optional</em>) – Environment options.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Current state of the environmment
-info (dict): A dictionary that containing additional information about the environment state</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>temp_state (List[float])</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.set_dcload">
-<span class="sig-name descname"><span class="pre">set_dcload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dc_load</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.set_dcload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.set_dcload" title="Permalink to this definition"></a></dt>
-<dd><p>Set the current DC energy consumption</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>float</strong> (<em>dc_load</em>) – DC energy consumption.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.step">
-<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action_id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.step" title="Permalink to this definition"></a></dt>
-<dd><p>Step function
-:param action_id: the action id
-:type action_id: int</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Current state of the environmment
-reward (float): reward value.
-done (bool): A boolean value signaling the if the episode has ended.
-info (dict): A dictionary that containing additional information about the environment state</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>obs (list)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.update_ci">
-<span class="sig-name descname"><span class="pre">update_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ci</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ci_n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.update_ci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.update_ci" title="Permalink to this definition"></a></dt>
-<dd><p>Sets internal CIs values.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.update_state">
-<span class="sig-name descname"><span class="pre">update_state</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.update_state"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.update_state" title="Permalink to this definition"></a></dt>
-<dd><p>Updates obsevation with current DC energy consumption</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>normalized_observations (string)</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+<section id="envs-bat-env-fwd-view-module">
+<h2>envs.bat_env_fwd_view module<a class="headerlink" href="#envs-bat-env-fwd-view-module" title="Link to this heading"></a></h2>
 </section>
-<section id="module-envs.carbon_ls">
-<span id="envs-carbon-ls-module"></span><h2>envs.carbon_ls module<a class="headerlink" href="#module-envs.carbon_ls" title="Permalink to this headline"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.carbon_ls.</span></span><span class="sig-name descname"><span class="pre">CarbonLoadEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexible_workload_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_battery</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gymnasium.core.Env</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv.reset" title="Permalink to this definition"></a></dt>
-<dd><p>Reset <cite>CarbonLoadEnv</cite> to initial state.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Current state of the environmment
-info (dict): A dictionary that containing additional information about the environment state</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>observations (List[float])</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv.step">
-<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv.step" title="Permalink to this definition"></a></dt>
-<dd><p>Makes an environment step in`CarbonLoadEnv.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>action</strong> (<em>int</em>) – Action to take.</p>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Current state of the environmment
-reward (float): reward value.
-done (bool): A boolean value signaling the if the episode has ended.
-info (dict): A dictionary that containing additional information about the environment state</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>observations (List[float])</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv.update_workload">
-<span class="sig-name descname"><span class="pre">update_workload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">day_workload</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workload</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv.update_workload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv.update_workload" title="Permalink to this definition"></a></dt>
-<dd><p>Makes an environment step in`BatteryEnvFwd.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>day_workload</strong> (<em>float</em>) – Total amout of daily flexible workload.</p></li>
-<li><p><strong>workload</strong> (<em>float</em>) – Workload assigned at the current time step</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+<section id="envs-carbon-ls-module">
+<h2>envs.carbon_ls module<a class="headerlink" href="#envs-carbon-ls-module" title="Link to this heading"></a></h2>
 </section>
 <section id="module-envs.datacenter">
-<span id="envs-datacenter-module"></span><h2>envs.datacenter module<a class="headerlink" href="#module-envs.datacenter" title="Permalink to this headline"></a></h2>
+<span id="envs-datacenter-module"></span><h2>envs.datacenter module<a class="headerlink" href="#module-envs.datacenter" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="envs.datacenter.CPU">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">CPU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_load_pwr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idle_pwr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpu_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">CPU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_load_pwr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idle_pwr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpu_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.CPU.compute_instantaneous_cpu_pwr">
-<span class="sig-name descname"><span class="pre">compute_instantaneous_cpu_pwr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inlet_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ITE_load_pct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.compute_instantaneous_cpu_pwr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.compute_instantaneous_cpu_pwr" title="Permalink to this definition"></a></dt>
-<dd><p>Calculate the power consumption of the CPUs at the current step</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>inlet_temp</strong> (<em>float</em>) – Room temperature</p></li>
-<li><p><strong>ITE_load_pct</strong> (<em>float</em>) – Current CPU usage</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Current CPU power usage</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>cpu_power (float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.CPU.compute_instantaneous_fan_pwr">
-<span class="sig-name descname"><span class="pre">compute_instantaneous_fan_pwr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inlet_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ITE_load_pct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.compute_instantaneous_fan_pwr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.compute_instantaneous_fan_pwr" title="Permalink to this definition"></a></dt>
-<dd><p>Calculate the power consumption of the Fans of the IT equipment at the current step</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>inlet_temp</strong> (<em>float</em>) – Room temperature</p></li>
-<li><p><strong>ITE_load_pct</strong> (<em>float</em>) – Current CPU usage</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Current Fans power usage</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>cpu_power (float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="envs.datacenter.CPU.cpu_curve1">
-<span class="sig-name descname"><span class="pre">cpu_curve1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.cpu_curve1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.cpu_curve1" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">cpu_curve1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.cpu_curve1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.cpu_curve1" title="Link to this definition"></a></dt>
 <dd><p>initialize the  cpu power ratio curve at different IT workload ratios as a function of inlet temperatures [3]</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="envs.datacenter.CPU.itfan_curve2">
-<span class="sig-name descname"><span class="pre">itfan_curve2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.itfan_curve2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.itfan_curve2" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">itfan_curve2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.itfan_curve2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.itfan_curve2" title="Link to this definition"></a></dt>
 <dd><p>initialize the itfan velocity ratio curve at different IT workload ratios as a function of inlet temperatures [3]</p>
 </dd></dl>
 
@@ -367,25 +142,35 @@ info (dict): A dictionary that containing additional information about the envir
 
 <dl class="py class">
 <dt class="sig sig-object py" id="envs.datacenter.DataCenter_ITModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">DataCenter_ITModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_racks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_supply_approach_temp_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_CPU_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_W_per_rack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DC_ITModel_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">DataCenter_ITModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_racks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_supply_approach_temp_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_CPU_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_W_per_rack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DC_ITModel_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chiller_sizing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.DataCenter_ITModel.calculate_cooling_tower_water_usage">
+<span class="sig-name descname"><span class="pre">calculate_cooling_tower_water_usage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel.calculate_cooling_tower_water_usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel.calculate_cooling_tower_water_usage" title="Link to this definition"></a></dt>
+<dd><p>Calculate the estimated water usage of the cooling tower.</p>
+<p>This function uses the attributes set in the class to estimate the water usage based
+[Sharma, R.K., Shah, A., Bash, C.E., Christian, T., &amp; Patel, C.D. (2009). Water efficiency management in datacenters: Metrics and methodology. 2009 IEEE International Symposium on Sustainable Systems and Technology, 1-6.]
+[Mohammed Shublaq, Ahmad K. Sleiti., (2020).  Experimental analysis of water evaporation losses in cooling towers using filters]
+<a class="reference external" href="https://spxcooling.com/water-calculator/">https://spxcooling.com/water-calculator/</a></p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="envs.datacenter.DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp">
-<span class="sig-name descname"><span class="pre">compute_datacenter_IT_load_outlet_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ITE_load_pct_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CRAC_setpoint</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">compute_datacenter_IT_load_outlet_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ITE_load_pct_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CRAC_setpoint</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp" title="Link to this definition"></a></dt>
 <dd><p>Calculate the average outlet temperature of all the racks</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ITE_load_pct_list</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – CPU load for each rack</p></li>
 <li><p><strong>CRAC_setpoint</strong> (<em>float</em>) – CRAC setpoint</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Rackwise CPU power usage
 rackwise_itfan_pwr (List[float]):  Rackwise IT fan power usage
 rackwise_outlet_temp (List[float]): Rackwise outlet temperature</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>rackwise_cpu_pwr (List[float])</p>
 </dd>
 </dl>
@@ -393,7 +178,7 @@ rackwise_outlet_temp (List[float]): Rackwise outlet temperature</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="envs.datacenter.DataCenter_ITModel.total_datacenter_full_load">
-<span class="sig-name descname"><span class="pre">total_datacenter_full_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel.total_datacenter_full_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel.total_datacenter_full_load" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">total_datacenter_full_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel.total_datacenter_full_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel.total_datacenter_full_load" title="Link to this definition"></a></dt>
 <dd><p>Calculate the total DC IT(IT CPU POWER + IT FAN POWER) power consumption</p>
 </dd></dl>
 
@@ -401,31 +186,55 @@ rackwise_outlet_temp (List[float]): Rackwise outlet temperature</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="envs.datacenter.Rack">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">Rack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">CPU_config_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_W_per_rack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack" title="Permalink to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">Rack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">CPU_config_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_W_per_rack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.Rack.clamp_supply_approach_temp">
+<span class="sig-name descname"><span class="pre">clamp_supply_approach_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">supply_approach_temperature</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.clamp_supply_approach_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.clamp_supply_approach_temp" title="Link to this definition"></a></dt>
+<dd><p>Returns the clamped delta/ supply approach temperature between the range [3.8, 5.3]</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Supply approach temperature</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="envs.datacenter.Rack.compute_instantaneous_pwr">
-<span class="sig-name descname"><span class="pre">compute_instantaneous_pwr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inlet_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ITE_load_pct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.compute_instantaneous_pwr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.compute_instantaneous_pwr" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">compute_instantaneous_pwr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inlet_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ITE_load_pct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.compute_instantaneous_pwr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.compute_instantaneous_pwr" title="Link to this definition"></a></dt>
 <dd><p>Calculate the power consumption of the whole rack at the current step</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>inlet_temp</strong> (<em>float</em>) – Room temperature</p></li>
 <li><p><strong>ITE_load_pct</strong> (<em>float</em>) – Current CPU usage</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>Current CPU power usage</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>cpu_power (float)</p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.Rack.compute_instantaneous_pwr_vecd">
+<span class="sig-name descname"><span class="pre">compute_instantaneous_pwr_vecd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inlet_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ITE_load_pct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.compute_instantaneous_pwr_vecd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.compute_instantaneous_pwr_vecd" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.Rack.cpu_and_fan_init">
+<span class="sig-name descname"><span class="pre">cpu_and_fan_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.cpu_and_fan_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.cpu_and_fan_init" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="envs.datacenter.Rack.get_average_rack_fan_v">
-<span class="sig-name descname"><span class="pre">get_average_rack_fan_v</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_average_rack_fan_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_average_rack_fan_v" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_average_rack_fan_v</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_average_rack_fan_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_average_rack_fan_v" title="Link to this definition"></a></dt>
 <dd><p>Calculate the average fan velocity for each rack
 :returns: Average fan flow rate for the rack
 :rtype: (float)</p>
@@ -433,26 +242,34 @@ rackwise_outlet_temp (List[float]): Rackwise outlet temperature</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="envs.datacenter.Rack.get_current_rack_load">
-<span class="sig-name descname"><span class="pre">get_current_rack_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_current_rack_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_current_rack_load" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_current_rack_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_current_rack_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_current_rack_load" title="Link to this definition"></a></dt>
 <dd><p>Returns the total power consumption of the rack</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>Total power consumption of the rack</p>
 </dd>
-<dt class="field-even">Return type</dt>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>float</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.datacenter.Rack.get_total_rack_fan_v">
+<span class="sig-name descname"><span class="pre">get_total_rack_fan_v</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_total_rack_fan_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_total_rack_fan_v" title="Link to this definition"></a></dt>
+<dd><p>Calculate the total fan velocity for each rack
+:returns: Total fan flow rate for the rack
+:rtype: (float)</p>
 </dd></dl>
 
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="envs.datacenter.calculate_HVAC_power">
-<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">calculate_HVAC_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">CRAC_setpoint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_CRAC_return_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ambient_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_center_full_load</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DC_Config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#calculate_HVAC_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.calculate_HVAC_power" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">calculate_HVAC_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">CRAC_setpoint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_CRAC_return_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ambient_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_center_full_load</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DC_Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctafr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#calculate_HVAC_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.calculate_HVAC_power" title="Link to this definition"></a></dt>
 <dd><p>Calculate the HVAV power attributes</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>CRAC_Setpoint</strong> (<em>float</em>) – The control action</p></li>
 <li><p><strong>avg_CRAC_return_temp</strong> (<em>float</em>) – The average of the temperatures from all the Racks + their corresponding return approach temperature (Delta)</p></li>
@@ -460,13 +277,13 @@ rackwise_outlet_temp (List[float]): Rackwise outlet temperature</p>
 <li><p><strong>data_center_full_load</strong> (<em>float</em>) – total data center capacity</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>CRAC fan power
 CT_Fan_pwr (float):  Cooling tower fan power
 CRAC_cooling_load (float): CRAC cooling load
 Compressor_load (float): Chiller compressor load</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>CRAC_Fan_load (float)</p>
 </dd>
 </dl>
@@ -474,127 +291,82 @@ Compressor_load (float): Chiller compressor load</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="envs.datacenter.calculate_avg_CRAC_return_temp">
-<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">calculate_avg_CRAC_return_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rack_return_approach_temp_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rackwise_outlet_temp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#calculate_avg_CRAC_return_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.calculate_avg_CRAC_return_temp" title="Permalink to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">calculate_avg_CRAC_return_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rack_return_approach_temp_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rackwise_outlet_temp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#calculate_avg_CRAC_return_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.calculate_avg_CRAC_return_temp" title="Link to this definition"></a></dt>
 <dd><p>Calculate the CRAC return air temperature</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>rack_return_approach_temp_list</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – The delta change in temperature from each rack to the CRAC unit</p></li>
 <li><p><strong>rackwise_outlet_temp</strong> (<em>float</em>) – The outlet temperature of each rack</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>CRAC return air temperature</p>
 </dd>
-<dt class="field-odd">Return type</dt>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>(float)</p>
 </dd>
 </dl>
 </dd></dl>
 
-</section>
-<section id="module-envs.dc_gym">
-<span id="envs-dc-gym-module"></span><h2>envs.dc_gym module<a class="headerlink" href="#module-envs.dc_gym" title="Permalink to this headline"></a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.dc_gym.</span></span><span class="sig-name descname"><span class="pre">dc_gymenv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">observation_variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">observation_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">gymnasium.spaces.box.Box</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_variables</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_space</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">gymnasium.spaces.discrete.Discrete</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_mapping</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranges</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_cpu_usage</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_temp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_temp</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action_definition</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">123</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode_length_in_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">pandas._libs.tslibs.timedeltas.Timedelta</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">gymnasium.core.Env</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.NormalizeObservation">
-<span class="sig-name descname"><span class="pre">NormalizeObservation</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.NormalizeObservation"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.NormalizeObservation" title="Permalink to this definition"></a></dt>
-<dd><p>Obtains the value for normalizing the observation.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.get_obs">
-<span class="sig-name descname"><span class="pre">get_obs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.get_obs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.get_obs" title="Permalink to this definition"></a></dt>
-<dd><p>Returns the observation at the current time step.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="envs.datacenter.calculate_chiller_power">
+<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">calculate_chiller_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cooling_cap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ambient_temp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#calculate_chiller_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.calculate_chiller_power" title="Link to this definition"></a></dt>
+<dd><p>Calculate the chiller power consumption based on load and operating conditions.
+Obtained from:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p><a class="reference external" href="https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/testfiles/AirCooledElectricChiller.idf">https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/testfiles/AirCooledElectricChiller.idf</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NREL/EnergyPlus/issues/763">https://github.com/NREL/EnergyPlus/issues/763</a></p></li>
+<li><p><a class="reference external" href="https://dmey.github.io/EnergyPlusFortran-Reference/proc/calcelectricchillermodel.html">https://dmey.github.io/EnergyPlusFortran-Reference/proc/calcelectricchillermodel.html</a></p></li>
+<li><p><a class="reference external" href="https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/tst/EnergyPlus/unit/ChillerElectric.unit.cc#L95">https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/tst/EnergyPlus/unit/ChillerElectric.unit.cc#L95</a></p></li>
+</ol>
+</div></blockquote>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p>Current state of the environmment.</p>
-</dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p>observation (List[float])</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.normalize">
-<span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.normalize" title="Permalink to this definition"></a></dt>
-<dd><p>Normalizes the observation.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.reset">
-<span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.reset" title="Permalink to this definition"></a></dt>
-<dd><p>Reset <cite>dc_gymenv</cite> to initial state.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>seed</strong> (<em>int</em><em>, </em><em>optional</em>) – Random seed.</p></li>
-<li><p><strong>options</strong> (<em>dict</em><em>, </em><em>optional</em>) – Environment options.</p></li>
+<li><p><strong>max_cooling_cap</strong> (<em>float</em>) – Maximum cooling capacity of the chiller (Watts).</p></li>
+<li><p><strong>load</strong> (<em>float</em>) – The heat load to be removed by the chiller (Watts).</p></li>
+<li><p><strong>ambient_temp</strong> (<em>float</em>) – Current ambient temperature (Celsius).</p></li>
 </ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Current state of the environmment
-{} (dict): A dictionary that containing additional information about the environment state</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Estimated power consumption of the chiller (Watts).</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>raw_curr_state (List[float])</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
 
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.set_ambient_temp">
-<span class="sig-name descname"><span class="pre">set_ambient_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ambient_temp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.set_ambient_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.set_ambient_temp" title="Permalink to this definition"></a></dt>
-<dd><p>Updates the external temperature.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.set_bat_SoC">
-<span class="sig-name descname"><span class="pre">set_bat_SoC</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bat_SoC</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.set_bat_SoC"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.set_bat_SoC" title="Permalink to this definition"></a></dt>
-<dd><p>Updates the battery state of charge.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.set_shifted_wklds">
-<span class="sig-name descname"><span class="pre">set_shifted_wklds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cpu_load</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.set_shifted_wklds"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.set_shifted_wklds" title="Permalink to this definition"></a></dt>
-<dd><p>Updates the current CPU workload.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv.step">
-<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv.step" title="Permalink to this definition"></a></dt>
-<dd><p>Makes an environment step in`dc_gymenv.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="envs.datacenter.chiller_sizing">
+<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">chiller_sizing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">DC_Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_CRAC_setpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_CRAC_setpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">22</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ambient_temp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#chiller_sizing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.chiller_sizing" title="Link to this definition"></a></dt>
+<dd><p>Calculates the chiller sizing for a data center based on the given configuration and parameters.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>action_id</strong> (<em>int</em>) – Action to take.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>DC_Config</strong> (<em>object</em>) – The data center configuration object.</p></li>
+<li><p><strong>min_CRAC_setpoint</strong> (<em>float</em>) – The minimum CRAC setpoint temperature in degrees Celsius. Default is 16.</p></li>
+<li><p><strong>max_CRAC_setpoint</strong> (<em>float</em>) – The maximum CRAC setpoint temperature in degrees Celsius. Default is 22.</p></li>
+<li><p><strong>max_ambient_temp</strong> (<em>float</em>) – The maximum ambient temperature in degrees Celsius. Default is 40.0.</p></li>
+</ul>
 </dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p>Current state of the environmment
-reward (float): reward value.
-done (bool): A boolean value signaling the if the episode has ended.
-info (dict): A dictionary that containing additional information about the environment state</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A tuple containing the cooling tower reference air flow rate (ctafr) and the rated load of the cooling tower (CT_rated_load).</p>
 </dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p>observations (List[float])</p>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple</p>
 </dd>
 </dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="envs.dc_gym.dc_gymenv_standalone">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.dc_gym.</span></span><span class="sig-name descname"><span class="pre">dc_gymenv_standalone</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_config</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/dc_gym.html#dc_gymenv_standalone"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.dc_gym.dc_gymenv_standalone" title="Permalink to this definition"></a></dt>
-<dd><p>Bases: <a class="reference internal" href="#envs.dc_gym.dc_gymenv" title="envs.dc_gym.dc_gymenv"><code class="xref py py-class docutils literal notranslate"><span class="pre">envs.dc_gym.dc_gymenv</span></code></a></p>
 </dd></dl>
 
 </section>
+<section id="envs-dc-gym-module">
+<h2>envs.dc_gym module<a class="headerlink" href="#envs-dc-gym-module" title="Link to this heading"></a></h2>
+</section>
 <section id="module-envs">
-<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-envs" title="Permalink to this headline"></a></h2>
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-envs" title="Link to this heading"></a></h2>
 <p>Includes the environments.</p>
 </section>
 </section>
@@ -610,7 +382,7 @@ info (dict): A dictionary that containing additional information about the envir
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, HPE.</p>
+    <p>&#169; Copyright 2024, HPE.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

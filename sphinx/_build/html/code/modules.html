@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Class and member documentation &mdash; DCRL-Green 0.0.1 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <title>Class and member documentation &mdash; Sustain-DC 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/clipboard.min.js"></script>
-        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -37,7 +37,7 @@
           
           
           <a href="../index.html" class="icon icon-home">
-            DCRL-Green
+            Sustain-DC
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -81,7 +81,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">DCRL-Green</a>
+          <a href="../index.html">Sustain-DC</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -101,7 +101,7 @@
            <div itemprop="articleBody">
              
   <section id="class-and-member-documentation">
-<h1>Class and member documentation<a class="headerlink" href="#class-and-member-documentation" title="Permalink to this headline"></a></h1>
+<h1>Class and member documentation<a class="headerlink" href="#class-and-member-documentation" title="Link to this heading"></a></h1>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="create_trainable.html">create_trainable module</a></li>
@@ -113,10 +113,37 @@
 <li class="toctree-l1"><a class="reference internal" href="dcrl_eplus_env.html">dcrl_eplus_env module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="envs.html">envs package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="envs.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="envs.html#module-envs.bat_env_fwd_view">envs.bat_env_fwd_view module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="envs.html#module-envs.carbon_ls">envs.carbon_ls module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="envs.html#module-envs.datacenter">envs.datacenter module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="envs.html#module-envs.dc_gym">envs.dc_gym module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="envs.html#envs-bat-env-fwd-view-module">envs.bat_env_fwd_view module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="envs.html#envs-carbon-ls-module">envs.carbon_ls module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="envs.html#module-envs.datacenter">envs.datacenter module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="envs.html#envs.datacenter.CPU"><code class="docutils literal notranslate"><span class="pre">CPU</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.CPU.cpu_curve1"><code class="docutils literal notranslate"><span class="pre">CPU.cpu_curve1()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.CPU.itfan_curve2"><code class="docutils literal notranslate"><span class="pre">CPU.itfan_curve2()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="envs.html#envs.datacenter.DataCenter_ITModel"><code class="docutils literal notranslate"><span class="pre">DataCenter_ITModel</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.DataCenter_ITModel.calculate_cooling_tower_water_usage"><code class="docutils literal notranslate"><span class="pre">DataCenter_ITModel.calculate_cooling_tower_water_usage()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp"><code class="docutils literal notranslate"><span class="pre">DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.DataCenter_ITModel.total_datacenter_full_load"><code class="docutils literal notranslate"><span class="pre">DataCenter_ITModel.total_datacenter_full_load()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="envs.html#envs.datacenter.Rack"><code class="docutils literal notranslate"><span class="pre">Rack</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.Rack.clamp_supply_approach_temp"><code class="docutils literal notranslate"><span class="pre">Rack.clamp_supply_approach_temp()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.Rack.compute_instantaneous_pwr"><code class="docutils literal notranslate"><span class="pre">Rack.compute_instantaneous_pwr()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.Rack.compute_instantaneous_pwr_vecd"><code class="docutils literal notranslate"><span class="pre">Rack.compute_instantaneous_pwr_vecd()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.Rack.cpu_and_fan_init"><code class="docutils literal notranslate"><span class="pre">Rack.cpu_and_fan_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.Rack.get_average_rack_fan_v"><code class="docutils literal notranslate"><span class="pre">Rack.get_average_rack_fan_v()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.Rack.get_current_rack_load"><code class="docutils literal notranslate"><span class="pre">Rack.get_current_rack_load()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="envs.html#envs.datacenter.Rack.get_total_rack_fan_v"><code class="docutils literal notranslate"><span class="pre">Rack.get_total_rack_fan_v()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="envs.html#envs.datacenter.calculate_HVAC_power"><code class="docutils literal notranslate"><span class="pre">calculate_HVAC_power()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="envs.html#envs.datacenter.calculate_avg_CRAC_return_temp"><code class="docutils literal notranslate"><span class="pre">calculate_avg_CRAC_return_temp()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="envs.html#envs.datacenter.calculate_chiller_power"><code class="docutils literal notranslate"><span class="pre">calculate_chiller_power()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="envs.html#envs.datacenter.chiller_sizing"><code class="docutils literal notranslate"><span class="pre">chiller_sizing()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="envs.html#envs-dc-gym-module">envs.dc_gym module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="envs.html#module-envs">Module contents</a></li>
 </ul>
 </li>
@@ -126,16 +153,52 @@
 <li class="toctree-l1"><a class="reference internal" href="train_maddpg.html">train_maddpg module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="train_ppo.html">train_ppo module</a></li>
 <li class="toctree-l1"><a class="reference internal" href="utils.html">utils package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.base_agents">utils.base_agents module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.base_agents">utils.base_agents module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.base_agents.BaseBatteryAgent"><code class="docutils literal notranslate"><span class="pre">BaseBatteryAgent</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#utils.base_agents.BaseBatteryAgent.act"><code class="docutils literal notranslate"><span class="pre">BaseBatteryAgent.act()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#utils.base_agents.BaseBatteryAgent.do_nothing_action"><code class="docutils literal notranslate"><span class="pre">BaseBatteryAgent.do_nothing_action()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.base_agents.BaseHVACAgent"><code class="docutils literal notranslate"><span class="pre">BaseHVACAgent</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#utils.base_agents.BaseHVACAgent.do_nothing_action"><code class="docutils literal notranslate"><span class="pre">BaseHVACAgent.do_nothing_action()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.base_agents.BaseLoadShiftingAgent"><code class="docutils literal notranslate"><span class="pre">BaseLoadShiftingAgent</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="utils.html#utils.base_agents.BaseLoadShiftingAgent.do_nothing_action"><code class="docutils literal notranslate"><span class="pre">BaseLoadShiftingAgent.do_nothing_action()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.dc_config">utils.dc_config module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.dc_config_reader">utils.dc_config_reader module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.helper_methods">utils.helper_methods module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.make_envs">utils.make_envs module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.make_envs_pyenv">utils.make_envs_pyenv module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.managers">utils.managers module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.reward_creator">utils.reward_creator module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.rllib_callbacks">utils.rllib_callbacks module</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.utils_cf">utils.utils_cf module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.dc_config_reader">utils.dc_config_reader module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.dc_config_reader.DC_Config"><code class="docutils literal notranslate"><span class="pre">DC_Config</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#utils-helper-methods-module">utils.helper_methods module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#utils-make-envs-module">utils.make_envs module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#utils-make-envs-pyenv-module">utils.make_envs_pyenv module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#utils-managers-module">utils.managers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.reward_creator">utils.reward_creator module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.reward_creator.custom_agent_reward"><code class="docutils literal notranslate"><span class="pre">custom_agent_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.reward_creator.default_bat_reward"><code class="docutils literal notranslate"><span class="pre">default_bat_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.reward_creator.default_dc_reward"><code class="docutils literal notranslate"><span class="pre">default_dc_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.reward_creator.default_ls_reward"><code class="docutils literal notranslate"><span class="pre">default_ls_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.reward_creator.energy_PUE_reward"><code class="docutils literal notranslate"><span class="pre">energy_PUE_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.reward_creator.energy_efficiency_reward"><code class="docutils literal notranslate"><span class="pre">energy_efficiency_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.reward_creator.get_reward_method"><code class="docutils literal notranslate"><span class="pre">get_reward_method()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.reward_creator.renewable_energy_reward"><code class="docutils literal notranslate"><span class="pre">renewable_energy_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.reward_creator.temperature_efficiency_reward"><code class="docutils literal notranslate"><span class="pre">temperature_efficiency_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.reward_creator.tou_reward"><code class="docutils literal notranslate"><span class="pre">tou_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.reward_creator.water_usage_efficiency_reward"><code class="docutils literal notranslate"><span class="pre">water_usage_efficiency_reward()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#utils-rllib-callbacks-module">utils.rllib_callbacks module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.utils_cf">utils.utils_cf module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.utils_cf.get_energy_variables"><code class="docutils literal notranslate"><span class="pre">get_energy_variables()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.utils_cf.get_init_day"><code class="docutils literal notranslate"><span class="pre">get_init_day()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="utils.html#utils.utils_cf.obtain_paths"><code class="docutils literal notranslate"><span class="pre">obtain_paths()</span></code></a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils">Module contents</a></li>
 </ul>
 </li>
@@ -154,7 +217,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, HPE.</p>
+    <p>&#169; Copyright 2024, HPE.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
