@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="./">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Getting Started &mdash; DCRL-Green 0.0.1 documentation</title>
-      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
-      <link rel="stylesheet" href="_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
-      <link rel="stylesheet" href="_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <title>Getting Started &mdash; Sustain-DC 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
+
+  
   <!--[if lt IE 9]>
     <script src="_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
-        <script src="_static/jquery.js"></script>
-        <script src="_static/underscore.js"></script>
-        <script src="_static/doctools.js"></script>
-        <script src="_static/clipboard.min.js"></script>
-        <script src="_static/copybutton.js"></script>
+        <script src="_static/jquery.js?v=5d32c60e"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="_static/doctools.js?v=9a2dae69"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="_static/copybutton.js?v=f281be69"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
@@ -38,7 +38,7 @@
           
           
           <a href="index.html" class="icon icon-home">
-            DCRL-Green
+            Sustain-DC
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -75,7 +75,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="index.html">DCRL-Green</a>
+          <a href="index.html">Sustain-DC</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -94,25 +94,25 @@
            <div itemprop="articleBody">
              
   <section id="getting-started">
-<h1>Getting Started<a class="headerlink" href="#getting-started" title="Permalink to this headline"></a></h1>
+<h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading"></a></h1>
 <section id="basic-example">
-<h2>1. Basic example<a class="headerlink" href="#basic-example" title="Permalink to this headline"></a></h2>
+<h2>1. Basic example<a class="headerlink" href="#basic-example" title="Link to this heading"></a></h2>
 <p>Run the DCRL-Green environment to simulate one episode and view the roll-out information using the following command:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">dcrl_env</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </section>
 <section id="train-the-agents">
-<h2>2. Train the agents<a class="headerlink" href="#train-the-agents" title="Permalink to this headline"></a></h2>
+<h2>2. Train the agents<a class="headerlink" href="#train-the-agents" title="Link to this heading"></a></h2>
 <p>Run the following commands to simulate the DC enivronment and optimize the agents with default configurations:</p>
 <section id="train-using-the-dcrl-environment">
-<h3>2.1 Train using the DCRL environment<a class="headerlink" href="#train-using-the-dcrl-environment" title="Permalink to this headline"></a></h3>
+<h3>2.1 Train using the DCRL environment<a class="headerlink" href="#train-using-the-dcrl-environment" title="Link to this heading"></a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">train_ppo</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </section>
 <section id="train-using-the-dcrleplus-environment">
-<h3>2.2 Train using the DCRLeplus environment<a class="headerlink" href="#train-using-the-dcrleplus-environment" title="Permalink to this headline"></a></h3>
+<h3>2.2 Train using the DCRLeplus environment<a class="headerlink" href="#train-using-the-dcrleplus-environment" title="Link to this heading"></a></h3>
 <p>If not done already, launch the docker container by executing the command:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">docker run -t -i -v $PWD:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3</span>
 </pre></div>
@@ -135,7 +135,7 @@
 </div>
 </section>
 <section id="running-in-background-mode">
-<h3>2.3 Running in background mode<a class="headerlink" href="#running-in-background-mode" title="Permalink to this headline"></a></h3>
+<h3>2.3 Running in background mode<a class="headerlink" href="#running-in-background-mode" title="Link to this heading"></a></h3>
 <p>If you want to run the DCRL-Green framework in background mode use the following command:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nohup</span> <span class="n">python</span> <span class="n">PYTHON_SCRIPT</span> <span class="o">&gt;</span> <span class="n">OUTPUT_FILE</span><span class="o">.</span><span class="n">txt</span>  <span class="o">&amp;</span>
 </pre></div>
@@ -144,7 +144,7 @@
 </section>
 </section>
 <section id="monitor-the-results">
-<h2>3. Monitor the results<a class="headerlink" href="#monitor-the-results" title="Permalink to this headline"></a></h2>
+<h2>3. Monitor the results<a class="headerlink" href="#monitor-the-results" title="Link to this heading"></a></h2>
 <p>The training logs and the results of each trial are stored in the specified local directory, under a sub-folder called <code class="code docutils literal notranslate"><span class="pre">results</span></code> and can be visualized with TensorBoard by specifying the output directory of the results.</p>
 <p>Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="o">./</span><span class="n">results</span>
@@ -153,11 +153,6 @@
 <p>In this example, <code class="code docutils literal notranslate"><span class="pre">test</span></code> is the default name of the experiment.</p>
 <p>A detailed description of the configurations are provided in the Usage section. The default configurations in DCRL-Green are:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Name</p></th>
 <th class="head"><p>Default input</p></th>
@@ -241,7 +236,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, HPE.</p>
+    <p>&#169; Copyright 2024, HPE.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

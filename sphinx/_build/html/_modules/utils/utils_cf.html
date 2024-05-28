@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>utils.utils_cf &mdash; DCRL-Green 0.0.1 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <title>utils.utils_cf &mdash; Sustain-DC 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/clipboard.min.js"></script>
-        <script src="../../_static/copybutton.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -34,7 +34,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            DCRL-Green
+            Sustain-DC
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -61,7 +61,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">DCRL-Green</a>
+          <a href="../../index.html">Sustain-DC</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -90,7 +90,9 @@
 <span class="n">PATH</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">file_path</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
 
 
-<div class="viewcode-block" id="obtain_paths"><a class="viewcode-back" href="../../code/utils.html#utils.utils_cf.obtain_paths">[docs]</a><span class="k">def</span> <span class="nf">obtain_paths</span><span class="p">(</span><span class="n">location</span><span class="p">):</span>
+<div class="viewcode-block" id="obtain_paths">
+<a class="viewcode-back" href="../../code/utils.html#utils.utils_cf.obtain_paths">[docs]</a>
+<span class="k">def</span> <span class="nf">obtain_paths</span><span class="p">(</span><span class="n">location</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtain the correct name for the data files</span>
 
 <span class="sd">    Args:</span>
@@ -102,16 +104,29 @@
 <span class="sd">    Returns:</span>
 <span class="sd">        List[string]: Naming for the data files</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="s2">&quot;ny&quot;</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;NYIS&#39;</span><span class="p">,</span> <span class="s1">&#39;USA_NY_New.York-Kennedy.epw&#39;</span><span class="p">]</span>
-    <span class="k">elif</span> <span class="s2">&quot;az&quot;</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;AZPS&#39;</span><span class="p">,</span> <span class="s1">&#39;USA_AZ_Tucson-Davis-Monthan.epw&#39;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="s1">&#39;az&#39;</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;AZ&#39;</span><span class="p">,</span> <span class="s1">&#39;USA_AZ_Phoenix-Sky.Harbor.epw&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s1">&#39;ca&#39;</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;CA&#39;</span><span class="p">,</span> <span class="s1">&#39;USA_CA_San.Jose-Mineta.epw&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s1">&#39;ga&#39;</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;GA&#39;</span><span class="p">,</span> <span class="s1">&#39;USA_GA_Atlanta-Hartsfield-Jackson.epw&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s1">&#39;il&#39;</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;IL&#39;</span><span class="p">,</span> <span class="s1">&#39;USA_IL_Chicago.OHare.epw&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s1">&#39;ny&#39;</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;NY&#39;</span><span class="p">,</span> <span class="s1">&#39;USA_NY_New.York-LaGuardia.epw&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s1">&#39;tx&#39;</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;TX&#39;</span><span class="p">,</span> <span class="s1">&#39;USA_TX_Dallas-Fort.Worth.epw&#39;</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="s1">&#39;va&#39;</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;VA&#39;</span><span class="p">,</span> <span class="s1">&#39;USA_VA_Leesburg.Exec.epw&#39;</span><span class="p">]</span>
     <span class="k">elif</span> <span class="s2">&quot;wa&quot;</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
-        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;WAAT&#39;</span><span class="p">,</span> <span class="s1">&#39;USA_WA_Port.Angeles-Fairchild.epw&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="p">[</span><span class="s1">&#39;WA&#39;</span><span class="p">,</span> <span class="s1">&#39;USA_WA_Seattle-Tacoma.epw&#39;</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Location not found&quot;</span><span class="p">)</span></div>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Location not found, please define the location </span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s2"> on obtain_paths() function in utils_cf.py&quot;</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="get_energy_variables"><a class="viewcode-back" href="../../code/utils.html#utils.utils_cf.get_energy_variables">[docs]</a><span class="k">def</span> <span class="nf">get_energy_variables</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
+
+<div class="viewcode-block" id="get_energy_variables">
+<a class="viewcode-back" href="../../code/utils.html#utils.utils_cf.get_energy_variables">[docs]</a>
+<span class="k">def</span> <span class="nf">get_energy_variables</span><span class="p">(</span><span class="n">state</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtain energy variables from the energy observation</span>
 
 <span class="sd">    Args:</span>
@@ -124,8 +139,11 @@
     <span class="k">return</span> <span class="n">energy_vars</span></div>
 
 
+
 <span class="c1"># Function to get the initial index of the day of a given month from a time-stamped dataset</span>
-<div class="viewcode-block" id="get_init_day"><a class="viewcode-back" href="../../code/utils.html#utils.utils_cf.get_init_day">[docs]</a><span class="k">def</span> <span class="nf">get_init_day</span><span class="p">(</span><span class="n">start_month</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="get_init_day">
+<a class="viewcode-back" href="../../code/utils.html#utils.utils_cf.get_init_day">[docs]</a>
+<span class="k">def</span> <span class="nf">get_init_day</span><span class="p">(</span><span class="n">start_month</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtain the initial day of the year to start the episode on</span>
 
 <span class="sd">    Args:</span>
@@ -137,7 +155,7 @@
     <span class="k">assert</span> <span class="mi">0</span> <span class="o">&lt;=</span> <span class="n">start_month</span> <span class="o">&lt;=</span> <span class="mi">11</span><span class="p">,</span> <span class="s2">&quot;start_month should be between 0 and 11 (inclusive, 0-based, 0=January, 11=December).&quot;</span>
 
     <span class="c1"># Read the CSV file and parse dates from the &#39;timestamp&#39; column</span>
-    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PATH</span><span class="o">+</span><span class="s1">&#39;/data/CarbonIntensity/NYIS_NG_&amp;_avgCI.csv&#39;</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">],</span> <span class="n">usecols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">])</span>
+    <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_csv</span><span class="p">(</span><span class="n">PATH</span><span class="o">+</span><span class="s1">&#39;/data/CarbonIntensity/NY_NG_&amp;_avgCI.csv&#39;</span><span class="p">,</span> <span class="n">parse_dates</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">],</span> <span class="n">usecols</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">])</span>
     
     <span class="c1"># Extract the month from each timestamp and add it as a new column to the DataFrame</span>
     <span class="n">df</span><span class="p">[</span><span class="s1">&#39;month&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DatetimeIndex</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;timestamp&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">month</span>
@@ -147,6 +165,7 @@
     
     <span class="c1"># Return the day number (0-based)</span>
     <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">init_day</span><span class="o">/</span><span class="mi">24</span><span class="p">)</span></div>
+
 </pre></div>
 
            </div>
@@ -156,7 +175,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, HPE.</p>
+    <p>&#169; Copyright 2024, HPE.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

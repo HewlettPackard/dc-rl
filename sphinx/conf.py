@@ -17,8 +17,8 @@ sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'DCRL-Green'
-copyright = '2023, HPE'
+project = 'Sustain-DC'
+copyright = '2024, HPE'
 author = 'HPE'
 
 # The full version, including alpha/beta/rc tags
@@ -37,7 +37,7 @@ extensions = [
     'sphinxcontrib.bibtex', # for citations
     'sphinxemoji.sphinxemoji', # for emojis
     'sphinx_copybutton', # to copy code block
-    'sphinx_panels', # for backgrounds
+    #'sphinx_panels', # for backgrounds
     'sphinx.ext.autosectionlabel', #for reference sections using its title
     'sphinx_multitoc_numbering', #numbering sections
 ]
