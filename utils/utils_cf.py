@@ -37,7 +37,7 @@ def obtain_paths(location):
     elif "wa" in location.lower():
         return ['WA', 'USA_WA_Seattle-Tacoma.epw']
     else:
-        raise ValueError("Location not found")
+        raise ValueError(f"Location not found, please define the location {location} on obtain_paths() function in utils_cf.py")
 
 def get_energy_variables(state):
     """Obtain energy variables from the energy observation

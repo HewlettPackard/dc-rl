@@ -332,6 +332,11 @@ class CI_Manager():
         self.timestep_per_hour = 4
         self.time_steps_day = self.timestep_per_hour*24
         
+        # Handle nan values just in case. Replace with average value
+        if np.isnan(carbon_data_list).any():
+            avg_value = np.nanmean(carbon_data_list)
+            carbon_data_list = np.nan_to_num(carbon_data_list, nan=avg_value)
+
         x = range(0, len(carbon_data_list))
         xcarbon_new = np.linspace(0, len(carbon_data_list), len(carbon_data_list)*self.timestep_per_hour)
         
@@ -416,6 +421,13 @@ class CI_Manager():
         # return self.carbon_smooth[self.time_step]
         # return self.norm_carbon[self.time_step]
 
+    def get_forecast_ci(self, steps=4):
+        if self.time_step + steps > len(self.carbon_smooth):
+            data = self.norm_carbon[self.time_step]*np.ones(shape=(steps))
+        else:
+            data = self.norm_carbon[self.time_step:self.time_step+steps]
+        return data
+        
 # Class to manage weather data
 # Where to obtain other weather files:
 # https://climate.onebuilding.org/
