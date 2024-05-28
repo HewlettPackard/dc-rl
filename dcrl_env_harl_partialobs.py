@@ -180,7 +180,7 @@ class DCRL(gym.Env):
 
         # Create the managers: date/hour/time manager, workload manager, weather manager, and CI manager.
         self.init_day = get_init_day(self.month)
-        self.ranges_day = [self.init_day - 7, self.init_day + 7]
+        self.ranges_day = [max(0, self.init_day - 7), min(364, self.init_day + 7)]
         self.t_m = Time_Manager(self.init_day, timezone_shift=self.timezone_shift, days_per_episode=self.days_per_episode)
         self.workload_m = Workload_Manager(init_day=self.init_day, workload_filename=self.workload_file, timezone_shift=self.timezone_shift)
         self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file, timezone_shift=self.timezone_shift)
@@ -220,7 +220,7 @@ class DCRL(gym.Env):
         self.bat_reward = 0
 
         # Reset the managers
-        random_init_day = random.randint(0, 364)
+        random_init_day = random.randint(max(0, self.ranges_day[0]), min(364, self.ranges_day[1]))
         random_init_hour = random.randint(0, 23)
         
         t_i = self.t_m.reset(init_day=random_init_day, init_hour=random_init_hour)
