@@ -14,9 +14,7 @@ NUM_WORKERS = 1
 NAME = "test"
 RESULTS_DIR = './results/'
 
-def policy_mapping_fn(agent_id, episode, worker, **kwargs):
-    return agent_id
-
+# Dummy env to get obs and action space
 hdcrl_env = HeirarchicalDCRL()
 
 CONFIG = (
