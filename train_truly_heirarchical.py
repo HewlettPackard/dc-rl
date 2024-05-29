@@ -78,8 +78,7 @@ CONFIG = (
 
 if __name__ == "__main__":
     os.environ["RAY_DEDUP_LOGS"] = "0"
-    # ray.init(logging_level='debug', num_cpus=NUM_WORKERS+1)
-    ray.init(local_mode=True, ignore_reinit_error=True)
+    # ray.init(local_mode=True, ignore_reinit_error=True)
     ray.init(ignore_reinit_error=True)
     
     tune.Tuner(
