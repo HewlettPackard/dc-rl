@@ -65,7 +65,7 @@ DEFAULT_CONFIG = {
         },
     
     # List of active low-level agents
-    'active_agents': ['agent_ls'],
+    'active_agents': ['agent_dc'],
 
     # config for loading trained low-level agents
     'low_level_actor_config': {
@@ -84,7 +84,7 @@ DEFAULT_CONFIG = {
 
 class HeirarchicalDCRL(gym.Env):
 
-    def __init__(self, config):
+    def __init__(self, config: dict = DEFAULT_CONFIG):
 
         self.config = config
 
@@ -111,9 +111,6 @@ class HeirarchicalDCRL(gym.Env):
         #     config['low_level_actor_config'], 
         #     config['active_agents']
         #     )
-        
-        self.low_level_observations = {}
-        self.low_level_infos = {}
         
         self._max_episode_steps = 4*24*DEFAULT_CONFIG['config1']['days_per_episode']
 
@@ -155,6 +152,8 @@ class HeirarchicalDCRL(gym.Env):
             # tf1.random.set_random_seed(0)
 
         self.low_level_observations = {}
+        self.low_level_observations = {}
+        self.low_level_infos = {}
         self.heir_obs = {}
 
         # Reset environments and store initial observations and infos
@@ -185,31 +184,43 @@ class HeirarchicalDCRL(gym.Env):
         return self.heir_obs, self.low_level_infos
     
     def step(self, actions):
-        
+
+        # Move workload between DCs
         self.overassigned_workload = self.safety_enforcement(actions)
 
-        # Compute actions for each dc_id in each environment
-        low_level_actions = {}
+        # Step through the low-level agents in each DC
+        _, done = self.low_level_step()
+
+        # Get observations for the next step
+        if not done:
+            self.heir_obs = {}
+            for env_id in self.datacenters:
+                self.heir_obs[env_id] = self.get_dc_variables(env_id)
+
+        return self.heir_obs, self.calc_reward(), False, done, {}
+
+    def low_level_step(self, actions: dict = {}):
         
-        # We need to update the low level observations with the new workloads for each datacenter.
-        # So, for each DC in the environment, we need to update the workload on agent_ls and on agent_dc.
-        # Now, we are hardcoding the positon of that variables in the arrays and modifiying them directly.
-        # This is not ideal, but it is a quick fix for now.
+        # Since the top-level agent can change the current workload, we update the observation
+        # for the low-level agents here
         for datacenter_id in self.datacenters:
             curr_workload = self.datacenters[datacenter_id].workload_m.get_current_workload()
             # On agent_ls, the workload is the 5th element of the array (sine/cos hour day, workload, queue, etc)
-            # On agent_dc, the workload is the 10th element of the array
             self.low_level_observations[datacenter_id]['agent_ls'][4] = curr_workload
-            self.low_level_observations[datacenter_id]['agent_dc'][9] = curr_workload
         
+        # Compute actions for each dc_id in each environment
+        low_level_actions = {}
         for env_id, env_obs in self.low_level_observations.items():
-            # Skip if environment is done
             if self.all_done[env_id]:
                 continue
             low_level_actions[env_id] = self.lower_level_actor.compute_actions(env_obs)
 
+            # Override computed low-level actions with provided actions
+            low_level_actions[env_id].update(actions)
+
         # Step through each environment with computed low_level_actions
         self.low_level_infos = {}
+        self.low_level_rewards = {}
         for env_id in self.datacenters:
             if self.all_done[env_id]:
                 continue
@@ -219,6 +230,7 @@ class HeirarchicalDCRL(gym.Env):
             self.all_done[env_id] = terminated['__all__'] or truncated['__all__']
 
             self.low_level_infos[env_id] = info
+            self.low_level_rewards[env_id] = rewards
 
             # Update metrics for each environment
             env_metrics = self.metrics[env_id]
@@ -228,14 +240,7 @@ class HeirarchicalDCRL(gym.Env):
             env_metrics['dc_water_usage'].append(info['agent_dc']['dc_water_usage'])
 
         done = any(self.all_done.values())
-
-        # Get observations for the next step
-        if not done:
-            self.heir_obs = {}
-            for env_id in self.datacenters:
-                self.heir_obs[env_id] = self.get_dc_variables(env_id)
-
-        return self.heir_obs, self.calc_reward(), False, done, {}
+        return done
 
     def get_dc_variables(self, dc_id: str) -> np.ndarray:
         dc = self.datacenters[dc_id]
