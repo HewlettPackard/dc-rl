@@ -3,139 +3,99 @@ import os
 import ray
 from ray import air, tune
 from ray.rllib.algorithms.ppo import PPO, PPOConfig
-from ray.rllib.utils.filter import MeanStdFilter
-import argparse
-from gymnasium.spaces import Discrete, Tuple
-import logging
-from ray.rllib.utils.test_utils import check_learning_achieved
+from gymnasium.spaces import Discrete, Box
+from ray.rllib.algorithms.ppo import PPOConfig
 
-from heirarchical_env_rllib import (
-    HeirarchicalDCRL_RLLib, 
-    DEFAULT_CONFIG
-)
-
+from truly_heirarchical_env import TrulyHeirarchicalDCRL
+from heirarchical_env import HeirarchicalDCRL, DEFAULT_CONFIG
 from create_trainable import create_wrapped_trainable
 
-NUM_WORKERS = 4
+NUM_WORKERS = 0
 NAME = "test"
 RESULTS_DIR = './results/'
 
+def policy_mapping_fn(agent_id, episode, worker, **kwargs):
+    return agent_id
 
-parser = argparse.ArgumentParser()
-parser.add_argument("--flat", action="store_true")
-parser.add_argument(
-    "--framework",
-    choices=["tf", "tf2", "torch"],
-    default="torch",
-    help="The DL framework specifier.",
-)
-parser.add_argument(
-    "--as-test",
-    action="store_true",
-    help="Whether this script should be run as a test: --stop-reward must "
-    "be achieved within --stop-timesteps AND --stop-iters.",
-)
-parser.add_argument(
-    "--stop-iters", type=int, default=200, help="Number of iterations to train."
-)
-parser.add_argument(
-    "--stop-timesteps", type=int, default=100000, help="Number of timesteps to train."
-)
-parser.add_argument(
-    "--stop-reward", type=float, default=0.0, help="Reward at which we stop training."
-)
-parser.add_argument(
-    "--local-mode",
-    action="store_true",
-    help="Init Ray in local mode for easier debugging.",
-)
+hdcrl_env = HeirarchicalDCRL()
 
-logger = logging.getLogger(__name__)
+CONFIG = (
+        PPOConfig()
+        .environment(
+            env=TrulyHeirarchicalDCRL,
+            env_config=DEFAULT_CONFIG
+        )
+        .framework("torch")
+        .rollouts(
+            num_rollout_workers=NUM_WORKERS,
+            rollout_fragment_length=2,
+            )
+        .training(
+            gamma=0.99,
+            lr=1e-4,
+            kl_coeff=0.2,
+            clip_param=0.2,
+            entropy_coeff=0.0,
+            use_gae=True,
+            train_batch_size=4096,
+            num_sgd_iter=10,
+            model={'fcnet_hiddens': [64, 64]}, 
+            shuffle_sequences=True
+        )
+        .multi_agent(
+        policies={
+            "high_level_policy": (
+                None,
+                hdcrl_env.observation_space,
+                hdcrl_env.action_space,
+                PPOConfig()
+            ),
+            "DC1_ls_policy": (
+                None,
+                Box(-1.0, 1.0, (14,)),
+                Discrete(3),
+                PPOConfig()
+            ),
+            "DC2_ls_policy": (
+                None,
+                Box(-1.0, 1.0, (14,)),
+                Discrete(3),
+                PPOConfig()
+            ),
+            "DC3_ls_policy": (
+                None,
+                Box(-1.0, 1.0, (14,)),
+                Discrete(3),
+                PPOConfig()
+            ),
+        },
+        policy_mapping_fn=lambda agent_id, episode, worker, **kwargs: agent_id,
+        )
+        .resources(num_gpus=0)
+        .debugging(seed=0)
+    )
+
 
 if __name__ == "__main__":
-    args = parser.parse_args()
-    #ray.init(local_mode=args.local_mode)
+    os.environ["RAY_DEDUP_LOGS"] = "0"
+    # ray.init(logging_level='debug', num_cpus=NUM_WORKERS+1)
     ray.init(local_mode=True, ignore_reinit_error=True)
-
-    stop = {
-        "training_iteration": args.stop_iters,
-        "timesteps_total": args.stop_timesteps,
-        "episode_reward_mean": args.stop_reward,
-    }
-
-    if args.flat:
-        results = tune.Tuner(
-            "PPO",
-            run_config=air.RunConfig(stop=stop),
-            param_space=(
-                PPOConfig()
-                .environment(WindyMazeEnv)
-                .rollouts(num_rollout_workers=0)
-                .framework(args.framework)
-            ).to_dict(),
-        ).fit()
-    else:
-        heirDCRL = HeirarchicalDCRL_RLLib(DEFAULT_CONFIG)
-
-        def policy_mapping_fn(agent_id, episode, worker, **kwargs):
-            if agent_id.startswith("high_level"):
-                return "high_level_policy"
-            elif agent_id == "DC1":
-                return "DC1_policy"
-            elif agent_id == "DC2":
-                return "DC2_policy"
-            elif agent_id == "DC3":
-                return "DC3_policy"
-
-        config = (
-            PPOConfig()
-            .environment(
-                env=HeirarchicalDCRL_RLLib,
-                env_config=DEFAULT_CONFIG
-            )
-            .framework(args.framework)
-            .rollouts(num_rollout_workers=0)
-            .training(entropy_coeff=0.01)
-            .multi_agent(
-                policies={
-                    "high_level_policy": (
-                        None,
-                        heirDCRL.dc_observation_space,
-                        heirDCRL.action_space,
-                        PPOConfig.overrides(gamma=0.9),
-                    ),
-                    "DC1_policy": (
-                        None,
-                        heirDCRL.dc_observation_space,
-                        heirDCRL.datacenters['DC1'].action_space,
-                        PPOConfig.overrides(gamma=0.0),
-                    ),
-                    "DC2_policy": (
-                        None,
-                        heirDCRL.dc_observation_space,
-                        heirDCRL.datacenters['DC2'].action_space,
-                        PPOConfig.overrides(gamma=0.0),
-                    ),
-                    "DC3_policy": (
-                        None,
-                        heirDCRL.dc_observation_space,
-                        heirDCRL.datacenters['DC3'].action_space,
-                        PPOConfig.overrides(gamma=0.0),
-                    ),
-                },
-                policy_mapping_fn=policy_mapping_fn,
-            )
-            # Use GPUs iff `RLLIB_NUM_GPUS` env var set to > 0.
-            .resources(num_gpus=int(os.environ.get("RLLIB_NUM_GPUS", "0")))
+    ray.init(ignore_reinit_error=True)
+    
+    tune.Tuner(
+        create_wrapped_trainable(PPO),
+        param_space=CONFIG.to_dict(),
+        run_config=air.RunConfig(
+            stop={"timesteps_total": 100_000_000},
+            verbose=0,
+            local_dir=RESULTS_DIR,
+            # storage_path=RESULTS_DIR,
+            name=NAME,
+            checkpoint_config=ray.air.CheckpointConfig(
+                checkpoint_frequency=5,
+                num_to_keep=5,
+                checkpoint_score_attribute="episode_reward_mean",
+                checkpoint_score_order="max"
+            ),
         )
-
-        results = tune.Tuner(
-            "PPO",
-            param_space=config.to_dict(),
-            run_config=air.RunConfig(stop=stop, verbose=1),
-        ).fit()
-
-    if args.as_test:
-        check_learning_achieved(results, args.stop_reward)
-
-    ray.shutdown()
+    ).fit()     
