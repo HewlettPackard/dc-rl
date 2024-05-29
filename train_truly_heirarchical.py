@@ -10,7 +10,7 @@ from truly_heirarchical_env import TrulyHeirarchicalDCRL
 from heirarchical_env import HeirarchicalDCRL, DEFAULT_CONFIG
 from create_trainable import create_wrapped_trainable
 
-NUM_WORKERS = 0
+NUM_WORKERS = 1
 NAME = "test"
 RESULTS_DIR = './results/'
 
