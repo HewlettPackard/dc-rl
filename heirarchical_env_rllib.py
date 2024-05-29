@@ -32,8 +32,7 @@ class HeirarchicalDCRL_RLLib(HeirarchicalDCRL):
         # self.datacenters = {
         #     'DC1': DC1,
         # }
-        #self.observation_space = Dict({"high_level_agent": {dc: self.dc_observation_space for dc in self.datacenters}})
-        #self.observation_space = self.observation_space
+        self.observation_space = Tuple({dc: self.dc_observation_space for dc in self.datacenters})
 
     def reset(self, seed=None, options=None):
         

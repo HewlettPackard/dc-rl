@@ -69,7 +69,7 @@ if __name__ == "__main__":
             run_config=air.RunConfig(stop=stop),
             param_space=(
                 PPOConfig()
-                .environment(WindyMazeEnv)
+                .environment(HeirarchicalDCRL_RLLib)
                 .rollouts(num_rollout_workers=0)
                 .framework(args.framework)
             ).to_dict(),
@@ -100,7 +100,7 @@ if __name__ == "__main__":
                 policies={
                     "high_level_policy": (
                         None,
-                        heirDCRL.dc_observation_space,
+                        heirDCRL.observation_space,
                         heirDCRL.action_space,
                         PPOConfig.overrides(gamma=0.9),
                     ),
