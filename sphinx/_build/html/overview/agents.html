@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Agents &mdash; DCRL-Green 0.0.1 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <title>Agents &mdash; Sustain-DC 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/clipboard.min.js"></script>
-        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=f281be69"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -37,7 +37,7 @@
           
           
           <a href="../index.html" class="icon icon-home">
-            DCRL-Green
+            Sustain-DC
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -75,7 +75,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">DCRL-Green</a>
+          <a href="../index.html">Sustain-DC</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -95,7 +95,7 @@
            <div itemprop="articleBody">
              
   <section id="agents">
-<h1>Agents<a class="headerlink" href="#agents" title="Permalink to this headline"></a></h1>
+<h1>Agents<a class="headerlink" href="#agents" title="Link to this heading"></a></h1>
 <p>DCRL-Green consists of multiple agents that work together to optimize energy usage and reduce the carbon footprint of the data center. Each agent is responsible for controlling a specific component or aspect of the data center. The agents in DCRL-Green include:</p>
 <ol class="arabic simple">
 <li><p>Load Shifting Agent: This agent is responsible for scheduling and assigning flexible workloads within the data center. It optimizes the allocation of workloads to different time slots based on various factors, such as grid carbon intensity (CI), weather conditions, and external requirements. By intelligently shifting the workload to time slots with lower CI or higher availability of green energy, the load shifting agent reduces the environmental impact of data center operations and promotes energy efficiency.</p></li>
@@ -105,11 +105,11 @@
 <figure class="align-center" id="id1">
 <a class="reference internal image-reference" href="../_images/dependency.png"><img alt="Internal and external system dependencies" src="../_images/dependency.png" style="width: 392.7px; height: 243.0px;" /></a>
 <figcaption>
-<p><span class="caption-text">Internal and external system dependencies</span><a class="headerlink" href="#id1" title="Permalink to this image"></a></p>
+<p><span class="caption-text">Internal and external system dependencies</span><a class="headerlink" href="#id1" title="Link to this image"></a></p>
 </figcaption>
 </figure>
 <section id="inter-model-dependencies">
-<h2>Inter-Model Dependencies<a class="headerlink" href="#inter-model-dependencies" title="Permalink to this headline"></a></h2>
+<h2>Inter-Model Dependencies<a class="headerlink" href="#inter-model-dependencies" title="Link to this heading"></a></h2>
 <p>The agents in DCRL-Green operate collaboratively, where their actions and decisions are taken using shared information. The load shifting agent, DC energy optimizer agent, and battery energy storage agent rely on each other’s outputs and feedback to optimize energy usage and reduce the carbon footprint of the data center. Here are the key inter-model dependencies:</p>
 <ol class="arabic simple">
 <li><p>Load Shifting Agent to DC Energy Optimizer Agent: The load shifting agent’s workload scheduling decisions directly influence the energy consumption of the data center. By allocating workloads to time slots with lower grid carbon intensity (CI) or higher availability of green energy, the load shifting agent reduces the environmental impact of data center operations. This workload allocation affects the workload and power demand of the data center, which in turn influences the temperature setpoint decisions made by the DC energy optimizer agent.</p></li>
@@ -120,7 +120,7 @@
 <p>These inter-model dependencies allow the agents in DCRL-Green to collaborate and make informed decisions by considering the outputs and feedback from other agents. By leveraging these dependencies, the agents optimize energy usage, reduce the carbon footprint, and promote sustainability in data centers. It creates a holistic approach to data center management, where the actions of one agent affect the decisions and outcomes of other agents, leading to coordinated efforts in energy optimization.</p>
 </section>
 <section id="other-interesting-information">
-<h2>Other Interesting Information<a class="headerlink" href="#other-interesting-information" title="Permalink to this headline"></a></h2>
+<h2>Other Interesting Information<a class="headerlink" href="#other-interesting-information" title="Link to this heading"></a></h2>
 <p>In addition to the collaborative MARL agents, DCRL-Green offers various customization options and features to further enhance the data center sustainability optimization process:</p>
 <ul class="simple">
 <li><p>Customization of DC Design: DCRL-Green allows users to specify individual servers within racks and customize the layout and characteristics of the data center infrastructure. This flexibility enables researchers and developers to simulate different data center configurations and evaluate the impact of different designs on energy consumption and sustainability.</p></li>
@@ -142,7 +142,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, HPE.</p>
+    <p>&#169; Copyright 2024, HPE.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

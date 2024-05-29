@@ -1,26 +1,26 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Reward function &mdash; DCRL-Green 0.0.1 documentation</title>
-      <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
-      <link rel="stylesheet" href="../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <title>Reward function &mdash; Sustain-DC 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+
+  
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
-        <script src="../_static/jquery.js"></script>
-        <script src="../_static/underscore.js"></script>
-        <script src="../_static/doctools.js"></script>
-        <script src="../_static/clipboard.min.js"></script>
-        <script src="../_static/copybutton.js"></script>
+        <script src="../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../_static/copybutton.js?v=f281be69"></script>
         <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -38,7 +38,7 @@
           
           
           <a href="../index.html" class="icon icon-home">
-            DCRL-Green
+            Sustain-DC
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -77,7 +77,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../index.html">DCRL-Green</a>
+          <a href="../index.html">Sustain-DC</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -97,15 +97,11 @@
            <div itemprop="articleBody">
              
   <section id="reward-function">
-<h1>Reward function<a class="headerlink" href="#reward-function" title="Permalink to this headline"></a></h1>
+<h1>Reward function<a class="headerlink" href="#reward-function" title="Link to this heading"></a></h1>
 <p>DCRL-Green provides an interface where the end-user can choose to train three agents independently of each other’s reward feedback, or consider a collaborative reward approach.</p>
 <section id="independent-rewards">
-<h2>Independent rewards<a class="headerlink" href="#independent-rewards" title="Permalink to this headline"></a></h2>
+<h2>Independent rewards<a class="headerlink" href="#independent-rewards" title="Link to this heading"></a></h2>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Agent</p></th>
 <th class="head"><p>Default Reward</p></th>
@@ -133,13 +129,9 @@
 A penalty is attributed to the load shifting agent if it fails to schedule all the required load within the time horizon N.</p>
 </section>
 <section id="collaborative-rewards">
-<h2>Collaborative rewards<a class="headerlink" href="#collaborative-rewards" title="Permalink to this headline"></a></h2>
+<h2>Collaborative rewards<a class="headerlink" href="#collaborative-rewards" title="Link to this heading"></a></h2>
 <p>The reward-sharing mechanism allows the agents to estimate the feedback from their actions in other environments. Users have an option to choose the level of colaboration between the agents. This can be done by specifying the <span class="math notranslate nohighlight">\(\eta\)</span> value in the script.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 50%" />
-<col style="width: 50%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Agent</p></th>
 <th class="head"><p>Reward</p></th>
@@ -165,10 +157,6 @@ A penalty is attributed to the load shifting agent if it fails to schedule all t
 </table>
 <p>Example <span class="math notranslate nohighlight">\(\eta\)</span> values to set up a collaborative, independent and custom weighted environment are given in the table below. The higher the value of <span class="math notranslate nohighlight">\(\eta\)</span>, the less collaboration between the agents in the environment.</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 29%" />
-<col style="width: 71%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Reward Scheme</p></th>
 <th class="head"><p>Implementation</p></th>
@@ -198,7 +186,7 @@ A penalty is attributed to the load shifting agent if it fails to schedule all t
 </table>
 </section>
 <section id="custom-rewards">
-<h2>Custom rewards<a class="headerlink" href="#custom-rewards" title="Permalink to this headline"></a></h2>
+<h2>Custom rewards<a class="headerlink" href="#custom-rewards" title="Link to this heading"></a></h2>
 <p>DCRL-Green inludes an option to include custom rewards to match user’s optimization objectives.</p>
 <p><strong>Step 1:</strong>
 Users need to define custom reward functions in <code class="code docutils literal notranslate"><span class="pre">utils/reward_creator.py</span></code>. Those function should follow the schema:</p>
@@ -232,11 +220,6 @@ This object consists of the information dictionary of each environment, and some
 If a user wants to add additional custom parameters, they must be added in the dictionary <code class="code docutils literal notranslate"><span class="pre">reward_params</span></code> so that those variables are visible in the reward function.
 Within the dictionary, the following environment parameters are available to users:</p>
 <table class="docutils align-default">
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Parameter</p></th>
 <th class="head"><p>Example</p></th>
@@ -554,7 +537,7 @@ the reward definition of the dc agent must be declared as <code class="code docu
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, HPE.</p>
+    <p>&#169; Copyright 2024, HPE.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

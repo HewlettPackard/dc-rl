@@ -105,27 +105,33 @@ class Time_Manager():
         Args:
             init_day (int, optional): Day to start from. Defaults to 0.
             days_per_episode (int, optional): Number of days that an episode would last. Defaults to 30.
+            timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
     """
     def __init__(self, init_day=0, days_per_episode=30, timezone_shift=0):
-        """Class to manage the time dimenssion over an episode
+        """Initialize the Time_Manager class.
 
         Args:
             init_day (int, optional): Day to start from. Defaults to 0.
             days_per_episode (int, optional): Number of days that an episode would last. Defaults to 30.
+            timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
         """
         self.init_day = init_day
         self.timestep_per_hour = 4
         self.days_per_episode = days_per_episode
         self.timezone_shift = timezone_shift
 
-    def reset(self):
-        """Reset time manager to initial day
+    def reset(self, init_day=None, init_hour=None):
+        """Reset time manager to a specific initial day and hour.
+
+        Args:
+            init_day (int, optional): Day to start from. If None, defaults to the initial day set during initialization.
+            init_hour (int, optional): Hour to start from. If None, defaults to the timezone shift set during initialization.
 
         Returns:
-            List[float]: Hour and day in sine and cosine form
+            List[float]: Sine and cosine of the current hour and day.
         """
-        self.day = self.init_day
-        self.hour = self.timezone_shift
+        self.day = init_day if init_day is not None else self.init_day
+        self.hour = init_hour if init_hour is not None else self.timezone_shift
         return sc_obs(self.hour, self.day)
         
     def step(self):
@@ -156,17 +162,17 @@ class Time_Manager():
 # Class to manage CPU workload data
 class Workload_Manager():
     def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.01, desired_std_dev=0.025, timezone_shift=0):
-        """Manager of the DC workload
+        """Manager of the DC workload.
 
         Args:
-            workload_filename (str, optional): Filename of the CPU data. Defaults to ''. Should be a .csv file containing the CPU hourly normalized workload data between 0 and 1. Should contains 'cpu_load' column.
+            workload_filename (str, optional): Filename of the CPU data. Defaults to ''. Should be a .csv file containing the CPU hourly normalized workload data between 0 and 1. Should contain 'cpu_load' column.
             init_day (int, optional): Initial day of the episode. Defaults to 0.
             future_steps (int, optional): Number of steps of the workload forecast. Defaults to 4.
-            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
+            weight (float, optional): Weight value for coherent noise. Defaults to 0.01.
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
-            flexible_workload_ratio (float, optional): Ratio of the flexible workload amount. Defaults to 0.1.
+            timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
         """
-
+        
         # Load CPU data from a CSV file
         # One year data=24*365=8760
         if workload_filename == '':
@@ -205,7 +211,7 @@ class Workload_Manager():
         Returns:
             List[float]: CPU data
         """
-        return np.array(self.cpu_smooth)
+        return np.array(self.cpu_smooth[self.time_step:])
 
     def scale_array(self, arr):
         """
@@ -234,20 +240,23 @@ class Workload_Manager():
         return scaled_arr
 
     # Function to reset the time step and return the workload at the first time step
-    def reset(self):
-        """Reset Workload_Manager
+    def reset(self, init_day=None, init_hour=None):
+        """Reset Workload_Manager to a specific initial day and hour.
+
+        Args:
+            init_day (int, optional): Day to start from. If None, defaults to the initial day set during initialization.
+            init_hour (int, optional): Hour to start from. If None, defaults to 0.
 
         Returns:
-            float: CPU workload at current time step
-            float: Amount of daily flexible workload
+            float: CPU workload at current time step.
         """
-        self.time_step = self.init_day*self.time_steps_day
+        self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0)
         self.init_time_step = self.time_step
         
         baseline = np.random.random()*0.5 - 0.25
         
         # Add noise to the workload data using the CoherentNoise 
-        cpu_data = self.original_data * np.random.uniform(0.8, 1.2, len(self.original_data))
+        cpu_data = self.original_data * np.random.uniform(0.9, 1.1, len(self.original_data))
         cpu_smooth = cpu_data * 0.7 + self.coherent_noise.generate(len(cpu_data)) * 0.3 + baseline
         
         self.cpu_smooth = self.scale_array(cpu_smooth)
@@ -271,7 +280,7 @@ class Workload_Manager():
         if self.time_step - 1 >= len(self.cpu_smooth):
             self.time_step = self.init_time_step
         # assert self.time_step < len(self.cpu_smooth), f'Episode length: {self.time_step} is longer than the provide cpu_smooth: {len(self.cpu_smooth)}'
-        return self.cpu_smooth[self.time_step - 1]
+        return self.cpu_smooth[max(self.time_step - 1,0)]  # to avoid logical error
     
     def get_current_workload(self):        
         return self.cpu_smooth[self.time_step]
@@ -282,26 +291,28 @@ class Workload_Manager():
 
 # Class to manage carbon intensity data
 class CI_Manager():
-    """Manager of the carbon intensity data
+    """Manager of the carbon intensity data.
 
-        Args:
-            filename (str, optional): Filename of the CPU data. Defaults to ' '.
-            location (str, optional): Location identifier. Defaults to 'NYIS'.
-            init_day (int, optional): Initial day of the episode. Defaults to 0.
-            future_steps (int, optional): Number of steps of the CI forecast. Defaults to 4.
-            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
-            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
+    Args:
+        filename (str, optional): Filename of the carbon intensity data. Defaults to ''.
+        location (str, optional): Location identifier. Defaults to 'NYIS'.
+        init_day (int, optional): Initial day of the episode. Defaults to 0.
+        future_steps (int, optional): Number of steps of the CI forecast. Defaults to 4.
+        weight (float, optional): Weight value for coherent noise. Defaults to 0.1.
+        desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 5.
+        timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
     """
     def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5, timezone_shift=0):
-        """Manager of the carbon intesity data
+        """Initialize the CI_Manager class.
 
         Args:
-            filename (str, optional): Filename of the CPU data. Defaults to ''.
+            filename (str, optional): Filename of the carbon intensity data. Defaults to ''.
             location (str, optional): Location identifier. Defaults to 'NYIS'.
             init_day (int, optional): Initial day of the episode. Defaults to 0.
             future_steps (int, optional): Number of steps of the CI forecast. Defaults to 4.
-            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
-            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
+            weight (float, optional): Weight value for coherent noise. Defaults to 0.1.
+            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 5.
+            timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
         """
         # Load carbon intensity data from a CSV file
         # One year data=24*365=8760
@@ -351,17 +362,21 @@ class CI_Manager():
         Returns:
             List[float]: Total carbon intesity
         """
-        return self.carbon_smooth
+        return self.carbon_smooth[self.time_step:]
 
-    def reset(self):
-        """Reset CI_Manager
+    def reset(self, init_day=None, init_hour=None):
+        """Reset CI_Manager to a specific initial day and hour.
+
+        Args:
+            init_day (int, optional): Day to start from. If None, defaults to the initial day set during initialization.
+            init_hour (int, optional): Hour to start from. If None, defaults to 0.
 
         Returns:
-            float: Carbon intensity at current time step
-            float: Normalized carbon intensity at current time step and it's forecast
+            float: Carbon intensity at current time step.
+            float: Normalized carbon intensity at current time step and its forecast.
         """
-        self.time_step = self.init_day*self.time_steps_day
-        
+        self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0)
+
         # Add noise to the carbon data using the CoherentNoise
         self.carbon_smooth = self.original_data + self.coherent_noise.generate(len(self.original_data))
         
@@ -418,24 +433,30 @@ class Weather_Manager():
        Where to obtain other weather files:
        https://climate.onebuilding.org/
 
-        Args:
-            filename (str, optional): Filename of the weather data. Defaults to ''.
-            location (str, optional): Location identifier. Defaults to 'NY'.
-            init_day (int, optional): Initial day of the year. Defaults to 0.
-            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
-            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
-            temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.
+    Args:
+        filename (str, optional): Filename of the weather data. Defaults to ''.
+        location (str, optional): Location identifier. Defaults to 'NY'.
+        init_day (int, optional): Initial day of the year. Defaults to 0.
+        weight (float, optional): Weight value for coherent noise. Defaults to 0.02.
+        desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.75.
+        temp_column (int, optional): Column that contains the temperature data. Defaults to 6.
+        rh_column (int, optional): Column that contains the relative humidity data. Defaults to 8.
+        pres_column (int, optional): Column that contains the pressure data. Defaults to 9.
+        timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
     """
     def __init__(self, filename='', location='NY', init_day=0, weight=0.02, desired_std_dev=0.75, temp_column=6, rh_column=8, pres_column=9, timezone_shift=0):
-        """Manager of the weather data.
+        """Initialize the Weather_Manager class.
 
         Args:
             filename (str, optional): Filename of the weather data. Defaults to ''.
             location (str, optional): Location identifier. Defaults to 'NY'.
             init_day (int, optional): Initial day of the year. Defaults to 0.
-            weight (float, optional): Weight value for coherent noise. Defaults to 0.001.
-            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.025.
-            temp_column (int, optional): Columng that contains the temperature data. Defaults to 6.
+            weight (float, optional): Weight value for coherent noise. Defaults to 0.02.
+            desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 0.75.
+            temp_column (int, optional): Column that contains the temperature data. Defaults to 6.
+            rh_column (int, optional): Column that contains the relative humidity data. Defaults to 8.
+            pres_column (int, optional): Column that contains the pressure data. Defaults to 9.
+            timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
         """
         # Load weather data from a CSV file
 
@@ -494,17 +515,20 @@ class Weather_Manager():
         Returns:
             List[form]: Total temperature data
         """
-        return self.temperature_data
+        return self.temperature_data[self.time_step:]
 
     # Function to reset the time step and return the weather at the first time step
-    def reset(self):
-        """Reset Weather_Manager
+    def reset(self, init_day=None, init_hour=None):
+        """Reset Weather_Manager to a specific initial day and hour.
+
+        Args:
+            init_day (int, optional): Day to start from. If None, defaults to the initial day set during initialization.
+            init_hour (int, optional): Hour to start from. If None, defaults to 0.
 
         Returns:
-            float: Temperature a current step
-            float: Normalized temperature a current step
+            tuple: Temperature at current step, normalized temperature at current step, wet bulb temperature at current step, normalized wet bulb temperature at current step.
         """
-        self.time_step = self.init_day*self.time_steps_day
+        self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0)
         
         # Add noise to the temperature data using the CoherentNoise
         coh_noise = self.coherent_noise.generate(len(self.original_temp_data))
