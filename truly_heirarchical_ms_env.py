@@ -1,14 +1,15 @@
 from tqdm import tqdm
 from ray.rllib.env import MultiAgentEnv
-
 from heirarchical_env import HeirarchicalDCRL, DEFAULT_CONFIG
-
+from tensorboardX import SummaryWriter
 
 class TrulyHeirarchicalDCRL(HeirarchicalDCRL, MultiAgentEnv):
 
     def __init__(self, config):
         HeirarchicalDCRL.__init__(self, config)
         MultiAgentEnv.__init__(self)
+        self.writer = SummaryWriter("logs")
+        self.global_step = 0
 
     def step(self, actions: dict):
         if "high_level_policy" in actions:
@@ -25,6 +26,7 @@ class TrulyHeirarchicalDCRL(HeirarchicalDCRL, MultiAgentEnv):
             obs[dc + '_ls_policy'] = self.low_level_observations[dc]['agent_ls']
             rewards[dc + '_ls_policy'] = 0
         done = truncated = {"__all__": False}
+        self.cumulative_reward = 0
         return obs, rewards, done, truncated, {}
 
     def _low_level_step(self, actions):
@@ -37,9 +39,9 @@ class TrulyHeirarchicalDCRL(HeirarchicalDCRL, MultiAgentEnv):
         for dc in self.datacenter_ids:
             obs[dc + '_ls_policy'] = self.low_level_observations[dc]['agent_ls']
             rewards[dc + '_ls_policy'] = self.low_level_rewards[dc]['agent_ls']
-        
         terminated = {"__all__": False}
         truncated = {"__all__": False}
+        self.cumulative_reward += self.calc_reward()
         if done or self.steps_left_lower == 0:
             self.heir_obs = {}
             for dc in self.datacenter_ids:
@@ -48,7 +50,19 @@ class TrulyHeirarchicalDCRL(HeirarchicalDCRL, MultiAgentEnv):
             terminated["__all__"] = done
             truncated["__all__"] = False
             obs['high_level_policy'] = self.heir_obs
-            rewards['high_level_policy'] = self.calc_reward()
+            rewards['high_level_policy'] = self.cumulative_reward
+            
+            if done:
+                totalfp = 0
+                for dc in self.datacenter_ids:
+                    totalfp += sum(self.metrics[dc]['bat_CO2_footprint'])
+                print("Total CO2 footprint: ", totalfp)
+
+                # Log the scalar totalfp to TensorBoard
+                self.writer.add_scalar("Total CO2 footprint", totalfp, self.global_step)
+                self.writer.flush()
+                self.global_step += 1  # Increment the step counter
+
         return obs, rewards, terminated, truncated, {}  
 
     
