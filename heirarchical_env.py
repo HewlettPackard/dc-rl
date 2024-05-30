@@ -324,7 +324,7 @@ class HeirarchicalDCRL(gym.Env):
         return overassigned_workload
     
     def set_hysterisis(self, mwh_to_move: float, sender: str, receiver: str):
-        PENALTY = 0.6
+        PENALTY = 0.1
         
         cost_of_moving_mw = mwh_to_move * PENALTY
 
