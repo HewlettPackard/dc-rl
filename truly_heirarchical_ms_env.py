@@ -3,7 +3,7 @@ from ray.rllib.env import MultiAgentEnv
 from heirarchical_env import HeirarchicalDCRL, DEFAULT_CONFIG
 from tensorboardX import SummaryWriter
 
-class TrulyHeirarchicalDCRL(HeirarchicalDCRL, MultiAgentEnv):
+class TrulyHeirarchicalMSDCRL(HeirarchicalDCRL, MultiAgentEnv):
 
     def __init__(self, config):
         HeirarchicalDCRL.__init__(self, config)
@@ -74,7 +74,7 @@ class TrulyHeirarchicalDCRL(HeirarchicalDCRL, MultiAgentEnv):
         return obs, {}
     
 if __name__ == '__main__':
-    env = TrulyHeirarchicalDCRL(DEFAULT_CONFIG)
+    env = TrulyHeirarchicalMSDCRL(DEFAULT_CONFIG)
 
     done = False
     obs, _ = env.reset()

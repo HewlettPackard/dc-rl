@@ -6,7 +6,7 @@ from ray.rllib.algorithms.ppo import PPO, PPOConfig
 from gymnasium.spaces import Discrete, Box
 from ray.rllib.algorithms.ppo import PPOConfig
 
-from truly_heirarchical_ms_env import TrulyHeirarchicalDCRL
+from truly_heirarchical_ms_env import TrulyHeirarchicalMSDCRL
 from heirarchical_env import HeirarchicalDCRL, DEFAULT_CONFIG
 from create_trainable import create_wrapped_trainable
 
@@ -20,7 +20,7 @@ hdcrl_env = HeirarchicalDCRL()
 CONFIG = (
         PPOConfig()
         .environment(
-            env=TrulyHeirarchicalDCRL,
+            env=TrulyHeirarchicalMSDCRL,
             env_config=DEFAULT_CONFIG
         )
         .framework("torch")
