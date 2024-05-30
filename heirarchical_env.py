@@ -64,6 +64,9 @@ DEFAULT_CONFIG = {
         'nonoverlapping_shared_obs_space': True
         },
     
+    # Number of transfers per step
+    'num_transfers': 1,
+
     # List of active low-level agents
     'active_agents': ['agent_dc'],
 
@@ -138,7 +141,7 @@ class HeirarchicalDCRL(gym.Env):
 
         # Define the action space for two transfers
         self.action_space = Dict({
-            'transfer_1': transfer_action,
+            f'transfer_{i}': transfer_action for i in range(self.config['num_transfers'])
         })
 
     def reset(self, seed=None, options=None):
@@ -189,7 +192,7 @@ class HeirarchicalDCRL(gym.Env):
         self.overassigned_workload = self.safety_enforcement(actions)
 
         # Step through the low-level agents in each DC
-        _, done = self.low_level_step()
+        done = self.low_level_step()
 
         # Get observations for the next step
         if not done:
@@ -216,7 +219,7 @@ class HeirarchicalDCRL(gym.Env):
             low_level_actions[env_id] = self.lower_level_actor.compute_actions(env_obs)
 
             # Override computed low-level actions with provided actions
-            low_level_actions[env_id].update(actions)
+            low_level_actions[env_id].update(actions[env_id])
 
         # Step through each environment with computed low_level_actions
         self.low_level_infos = {}
@@ -337,28 +340,8 @@ class HeirarchicalDCRL(gym.Env):
             reward += self.low_level_infos[dc]['agent_bat']['bat_CO2_footprint']
         return -1 * reward / 1e6
 
-class HeirarchicalDCRLWithHysterisisMultistep(HeirarchicalDCRL):
-
-    def __init__(self, config):
-        super().__init__(config)
-        
-        # Define the components of a single transfer action
-        transfer_action = Dict({
-            'sender': Discrete(3),  # sender
-            'receiver': Discrete(3),  # receiver
-            'workload_to_move': Box(low=0.0, high=1.0, shape=(1,), dtype=float)  # workload_to_move
-        })
-
-        # Define the action space for two transfers
-        self.action_space = Dict({
-            'transfer_1': transfer_action,
-            'transfer_2': transfer_action
-        })
-
-
     
 if __name__ == '__main__':
-
     env = HeirarchicalDCRL(DEFAULT_CONFIG)
     
     done = False
@@ -367,7 +350,7 @@ if __name__ == '__main__':
 
     greedy_optimizer = WorkloadOptimizer(list(env.datacenters.keys()))
     
-    agent = 2
+    agent = 0
     max_iterations = 4*24*30
     
     with tqdm(total=max_iterations) as pbar:
@@ -411,7 +394,7 @@ if __name__ == '__main__':
 
     # After simulation, calculate average metrics for each environment
     average_metrics = {
-        env_id: {metric: sum(values) / len(values) for metric, values in env_metrics.items()}
+        env_id: {metric: sum(values) / 1e6 for metric, values in env_metrics.items()}
         for env_id, env_metrics in env.metrics.items()
     }
 

@@ -35,10 +35,7 @@ def create_wrapped_trainable(alg: Union[str, Algorithm]) -> Algorithm:
             'training_iteration', 
             'episodes_total',
             'episode_reward_mean',
-            'policy_reward_mean/agent_ls',
-            'policy_reward_mean/agent_dc',
-            'policy_reward_mean/agent_bat',
-            'custom_metrics/average_CO2_footprint_mean'
+            'policy_reward_mean'
             ]
 
         def flatten(self, d: Dict, res: Dict = {}, flattened_key: str = '') -> Dict:
@@ -78,15 +75,15 @@ def create_wrapped_trainable(alg: Union[str, Algorithm]) -> Algorithm:
             """
             display = []
             results = self.flatten(results)
-
+            
             for key_to_print in self.KEYS_TO_PRINT:
-                try:
-                    val = results[key_to_print]
-                except:
-                    continue
-                
-                k = key_to_print.split('/')[-1]
-                display.append(f'{k}: {round(val, 2)}')
+                matching_keys = [key for key in results.keys() if key.startswith(key_to_print)]
+
+                for key in matching_keys:
+                    val = results[key]
+                    
+                    k = key.split('/')[-1]
+                    display.append(f'{k}: {round(val, 2)}')
             
             print(', '.join(display))
 
