@@ -30,9 +30,9 @@ CONFIG = (
             )
         .training(
             gamma=0.99,
-            lr=1e-4,
+            lr=1e-5,
             kl_coeff=0.2,
-            clip_param=0.2,
+            clip_param=0.1,
             entropy_coeff=0.0,
             use_gae=True,
             train_batch_size=4096,

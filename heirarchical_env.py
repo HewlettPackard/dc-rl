@@ -350,7 +350,7 @@ if __name__ == '__main__':
 
     greedy_optimizer = WorkloadOptimizer(list(env.datacenters.keys()))
     
-    agent = 0
+    agent = 2
     max_iterations = 4*24*30
     
     with tqdm(total=max_iterations) as pbar:
