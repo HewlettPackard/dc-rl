@@ -40,6 +40,7 @@ CONFIG = (
             model={'fcnet_hiddens': [64, 64]}, 
             shuffle_sequences=True
         )
+        .callbacks(CustomMetricsCallback)
         .resources(num_gpus=0)
         .debugging(seed=0)
     )

@@ -219,7 +219,7 @@ class HeirarchicalDCRL(gym.Env):
             low_level_actions[env_id] = self.lower_level_actor.compute_actions(env_obs)
 
             # Override computed low-level actions with provided actions
-            low_level_actions[env_id].update(actions[env_id])
+            low_level_actions[env_id].update(actions.get(env_id, {}))
 
         # Step through each environment with computed low_level_actions
         self.low_level_infos = {}

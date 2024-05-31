@@ -134,3 +134,17 @@ class HierarchicalDCRL_Callback(DefaultCallbacks):
         episode.custom_metrics["runningstats/ax1"] = ax1
         episode.custom_metrics["runningstats/ax2"] = ax2
         episode.custom_metrics["runningstats/ax3"] = ax3
+
+class CustomMetricsCallback(DefaultCallbacks):
+
+    def on_episode_end(self, *, worker, base_env, policies, episode, env_index, **kwargs) -> None:
+        if hasattr(base_env, 'vector_env'):
+            metrics = base_env.vector_env.envs[0].metrics            
+        else:
+            metrics = base_env.envs[0].metrics
+            
+        cfp = 0
+        for dc in metrics:
+            cfp += sum(metrics[dc]['bat_CO2_footprint']) / 1e6
+
+        episode.custom_metrics['custom_metrics/CFP']=  cfp

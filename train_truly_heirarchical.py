@@ -69,6 +69,7 @@ CONFIG = (
         },
         policy_mapping_fn=lambda agent_id, episode, worker, **kwargs: agent_id,
         )
+        .callbacks(CustomMetricsCallback)
         .resources(num_gpus=0)
         .debugging(seed=0)
     )
