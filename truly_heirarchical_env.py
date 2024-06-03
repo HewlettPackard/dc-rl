@@ -2,15 +2,12 @@ from tqdm import tqdm
 from ray.rllib.env import MultiAgentEnv
 
 from heirarchical_env import HeirarchicalDCRL, DEFAULT_CONFIG
-from tensorboardX import SummaryWriter
 
 class TrulyHeirarchicalDCRL(HeirarchicalDCRL, MultiAgentEnv):
 
     def __init__(self, config):
         HeirarchicalDCRL.__init__(self, config)
         MultiAgentEnv.__init__(self)
-        self.writer = SummaryWriter("logs_single")
-        self.global_step = 0
 
     def step(self, actions: dict):
 
