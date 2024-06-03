@@ -41,18 +41,6 @@ class TrulyHeirarchicalDCRL(HeirarchicalDCRL, MultiAgentEnv):
         # Infinite horizon env so it is never terminated, only truncated
         terminated = {"__all__": False}
         truncated = {"__all__": done}
-        
-        if done:
-            totalfp = 0
-            for dc in self.datacenter_ids:
-                totalfp += sum(self.metrics[dc]['bat_CO2_footprint'])
-            print("Total CO2 footprint: ", totalfp)
-
-            # Log the scalar totalfp to TensorBoard
-            self.writer.add_scalar("Total CO2 footprint", totalfp, self.global_step)
-            self.writer.flush()
-            self.global_step += 1  # Increment the step counter
-
 
         return obs, rewards, terminated, truncated, {}
     
