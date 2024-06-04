@@ -8,7 +8,8 @@ class TrulyHeirarchicalMSDCRL(HeirarchicalDCRL, MultiAgentEnv):
     def __init__(self, config):
         HeirarchicalDCRL.__init__(self, config)
         MultiAgentEnv.__init__(self)
-        self.writer = SummaryWriter("logs")
+        self.steps = 1
+        self.writer = SummaryWriter(f"logs_hdcrl/multi_step_hu_8_2_ppo2/steps_{self.steps}/")
         self.global_step = 0
 
     def step(self, actions: dict):
@@ -21,7 +22,7 @@ class TrulyHeirarchicalMSDCRL(HeirarchicalDCRL, MultiAgentEnv):
         overassigned_workload = self.safety_enforcement(action)
         obs = {}
         rewards = {}
-        self.steps_left_lower = 5
+        self.steps_left_lower = self.steps
         for dc in self.datacenter_ids:
             obs[dc + '_ls_policy'] = self.low_level_observations[dc]['agent_ls']
             rewards[dc + '_ls_policy'] = 0
