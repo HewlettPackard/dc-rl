@@ -93,12 +93,46 @@ The Battery Environment simulates the charging and discharging cycles of batteri
 
 ### External Variables
 SustainDC uses several external variables to provide a realistic simulation environment:
-
+- **Workload Traces:** Workload traces represent the computational demand placed on the data center. By default, SustainDC includes workload traces from Alibaba and Google data centers. These traces can be customized by adding new data or modifying the existing traces to simulate different types of workloads and their impact on the data center's operations.
+  
 - **Weather:** The Weather variable captures the ambient environmental conditions that impact the data center's cooling requirements. Weather data is provided in the .epw format and includes typical weather conditions for various locations where data centers are commonly situated. Users can customize this data to reflect the specific climate of their region.
 
 - **Carbon Intensity:** The Carbon Intensity (CI) variable represents the carbon emissions associated with electricity consumption. SustainDC includes CI data files for various locations, which are used to simulate the carbon footprint of the data center's energy usage. Users can add new CI files or modify existing ones to reflect the carbon intensity of their local grid.
 
-- **Workload Traces:** Workload traces represent the computational demand placed on the data center. By default, SustainDC includes workload traces from Alibaba and Google data centers. These traces can be customized by adding new data or modifying the existing traces to simulate different types of workloads and their impact on the data center's operations.
+
+### Workload
+The Workload external variable in SustainDC represents the computational demand placed on the data center. Workload traces are provided in the form of FLOPs (floating-point operations) required by various jobs. By default, SustainDC includes a collection of open-source workload traces from Alibaba and Google data centers. Users can customize this component by adding new workload traces to the `data/Workload` folder or specifying a path to existing traces in the `dcrl_env_harl_partialobs.py` file under the `workload_file` configuration.
+
+![Comparison between two workload traces of Alibaba trace (2017) and Google (2011).](media/workload_comparison.png)
+
+### Weather
+The Weather external variable in SustainDC captures the ambient environmental conditions impacting the data center's cooling requirements. By default, SustainDC includes weather data files in the .epw format from various locations where data centers are commonly situated. These locations include Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. Users can customize this component by adding new weather files to the `data/Weather` folder or specifying a path to existing weather files in the `dcrl_env_harl_partialobs.py` file under the `weather_file` configuration.
+
+Each .epw file contains hourly data for various weather parameters, but for our purposes, we focus on the ambient temperature.
+
+![Comparison between external temperature of the different selected locations.](media/weather_all_locations.png)
+
+### Carbon Intensity
+The Carbon Intensity (CI) external variable in SustainDC represents the carbon emissions associated with electricity consumption. By default, SustainDC includes CI data files for various locations: Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. These files are located in the `data/CarbonIntensity` folder and are extracted from [https://api.eia.gov/bulk/EBA.zip](https://api.eia.gov/bulk/EBA.zip). Users can customize this component by adding new CI files to the `data/CarbonIntensity` folder or specifying a path to existing files in the `dcrl_env_harl_partialobs.py` file under the `cintensity_file` configuration.
+
+![Comparison of carbon intensity across the different selected locations.](media/ci_all_locations.png)
+
+In the figure below, we show the average daily carbon intensity against the average daily coefficient of variation (CV) for various locations. This figure highlights an important perspective on the variability and magnitude of carbon intensity values across different regions. Locations with a high CV indicate greater fluctuation in carbon intensity, offering more "room to play" for DRL agents to effectively reduce carbon emissions through dynamic actions. Additionally, locations with a high average carbon intensity value present greater opportunities for achieving significant carbon emission reductions. The selected locations are highlighted, while other U.S. locations are also plotted for comparison. Regions with both high CV and high average carbon intensity are identified as prime targets for DRL agents to maximize their impact on reducing carbon emissions.
+
+![Average daily carbon intensity versus average daily coefficient of variation (CV) for the grid energy provided from US. Selected locations are remarked. High CV indicates more fluctuation, providing more opportunities for DRL agents to reduce carbon emissions. High average carbon intensity values offer greater potential gains for DRL agents.](media/average_CI_vs_avgerage_CV.png)
+
+Below is a summary of the selected locations, typical weather values, and carbon emissions characteristics:
+
+| Location   | Typical Weather                      | Carbon Emissions                 |
+|------------|--------------------------------------|----------------------------------|
+| Arizona    | Hot, dry summers; mild winters       | High avg CI, High variation      |
+| California | Mild, Mediterranean climate          | Medium avg CI, Medium variation  |
+| Georgia    | Hot, humid summers; mild winters     | High avg CI, Medium variation    |
+| Illinois   | Cold winters; hot, humid summers     | High avg CI, Medium variation    |
+| New York   | Cold winters; hot, humid summers     | Medium avg CI, Medium variation  |
+| Texas      | Hot summers; mild winters            | Medium avg CI, High variation    |
+| Virginia   | Mild climate, seasonal variations    | Medium avg CI, Medium variation  |
+| Washington | Mild, temperate climate; wet winters | Low avg CI, Low variation        |
 
 ### Connections Between Environments
 The three environments in SustainDC are interconnected to provide a comprehensive simulation of data center operations:
