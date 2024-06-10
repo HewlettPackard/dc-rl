@@ -16,7 +16,7 @@
 
 
 ## Introduction
-SustainDC is a set of Python environments for benchmarking multi-agent reinforcement learning (MARL) algorithms in data centers (DC). It focuses on sustainable DC operations, including workload scheduling, cooling optimization, and auxiliary battery management. This repository contains the code and datasets for the paper SustainDC - Benchmarking for Sustainable Data Center Control.
+SustainDC is a set of Python environments for benchmarking multi-agent reinforcement learning (MARL) algorithms in data centers (DC). It focuses on sustainable DC operations, including workload scheduling, cooling optimization, and auxiliary battery management. This repository contains the code and datasets for the paper `SustainDC - Benchmarking for Sustainable Data Center Control`.
 
 <p align="center">
   <img src="media/SustainDC.png" alt="SustainDC" width="1000">
