@@ -17,7 +17,7 @@ sys.path.insert(0, os.path.abspath('../'))
 
 # -- Project information -----------------------------------------------------
 
-project = 'Sustain-DC'
+project = 'SustainDC'
 copyright = '2024, HPE'
 author = 'HPE'
 
@@ -40,7 +40,13 @@ extensions = [
     #'sphinx_panels', # for backgrounds
     'sphinx.ext.autosectionlabel', #for reference sections using its title
     'sphinx_multitoc_numbering', #numbering sections
+    'sphinxcontrib.globalsubs', #global substitutions
 ]
+
+#define global substitutions
+global_substitutions = {
+    'F': 'SustainDC' #define framework name 
+}
 
 # source for bib references
 bibtex_bibfiles = ['references.bib']
@@ -65,7 +71,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'furo' #'sphinx_rtd_theme'
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

@@ -3,11 +3,28 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-DCRL-Green
+|F|
 ==========
 
-DCRL-green is a framework for testing Multi-Agent Reinforcement Learning (MARL) algorithms that optimizes data centers for multiple objectives of carbon footprint reduction, energy consumption, and energy
-cost.
+|F| is a set of Python environments for benchmarking multi-agent reinforcement learning (MARL) algorithms in data centers (DC). It focuses on sustainable DC operations, including workload scheduling, cooling optimization, and auxiliary battery management. This page contains the documentation for the GitHub `repository <https://github.com/HewlettPackard/dc-rl>`_ for the paper `"SustainDC: Benchmarking for Sustainable Data Center Control" <https://openreview.net/forum?id=UYgE9IfQIV>`
+
+>Avisek Naug, Antonio Guillen, Ricardo Luna Gutierrez, Vineet Gundecha, Desik Rengarajan, Sahand Ghorbanpour, Sajad Mousavi, Ashwin Ramesh Babu, Dejan Markovikj, Lekhapriya Dheeraj Kashyap, Soumyendu Sarkar, "SustainDC: Benchmarking for Sustainable Data Center Control" in _Thirty-eight Conference on Neural Information Processing Systems Datasets and Benchmarks Track_[Online]. Available: [pdf](https://openreview.net/attachment?id=UYgE9IfQIV&name=pdf).
+
+<details markdown="block">
+<summary>BibTeX</summary>
+
+```tex
+@inproceedings{naug2024sustaindc,
+    title = {{SustainDC}: Benchmarking for Sustainable Data Center Control},
+    author = {Naug, Avisek and Guillen, Antonio and Luna Gutierrez, Ricardo and Gundecha, Vineet and Rengarajan, Desik and Ghorbanpour, Sahand and Mousavi, Sajad and Babu, Ashwin Ramesh and Markovikj, Dejan and Dheeraj Kashyap, Lekhapriya and Sarkar, Soumyendu},
+    year = 2024,
+    month = 12,
+    booktitle = {Thirty-eight Conference on Neural Information Processing Systems Datasets and Benchmarks Track},
+    address = {Vancouver, Canada},
+    url = {https://openreview.net/forum?id=UYgE9IfQIV}
+}
+```
+</details>
 
 It uses OpenAI Gym standard and supports modeling and control of three different types of problems:
 
@@ -22,9 +39,10 @@ It uses OpenAI Gym standard and supports modeling and control of three different
 
 
 
-Main contributions of DCRL-Green:
+Main contributions of |F|:
 
-- The first OpenAI framework, to our knowledge, focused on carbon footprint reduction for data centers
+- the first OpenAI framework, to the best of our knowledge, focused on carbon footprint reduction for data center clusters
+- support for hierarchical data center clusters modeling where users have flexibility in specifying the cluster architecture
 - Modular design, i.e users can utilize pre-defined modules for load shifting, energy and battery or build their own
 - Scalable architecture that allows multiple different types of modules and connections between them
 - Robust data center model that provides in-depth customization to fit users' needs
@@ -36,10 +54,10 @@ Main contributions of DCRL-Green:
 .. toctree::
    :hidden:
    
-   installation/index
+   installation
    gettingstarted
-   usage/index
    overview/index
+   usage/index
    code/index
    train_evaluate/index
    contribution_guidelines

@@ -3,10 +3,10 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-DCRL-Green
+|F|
 ==========
 
-DCRL-green is a framework for testing Multi-Agent Reinforcement Learning (MARL) algorithms that optimizes data centers for multiple objectives of carbon footprint reduction, energy consumption, and energy
+|F| is a framework for testing Multi-Agent Reinforcement Learning (MARL) algorithms that optimizes data center clusters in a hierarchical manner for multiple objectives of carbon footprint reduction, energy consumption, and energy
 cost.
 
 It uses OpenAI Gym standard and supports modeling and control of three different types of problems:
@@ -22,9 +22,10 @@ It uses OpenAI Gym standard and supports modeling and control of three different
 
 
 
-Main contributions of DCRL-Green:
+Main contributions of |F|:
 
-- The first OpenAI framework, to our knowledge, focused on carbon footprint reduction for data centers
+- the first OpenAI framework, to the best of our knowledge, focused on carbon footprint reduction for data center clusters
+- support for hierarchical data center clusters modeling where users have flexibility in specifying the cluster architecture
 - Modular design, i.e users can utilize pre-defined modules for load shifting, energy and battery or build their own
 - Scalable architecture that allows multiple different types of modules and connections between them
 - Robust data center model that provides in-depth customization to fit users' needs
@@ -36,10 +37,10 @@ Main contributions of DCRL-Green:
 .. toctree::
    :hidden:
    
-   installation/index
+   installation
    gettingstarted
-   usage/index
    overview/index
+   usage
    code/index
    train_evaluate/index
    contribution_guidelines
