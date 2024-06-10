@@ -9,19 +9,24 @@
 6. [Customization](#customization)
 7. [Benchmarking Algorithms](#benchmarking-algorithms)
 8. [Evaluation Metrics](#evaluation-metrics)
-9. [Contributing](#contributing)
-10. [License](#license)
-11. [Acknowledgments](#acknowledgments)
+9. [Dashboard](#dashboard)
+10. [Contributing](#contributing)
+11. [Contact](#contact)
+12. [License](#license)
 
 
 ## Introduction
-SustainDC is a set of Python environments for benchmarking multi-agent reinforcement learning (MARL) algorithms in data centers (DC). It focuses on sustainable DC operations, including workload scheduling, cooling optimization, and auxiliary battery management.
+SustainDC is a set of Python environments for benchmarking multi-agent reinforcement learning (MARL) algorithms in data centers (DC). It focuses on sustainable DC operations, including workload scheduling, cooling optimization, and auxiliary battery management. This repository contains the code and datasets for the paper SustainDC - Benchmarking for Sustainable Data Center Control.
 
 <p align="center">
   <img src="media/SustainDC.png" alt="SustainDC" width="1000">
 </p>
 
+Demo of DCRL functionality
+[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1XF92aR6nVYxENrviHeFyuRu0exKBb-nh?usp=sharing)
 
+### Documentation and Installation
+Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documentation of SustainDC.
 
 ## Features
 - **Highly Customizable Environments:** Allows users to define and modify various aspects of data center operations, including server configurations, cooling systems, and workload traces.
@@ -123,6 +128,8 @@ In the figure below, we show the average daily carbon intensity against the aver
 
 Below is a summary of the selected locations, typical weather values, and carbon emissions characteristics:
 
+<div align="center">
+
 | Location   | Typical Weather                      | Carbon Emissions                 |
 |------------|--------------------------------------|----------------------------------|
 | Arizona    | Hot, dry summers; mild winters       | High avg CI, High variation      |
@@ -133,6 +140,9 @@ Below is a summary of the selected locations, typical weather values, and carbon
 | Texas      | Hot summers; mild winters            | Medium avg CI, High variation    |
 | Virginia   | Mild climate, seasonal variations    | Medium avg CI, Medium variation  |
 | Washington | Mild, temperate climate; wet winters | Low avg CI, Low variation        |
+
+</div>
+
 
 ### Connections Between Environments
 The three environments in SustainDC are interconnected to provide a comprehensive simulation of data center operations:
@@ -247,8 +257,8 @@ Workload traces represent the computational demand placed on the data center. By
 
 #### Data Source
 The default workload traces are extracted from:
-- Alibaba 2017 CPU Data ([Link](https://github.com/alibaba/clusterdata))
-- Google 2011 CPU Data ([Link](https://github.com/google/cluster-data))
+- Alibaba 2017 CPU Data ([https://github.com/alibaba/clusterdata](https://github.com/alibaba/clusterdata))
+- Google 2011 CPU Data ([https://github.com/google/cluster-data](https://github.com/google/cluster-data))
 
 #### Expected File Format
 Workload trace files should be in CSV format, with two columns: a timestamp or index (must be unnamed), and the corresponding DC Utilization (`cpu_load`). The CPU load must be expressed as a fraction of the DC utilization (between 0 and 1). The workload file must contain one year of data with an hourly periodicity (365*24=8760 rows). 
@@ -341,162 +351,125 @@ SustainDC allows users to define custom reward structures to promote collaborati
 By leveraging these customization options, users can create highly specific and optimized simulations that reflect the unique requirements and challenges of their data center operations.
 
 
+## Benchmarking Algorithms
 
+### Supported Algorithms
+- PPO
+- IPPO
+- MAPPO
+- HAPPO
+- HAA2C
+- HAD3QN
+- HASAC
+  
+### Running Benchmarks
+To configure the used algorithm, TBC
+
+
+## Evaluation Metrics
+- Carbon Footprint (CFP): Cumulative carbon emissions over the evaluation period.
+- HVAC Energy: Energy consumed by the DC cooling system.
+- IT Energy: Energy consumed by the DC servers.
+- Water Usage: Efficient utilization of water for cooling.
+- Task Dropped: Number of dropped tasks due to workload scheduling.
 
 
 ## Dashboard
 
-To watch the video, click on the screenshot below (right-click and select "Open link in new tab" to view in a new tab):
+To get an in-depth look at the SustainDC dashboard and see real-time metrics, watch the video demonstration. The video showcases the dynamic plotting of variables from the agents, environments, and metrics, providing a comprehensive view of the data center operations.
+
+Click on the screenshot below to watch the video (right-click and select "Open link in new tab" to view in a new tab):
 
 [![Dashboard, click it to visualize it](media/DCRL_screenshot2.png)](https://www.dropbox.com/scl/fi/85gumlvjgbbk5kwjhee3i/Data-Center-Green-Dashboard-ver2.mp4?rlkey=w3mu21qqdk9asi826cjyyutzl&dl=0)
+
+In the video, you will see:
+- **Real-time plotting of agent variables:** Watch how the agents' actions and states are visualized dynamically.
+- **Environment metrics:** Observe the data center's performance metrics, including energy consumption, cooling requirements, and workload distribution.
+- **Interactive dashboard features:** Learn about the various interactive elements of the dashboard that allow for detailed analysis and monitoring.
 
 If you wish to download the video directly, [click here](https://www.dropbox.com/scl/fi/85gumlvjgbbk5kwjhee3i/Data-Center-Green-Dashboard-ver2.mp4?rlkey=w3mu21qqdk9asi826cjyyutzl&dl=1).
 
 
-Demo of DCRL functionality
-[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1XF92aR6nVYxENrviHeFyuRu0exKBb-nh?usp=sharing)
----
-
-This repository contains the datasets and code for the paper DCRL-Green: Sustainable Data Center Environment and Benchmark for Multi-Agent Reinforcement Learning.
----
-[![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1ldxlcG_prPw9U26alK9oRN2XvxrxNSDP?usp=sharing)
-
-
-<p align="center">
-  <img src="https://github.com/HewlettPackard/dc-rl/blob/main/sphinx/images/DCRL-sim1.png" align="centre" width="500" />
-</p>
-
-## Introduction
-DCRL-green is a framework for testing multi-agent Reinforcement Learning (MARL) algorithm that optimizes data centers for multiple objectives of carbon footprint reduction, energy consumption, and energy cost. It uses OpenAI Gym standard and supports modeling and control of three different types of problems: Carbon aware flexible load shifting, Data center HVAC cooling energy optimization and carbon aware battery auxiliary supply.
-
-Main contributions of DCRL-Green:
-
-- the first OpenAI framework, to the best of our knowledge, focused on carbon footprint reduction for data centers
-- modular design meaning users can utilize pre-defined modules for load shifting, energy and battery or build their own 
-- scalable architecture that allows multiple different types of modules and connections between them
-- robust data center model that provides in-depth customization to fit users' needs 
-- provides pre-defined reward functions as well as interface to create custom reward functions 
-- built-in mechanisms for reward shaping focused on degree of cooperation between the agents and level of prioritization of carbon footprint reduction versus energy cost
-- custom reward shaping through custom reward functions 
-- build-in MARL algorithms, with ability to incorporate user-specified custom agents 
-
-Currently, we provide two versions for the data center dynamics. 
-
-`DCRL (dcrl_env.py)`: This default version is implemented in Python and can be used with the prerequisites listed below. 
-
-`DCRLeplus (dcrl_eplus_env.py)`: This uses the [EnergyPlus](https://energyplus.net/) model of a data center from the [Sinergym](https://github.com/ugr-sail/sinergym) repository. We provide a docker image for this environment as well as instructions for manual installation.
-
-## Works Utilizing DCRL-Green
-
-**[Real-time Carbon Footprint Minimization in Sustainable Data Centers wth Reinforcement Learning](https://www.climatechange.ai/papers/neurips2023/28).** Best Paper - Best ML Innovation award at NeurIPS Climate Change AI Workshop.
-
-## Documentation and Installation
-Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for documentation of the DCRL-Green.
-
-# Quick Start Guide
-
-## Prerequisites
-- Linux OS (Ubuntu 20.04)
-- Conda
-- [Optional] Docker (see [docs](https://docs.docker.com/get-docker/)) (Only required for the Sinergym-EnergyPlus Environment)
-
-
-## Installation
-First, download the repository. If using HTML, execute:
-```bash
-$ git clone https://github.com/HewlettPackard/dc-rl.git
-```
-If using SSH, execute:
-```bash
-$ git clone git@github.com:HewlettPackard/dc-rl.git
-```
-### Installing the DCRL environment 
-Make sure you have conda installed. For more instructions on installing conda please check the [documentation](https://conda.io/projects/conda/en/latest/user-guide/install/linux.html#install-linux-silent).
-
-Change the current working directory to the dc-rl folder:
-
-```bash
-$ cd dc-rl
-```
-
-Create a conda environment and install dependencies:
-```bash
-$ conda create -n dcrl python=3.10
-$ conda activate dcrl
-$ pip install -r requirements.txt
-```
-
-### Installing the DCRLeplus environment
-Make sure you are inside the ```dc-rl``` directory first. 
-
-To install the DCRLeplus environment using a docker image (**recommended**) run the following command to pull the image:
-
-```bash
-$ docker pull agnprz/carbon_sustain:v3
-```
-
-To install DCRLeplus manually (**not recommended**), you need to follow the [instructions](https://ugr-sail.github.io/sinergym/compilation/main/pages/installation.html#manual-installation) to manually install Sinergym. Make sure all the required components (custom Python environment, EnergyPlus, and BCVTB) are correctly installed.   
-
-## Usage
-Before running the DCRL environment, make sure you are in the ```dc-rl``` folder. If you are in your home directory, run ```cd dc-rl``` or ```cd PATH_TO_PROJECT``` depending on where you downloaded the GitHub repository. 
-
-### Running the DCRL environment with a random agent
-To run an episode of the environment with a random agent execute:
-```bash
-$ python dcrl_env.py
-```
-
-### Training an RL agent on the DCRL environment
-To start training, run the following command:
-
-(Note: The `episode_reward_mean` will be `nan` for the first few iterations until 1 episode is completed)
-
-For PPO:
-```bash
-$ python train_ppo.py
-```
-
-For MADDPG:
-```bash
-$ python train_maddpg.py
-```
-
-For A2C:
-```bash
-$ python train_a2c.py
-```
-
-### Training on the DCRLeplus environment
-First, run the docker image that you previosuly downloaded:
-
-```bash
-$ docker run -t -i -v $PWD:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
-```
-
-Finally to run DCRLeplus use:
-```bash
-$ cd dc-rl
-$ EPLUS=1 python train_ppo.py
-```
-Note that this will use ```PPO``` agents; for ```MADDPG``` use the ```train_maddpg.py``` Python script and for ```A2C``` use the ```train_a2c.py``` script. Other algorithms can be used, it is only necessary to utilize the RLLib [algorithms](https://docs.ray.io/en/latest/rllib/rllib-algorithms.html).
-
-### Running in Background Mode
-If you want to run the DCRL-Green framework in background mode use the following command:
-
-```bash
-$ nohup python PYTHON_SCRIPT > OUTPUT_FILE.txt  &
-```
-where ```PYTHON_SCRIPT``` is the script you want to run (e.g., ```train_ppo.py```) and ```OUTPUT_FILE``` is the name of the file that will contain the output (e.g. ```latest_experiment_output.txt```).
-
-### Monitoring Training
-Monitor the training using TensorBoard. By default, the location of the training data is at ```./results```. To visualize, run:
-
-```bash
-$ tensorboard --logdir ./results
-```
-
 ## Contributing
-Contributions are welcome. For major changes, please open an issue first to discuss what you would like to change. Please ensure to update tests as appropriate.
+We welcome contributions from the community! Whether it's bug fixes, new features, or improvements to the documentation, your help is appreciated. Please follow the guidelines below to contribute to SustainDC.
+
+### How to Contribute
+
+1. **Fork the Repository:**
+   Fork the SustainDC repository to your own GitHub account.
+
+2. **Clone the Repository:**
+   Clone the forked repository to your local machine:
+   ```bash
+   git clone https://github.com/your-username/dc-rl.git
+   ```
+   
+3. **Create a Branch:**
+   Create a new branch for your feature or bug fix:
+   ```bash
+    git checkout -b feature-or-bugfix-name
+   ```
+   
+4. **Make Changes:**
+   Make your changes to the codebase.
+   
+5. **Commit Changes:**
+   Commit your changes with a clear and descriptive commit message:
+   ```bash
+   git commit -m "Description of your changes"
+   ```
+
+6. **Push Changes:**
+   Push your changes to your forked repository:
+   ```bash
+   git push origin feature-or-bugfix-name
+   ```
+
+7. **Create a Pull Request:**
+  Open a pull request on the original SustainDC repository. Provide a clear description of what your changes do and any relevant information for the review process.
+
+### Code of Conduct
+Please note that we have a [Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project, you agree to abide by its terms.
+
+### Reporting Issues
+If you find a bug or have a feature request, please create an issue on the [GitHub Issues](https://github.com/HewlettPackard/dc-rl/issues) page. Provide as much detail as possible to help us understand and address the issue.
+
+### Guidelines
+- Ensure your code follows the project's coding standards and conventions.
+- Write clear, concise commit messages.
+- Update documentation if necessary.
+- Add tests to cover your changes if applicable.
+
+Thank you for contributing to SustainDC!
 
 ## Contact
-For any questions or concerns, please open an issue in this repository.
+If you have any questions, suggestions, or issues, please feel free to contact us. We are here to help and support you in using SustainDC.
+
+### Contact Information
+- **Email:** [soumyendu.sarkar@hpe.com](mailto:soumyendu.sarkar@hpe.com)
+- **GitHub Issues:** [GitHub Issues Page](https://github.com/HewlettPackard/dc-rl/issues)
+
+## License
+This project is licensed under the MIT License. By using this software, you agree to the terms and conditions outlined in the license.
+
+### MIT License
+Copyright (c) [2024] [Hewlett Packard Enterprise]
+
+Permission is hereby granted, free of charge, to any person obtaining 
+a copy of this software and associated documentation files (the
+“Software”), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to 
+permit persons to whom the Software is furnished to do so, subject 
+to the following conditions:
+
+The above copyright notice and this permission notice shall be 
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, 
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF 
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND 
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE 
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION 
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION 
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
