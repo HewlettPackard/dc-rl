@@ -22,8 +22,10 @@ SustainDC is a set of Python environments for benchmarking multi-agent reinforce
   <img src="media/SustainDC.png" alt="SustainDC" width="1000">
 </p>
 
-Demo of DCRL functionality
+Demo of SustainDC
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1XF92aR6nVYxENrviHeFyuRu0exKBb-nh?usp=sharing)
+
+TODO: This demo should be updated
 
 ### Documentation and Installation
 Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documentation of SustainDC.
@@ -65,13 +67,16 @@ Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documen
 1. **Setup Configuration:**
    Customize the `dc_config.json` file to specify your DC environment settings.
 
-2. **Run Example:**
+2. **Environment Configuration:**
+   The main environment for wrapping the environments is `dclr_env_harl_partialobs.py`, which reads configurations from `env_config` and manages the external variables using managers for weather, carbon intensity, and workload. 
+
+4. **Run Example:**
    Execute a simple example to get started:
    ```bash
    python examples/run_random.py
    ```
 
-3. **Run Example:**
+5. **Run Example:**
    Execute a simple example to get started:
    ```bash
    python examples/evaluate.py
@@ -81,48 +86,100 @@ Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documen
 ## Environment Details
 
 ### Workload Environment
-The Workload Environment in SustainDC manages the execution and scheduling of delayable workloads within the data center (DC). It includes open-source workload traces from Alibaba and Google data centers, which represent the computational demand placed on the DC. Users can customize this environment by adding new workload traces or modifying the existing ones. The workload traces are used to simulate the tasks that the data center needs to process, providing a realistic and dynamic workload for benchmarking purposes.
+The Workload Environment in SustainDC manages the execution and scheduling of delayable workloads within the data center (DC). It includes open-source workload traces from [Alibaba](https://github.com/alibaba/clusterdata) and [Google](https://github.com/google/cluster-data) data centers, which represent the computational demand placed on the DC. Users can customize this environment by adding new workload traces or modifying the existing ones. The workload traces are used to simulate the tasks that the data center needs to process, providing a realistic and dynamic workload for benchmarking purposes.
+
+#### Observation Space
+- Time of Day and Year: The sine and cosine representation of the hour of the day and the day of the year, providing a periodic understanding of time.
+- Grid Carbon Intensity (CI): Current and forecasted carbon intensity values, allowing the agent to optimize workload scheduling based on carbon emissions.
+- Rescheduled Workload Left: The amount of workload that has been rescheduled but not yet executed.
+  
+#### Action Space
+- Store Delayable Tasks: The agent can choose to store delayable tasks for future execution.
+- Compute All Immediate Tasks: The agent can decide to process all current tasks immediately.
+- Maximize Throughput: The agent can maximize the throughput by balancing immediate and delayed tasks based on the current carbon intensity.
+
+<p align="center">
+  <img src="media/agent_ls_explanation.png" alt="LS Agent" width="200">
+</p>
 
 
 ### Data Center Environment
 The Data Center Environment models the IT and HVAC systems of a data center, focusing on optimizing energy consumption and cooling. This environment simulates the electrical and thermal behavior of the DC components, including servers, cooling systems, and other infrastructure. Users can customize various parameters such as the number of servers, cooling setpoints, and the configuration of the HVAC system. This environment helps evaluate the performance of different control strategies aimed at reducing energy consumption and improving the overall efficiency of the data center.
-
+A representation of the DC modelled can be seen in the following figure:
 <p align="center">
   <img src="media/Data_center_modelled.png" alt="Data Center Modelled" width="1000">
+</p>
+
+#### Observation Space
+- Time of Day and Year: The sine and cosine representation of the hour of the day and the day of the year, providing a periodic understanding of time.
+- Ambient Weather (Dry Bulb Temperature): Current outside temperature affecting the cooling load.
+- IT Room Temperature: Current temperature inside the data center, crucial for maintaining optimal server performance.
+- Previous Step Energy Consumption: Historical data on cooling and IT energy consumption for trend analysis.
+- Grid Carbon Intensity (CI): Forecasted carbon intensity values to optimize cooling strategies.
+
+#### Action Space
+- Decrease Setpoint: Lower the cooling setpoint to increase cooling, consuming more energy on the cooling but less on the IT.
+- Maintain Setpoint: Keep the current cooling setpoint constant.
+- Increase Setpoint: Raise the cooling setpoint to reduce cooling, using less energy on the cooling but more on the IT.
+
+<p align="center">
+  <img src="media/agent_dc_explanation.png" alt="DC Agent" width="200">
 </p>
 
 
 ### Battery Environment
 The Battery Environment simulates the charging and discharging cycles of batteries used in the data center. It models how batteries can be charged from the grid during periods of low carbon intensity and provide auxiliary energy during periods of high carbon intensity. This environment helps in assessing the effectiveness of battery management strategies in reducing the carbon footprint and optimizing energy usage in the data center.
 
+#### Observation Space
+- Time of Day and Year: The sine and cosine representation of the hour of the day and the day of the year, providing a periodic understanding of time.
+- State of Charge (SoC): Current energy level of the battery.
+- Grid Energy Consumption: Combined energy consumption of IT and cooling systems.
+- Grid Carbon Intensity (CI): Current and forecasted carbon intensity values to determine optimal charging and discharging times.
+
+#### Action Space
+- Charge Battery: Store energy in the battery during periods of low carbon intensity.
+- Hold Energy: Maintain the current state of charge.
+- Discharge Battery: Provide auxiliary energy to the data center during periods of high carbon intensity.
+
+<p align="center">
+  <img src="media/agent_bat_explanation.png" alt="BAT Agent" width="250">
+</p>
+
+
+### Connections Between Environments
+The three environments in SustainDC are interconnected to provide a comprehensive simulation of data center operations:
+
+- The **Workload Environment** generates the computational demand that the **Data Center Environment** must process. This includes managing the scheduling of delayable tasks to optimize energy consumption and reduce the carbon footprint.
+
+- The **Data Center Environment** handles the cooling and IT operations required to process the workloads. It is directly influenced by the workload generated, as higher computational demand results in increased heat generation, necessitating more cooling and energy consumption.
+
+- The **Battery Environment** supports the DC by providing auxiliary energy during periods of high carbon intensity, helping to reduce the overall carbon footprint of the data center's operations. It is affected by both the **Workload Environment** and the **Data Center Environment**. The workload affects heat generation, which in turn impacts the cooling requirements and energy consumption of the data center, thereby influencing the battery's charging and discharging cycles.
+
+
+Together, these interconnected environments provide a realistic and dynamic platform for benchmarking multi-agent reinforcement learning algorithms aimed at enhancing the sustainability and efficiency of data center operations.
+
 
 ### External Variables
 SustainDC uses several external variables to provide a realistic simulation environment:
-- **Workload Traces:** Workload traces represent the computational demand placed on the data center. By default, SustainDC includes workload traces from Alibaba and Google data centers. These traces can be customized by adding new data or modifying the existing traces to simulate different types of workloads and their impact on the data center's operations.
-  
-- **Weather:** The Weather variable captures the ambient environmental conditions that impact the data center's cooling requirements. Weather data is provided in the .epw format and includes typical weather conditions for various locations where data centers are commonly situated. Users can customize this data to reflect the specific climate of their region.
 
-- **Carbon Intensity:** The Carbon Intensity (CI) variable represents the carbon emissions associated with electricity consumption. SustainDC includes CI data files for various locations, which are used to simulate the carbon footprint of the data center's energy usage. Users can add new CI files or modify existing ones to reflect the carbon intensity of their local grid.
-
-
-### Workload
-The Workload external variable in SustainDC represents the computational demand placed on the data center. Workload traces are provided in the form of FLOPs (floating-point operations) required by various jobs. By default, SustainDC includes a collection of open-source workload traces from Alibaba and Google data centers. Users can customize this component by adding new workload traces to the `data/Workload` folder or specifying a path to existing traces in the `dcrl_env_harl_partialobs.py` file under the `workload_file` configuration.
+#### Workload
+The Workload external variable in SustainDC represents the computational demand placed on the DC. By default, SustainDC includes a collection of open-source workload traces from Alibaba and Google data centers. Users can customize this component by adding new workload traces to the `data/Workload` folder or specifying a path to existing traces in the `dcrl_env_harl_partialobs.py` file under the `workload_file` configuration.
 
 ![Comparison between two workload traces of Alibaba trace (2017) and Google (2011).](media/workload_comparison.png)
 
-### Weather
+#### Weather
 The Weather external variable in SustainDC captures the ambient environmental conditions impacting the data center's cooling requirements. By default, SustainDC includes weather data files in the .epw format from various locations where data centers are commonly situated. These locations include Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. Users can customize this component by adding new weather files to the `data/Weather` folder or specifying a path to existing weather files in the `dcrl_env_harl_partialobs.py` file under the `weather_file` configuration.
 
 Each .epw file contains hourly data for various weather parameters, but for our purposes, we focus on the ambient temperature.
 
 ![Comparison between external temperature of the different selected locations.](media/weather_all_locations.png)
 
-### Carbon Intensity
+#### Carbon Intensity
 The Carbon Intensity (CI) external variable in SustainDC represents the carbon emissions associated with electricity consumption. By default, SustainDC includes CI data files for various locations: Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. These files are located in the `data/CarbonIntensity` folder and are extracted from [https://api.eia.gov/bulk/EBA.zip](https://api.eia.gov/bulk/EBA.zip). Users can customize this component by adding new CI files to the `data/CarbonIntensity` folder or specifying a path to existing files in the `dcrl_env_harl_partialobs.py` file under the `cintensity_file` configuration.
 
 ![Comparison of carbon intensity across the different selected locations.](media/ci_all_locations.png)
 
-In the figure below, we show the average daily carbon intensity against the average daily coefficient of variation (CV) for various locations. This figure highlights an important perspective on the variability and magnitude of carbon intensity values across different regions. Locations with a high CV indicate greater fluctuation in carbon intensity, offering more "room to play" for DRL agents to effectively reduce carbon emissions through dynamic actions. Additionally, locations with a high average carbon intensity value present greater opportunities for achieving significant carbon emission reductions. The selected locations are highlighted, while other U.S. locations are also plotted for comparison. Regions with both high CV and high average carbon intensity are identified as prime targets for DRL agents to maximize their impact on reducing carbon emissions.
+Furthermore, in the figure below, we show the average daily carbon intensity against the average daily coefficient of variation (CV) for various locations. This figure highlights an important perspective on the variability and magnitude of carbon intensity values across different regions. Locations with a high CV indicate greater fluctuation in carbon intensity, offering more "room to play" for DRL agents to effectively reduce carbon emissions through dynamic actions. Additionally, locations with a high average carbon intensity value present greater opportunities for achieving significant carbon emission reductions. The selected locations are highlighted, while other U.S. locations are also plotted for comparison. Regions with both high CV and high average carbon intensity are identified as prime targets for DRL agents to maximize their impact on reducing carbon emissions.
 
 ![Average daily carbon intensity versus average daily coefficient of variation (CV) for the grid energy provided from US. Selected locations are remarked. High CV indicates more fluctuation, providing more opportunities for DRL agents to reduce carbon emissions. High average carbon intensity values offer greater potential gains for DRL agents.](media/average_CI_vs_avgerage_CV.png)
 
@@ -142,32 +199,6 @@ Below is a summary of the selected locations, typical weather values, and carbon
 | Washington | Mild, temperate climate; wet winters | Low avg CI, Low variation        |
 
 </div>
-
-
-### Connections Between Environments
-The three environments in SustainDC are interconnected to provide a comprehensive simulation of data center operations:
-
-- The **Workload Environment** generates the computational demand that the **Data Center Environment** must process. This includes managing the scheduling of delayable tasks to optimize energy consumption and reduce the carbon footprint.
-
-<p align="center">
-  <img src="media/agent_ls_explanation.png" alt="LS Agent" width="200">
-</p>
-
-
-- The **Data Center Environment** handles the cooling and IT operations required to process the workloads. It is directly influenced by the workload generated, as higher computational demand results in increased heat generation, necessitating more cooling and energy consumption.
-
-<p align="center">
-  <img src="media/agent_dc_explanation.png" alt="DC Agent" width="200">
-</p>
-
-
-- The **Battery Environment** supports the DC by providing auxiliary energy during periods of high carbon intensity, helping to reduce the overall carbon footprint of the data center's operations. It is affected by both the **Workload Environment** and the **Data Center Environment**. The workload affects heat generation, which in turn impacts the cooling requirements and energy consumption of the data center, thereby influencing the battery's charging and discharging cycles.
-  
-<p align="center">
-  <img src="media/agent_bat_explanation.png" alt="BAT Agent" width="250">
-</p>
-
-Together, these interconnected environments provide a realistic and dynamic platform for benchmarking multi-agent reinforcement learning algorithms aimed at enhancing the sustainability and efficiency of data center operations.
 
 
 ## Customization
@@ -253,7 +284,7 @@ The customization of the data center is done through the `dc_config.json` file l
 ### Adding New Workload Data
 
 #### Overview
-Workload traces represent the computational demand placed on the data center. By default, SustainDC includes workload traces from Alibaba and Google data centers. These traces are used to simulate the tasks that the data center needs to process, providing a realistic and dynamic workload for benchmarking purposes.
+By default, SustainDC includes workload traces from [Alibaba](https://github.com/alibaba/clusterdata) and [Google](https://github.com/google/cluster-data) data centers. These traces are used to simulate the tasks that the data center needs to process, providing a realistic and dynamic workload for benchmarking purposes.
 
 #### Data Source
 The default workload traces are extracted from:
@@ -353,17 +384,43 @@ By leveraging these customization options, users can create highly specific and 
 
 ## Benchmarking Algorithms
 
+SustainDC supports a variety of reinforcement learning algorithms for benchmarking. This section provides an overview of the supported algorithms and highlights their differences.
+
 ### Supported Algorithms
-- PPO
-- IPPO
-- MAPPO
-- HAPPO
-- HAA2C
-- HAD3QN
-- HASAC
+
+#### PPO (Proximal Policy Optimization)
+PPO is a popular reinforcement learning algorithm that strikes a balance between simplicity and performance. It uses a clipped objective function to ensure that policy updates are not too drastic, which helps stabilize training. PPO is known for its robustness and is widely used in various applications.
+
+#### IPPO (Independent Proximal Policy Optimization)
+IPPO is a variant of PPO designed for multi-agent systems where each agent operates independently. Each agent has its own policy and value function, and they do not share information directly. This approach allows each agent to learn its own strategy independently of the others, which can be beneficial in environments where agents have distinct roles.
+
+#### MAPPO (Multi-Agent Proximal Policy Optimization)
+MAPPO extends PPO to multi-agent settings by using a centralized value function that takes into account the states and actions of all agents. This centralized approach allows for better coordination among agents, as the value function can provide a more comprehensive evaluation of the joint actions. MAPPO is particularly useful in cooperative tasks where agents need to work together closely.
+
+#### HAPPO (Heterogeneous Agent Proximal Policy Optimization)
+HAPPO is a variant of MAPPO designed for environments with heterogeneous agents, where different agents may have different observation spaces, action spaces, and reward structures. HAPPO allows each agent to have its own policy and value function, but it also incorporates mechanisms for coordination among the heterogeneous agents. This approach is useful in complex environments where agents have diverse roles and capabilities.
+
+#### HAA2C (Heterogeneous Agent Advantage Actor-Critic)
+HAA2C is a multi-agent extension of the Advantage Actor-Critic (A2C) algorithm for heterogeneous agents. Each agent has its own actor and critic networks, but they share a common environment. The algorithm uses the advantage function to reduce variance in policy updates, making training more stable. HAA2C is effective in scenarios where agents have different types of observations and actions.
+
+#### HAD3QN (Heterogeneous Agent Dueling Double Deep Q-Network)
+HAD3QN is a variant of the Dueling Double Deep Q-Network (D3QN) algorithm tailored for heterogeneous multi-agent environments. It combines the benefits of dueling network architectures and double Q-learning to improve learning stability and performance. Each agent has its own dueling network, which separately estimates the state value and the advantages of each action. This approach helps in environments where agents need to make fine-grained distinctions between actions.
+
+#### HASAC (Heterogeneous Agent Soft Actor-Critic)
+HASAC is an extension of the Soft Actor-Critic (SAC) algorithm for heterogeneous multi-agent systems. SAC is an off-policy actor-critic algorithm that uses entropy regularization to encourage exploration. HASAC adapts this approach to multi-agent settings with heterogeneous agents, allowing each agent to have its own policy and value function while coordinating through shared entropy-based objectives. This algorithm is suitable for environments requiring continuous action spaces and high exploration.
+
+### Differences and Use Cases
+- **PPO vs. IPPO:** PPO is designed for single-agent environments, whereas IPPO is adapted for multi-agent environments where each agent learns independently.
+- **IPPO vs. MAPPO:** While IPPO treats agents independently, MAPPO uses a centralized value function to coordinate agents, making it better for cooperative tasks.
+- **MAPPO vs. HAPPO:** Both use centralized value functions, but HAPPO is tailored for environments with heterogeneous agents with different capabilities and roles.
+- **HAPPO vs. HAA2C:** HAPPO is a PPO-based algorithm, whereas HAA2C extends A2C to multi-agent settings, offering different stability and performance trade-offs.
+- **HAA2C vs. HAD3QN:** HAA2C is an actor-critic method, while HAD3QN is a value-based method with dueling and double Q-learning enhancements.
+
+By supporting a diverse set of algorithms, SustainDC allows researchers to benchmark and compare the performance of various reinforcement learning approaches in the context of sustainable data center control.
+
   
 ### Running Benchmarks
-To configure the used algorithm, TBC
+To configure the used algorithm, TBC..........
 
 
 ## Evaluation Metrics
