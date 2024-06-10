@@ -388,33 +388,26 @@ SustainDC supports a variety of reinforcement learning algorithms for benchmarki
 
 ### Supported Algorithms
 
-#### PPO (Proximal Policy Optimization)
-PPO is a popular reinforcement learning algorithm that strikes a balance between simplicity and performance. It uses a clipped objective function to ensure that policy updates are not too drastic, which helps stabilize training. PPO is known for its robustness and is widely used in various applications.
+| Algorithm  | Description                          | Use Case                 |
+|------------|--------------------------------------|----------------------------------|
+| PPO (Proximal Policy Optimization)	| Balances simplicity and performance with a clipped objective function for stable training.	| Single-agent environments.| 
+| IPPO (Independent PPO)	| Each agent operates independently with its own policy and value function.	| Multi-agent systems with distinct roles.| 
+| MAPPO (Multi-Agent PPO)| 	Uses a centralized value function for better coordination among agents.	| Cooperative multi-agent tasks.| 
+| HAPPO (Heterogeneous Agent PPO)	| Designed for heterogeneous agents with different observation and action spaces.	| Complex environments with diverse agents.| 
+| HATRPO (Heterogeneous Agent Trust Region Policy Optimization)	| Adapts TRPO for heterogeneous multi-agent settings with stability and robustness.	| Complex environments requiring robust policy updates.| 
+| HAA2C (Heterogeneous Agent Advantage Actor-Critic)	| Extends A2C to multi-agent settings with individual actor and critic networks.	| Scenarios with different types of observations and actions.| 
+| HAD3QN (Heterogeneous Agent Dueling Double Deep Q-Network)	| Combines dueling networks and double Q-learning for stability and performance.	| Environments needing fine-grained action distinctions.| 
+| HASAC (Heterogeneous Agent Soft Actor-Critic)	| Uses entropy regularization for exploration in multi-agent settings.	| Adapted to discrete action spaces and high exploration needs.| 
 
-#### IPPO (Independent Proximal Policy Optimization)
-IPPO is a variant of PPO designed for multi-agent systems where each agent operates independently. Each agent has its own policy and value function, and they do not share information directly. This approach allows each agent to learn its own strategy independently of the others, which can be beneficial in environments where agents have distinct roles.
-
-#### MAPPO (Multi-Agent Proximal Policy Optimization)
-MAPPO extends PPO to multi-agent settings by using a centralized value function that takes into account the states and actions of all agents. This centralized approach allows for better coordination among agents, as the value function can provide a more comprehensive evaluation of the joint actions. MAPPO is particularly useful in cooperative tasks where agents need to work together closely.
-
-#### HAPPO (Heterogeneous Agent Proximal Policy Optimization)
-HAPPO is a variant of MAPPO designed for environments with heterogeneous agents, where different agents may have different observation spaces, action spaces, and reward structures. HAPPO allows each agent to have its own policy and value function, but it also incorporates mechanisms for coordination among the heterogeneous agents. This approach is useful in complex environments where agents have diverse roles and capabilities.
-
-#### HAA2C (Heterogeneous Agent Advantage Actor-Critic)
-HAA2C is a multi-agent extension of the Advantage Actor-Critic (A2C) algorithm for heterogeneous agents. Each agent has its own actor and critic networks, but they share a common environment. The algorithm uses the advantage function to reduce variance in policy updates, making training more stable. HAA2C is effective in scenarios where agents have different types of observations and actions.
-
-#### HAD3QN (Heterogeneous Agent Dueling Double Deep Q-Network)
-HAD3QN is a variant of the Dueling Double Deep Q-Network (D3QN) algorithm tailored for heterogeneous multi-agent environments. It combines the benefits of dueling network architectures and double Q-learning to improve learning stability and performance. Each agent has its own dueling network, which separately estimates the state value and the advantages of each action. This approach helps in environments where agents need to make fine-grained distinctions between actions.
-
-#### HASAC (Heterogeneous Agent Soft Actor-Critic)
-HASAC is an extension of the Soft Actor-Critic (SAC) algorithm for heterogeneous multi-agent systems. SAC is an off-policy actor-critic algorithm that uses entropy regularization to encourage exploration. HASAC adapts this approach to multi-agent settings with heterogeneous agents, allowing each agent to have its own policy and value function while coordinating through shared entropy-based objectives. This algorithm is suitable for environments requiring continuous action spaces and high exploration.
 
 ### Differences and Use Cases
-- **PPO vs. IPPO:** PPO is designed for single-agent environments, whereas IPPO is adapted for multi-agent environments where each agent learns independently.
-- **IPPO vs. MAPPO:** While IPPO treats agents independently, MAPPO uses a centralized value function to coordinate agents, making it better for cooperative tasks.
-- **MAPPO vs. HAPPO:** Both use centralized value functions, but HAPPO is tailored for environments with heterogeneous agents with different capabilities and roles.
-- **HAPPO vs. HAA2C:** HAPPO is a PPO-based algorithm, whereas HAA2C extends A2C to multi-agent settings, offering different stability and performance trade-offs.
-- **HAA2C vs. HAD3QN:** HAA2C is an actor-critic method, while HAD3QN is a value-based method with dueling and double Q-learning enhancements.
+- **PPO vs. IPPO:** PPO is for single-agent setups, while IPPO suits multi-agent environments with independent learning.
+- **IPPO vs. MAPPO:** IPPO treats agents independently; MAPPO coordinates agents with a centralized value function, ideal for cooperative tasks.
+- **MAPPO vs. HAPPO:** Both use centralized value functions, but HAPPO is for heterogeneous agents with different capabilities.
+- **HAPPO vs. HATRPO:** HAPPO uses PPO-based updates; HATRPO adapts TRPO for more stable and robust policy updates in heterogeneous settings.
+- **HAPPO vs. HAA2C:** HAPPO is PPO-based; HAA2C extends A2C to multi-agent systems, offering stability and performance trade-offs.
+- **HAA2C vs. HAD3QN:** HAA2C is an actor-critic method; HAD3QN uses value-based learning with dueling and double Q-learning
+- **HAD3QN vs. HASAC:** HAD3QN is value-based; HASAC uses entropy regularization for environments with continuous action spaces.
 
 By supporting a diverse set of algorithms, SustainDC allows researchers to benchmark and compare the performance of various reinforcement learning approaches in the context of sustainable DC control.
 
