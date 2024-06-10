@@ -507,5 +507,19 @@ If you have any questions, suggestions, or issues, please feel free to contact u
 - **GitHub Issues:** [GitHub Issues Page](https://github.com/HewlettPackard/dc-rl/issues)
 
 ## License
-This project is licensed under the MIT License. By using this software, you agree to the terms and conditions outlined in the license. See the [LICENSE](LICENSE) file for the full terms.
+
+### MIT License
+
+The majority of this project is licensed under the MIT License. See the [LICENSE](LICENSE) file for more details.
+
+### Creative Commons Attribution-NonCommercial 4.0 International License
+
+Some parts of this project are derived from code originally published under the Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0) License. The original authors retain the copyright to these portions, and they are used here under the terms of the CC BY-NC 4.0 license.
+
+#### Attribution for CC BY-NC 4.0 Licensed Material
+- [Original Repository](https://github.com/facebookresearch/CarbonExplorer)
+
+### Combined Work
+This combined work is available under both the MIT License for the new contributions and the CC BY-NC 4.0 License for the portions derived from the original work.
+
 
