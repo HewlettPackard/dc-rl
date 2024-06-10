@@ -31,11 +31,11 @@ TODO: This demo should be updated
 Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documentation of SustainDC.
 
 ## Features
-- **Highly Customizable Environments:** Allows users to define and modify various aspects of data center operations, including server configurations, cooling systems, and workload traces.
-- **Multi-Agent Support:** Enables the testing of MARL controllers with both homogeneous and heterogeneous agents, facilitating the study of collaborative and competitive strategies in data center management.
+- **Highly Customizable Environments:** Allows users to define and modify various aspects of DC operations, including server configurations, cooling systems, and workload traces.
+- **Multi-Agent Support:** Enables the testing of MARL controllers with both homogeneous and heterogeneous agents, facilitating the study of collaborative and competitive strategies in DC management.
 - **Gymnasium Integration:** Environments are wrapped in the Gymnasium `Env` class, making it easy to benchmark different control strategies using standard reinforcement learning libraries.
-- **Realistic External Variables:** Incorporates real-world data such as weather conditions, carbon intensity, and workload traces to simulate the dynamic and complex nature of data center operations.
-- **Collaborative Reward Mechanisms:** Supports the design of custom reward structures to promote collaborative optimization across different data center components.
+- **Realistic External Variables:** Incorporates real-world data such as weather conditions, carbon intensity, and workload traces to simulate the dynamic and complex nature of DC operations.
+- **Collaborative Reward Mechanisms:** Supports the design of custom reward structures to promote collaborative optimization across different DC components.
 - **Benchmarking Suite:** Includes scripts and tools for evaluating the performance of various MARL algorithms, providing insights into their effectiveness in reducing energy consumption and carbon emissions.
 
 <p align="center">
@@ -86,7 +86,7 @@ Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documen
 ## Environment Details
 
 ### Workload Environment
-The Workload Environment in SustainDC manages the execution and scheduling of delayable workloads within the data center (DC). It includes open-source workload traces from [Alibaba](https://github.com/alibaba/clusterdata) and [Google](https://github.com/google/cluster-data) data centers, which represent the computational demand placed on the DC. Users can customize this environment by adding new workload traces or modifying the existing ones. The workload traces are used to simulate the tasks that the data center needs to process, providing a realistic and dynamic workload for benchmarking purposes.
+The **Workload Environment** in SustainDC manages the execution and scheduling of delayable workloads within the DC. It includes open-source workload traces from [Alibaba](https://github.com/alibaba/clusterdata) and [Google](https://github.com/google/cluster-data) DC, which represent the computational demand placed on the DC. Users can customize this environment by adding new workload traces or modifying the existing ones. The workload traces are used to simulate the tasks that the DC needs to process, providing a realistic and dynamic workload for benchmarking purposes.
 
 #### Observation Space
 - Time of Day and Year: The sine and cosine representation of the hour of the day and the day of the year, providing a periodic understanding of time.
@@ -104,7 +104,7 @@ The Workload Environment in SustainDC manages the execution and scheduling of de
 
 
 ### Data Center Environment
-The Data Center Environment models the IT and HVAC systems of a data center, focusing on optimizing energy consumption and cooling. This environment simulates the electrical and thermal behavior of the DC components, including servers, cooling systems, and other infrastructure. Users can customize various parameters such as the number of servers, cooling setpoints, and the configuration of the HVAC system. This environment helps evaluate the performance of different control strategies aimed at reducing energy consumption and improving the overall efficiency of the data center.
+The **Data Center Environment** models the IT and HVAC systems of a DC, focusing on optimizing energy consumption and cooling. This environment simulates the electrical and thermal behavior of the DC components, including servers, cooling systems, and other infrastructure. Users can customize various parameters such as the number of servers, cooling setpoints, and the configuration of the HVAC system. This environment helps evaluate the performance of different control strategies aimed at reducing energy consumption and improving the overall efficiency of the DC.
 A representation of the DC modelled can be seen in the following figure:
 <p align="center">
   <img src="media/Data_center_modelled.png" alt="Data Center Modelled" width="1000">
@@ -128,7 +128,7 @@ A representation of the DC modelled can be seen in the following figure:
 
 
 ### Battery Environment
-The Battery Environment simulates the charging and discharging cycles of batteries used in the data center. It models how batteries can be charged from the grid during periods of low carbon intensity and provide auxiliary energy during periods of high carbon intensity. This environment helps in assessing the effectiveness of battery management strategies in reducing the carbon footprint and optimizing energy usage in the data center.
+The **Battery** Environment simulates the charging and discharging cycles of batteries used in the DC. It models how batteries can be charged from the grid during periods of low carbon intensity and provide auxiliary energy during periods of high carbon intensity. This environment helps in assessing the effectiveness of battery management strategies in reducing the carbon footprint and optimizing energy usage in the DC.
 
 #### Observation Space
 - Time of Day and Year: The sine and cosine representation of the hour of the day and the day of the year, providing a periodic understanding of time.
@@ -139,7 +139,7 @@ The Battery Environment simulates the charging and discharging cycles of batteri
 #### Action Space
 - Charge Battery: Store energy in the battery during periods of low carbon intensity.
 - Hold Energy: Maintain the current state of charge.
-- Discharge Battery: Provide auxiliary energy to the data center during periods of high carbon intensity.
+- Discharge Battery: Provide auxiliary energy to the DC during periods of high carbon intensity.
 
 <p align="center">
   <img src="media/agent_bat_explanation.png" alt="BAT Agent" width="250">
@@ -147,28 +147,28 @@ The Battery Environment simulates the charging and discharging cycles of batteri
 
 
 ### Connections Between Environments
-The three environments in SustainDC are interconnected to provide a comprehensive simulation of data center operations:
+The three environments in SustainDC are interconnected to provide a comprehensive simulation of DC operations:
 
 - The **Workload Environment** generates the computational demand that the **Data Center Environment** must process. This includes managing the scheduling of delayable tasks to optimize energy consumption and reduce the carbon footprint.
 
 - The **Data Center Environment** handles the cooling and IT operations required to process the workloads. It is directly influenced by the workload generated, as higher computational demand results in increased heat generation, necessitating more cooling and energy consumption.
 
-- The **Battery Environment** supports the DC by providing auxiliary energy during periods of high carbon intensity, helping to reduce the overall carbon footprint of the data center's operations. It is affected by both the **Workload Environment** and the **Data Center Environment**. The workload affects heat generation, which in turn impacts the cooling requirements and energy consumption of the data center, thereby influencing the battery's charging and discharging cycles.
+- The **Battery Environment** supports the DC by providing auxiliary energy during periods of high carbon intensity, helping to reduce the overall carbon footprint of the DC's operations. It is affected by both the **Workload Environment** and the **Data Center Environment**. The workload affects heat generation, which in turn impacts the cooling requirements and energy consumption of the DC, thereby influencing the battery's charging and discharging cycles.
 
 
-Together, these interconnected environments provide a realistic and dynamic platform for benchmarking multi-agent reinforcement learning algorithms aimed at enhancing the sustainability and efficiency of data center operations.
+Together, these interconnected environments provide a realistic and dynamic platform for benchmarking multi-agent reinforcement learning algorithms aimed at enhancing the sustainability and efficiency of DC operations.
 
 
 ### External Variables
 SustainDC uses several external variables to provide a realistic simulation environment:
 
 #### Workload
-The Workload external variable in SustainDC represents the computational demand placed on the DC. By default, SustainDC includes a collection of open-source workload traces from Alibaba and Google data centers. Users can customize this component by adding new workload traces to the `data/Workload` folder or specifying a path to existing traces in the `dcrl_env_harl_partialobs.py` file under the `workload_file` configuration.
+The Workload external variable in SustainDC represents the computational demand placed on the DC. By default, SustainDC includes a collection of open-source workload traces from Alibaba and Google DCs. Users can customize this component by adding new workload traces to the `data/Workload` folder or specifying a path to existing traces in the `dcrl_env_harl_partialobs.py` file under the `workload_file` configuration.
 
 ![Comparison between two workload traces of Alibaba trace (2017) and Google (2011).](media/workload_comparison.png)
 
 #### Weather
-The Weather external variable in SustainDC captures the ambient environmental conditions impacting the data center's cooling requirements. By default, SustainDC includes weather data files in the .epw format from various locations where data centers are commonly situated. These locations include Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. Users can customize this component by adding new weather files to the `data/Weather` folder or specifying a path to existing weather files in the `dcrl_env_harl_partialobs.py` file under the `weather_file` configuration.
+The Weather external variable in SustainDC captures the ambient environmental conditions impacting the DC's cooling requirements. By default, SustainDC includes weather data files in the .epw format from various locations where DCs are commonly situated. These locations include Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. Users can customize this component by adding new weather files to the `data/Weather` folder or specifying a path to existing weather files in the `dcrl_env_harl_partialobs.py` file under the `weather_file` configuration.
 
 Each .epw file contains hourly data for various weather parameters, but for our purposes, we focus on the ambient temperature.
 
@@ -202,7 +202,7 @@ Below is a summary of the selected locations, typical weather values, and carbon
 
 
 ## Customization
-SustainDC offers extensive customization options to tailor the environments to specific needs and configurations. Users can modify various parameters and components across the Workload, Data Center, and Battery environments, as well as external variables like weather carbon intensity data, and workload trace.
+SustainDC offers extensive customization options to tailor the environments to specific needs and configurations. Users can modify various parameters and components across the **Workload**, **Data Center**, and **Battery** environments, as well as external variables like weather carbon intensity data, and workload trace.
 
 <p align="center">
   <img src="media/schematic.png" alt="Schematic" width="1000">
@@ -245,7 +245,7 @@ env_config = {
 
 
 ### Data Center Configuration File
-The customization of the data center is done through the `dc_config.json` file located in the `utils` folder. This file allows users to specify every aspect of the data center environment design.
+The customization of the DC is done through the `dc_config.json` file located in the `utils` folder. This file allows users to specify every aspect of the DC environment design.
 
 #### Example Configuration File Structure
 ```json
@@ -284,7 +284,7 @@ The customization of the data center is done through the `dc_config.json` file l
 ### Adding New Workload Data
 
 #### Overview
-By default, SustainDC includes workload traces from [Alibaba](https://github.com/alibaba/clusterdata) and [Google](https://github.com/google/cluster-data) data centers. These traces are used to simulate the tasks that the data center needs to process, providing a realistic and dynamic workload for benchmarking purposes.
+By default, SustainDC includes workload traces from [Alibaba](https://github.com/alibaba/clusterdata) and [Google](https://github.com/google/cluster-data) DC. These traces are used to simulate the tasks that the DC needs to process, providing a realistic and dynamic workload for benchmarking purposes.
 
 #### Data Source
 The default workload traces are extracted from:
@@ -312,7 +312,7 @@ Workload trace files should be in CSV format, with two columns: a timestamp or i
 ### Adding New Carbon Intensity Data
 
 #### Overview
-Carbon Intensity (CI) data represents the carbon emissions associated with electricity consumption. SustainDC includes CI data files for various locations to simulate the carbon footprint of the data center's energy usage.
+Carbon Intensity (CI) data represents the carbon emissions associated with electricity consumption. SustainDC includes CI data files for various locations to simulate the carbon footprint of the DC's energy usage.
 
 #### Data Source
 The default carbon intensity data files are extracted from:
@@ -349,7 +349,7 @@ timestamp,WND,SUN,WAT,OIL,NG,COL,NUC,OTH,avg_CI
 ### Adding New Weather Data
 
 #### Overview
-Weather data captures the ambient environmental conditions that impact the data center's cooling requirements. SustainDC includes weather data files in the .epw format from various locations where data centers are commonly situated.
+Weather data captures the ambient environmental conditions that impact the DC's cooling requirements. SustainDC includes weather data files in the .epw format from various locations where DCs are commonly situated.
 
 #### Data Source
 The default weather data files are extracted from:
@@ -377,9 +377,9 @@ DATA PERIODS,1,1,Data,Sunday, 1/ 1,12/31
 
 
 ### Custom Reward Structures
-SustainDC allows users to define custom reward structures to promote collaborative optimization across different data center components. Users can modify the reward functions in the `utils/reward_creator.py` file to suit their specific optimization goals.
+SustainDC allows users to define custom reward structures to promote collaborative optimization across different DC components. Users can modify the reward functions in the `utils/reward_creator.py` file to suit their specific optimization goals.
 
-By leveraging these customization options, users can create highly specific and optimized simulations that reflect the unique requirements and challenges of their data center operations.
+By leveraging these customization options, users can create highly specific and optimized simulations that reflect the unique requirements and challenges of their DC operations.
 
 
 ## Benchmarking Algorithms
@@ -416,7 +416,7 @@ HASAC is an extension of the Soft Actor-Critic (SAC) algorithm for heterogeneous
 - **HAPPO vs. HAA2C:** HAPPO is a PPO-based algorithm, whereas HAA2C extends A2C to multi-agent settings, offering different stability and performance trade-offs.
 - **HAA2C vs. HAD3QN:** HAA2C is an actor-critic method, while HAD3QN is a value-based method with dueling and double Q-learning enhancements.
 
-By supporting a diverse set of algorithms, SustainDC allows researchers to benchmark and compare the performance of various reinforcement learning approaches in the context of sustainable data center control.
+By supporting a diverse set of algorithms, SustainDC allows researchers to benchmark and compare the performance of various reinforcement learning approaches in the context of sustainable DC control.
 
   
 ### Running Benchmarks
@@ -433,7 +433,7 @@ To configure the used algorithm, TBC..........
 
 ## Dashboard
 
-To get an in-depth look at the SustainDC dashboard and see real-time metrics, watch the video demonstration. The video showcases the dynamic plotting of variables from the agents, environments, and metrics, providing a comprehensive view of the data center operations.
+To get an in-depth look at the SustainDC dashboard and see real-time metrics, watch the video demonstration. The video showcases the dynamic plotting of variables from the agents, environments, and metrics, providing a comprehensive view of the DC operations.
 
 Click on the screenshot below to watch the video (right-click and select "Open link in new tab" to view in a new tab):
 
@@ -441,7 +441,7 @@ Click on the screenshot below to watch the video (right-click and select "Open l
 
 In the video, you will see:
 - **Real-time plotting of agent variables:** Watch how the agents' actions and states are visualized dynamically.
-- **Environment metrics:** Observe the data center's performance metrics, including energy consumption, cooling requirements, and workload distribution.
+- **Environment metrics:** Observe the DC's performance metrics, including energy consumption, cooling requirements, and workload distribution.
 - **Interactive dashboard features:** Learn about the various interactive elements of the dashboard that allow for detailed analysis and monitoring.
 
 If you wish to download the video directly, [click here](https://www.dropbox.com/scl/fi/85gumlvjgbbk5kwjhee3i/Data-Center-Green-Dashboard-ver2.mp4?rlkey=w3mu21qqdk9asi826cjyyutzl&dl=1).
