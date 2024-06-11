@@ -1,0 +1,105 @@
+{
+    "algo_args":	{
+        "algo":	{
+            "action_aggregation":	"prod",
+            "actor_num_mini_batch":	1,
+            "clip_param":	0.25,
+            "critic_epoch":	5,
+            "critic_num_mini_batch":	1,
+            "entropy_coef":	0.01,
+            "fixed_order":	false,
+            "gae_lambda":	0.9,
+            "gamma":	0.995,
+            "huber_delta":	10.0,
+            "max_grad_norm":	0.5,
+            "ppo_epoch":	5,
+            "share_param":	false,
+            "use_clipped_value_loss":	false,
+            "use_gae":	true,
+            "use_huber_loss":	false,
+            "use_max_grad_norm":	true,
+            "use_policy_active_masks":	true,
+            "value_loss_coef":	1
+        },
+        "device":	{
+            "cuda":	false,
+            "cuda_deterministic":	false,
+            "torch_threads":	4
+        },
+        "eval":	{
+            "dump_eval_metrcs":	false,
+            "eval_episodes":	5,
+            "n_eval_rollout_threads":	12,
+            "use_eval":	true
+        },
+        "logger":	{
+            "log_dir":	"./results"
+        },
+        "model":	{
+            "activation_func":	"tanh",
+            "critic_lr":	0.0003,
+            "data_chunk_length":	10,
+            "gain":	0.01,
+            "hidden_sizes":	[
+                16,
+                16,
+                16
+            ],
+            "initialization_method":	"orthogonal_",
+            "lr":	0.0003,
+            "opti_eps":	1e-05,
+            "recurrent_n":	1,
+            "std_x_coef":	1,
+            "std_y_coef":	0.5,
+            "use_feature_normalization":	true,
+            "use_naive_recurrent_policy":	false,
+            "use_recurrent_policy":	false,
+            "weight_decay":	0
+        },
+        "render":	{
+            "render_episodes":	10,
+            "use_render":	false
+        },
+        "seed":	{
+            "seed":	1,
+            "seed_specify":	true
+        },
+        "train":	{
+            "episode_length":	1024,
+            "eval_interval":	25,
+            "log_interval":	5,
+            "model_dir":	null,
+            "n_rollout_threads":	12,
+            "num_env_steps":	2000000000,
+            "use_linear_lr_decay":	false,
+            "use_proper_time_limits":	true,
+            "use_valuenorm":	true
+        }
+    },
+    "env_args":	{
+        "agents":	[
+            "agent_ls",
+            "agent_dc",
+            "agent_bat"
+        ],
+        "bat_reward":	"default_bat_reward",
+        "days_per_episode":	60,
+        "dc_config_file":	"dc_config.json",
+        "dc_reward":	"default_dc_reward",
+        "flexible_load":	0.4,
+        "individual_reward_weight":	0.8,
+        "location":	"ga",
+        "ls_reward":	"default_ls_reward",
+        "max_bat_cap_Mw":	1.0,
+        "month":	6,
+        "nonoverlapping_shared_obs_space":	true,
+        "partial_obs":	true,
+        "workload_file":	"Alibaba_CPU_Data_Hourly_1.csv"
+    },
+    "main_args":	{
+        "algo":	"happo",
+        "env":	"dcrl",
+        "exp_name":	"happo3agents",
+        "load_config":	""
+    }
+}

@@ -1,0 +1,94 @@
+{
+    "algo_args":	{
+        "algo":	{
+            "alpha":	0.001,
+            "alpha_lr":	0.0003,
+            "auto_alpha":	false,
+            "batch_size":	1000,
+            "buffer_size":	1000000,
+            "fixed_order":	false,
+            "gamma":	0.99,
+            "huber_delta":	10.0,
+            "n_step":	20,
+            "polyak":	0.005,
+            "share_param":	false,
+            "use_huber_loss":	true,
+            "use_policy_active_masks":	true
+        },
+        "device":	{
+            "cuda":	false,
+            "cuda_deterministic":	true,
+            "torch_threads":	4
+        },
+        "eval":	{
+            "eval_episodes":	5,
+            "n_eval_rollout_threads":	12,
+            "use_eval":	true
+        },
+        "logger":	{
+            "log_dir":	"./results"
+        },
+        "model":	{
+            "activation_func":	"relu",
+            "critic_lr":	0.0005,
+            "final_activation_func":	"tanh",
+            "gain":	0.01,
+            "hidden_sizes":	[
+                16,
+                16,
+                16
+            ],
+            "initialization_method":	"orthogonal_",
+            "lr":	0.0005,
+            "use_feature_normalization":	true
+        },
+        "render":	{
+            "render_episodes":	10,
+            "use_render":	false
+        },
+        "seed":	{
+            "seed":	1,
+            "seed_specify":	true
+        },
+        "train":	{
+            "episode_length":	1024,
+            "eval_interval":	10000,
+            "log_interval":	null,
+            "model_dir":	null,
+            "n_rollout_threads":	12,
+            "num_env_steps":	500000000,
+            "train_interval":	2048,
+            "update_per_train":	1,
+            "use_linear_lr_decay":	false,
+            "use_proper_time_limits":	true,
+            "use_valuenorm":	true,
+            "warmup_steps":	10000
+        }
+    },
+    "env_args":	{
+        "agents":	[
+            "agent_ls",
+            "agent_dc",
+            "agent_bat"
+        ],
+        "bat_reward":	"default_bat_reward",
+        "days_per_episode":	60,
+        "dc_config_file":	"dc_config.json",
+        "dc_reward":	"default_dc_reward",
+        "flexible_load":	0.4,
+        "individual_reward_weight":	0.8,
+        "location":	"ga",
+        "ls_reward":	"default_ls_reward",
+        "max_bat_cap_Mw":	1.0,
+        "month":	6,
+        "nonoverlapping_shared_obs_space":	true,
+        "partial_obs":	true,
+        "workload_file":	"Alibaba_CPU_Data_Hourly_1.csv"
+    },
+    "main_args":	{
+        "algo":	"hasac",
+        "env":	"dcrl",
+        "exp_name":	"hasac3agents",
+        "load_config":	""
+    }
+}

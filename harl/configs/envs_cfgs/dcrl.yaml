@@ -1,0 +1,17 @@
+agents:
+  - agent_ls
+  - agent_dc
+  - agent_bat
+location: az
+workload_file: 'Alibaba_CPU_Data_Hourly_1.csv'
+max_bat_cap_Mw: 1.0
+individual_reward_weight: 0.8
+flexible_load: 0.4
+ls_reward: default_ls_reward
+dc_reward: default_dc_reward
+bat_reward: default_bat_reward
+dc_config_file: 'dc_config.json'
+month: 6
+days_per_episode: 60
+partial_obs: True
+nonoverlapping_shared_obs_space: True
