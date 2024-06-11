@@ -25,14 +25,18 @@ Workloads are uploaded to the DC from a proxy client. A fraction of these jobs c
 
 Big data centers also incorporate battery banks. Batteries can be charged from the grid during low Carbon Intensity (CI) periods. During higher CI periods, they provide auxiliary energy to the DC.  
 
+
+|F| connects core environments and external input data sources to model data center operations. 
+
+
 Core Environments 
 -----------------------
 
 |F| consist of three interconnected environments that simulate various aspects of data center operations:
 
-* **Workload Envronment** - model and control the execution and scheduling of delay-tolerant workloads within the DC 
-* **Data Center Environment** - model and manage the servers in the IT room cabinets that process workloads and the HVAC system and components 
-* **Battery Environment** - simulates the DC battery charging behavior during off-peak hours and provides auxiliary energy to the DC during peak grid carbon intensity periods
+  - **Workload Envronment** - model and control the execution and scheduling of delay-tolerant workloads within the DC 
+  - **Data Center Environment** - model and manage the servers in the IT room cabinets that process workloads and the HVAC system and components 
+  - **Battery Environment** - simulates the DC battery charging behavior during off-peak hours and provides auxiliary energy to the DC during peak grid carbon intensity periods
 
 
 These environments work together to provide a comprehensive platform for benchmarking MARL algorithms aimed at optimizing energy consumption and reducing the carbon footprint of DCs.
@@ -47,33 +51,27 @@ These environments work together to provide a comprehensive platform for benchma
    :align: center
 
 
-These three environments are interconnected to simulate realistic DC operations:
+Input Data Sources 
+--------------------------
 
-- The **Workload Environment** generates the computational demand that the **Data Center Environment** must process. This includes managing the scheduling of delayable tasks to optimize energy consumption and reduce the carbon footprint.
+|F| uses few types of external input data to provide realistic simulation environment:
 
-- The **Data Center Environment** handles the cooling and IT operations required to process the workloads. Higher computational demand results in increased heat generation, necessitating more cooling and energy consumption.
+  - **Workload data** - the computational demand placed on the DC
+  - **Weather data** - the ambient environmental conditions impacting the DC cooling requirements 
+  - **Carbon Intensity data** - the carbon emissions associated with electricity consumption
 
-- The **Battery Environment** supports the DC by providing auxiliary energy during periods of high carbon intensity, helping to reduce the overall carbon footprint. It is affected by both the **Workload Environment** and the **Data Center Environment**. The workload impacts heat generation, which in turn affects the cooling requirements and energy consumption, influencing the battery's charging and discharging cycles.
 
-
-Together, these interconnected environments provide a dynamic platform for benchmarking MARL algorithms, helping to develop strategies for more sustainable and efficient DC operations.
-
-For more detals on each individual environment check the links below.
+For more detals on each individual environment, the reinforcement learning algorithms implementeded, the reward functions provided to train the agents, and explanation of external data sources, all needed for succesful |F| model, check the links below. 
 
 .. toctree::
    :maxdepth: 1
 
    environments
    interconnected
-   .. workload
-   .. datacenter
-   .. battery
+   externaldata
+   algorithms
+   reward_function
 
-   .. model
-   .. environment
-   .. agents
-   .. observations
-   .. actions
-   .. reward_function
+
 
    

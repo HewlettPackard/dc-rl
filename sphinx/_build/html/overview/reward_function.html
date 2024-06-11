@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Usage" href="../usage/index.html" /><link rel="prev" title="Benchmarking Algorithms" href="algorithms.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
-        <title>Reward function - SustainDC 0.0.1 documentation</title>
+        <title>Reward Functions - SustainDC 0.0.2 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -180,7 +180,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">SustainDC 0.0.1 documentation</div></a>
+      <a href="../index.html"><div class="brand">SustainDC 0.0.2 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -204,7 +204,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
   
-  <span class="sidebar-brand-text">SustainDC 0.0.1 documentation</span>
+  <span class="sidebar-brand-text">SustainDC 0.0.2 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -212,11 +212,15 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Overview</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="environments.html">SustainDC Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="interconnected.html">Inter-connected Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="externaldata.html">External Input Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="algorithms.html">Benchmarking Algorithms</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Reward Functions</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
@@ -286,9 +290,9 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="reward-function">
-<h1>Reward function<a class="headerlink" href="#reward-function" title="Link to this heading">¶</a></h1>
-<p>DCRL-Green provides an interface where the end-user can choose to train three agents independently of each other’s reward feedback, or consider a collaborative reward approach.</p>
+          <section id="reward-functions">
+<h1>Reward Functions<a class="headerlink" href="#reward-functions" title="Link to this heading">¶</a></h1>
+<p>SustainDC provides an interface where the end-user can choose to train agents independently of each other’s reward feedback, or consider a collaborative reward approach.</p>
 <section id="independent-rewards">
 <h2>Independent rewards<a class="headerlink" href="#independent-rewards" title="Link to this heading">¶</a></h2>
 <div class="table-wrapper docutils container">
@@ -371,367 +375,17 @@ A penalty is attributed to the load shifting agent if it fails to schedule all t
 </thead>
 <tbody>
 <tr class="row-even"><td><p>Collaborative</p></td>
-<td><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;individual_reward_weight&#39;</span>:<span class="w"> </span><span class="m">0</span>.33
-</pre></div>
-</div>
-</td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">individual_reward_weight':</span> <span class="pre">0.33</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>Independent</p></td>
-<td><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;individual_reward_weight&#39;</span>:<span class="w"> </span><span class="m">1</span>.0
-</pre></div>
-</div>
-</td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">individual_reward_weight':</span> <span class="pre">1.0</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>Default
 (weighted)</p></td>
-<td><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="s1">&#39;individual_reward_weight&#39;</span>:<span class="w"> </span><span class="m">0</span>.8
-</pre></div>
-</div>
-</td>
+<td><p><code class="code docutils literal notranslate"><span class="pre">individual_reward_weight':</span> <span class="pre">0.8</span></code></p></td>
 </tr>
 </tbody>
 </table>
-</div>
-</section>
-<section id="custom-rewards">
-<h2>Custom rewards<a class="headerlink" href="#custom-rewards" title="Link to this heading">¶</a></h2>
-<p>DCRL-Green inludes an option to include custom rewards to match user’s optimization objectives.</p>
-<p><strong>Step 1:</strong>
-Users need to define custom reward functions in <code class="code docutils literal notranslate"><span class="pre">utils/reward_creator.py</span></code>. Those function should follow the schema:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">custom_agent_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-    <span class="c1">#read reward input parameters from dict object</span>
-    <span class="c1">#custom reward calculations</span>
-    <span class="n">custom_reward</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="c1">#update with custom reward shaping</span>
-    <span class="k">return</span> <span class="n">custom_reward</span>
-</pre></div>
-</div>
-<p><strong>Step 2:</strong>
-Next, users need to add the new custom reward function(s) to the <code class="code docutils literal notranslate"><span class="pre">REWARD_METHOD_MAP</span></code> dictionary:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">REWARD_METHOD_MAP</span> <span class="o">=</span> <span class="p">{</span>
-<span class="s1">&#39;default_dc_reward&#39;</span> <span class="p">:</span> <span class="n">default_dc_reward</span><span class="p">,</span>
-<span class="s1">&#39;default_bat_reward&#39;</span><span class="p">:</span> <span class="n">default_bat_reward</span><span class="p">,</span>
-<span class="s1">&#39;default_ls_reward&#39;</span> <span class="p">:</span> <span class="n">default_ls_reward</span><span class="p">,</span>
-<span class="c1"># Additional rewards methods</span>
-<span class="s1">&#39;tou_reward&#39;</span> <span class="p">:</span> <span class="n">tou_reward</span><span class="p">,</span>
-<span class="s1">&#39;renewable_energy_reward&#39;</span> <span class="p">:</span> <span class="n">renewable_energy_reward</span><span class="p">,</span>
-<span class="s1">&#39;energy_efficiency_reward&#39;</span> <span class="p">:</span> <span class="n">energy_efficiency_reward</span><span class="p">,</span>
-<span class="s1">&#39;energy_PUE_reward&#39;</span> <span class="p">:</span> <span class="n">energy_PUE_reward</span><span class="p">,</span>
-<span class="s1">&#39;temperature_efficiency_reward&#39;</span> <span class="p">:</span> <span class="n">temperature_efficiency_reward</span><span class="p">,</span>
-<span class="c1"># Add custom reward methods here</span>
-<span class="s1">&#39;custom_agent_reward&#39;</span> <span class="p">:</span> <span class="n">custom_agent_reward</span><span class="p">,</span>
-<span class="s1">&#39;how_you_want_to_call_it&#39;</span> <span class="p">:</span> <span class="n">how_is_the_function_called</span><span class="p">,</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>A dictionary of the environment parameters (<code class="code docutils literal notranslate"><span class="pre">reward_params</span></code>) is available to users in <code class="code docutils literal notranslate"><span class="pre">dcrl_env.py</span></code> or <code class="code docutils literal notranslate"><span class="pre">dcrl_eplus_env.py</span></code>.
-This object consists of the information dictionary of each environment, and some other global variables such as time, day, carbon intensity, outside temperature, etc.
-If a user wants to add additional custom parameters, they must be added in the dictionary <code class="code docutils literal notranslate"><span class="pre">reward_params</span></code> so that those variables are visible in the reward function.
-Within the dictionary, the following environment parameters are available to users:</p>
-<div class="table-wrapper docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>Parameter</p></th>
-<th class="head"><p>Example</p></th>
-<th class="head"><p>Description</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_action</span></code></p></td>
-<td><p>0</p></td>
-<td><p>Action of the battery agent</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_SOC</span></code></p></td>
-<td><p>0.15</p></td>
-<td><p>Battery state of charge</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_CO2_footprint</span></code></p></td>
-<td><p>380899.11</p></td>
-<td><p>CO2 footprint obtained after the battery action</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_avg_CI</span></code></p></td>
-<td><p>500.63</p></td>
-<td><p>Carbon Intensity used in battery (same as current CI)</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_total_energy_without_battery_KWh</span></code></p></td>
-<td><p>610.82</p></td>
-<td><p>Total energy (KWh) consumed before battery action</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_total_energy_with_battery_KWh</span></code></p></td>
-<td><p>760.82</p></td>
-<td><p>Total energy (KWh) consumed after battery action</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_max_bat_cap</span></code></p></td>
-<td><p>2</p></td>
-<td><p>Battery maximum capacity (KWh)</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_a_t</span></code></p></td>
-<td><p>charge</p></td>
-<td><p>Name of the action of the battery agent</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_dcload_min</span></code></p></td>
-<td><p>0.6</p></td>
-<td><p>Datacenter minimal energy consumption (MWh). Used in normalization.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">bat_dcload_max</span></code></p></td>
-<td><p>1.81</p></td>
-<td><p>Datacenter maximal energy consumption (MWh). Used in normalization.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">ls_original_workload</span></code></p></td>
-<td><p>0.69</p></td>
-<td><p>Normalized original workload (%) before load shifting agent</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">ls_shifted_workload</span></code></p></td>
-<td><p>0.69</p></td>
-<td><p>Normalized shifted workload (%) after load shifting agent</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">ls_action</span></code></p></td>
-<td><p>1</p></td>
-<td><p>Action of the load shifting agent</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">ls_norm_load_left</span></code></p></td>
-<td><p>1</p></td>
-<td><p>Normalized current unassigned flexible workload</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">ls_unasigned_day_load_left</span></code></p></td>
-<td><p>0</p></td>
-<td><p>Total end of the day unassigned flexible workload</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">ls_penalty_flag</span></code></p></td>
-<td><p>FALSE</p></td>
-<td><p>Flag to indicate that at the end of the day, there is some workload unassigned.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_ITE_total_power_kW</span></code></p></td>
-<td><p>2443.31</p></td>
-<td><p>IT total power consumption (KW)</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_HVAC_total_power_kW</span></code></p></td>
-<td><p>0</p></td>
-<td><p>HVAC total power consumption (KW). It doesn’t consider the CRAC fan load, CRAC cooling load, or the compressor load because these have constant  power consumption.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_total_power_kW</span></code></p></td>
-<td><p>2443.31</p></td>
-<td><p>Total power consumption (KW)</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_energy_lb_kW</span></code></p></td>
-<td><p>40000</p></td>
-<td><p>Lower bound in the normalization of the datacenter energy consumption (W)</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_energy_ub_kW</span></code></p></td>
-<td><p>160000</p></td>
-<td><p>Upper bound in the normalization of the datacenter energy consumption (W)</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_crac_setpoint_delta</span></code></p></td>
-<td><p>-5</p></td>
-<td><p>HVAC temperature delta change in the setpoint</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_crac_setpoint</span></code></p></td>
-<td><p>15</p></td>
-<td><p>HVAC current temperature setpoint (C)</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_cpu_workload_percent</span></code></p></td>
-<td><p>0.69</p></td>
-<td><p>Normalized shifted workload (%) that the dc agent is using (same as ls_shifted_workload)</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">dc_int_temperature</span></code></p></td>
-<td><p>29.60</p></td>
-<td><p>Room temperature (C)</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">outside_temp</span></code></p></td>
-<td><p>3.50</p></td>
-<td><p>Outside temperature (C)</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">day_of_the_year</span></code></p></td>
-<td><p>0</p></td>
-<td><p>Day of the year</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">hour</span></code></p></td>
-<td><p>0.25</p></td>
-<td><p>Hour.Fraction of the hour.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="code docutils literal notranslate"><span class="pre">day_workload</span></code></p></td>
-<td><p>0</p></td>
-<td><p>Total flexible workload at the start of the day</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="code docutils literal notranslate"><span class="pre">norm_CI</span></code></p></td>
-<td></td>
-<td><p>current normalized carbon intensity</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>Depending on the objective and requirements, users can utilize a combination of these parameters to define their customized reward functions, or use one of already provided reward functions.</p>
-<p>Some examples of custom rewards are listed below:</p>
-<p><em>Example 1: Reward function based on power usage effectivness (PUE)</em></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">energy_PUE_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates a reward value based on Power Usage Effectiveness (PUE).</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        params (dict): Dictionary containing parameters:</span>
-<span class="sd">            total_energy_consumption (float): Total energy consumption of the data center.</span>
-<span class="sd">            it_equipment_energy (float): Energy consumed by the IT equipment.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        float: Reward value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">total_energy_consumption</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;total_energy_consumption&#39;</span><span class="p">]</span>
-    <span class="n">it_equipment_energy</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;it_equipment_energy&#39;</span><span class="p">]</span>
-
-    <span class="c1"># Calculate PUE</span>
-    <span class="n">pue</span> <span class="o">=</span> <span class="n">total_energy_consumption</span> <span class="o">/</span> <span class="n">it_equipment_energy</span> <span class="k">if</span> <span class="n">it_equipment_energy</span> <span class="o">!=</span> <span class="mi">0</span> <span class="k">else</span> <span class="nb">float</span><span class="p">(</span><span class="s1">&#39;inf&#39;</span><span class="p">)</span>
-
-    <span class="c1"># We aim to get PUE as close to 1 as possible, hence we take the absolute difference between PUE and 1</span>
-    <span class="c1"># We use a negative sign since RL seeks to maximize reward, but we want to minimize PUE</span>
-    <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">pue</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
-
-    <span class="k">return</span> <span class="n">reward</span>
-</pre></div>
-</div>
-<p><em>How to use this custom reward function</em></p>
-<p>To use this custom reward function, the reward function must be declared in the <code class="code docutils literal notranslate"><span class="pre">REWARD_METHOD_MAP</span></code>.
-In this case, by default, the reward function is already declared as <code class="code docutils literal notranslate"><span class="pre">'energy_PUE_reward'</span> <span class="pre">:</span> <span class="pre">energy_PUE_reward,</span></code>.
-Therefore, to use the function as a reward function of an agent (i.e., <code class="code docutils literal notranslate"><span class="pre">agent_dc</span></code>, the agent that modifies the HVAC setpoint), in the algorithm definition (i.e., <code class="code docutils literal notranslate"><span class="pre">train_ppo.py</span></code>),
-the reward definition of the dc agent must be declared as <code class="code docutils literal notranslate"><span class="pre">dc_reward:energy_PUE_reward</span></code> within the <code class="code docutils literal notranslate"><span class="pre">env_config</span></code> dictionary.</p>
-<p>The following piece of code show how to declare the <code class="code docutils literal notranslate"><span class="pre">'energy_PUE_reward'</span></code> as reward function for the DC agent:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">CONFIG</span> <span class="o">=</span> <span class="p">(</span>
-    <span class="n">PPOConfig</span><span class="p">()</span>
-    <span class="o">.</span><span class="n">environment</span><span class="p">(</span>
-        <span class="n">env</span><span class="o">=</span><span class="n">DCRL</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s1">&#39;EPLUS&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="n">DCRLeplus</span><span class="p">,</span>
-        <span class="n">env_config</span><span class="o">=</span><span class="p">{</span>
-            <span class="c1"># Agents active</span>
-            <span class="s1">&#39;agents&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;agent_ls&#39;</span><span class="p">,</span> <span class="s1">&#39;agent_dc&#39;</span><span class="p">,</span> <span class="s1">&#39;agent_bat&#39;</span><span class="p">],</span>
-
-            <span class="c1"># Other configurations ....</span>
-
-            <span class="c1"># Specify reward methods</span>
-            <span class="s1">&#39;ls_reward&#39;</span><span class="p">:</span> <span class="s1">&#39;default_ls_reward&#39;</span><span class="p">,</span>
-            <span class="o">**</span><span class="s1">&#39;dc_reward&#39;</span><span class="p">:</span> <span class="s1">&#39;energy_PUE_reward&#39;</span><span class="p">,</span><span class="o">**</span>
-            <span class="s1">&#39;bat_reward&#39;</span><span class="p">:</span> <span class="s1">&#39;default_bat_reward&#39;</span>
-        <span class="p">}</span>
-</pre></div>
-</div>
-<p><em>Example 2: Reward function based on time of use (ToU) of energy</em></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">tou_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates a reward value based on the Time of Use (ToU) of energy.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        params (dict): Dictionary containing parameters:</span>
-<span class="sd">            energy_usage (float): The energy usage of the agent.</span>
-<span class="sd">            hour (int): The current hour of the day (24-hour format).</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        float: Reward value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-
-    <span class="c1"># ToU dict: {Hour, price}</span>
-    <span class="n">tou</span> <span class="o">=</span> <span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
-        <span class="mi">1</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
-        <span class="mi">2</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
-        <span class="mi">3</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
-        <span class="mi">4</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
-        <span class="mi">5</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
-        <span class="mi">6</span><span class="p">:</span> <span class="mf">0.41</span><span class="p">,</span>
-        <span class="mi">7</span><span class="p">:</span> <span class="mf">0.41</span><span class="p">,</span>
-        <span class="mi">8</span><span class="p">:</span> <span class="mf">0.41</span><span class="p">,</span>
-        <span class="mi">9</span><span class="p">:</span> <span class="mf">0.41</span><span class="p">,</span>
-        <span class="mi">10</span><span class="p">:</span> <span class="mf">0.41</span><span class="p">,</span>
-        <span class="mi">11</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
-        <span class="mi">12</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
-        <span class="mi">13</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
-        <span class="mi">14</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
-        <span class="mi">15</span><span class="p">:</span> <span class="mf">0.30</span><span class="p">,</span>
-        <span class="mi">16</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
-        <span class="mi">17</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
-        <span class="mi">18</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
-        <span class="mi">19</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
-        <span class="mi">20</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
-        <span class="mi">21</span><span class="p">:</span> <span class="mf">0.27</span><span class="p">,</span>
-        <span class="mi">22</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
-        <span class="mi">23</span><span class="p">:</span> <span class="mf">0.25</span><span class="p">,</span>
-        <span class="p">}</span>
-
-    <span class="c1"># Obtain the price of electricity at the current hour</span>
-    <span class="n">current_price</span> <span class="o">=</span> <span class="n">tou</span><span class="p">[</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;hour&#39;</span><span class="p">]]</span>
-    <span class="c1"># Obtain the energy usage</span>
-    <span class="n">energy_usage</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;bat_total_energy_with_battery_KWh&#39;</span><span class="p">]</span>
-
-    <span class="c1"># The reward is negative as the agent&#39;s objective is to minimize energy cost</span>
-    <span class="n">tou_reward</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">energy_usage</span> <span class="o">*</span> <span class="n">current_price</span>
-
-    <span class="k">return</span> <span class="n">tou_reward</span>
-</pre></div>
-</div>
-<p><em>Example 3: Reward function based on the usage of renewable energy sources</em></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">renewable_energy_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates a reward value based on the usage of renewable energy sources.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        params (dict): Dictionary containing parameters:</span>
-<span class="sd">            renewable_energy_ratio (float): Ratio of energy coming from renewable sources.</span>
-<span class="sd">            total_energy_consumption (float): Total energy consumption of the data center.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        float: Reward value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;renewable_energy_ratio&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;renewable_energy_ratio is not defined. This parameter should be included using some external dataset and added to the reward_info dictionary&#39;</span>
-    <span class="n">renewable_energy_ratio</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;renewable_energy_ratio&#39;</span><span class="p">]</span> <span class="c1"># This parameter should be included using some external dataset</span>
-    <span class="n">total_energy_consumption</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;bat_total_energy_with_battery_KWh&#39;</span><span class="p">]</span>
-    <span class="n">factor</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="c1"># factor to scale the weight of the renewable energy usage</span>
-
-    <span class="c1"># Reward = maximize renewable energy usage - minimize total energy consumption</span>
-    <span class="n">reward</span> <span class="o">=</span> <span class="n">factor</span> <span class="o">*</span> <span class="n">renewable_energy_ratio</span>  <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="n">total_energy_consumption</span>
-    <span class="k">return</span> <span class="n">reward</span>
-</pre></div>
-</div>
-<p><em>Example 4: Reward function based on energy efficiency</em></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">energy_efficiency_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates a reward value based on energy efficiency.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        params (dict): Dictionary containing parameters:</span>
-<span class="sd">            ITE_load (float): The amount of energy spent on computation (useful work).</span>
-<span class="sd">            total_energy_consumption (float): Total energy consumption of the data center.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        float: Reward value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">it_equipment_power</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_ITE_total_power_kW&#39;</span><span class="p">]</span>
-    <span class="n">total_power_consumption</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_total_power_kW&#39;</span><span class="p">]</span>
-
-    <span class="n">reward</span> <span class="o">=</span> <span class="n">it_equipment_power</span> <span class="o">/</span> <span class="n">total_power_consumption</span>
-    <span class="k">return</span> <span class="n">reward</span>
-</pre></div>
-</div>
-<p><em>Example 5: Reward function based on the efficiency of cooling in the data center</em></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">temperature_efficiency_reward</span><span class="p">(</span><span class="n">params</span><span class="p">:</span> <span class="nb">dict</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Calculates a reward value based on the efficiency of cooling in the data center.</span>
-
-<span class="sd">    Args:</span>
-<span class="sd">        params (dict): Dictionary containing parameters:</span>
-<span class="sd">            current_temperature (float): Current temperature in the data center.</span>
-<span class="sd">            optimal_temperature_range (tuple): Tuple containing the minimum and maximum optimal temperatures for the data center.</span>
-
-<span class="sd">    Returns:</span>
-<span class="sd">        float: Reward value.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">assert</span> <span class="n">params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;optimal_temperature_range&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;optimal_temperature_range is not defined. This parameter should be added to the reward_info dictionary&#39;</span>
-    <span class="n">current_temperature</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;dc_int_temperature&#39;</span><span class="p">]</span>
-    <span class="n">optimal_temperature_range</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s1">&#39;optimal_temperature_range&#39;</span><span class="p">]</span>
-    <span class="n">min_temp</span><span class="p">,</span> <span class="n">max_temp</span> <span class="o">=</span> <span class="n">optimal_temperature_range</span>
-
-    <span class="k">if</span> <span class="n">min_temp</span> <span class="o">&lt;=</span> <span class="n">current_temperature</span> <span class="o">&lt;=</span> <span class="n">max_temp</span><span class="p">:</span>
-        <span class="n">reward</span> <span class="o">=</span> <span class="mf">1.0</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">current_temperature</span> <span class="o">&lt;</span> <span class="n">min_temp</span><span class="p">:</span>
-            <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">current_temperature</span> <span class="o">-</span> <span class="n">min_temp</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">reward</span> <span class="o">=</span> <span class="o">-</span><span class="nb">abs</span><span class="p">(</span><span class="n">current_temperature</span> <span class="o">-</span> <span class="n">max_temp</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">reward</span>
-</pre></div>
 </div>
 </section>
 </section>
@@ -741,8 +395,26 @@ the reward definition of the dc agent must be declared as <code class="code docu
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="../usage/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Usage</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="algorithms.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Benchmarking Algorithms</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -773,10 +445,9 @@ the reward definition of the dc agent must be declared as <code class="code docu
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">Reward function</a><ul>
+<li><a class="reference internal" href="#">Reward Functions</a><ul>
 <li><a class="reference internal" href="#independent-rewards">Independent rewards</a></li>
 <li><a class="reference internal" href="#collaborative-rewards">Collaborative rewards</a></li>
-<li><a class="reference internal" href="#custom-rewards">Custom rewards</a></li>
 </ul>
 </li>
 </ul>
@@ -788,7 +459,7 @@ the reward definition of the dc agent must be declared as <code class="code docu
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=d45e8c67"></script>
+</div><script src="../_static/documentation_options.js?v=e3a6060d"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
