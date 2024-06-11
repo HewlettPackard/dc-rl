@@ -85,78 +85,83 @@ Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documen
 
 ## Environment Details
 
-### Workload Environment
-The **Workload Environment** in SustainDC manages the execution and scheduling of delayable workloads within the DC. It includes open-source workload traces from [Alibaba](https://github.com/alibaba/clusterdata) and [Google](https://github.com/google/cluster-data) DC, which represent the computational demand placed on the DC. Users can customize this environment by adding new workload traces or modifying the existing ones. The workload traces are used to simulate the tasks that the DC needs to process, providing a realistic and dynamic workload for benchmarking purposes.
+SustainDC consists of three interconnected environments that simulate various aspects of data center operations: the **Workload Environment**, the **Data Center Environment**, and the **Battery Environment**. These environments work together to provide a comprehensive platform for benchmarking MARL algorithms aimed at optimizing energy consumption and reducing the carbon footprint of DCs.
 
-#### Observation Space
-- Time of Day and Year: The sine and cosine representation of the hour of the day and the day of the year, providing a periodic understanding of time.
-- Grid Carbon Intensity (CI): Current and forecasted carbon intensity values, allowing the agent to optimize workload scheduling based on carbon emissions.
-- Rescheduled Workload Left: The amount of workload that has been rescheduled but not yet executed.
-  
-#### Action Space
-- Store Delayable Tasks: The agent can choose to store delayable tasks for future execution.
-- Compute All Immediate Tasks: The agent can decide to process all current tasks immediately.
-- Maximize Throughput: The agent can maximize the throughput by balancing immediate and delayed tasks based on the current carbon intensity.
+### Workload Environment
+The **Workload Environment** manages the execution and scheduling of delayable workloads within the data center. It simulates the computational demand placed on the data center by using real-world workload traces from sources like Alibaba and Google.
 
 <p align="center">
   <img src="media/agent_ls_explanation.png" alt="LS Agent" width="200">
 </p>
 
+#### Key Features
+- **Observation Space:** 
+  - Time of Day and Year: Provides a periodic understanding of time using sine and cosine representations.
+  - Grid Carbon Intensity (CI): Includes current and forecasted carbon intensity values to help the agent optimize workload scheduling based on carbon emissions.
+  - Rescheduled Workload Left: Tracks the amount of workload that has been rescheduled but not yet executed.
+  
+- **Action Space:** 
+  - Store Delayable Tasks: Allows the agent to store delayable tasks for future execution.
+  - Compute All Immediate Tasks: Enables the agent to process all current tasks immediately.
+  - Maximize Throughput: Balances immediate and delayed tasks based on the current carbon intensity.
 
 ### Data Center Environment
-The **Data Center Environment** models the IT and HVAC systems of a DC, focusing on optimizing energy consumption and cooling. This environment simulates the electrical and thermal behavior of the DC components, including servers, cooling systems, and other infrastructure. Users can customize various parameters such as the number of servers, cooling setpoints, and the configuration of the HVAC system. This environment helps evaluate the performance of different control strategies aimed at reducing energy consumption and improving the overall efficiency of the DC.
-A representation of the DC modelled can be seen in the following figure:
+The **Data Center Environment** models the IT and HVAC systems of a data center, focusing on optimizing energy consumption and cooling. It simulates the electrical and thermal behavior of the DC components, including servers and cooling systems.
+
 <p align="center">
   <img src="media/Data_center_modelled.png" alt="Data Center Modelled" width="1000">
 </p>
-
-#### Observation Space
-- Time of Day and Year: The sine and cosine representation of the hour of the day and the day of the year, providing a periodic understanding of time.
-- Ambient Weather (Dry Bulb Temperature): Current outside temperature affecting the cooling load.
-- IT Room Temperature: Current temperature inside the data center, crucial for maintaining optimal server performance.
-- Previous Step Energy Consumption: Historical data on cooling and IT energy consumption for trend analysis.
-- Grid Carbon Intensity (CI): Forecasted carbon intensity values to optimize cooling strategies.
-
-#### Action Space
-- Decrease Setpoint: Lower the cooling setpoint to increase cooling, consuming more energy on the cooling but less on the IT.
-- Maintain Setpoint: Keep the current cooling setpoint constant.
-- Increase Setpoint: Raise the cooling setpoint to reduce cooling, using less energy on the cooling but more on the IT.
 
 <p align="center">
   <img src="media/agent_dc_explanation.png" alt="DC Agent" width="200">
 </p>
 
+#### Key Features
+- **Observation Space:**
+  - Time of Day and Year: Provides a periodic understanding of time using sine and cosine representations.
+  - Ambient Weather (Dry Bulb Temperature): Current outside temperature affecting the cooling load.
+  - IT Room Temperature: Current temperature inside the data center, crucial for maintaining optimal server performance.
+  - Previous Step Energy Consumption: Historical data on cooling and IT energy consumption for trend analysis.
+  - Grid Carbon Intensity (CI): Forecasted carbon intensity values to optimize cooling strategies.
+
+- **Action Space:**
+  - Decrease Setpoint: Lowers the cooling setpoint to increase cooling, consuming more energy for cooling but reducing IT energy consumption.
+  - Maintain Setpoint: Keeps the current cooling setpoint constant.
+  - Increase Setpoint: Raises the cooling setpoint to reduce cooling energy consumption but increases IT energy consumption.
 
 ### Battery Environment
-The **Battery** Environment simulates the charging and discharging cycles of batteries used in the DC. It models how batteries can be charged from the grid during periods of low carbon intensity and provide auxiliary energy during periods of high carbon intensity. This environment helps in assessing the effectiveness of battery management strategies in reducing the carbon footprint and optimizing energy usage in the DC.
-
-#### Observation Space
-- Time of Day and Year: The sine and cosine representation of the hour of the day and the day of the year, providing a periodic understanding of time.
-- State of Charge (SoC): Current energy level of the battery.
-- Grid Energy Consumption: Combined energy consumption of IT and cooling systems.
-- Grid Carbon Intensity (CI): Current and forecasted carbon intensity values to determine optimal charging and discharging times.
-
-#### Action Space
-- Charge Battery: Store energy in the battery during periods of low carbon intensity.
-- Hold Energy: Maintain the current state of charge.
-- Discharge Battery: Provide auxiliary energy to the DC during periods of high carbon intensity.
+The **Battery Environment** simulates the charging and discharging cycles of batteries used in the DC. It models how batteries can be charged from the grid during periods of low carbon intensity and provide auxiliary energy during periods of high carbon intensity.
 
 <p align="center">
   <img src="media/agent_bat_explanation.png" alt="BAT Agent" width="250">
 </p>
 
+#### Key Features
+- **Observation Space:**
+  - Time of Day and Year: Provides a periodic understanding of time using sine and cosine representations.
+  - State of Charge (SoC): Current energy level of the battery.
+  - Grid Energy Consumption: Combined energy consumption of IT and cooling systems.
+  - Grid Carbon Intensity (CI): Current and forecasted carbon intensity values to determine optimal charging and discharging times.
 
-### Connections Between Environments
-The three environments in SustainDC are interconnected to provide a comprehensive simulation of DC operations:
+- **Action Space:**
+  - Charge Battery: Stores energy in the battery during periods of low carbon intensity.
+  - Hold Energy: Maintains the current state of charge.
+  - Discharge Battery: Provides auxiliary energy to the data center during periods of high carbon intensity.
+
+### Interconnected Environments
+These three environments are interconnected to simulate realistic DC operations:
 
 - The **Workload Environment** generates the computational demand that the **Data Center Environment** must process. This includes managing the scheduling of delayable tasks to optimize energy consumption and reduce the carbon footprint.
 
-- The **Data Center Environment** handles the cooling and IT operations required to process the workloads. It is directly influenced by the workload generated, as higher computational demand results in increased heat generation, necessitating more cooling and energy consumption.
+- The **Data Center Environment** handles the cooling and IT operations required to process the workloads. Higher computational demand results in increased heat generation, necessitating more cooling and energy consumption.
 
-- The **Battery Environment** supports the DC by providing auxiliary energy during periods of high carbon intensity, helping to reduce the overall carbon footprint of the DC's operations. It is affected by both the **Workload Environment** and the **Data Center Environment**. The workload affects heat generation, which in turn impacts the cooling requirements and energy consumption of the DC, thereby influencing the battery's charging and discharging cycles.
+- The **Battery Environment** supports the DC by providing auxiliary energy during periods of high carbon intensity, helping to reduce the overall carbon footprint. It is affected by both the **Workload Environment** and the **Data Center Environment**. The workload impacts heat generation, which in turn affects the cooling requirements and energy consumption, influencing the battery's charging and discharging cycles.
 
+<p align="center">
+  <img src="media/schematic.png" alt="Schematic" width="1000">
+</p>
 
-Together, these interconnected environments provide a realistic and dynamic platform for benchmarking multi-agent reinforcement learning algorithms aimed at enhancing the sustainability and efficiency of DC operations.
+Together, these interconnected environments provide a dynamic platform for benchmarking MARL algorithms, helping to develop strategies for more sustainable and efficient DC operations.
 
 
 ### External Variables
