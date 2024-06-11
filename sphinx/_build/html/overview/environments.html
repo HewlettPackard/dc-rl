@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Usage" href="../usage/index.html" /><link rel="prev" title="Overview" href="index.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
-        <title>DCRL-Green’s custom DC simulation (DCRL) - SustainDC 0.0.1 documentation</title>
+        <title>SustainDC Environments - SustainDC 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -212,11 +212,11 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../overview/index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../overview/environments.html">SustainDC Environments</a></li>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Overview</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">SustainDC Environments</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
@@ -266,7 +266,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/installation_notused/custom_notused.rst.txt" title="View this page">
+  <a class="muted-link" href="../_sources/overview/environments.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -286,35 +286,86 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="dcrl-green-s-custom-dc-simulation-dcrl">
-<h1>DCRL-Green’s custom DC simulation (DCRL)<a class="headerlink" href="#dcrl-green-s-custom-dc-simulation-dcrl" title="Link to this heading">¶</a></h1>
-<section id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">¶</a></h2>
-<ol class="arabic simple">
-<li><p>Linux OS (tested on Ubuntu 20.04)</p></li>
-<li><p><a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html">Conda</a></p></li>
-</ol>
+          <section id="sustaindc-environments">
+<h1>SustainDC Environments<a class="headerlink" href="#sustaindc-environments" title="Link to this heading">¶</a></h1>
+<section id="workload-environment">
+<h2>Workload Environment<a class="headerlink" href="#workload-environment" title="Link to this heading">¶</a></h2>
+<p>The <strong>Workload Environment</strong> manages the execution and scheduling of delayable workloads within the data center. It simulates the computational demand placed on the data center by using real-world workload traces from sources like Alibaba and Google.</p>
+<a class="reference internal image-reference" href="../_images/agent_ls_explanation.png" id="agent-ls-explanation"><img alt="LS agent" class="align-center" id="agent-ls-explanation" src="../_images/agent_ls_explanation.png" style="width: 199.2px; height: 200.4px;" /></a>
+<section id="observation-space">
+<h3>Observation Space<a class="headerlink" href="#observation-space" title="Link to this heading">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>Time of Day and Year: Provides a periodic understanding of time using sine and cosine representations.</p></li>
+<li><p>Grid Carbon Intensity (CI): Includes current and forecasted carbon intensity values to help the agent optimize workload scheduling based on carbon emissions.</p></li>
+<li><p>Rescheduled Workload Left: Tracks the amount of workload that has been rescheduled but not yet executed.</p></li>
+</ul>
+</div></blockquote>
 </section>
-<section id="first-time-setup">
-<h2>First time setup<a class="headerlink" href="#first-time-setup" title="Link to this heading">¶</a></h2>
-<p>Clone the latest DCRL-Green version from GitHub using:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/HewlettPackard/dc-rl.git
-</pre></div>
-</div>
-<p>If using SSH, execute:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:HewlettPackard/dc-rl.git
-</pre></div>
-</div>
-<p>Change the current working directory to the dc-rl folder:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>dc-rl
-</pre></div>
-</div>
-<p>Create a conda environment and install the needed dependencies:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>dcrl<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
-conda<span class="w"> </span>activate<span class="w"> </span>dcrl
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-</pre></div>
-</div>
+<section id="action-space">
+<h3>Action Space<a class="headerlink" href="#action-space" title="Link to this heading">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>Store Delayable Tasks: Allows the agent to store delayable tasks for future execution.</p></li>
+<li><p>Compute All Immediate Tasks: Enables the agent to process all current tasks immediately.</p></li>
+<li><p>Maximize Throughput: Balances immediate and delayed tasks based on the current carbon intensity.</p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+<section id="data-center-environment">
+<h2>Data Center Environment<a class="headerlink" href="#data-center-environment" title="Link to this heading">¶</a></h2>
+<p>The <strong>Data Center Environment</strong> models the IT and HVAC systems of a data center, focusing on optimizing energy consumption and cooling. It simulates the electrical and thermal behavior of the DC components, including servers and cooling systems.</p>
+<a class="reference internal image-reference" href="../_images/Data_center_modelled.png" id="data-center-modelled"><img alt="Data Center Modelled" class="align-center" id="data-center-modelled" src="../_images/Data_center_modelled.png" style="width: 614.4px; height: 262.8px;" /></a>
+<a class="reference internal image-reference" href="../_images/agent_dc_explanation.png" id="agent-dc-explanation"><img alt="DC Agent" class="align-center" id="agent-dc-explanation" src="../_images/agent_dc_explanation.png" style="width: 198.0px; height: 203.4px;" /></a>
+<section id="id1">
+<h3>Observation Space<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>Time of Day and Year: Provides a periodic understanding of time using sine and cosine representations.</p></li>
+<li><p>Ambient Weather (Dry Bulb Temperature): Current outside temperature affecting the cooling load.</p></li>
+<li><p>IT Room Temperature: Current temperature inside the data center, crucial for maintaining optimal server performance.</p></li>
+<li><p>Previous Step Energy Consumption: Historical data on cooling and IT energy consumption for trend analysis.</p></li>
+<li><p>Grid Carbon Intensity (CI): Forecasted carbon intensity values to optimize cooling strategies.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id2">
+<h3>Action Space<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>Decrease Setpoint: Lowers the cooling setpoint to increase cooling, consuming more energy for cooling but reducing IT energy consumption.</p></li>
+<li><p>Maintain Setpoint: Keeps the current cooling setpoint constant.</p></li>
+<li><p>Increase Setpoint: Raises the cooling setpoint to reduce cooling energy consumption but increases IT energy consumption.</p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+<section id="battery-environment">
+<h2>Battery Environment<a class="headerlink" href="#battery-environment" title="Link to this heading">¶</a></h2>
+<p>The <strong>Battery Environment</strong> simulates the charging and discharging cycles of batteries used in the DC. It models how batteries can be charged from the grid during periods of low carbon intensity and provide auxiliary energy during periods of high carbon intensity.</p>
+<a class="reference internal image-reference" href="../_images/agent_bat_explanation.png" id="agent-bat-explanation"><img alt="BAT Agent" class="align-center" id="agent-bat-explanation" src="../_images/agent_bat_explanation.png" style="width: 311.4px; height: 264.0px;" /></a>
+<section id="id3">
+<h3>Observation Space<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>Time of Day and Year: Provides a periodic understanding of time using sine and cosine representations.</p></li>
+<li><p>State of Charge (SoC): Current energy level of the battery.</p></li>
+<li><p>Grid Energy Consumption: Combined energy consumption of IT and cooling systems.</p></li>
+<li><p>Grid Carbon Intensity (CI): Current and forecasted carbon intensity values to determine optimal charging and discharging times.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="id4">
+<h3>Action Space<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<blockquote>
+<div><ul class="simple">
+<li><p>Charge Battery: Stores energy in the battery during periods of low carbon intensity.</p></li>
+<li><p>Hold Energy: Maintains the current state of charge.</p></li>
+<li><p>Discharge Battery: Provides auxiliary energy to the data center during periods of high carbon intensity.</p></li>
+</ul>
+</div></blockquote>
+</section>
 </section>
 </section>
 
@@ -323,8 +374,26 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="../usage/index.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Usage</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Overview</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -355,9 +424,22 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">DCRL-Green’s custom DC simulation (DCRL)</a><ul>
-<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
-<li><a class="reference internal" href="#first-time-setup">First time setup</a></li>
+<li><a class="reference internal" href="#">SustainDC Environments</a><ul>
+<li><a class="reference internal" href="#workload-environment">Workload Environment</a><ul>
+<li><a class="reference internal" href="#observation-space">Observation Space</a></li>
+<li><a class="reference internal" href="#action-space">Action Space</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#data-center-environment">Data Center Environment</a><ul>
+<li><a class="reference internal" href="#id1">Observation Space</a></li>
+<li><a class="reference internal" href="#id2">Action Space</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#battery-environment">Battery Environment</a><ul>
+<li><a class="reference internal" href="#id3">Observation Space</a></li>
+<li><a class="reference internal" href="#id4">Action Space</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>

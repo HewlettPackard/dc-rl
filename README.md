@@ -164,23 +164,23 @@ These three environments are interconnected to simulate realistic DC operations:
 Together, these interconnected environments provide a dynamic platform for benchmarking MARL algorithms, helping to develop strategies for more sustainable and efficient DC operations.
 
 
-### External Variables
-SustainDC uses several external variables to provide a realistic simulation environment:
+### External Input Data
+SustainDC uses external input data to provide a realistic simulation environment:
 
 #### Workload
-The Workload external variable in SustainDC represents the computational demand placed on the DC. By default, SustainDC includes a collection of open-source workload traces from Alibaba and Google DCs. Users can customize this component by adding new workload traces to the `data/Workload` folder or specifying a path to existing traces in the `dcrl_env_harl_partialobs.py` file under the `workload_file` configuration.
+The Workload external data in SustainDC represents the computational demand placed on the DC. By default, SustainDC includes a collection of open-source workload traces from Alibaba and Google DCs. Users can customize this component by adding new workload traces to the `data/Workload` folder or specifying a path to existing traces in the `dcrl_env_harl_partialobs.py` file under the `workload_file` configuration.
 
 ![Comparison between two workload traces of Alibaba trace (2017) and Google (2011).](media/workload_comparison.png)
 
 #### Weather
-The Weather external variable in SustainDC captures the ambient environmental conditions impacting the DC's cooling requirements. By default, SustainDC includes weather data files in the .epw format from various locations where DCs are commonly situated. These locations include Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. Users can customize this component by adding new weather files to the `data/Weather` folder or specifying a path to existing weather files in the `dcrl_env_harl_partialobs.py` file under the `weather_file` configuration.
+The Weather external data in SustainDC captures the ambient environmental conditions impacting the DC's cooling requirements. By default, SustainDC includes weather data files in the .epw format from various locations where DCs are commonly situated. These locations include Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. Users can customize this component by adding new weather files to the `data/Weather` folder or specifying a path to existing weather files in the `dcrl_env_harl_partialobs.py` file under the `weather_file` configuration.
 
 Each .epw file contains hourly data for various weather parameters, but for our purposes, we focus on the ambient temperature.
 
 ![Comparison between external temperature of the different selected locations.](media/weather_all_locations.png)
 
 #### Carbon Intensity
-The Carbon Intensity (CI) external variable in SustainDC represents the carbon emissions associated with electricity consumption. By default, SustainDC includes CI data files for various locations: Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. These files are located in the `data/CarbonIntensity` folder and are extracted from [https://api.eia.gov/bulk/EBA.zip](https://api.eia.gov/bulk/EBA.zip). Users can customize this component by adding new CI files to the `data/CarbonIntensity` folder or specifying a path to existing files in the `dcrl_env_harl_partialobs.py` file under the `cintensity_file` configuration.
+The Carbon Intensity (CI) external data in SustainDC represents the carbon emissions associated with electricity consumption. By default, SustainDC includes CI data files for various locations: Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. These files are located in the `data/CarbonIntensity` folder and are extracted from [https://api.eia.gov/bulk/EBA.zip](https://api.eia.gov/bulk/EBA.zip). Users can customize this component by adding new CI files to the `data/CarbonIntensity` folder or specifying a path to existing files in the `dcrl_env_harl_partialobs.py` file under the `cintensity_file` configuration.
 
 ![Comparison of carbon intensity across the different selected locations.](media/ci_all_locations.png)
 

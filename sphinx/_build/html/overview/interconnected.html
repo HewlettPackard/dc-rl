@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
-        <title>DCRL-Green’s custom DC simulation (DCRL) - SustainDC 0.0.1 documentation</title>
+        <title>Inter-connected Environments - SustainDC 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -192,7 +192,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -215,8 +215,8 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../overview/index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../overview/environments.html">SustainDC Environments</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="environments.html">SustainDC Environments</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
@@ -266,7 +266,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/installation_notused/custom_notused.rst.txt" title="View this page">
+  <a class="muted-link" href="../_sources/overview/interconnected.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -280,42 +280,22 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="dcrl-green-s-custom-dc-simulation-dcrl">
-<h1>DCRL-Green’s custom DC simulation (DCRL)<a class="headerlink" href="#dcrl-green-s-custom-dc-simulation-dcrl" title="Link to this heading">¶</a></h1>
-<section id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">¶</a></h2>
-<ol class="arabic simple">
-<li><p>Linux OS (tested on Ubuntu 20.04)</p></li>
-<li><p><a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html">Conda</a></p></li>
-</ol>
-</section>
-<section id="first-time-setup">
-<h2>First time setup<a class="headerlink" href="#first-time-setup" title="Link to this heading">¶</a></h2>
-<p>Clone the latest DCRL-Green version from GitHub using:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/HewlettPackard/dc-rl.git
-</pre></div>
-</div>
-<p>If using SSH, execute:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:HewlettPackard/dc-rl.git
-</pre></div>
-</div>
-<p>Change the current working directory to the dc-rl folder:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>dc-rl
-</pre></div>
-</div>
-<p>Create a conda environment and install the needed dependencies:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>dcrl<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
-conda<span class="w"> </span>activate<span class="w"> </span>dcrl
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-</pre></div>
-</div>
-</section>
+          <section id="inter-connected-environments">
+<h1>Inter-connected Environments<a class="headerlink" href="#inter-connected-environments" title="Link to this heading">¶</a></h1>
+<p>These three environments are interconnected to simulate realistic DC operations:</p>
+<ul class="simple">
+<li><p>The <strong>Workload Environment</strong> generates the computational demand that the <strong>Data Center Environment</strong> must process. This includes managing the scheduling of delayable tasks to optimize energy consumption and reduce the carbon footprint.</p></li>
+<li><p>The <strong>Data Center Environment</strong> handles the cooling and IT operations required to process the workloads. Higher computational demand results in increased heat generation, necessitating more cooling and energy consumption.</p></li>
+<li><p>The <strong>Battery Environment</strong> supports the DC by providing auxiliary energy during periods of high carbon intensity, helping to reduce the overall carbon footprint. It is affected by both the <strong>Workload Environment</strong> and the <strong>Data Center Environment</strong>. The workload impacts heat generation, which in turn affects the cooling requirements and energy consumption, influencing the battery’s charging and discharging cycles.</p></li>
+</ul>
+<p>Together, these interconnected environments provide a dynamic platform for benchmarking MARL algorithms, helping to develop strategies for more sustainable and efficient DC operations. A schematic of their connection is given in the figure below.</p>
+<a class="reference internal image-reference" href="../_images/RLLoopv3.png"><img alt="RL loop" class="align-center" src="../_images/RLLoopv3.png" style="width: 651.6px; height: 441.59999999999997px;" /></a>
 </section>
 
         </article>
@@ -343,28 +323,8 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">DCRL-Green’s custom DC simulation (DCRL)</a><ul>
-<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
-<li><a class="reference internal" href="#first-time-setup">First time setup</a></li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>

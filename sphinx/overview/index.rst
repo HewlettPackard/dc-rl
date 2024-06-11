@@ -46,8 +46,6 @@ These environments work together to provide a comprehensive platform for benchma
    :alt: Overview of the SustainDC components and parameters
    :align: center
 
-Interconnected Environments 
--------------------------------
 
 These three environments are interconnected to simulate realistic DC operations:
 
@@ -65,9 +63,11 @@ For more detals on each individual environment check the links below.
 .. toctree::
    :maxdepth: 1
 
-   workload
-   datacenter
-   battery
+   environments
+   interconnected
+   .. workload
+   .. datacenter
+   .. battery
 
    .. model
    .. environment

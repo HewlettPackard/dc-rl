@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
-        <title>DCRL-Green’s custom DC simulation (DCRL) - SustainDC 0.0.1 documentation</title>
+        <title>Workload Environment - SustainDC 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -215,8 +215,8 @@
   <ul>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../overview/index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="../overview/environments.html">SustainDC Environments</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="environments.html">SustainDC Environments</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
@@ -266,7 +266,7 @@
         </a>
         <div class="content-icon-container">
           <div class="view-this-page">
-  <a class="muted-link" href="../_sources/installation_notused/custom_notused.rst.txt" title="View this page">
+  <a class="muted-link" href="../_sources/overview/workload_notused.rst.txt" title="View this page">
     <svg><use href="#svg-eye"></use></svg>
     <span class="visually-hidden">View this page</span>
   </a>
@@ -286,35 +286,29 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="dcrl-green-s-custom-dc-simulation-dcrl">
-<h1>DCRL-Green’s custom DC simulation (DCRL)<a class="headerlink" href="#dcrl-green-s-custom-dc-simulation-dcrl" title="Link to this heading">¶</a></h1>
-<section id="dependencies">
-<h2>Dependencies<a class="headerlink" href="#dependencies" title="Link to this heading">¶</a></h2>
-<ol class="arabic simple">
-<li><p>Linux OS (tested on Ubuntu 20.04)</p></li>
-<li><p><a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/linux.html">Conda</a></p></li>
-</ol>
+          <section id="workload-environment">
+<h1>Workload Environment<a class="headerlink" href="#workload-environment" title="Link to this heading">¶</a></h1>
+<p>The <strong>Workload Environment</strong> manages the execution and scheduling of delayable workloads within the data center. It simulates the computational demand placed on the data center by using real-world workload traces from sources like Alibaba and Google.</p>
+<a class="reference internal image-reference" href="../_images/agent_ls_explanation.png" id="agent-ls-explanation"><img alt="LS agent" class="align-center" id="agent-ls-explanation" src="../_images/agent_ls_explanation.png" style="width: 199.2px; height: 200.4px;" /></a>
+<section id="observation-space">
+<h2>Observation Space<a class="headerlink" href="#observation-space" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>Time of Day and Year: Provides a periodic understanding of time using sine and cosine representations.</p></li>
+<li><p>Grid Carbon Intensity (CI): Includes current and forecasted carbon intensity values to help the agent optimize workload scheduling based on carbon emissions.</p></li>
+<li><p>Rescheduled Workload Left: Tracks the amount of workload that has been rescheduled but not yet executed.</p></li>
+</ul>
+</div></blockquote>
 </section>
-<section id="first-time-setup">
-<h2>First time setup<a class="headerlink" href="#first-time-setup" title="Link to this heading">¶</a></h2>
-<p>Clone the latest DCRL-Green version from GitHub using:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/HewlettPackard/dc-rl.git
-</pre></div>
-</div>
-<p>If using SSH, execute:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>git@github.com:HewlettPackard/dc-rl.git
-</pre></div>
-</div>
-<p>Change the current working directory to the dc-rl folder:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>dc-rl
-</pre></div>
-</div>
-<p>Create a conda environment and install the needed dependencies:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>dcrl<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.10
-conda<span class="w"> </span>activate<span class="w"> </span>dcrl
-pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </span>requirements.txt
-</pre></div>
-</div>
+<section id="action-space">
+<h2>Action Space<a class="headerlink" href="#action-space" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>Store Delayable Tasks: Allows the agent to store delayable tasks for future execution.</p></li>
+<li><p>Compute All Immediate Tasks: Enables the agent to process all current tasks immediately.</p></li>
+<li><p>Maximize Throughput: Balances immediate and delayed tasks based on the current carbon intensity.</p></li>
+</ul>
+</div></blockquote>
 </section>
 </section>
 
@@ -355,9 +349,9 @@ pip<span class="w"> </span>install<span class="w"> </span>-r<span class="w"> </s
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">DCRL-Green’s custom DC simulation (DCRL)</a><ul>
-<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
-<li><a class="reference internal" href="#first-time-setup">First time setup</a></li>
+<li><a class="reference internal" href="#">Workload Environment</a><ul>
+<li><a class="reference internal" href="#observation-space">Observation Space</a></li>
+<li><a class="reference internal" href="#action-space">Action Space</a></li>
 </ul>
 </li>
 </ul>
