@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Code" href="../code/index.html" /><link rel="prev" title="Reward function" href="../overview/reward_function.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Code" href="../code/index.html" /><link rel="prev" title="&lt;no title&gt;" href="../overview/battery.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
         <title>Usage - SustainDC 0.0.1 documentation</title>
@@ -217,11 +217,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../overview/index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../overview/workload.html">Workload Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../overview/environment.html">Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../overview/agents.html">Agents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../overview/observations.html">Observations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../overview/actions.html">Actions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../overview/reward_function.html">Reward function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../overview/datacenter.html">Data Center Environment</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Usage</a></li>
@@ -391,7 +387,7 @@ weather files collection. Users can upload weather dataset of choice in the repo
 </section>
 <section id="agent-configuration">
 <h2>Agent configuration<a class="headerlink" href="#agent-configuration" title="Link to this heading">¶</a></h2>
-<p>DCRL-Green supports three MARL agents to optimize energy usage and reduce carbon footprint of data centers. More details of the agents’ operations are discussed in the <a class="reference internal" href="../overview/workload.html#agents"><span class="std std-ref">Agents</span></a> section. Based on the requirement, users can include agents of choice in the training script. The agents that are not involved in training will select the <code class="code docutils literal notranslate"><span class="pre">Idle</span></code> action by default and will not contribute to the optimization process. The dictionary entry <code class="code docutils literal notranslate"><span class="pre">'agents'</span></code> can be used to specify the required agents.</p>
+<p>DCRL-Green supports three MARL agents to optimize energy usage and reduce carbon footprint of data centers. More details of the agents’ operations are discussed in the <a class="reference internal" href="../overview/agents.html#agents"><span class="std std-ref">Agents</span></a> section. Based on the requirement, users can include agents of choice in the training script. The agents that are not involved in training will select the <code class="code docutils literal notranslate"><span class="pre">Idle</span></code> action by default and will not contribute to the optimization process. The dictionary entry <code class="code docutils literal notranslate"><span class="pre">'agents'</span></code> can be used to specify the required agents.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Agent names must be provided as a list of strings, where <code class="code docutils literal notranslate"><span class="pre">'agent_ls'</span></code>, <code class="code docutils literal notranslate"><span class="pre">'agent_dc'</span></code>, <code class="code docutils literal notranslate"><span class="pre">'agent_bat'</span></code> represents load shifting agent, DC cooling agent, and battery control agent respectively.</p>
@@ -480,14 +476,14 @@ weather files collection. Users can upload weather dataset of choice in the repo
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="../overview/reward_function.html">
+          <a class="prev-page" href="../overview/battery.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Reward function</div>
+                <div class="title">&lt;no title&gt;</div>
                 
               </div>
             </a>

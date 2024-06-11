@@ -217,11 +217,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">Overview</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="workload.html">Workload Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="environment.html">Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="agents.html">Agents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="observations.html">Observations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="actions.html">Actions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reward_function.html">Reward function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datacenter.html">Data Center Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="battery.html">Battery Environment</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
@@ -297,7 +294,7 @@
 <h2>Data Center Model<a class="headerlink" href="#data-center-model" title="Link to this heading">¶</a></h2>
 <p>High-level overview of the operational model of a SustainDC data center is given in the figure below.</p>
 <figure class="align-center" id="sustaindc-model">
-<a class="reference internal image-reference" href="../_images/SustainDC.png"><img alt="Overview of the SustainDC main environments" src="../_images/SustainDC.png" style="width: 1025.6000000000001px; height: 435.20000000000005px;" /></a>
+<a class="reference internal image-reference" href="../_images/SustainDC.png"><img alt="Overview of the SustainDC main environments" src="../_images/SustainDC.png" style="width: 641.0px; height: 272.0px;" /></a>
 </figure>
 <p>Workloads are uploaded to the DC from a proxy client. A fraction of these jobs can be flexible or delayed to different time periods. The servers that process these jobs generate heat that needs to be removed from the DC. This is done by a complex HVAC system that ensures optimal temperature in the DC. As shown in the figure below, the warm air leaves the servers and is moved to the Computer Room Air Handler (CRAH) by the forced draft of the HVAC fan. Next, the hot air is cooled down to optimal setpoint using a chilled water loop and then send back to the IT room. Parallely, a second water loop transfers the removed heat to a cooling tower, where it is rejected to the outside environment.</p>
 <a class="reference internal image-reference" href="../_images/Data_center_modelled.png" id="sustaindc-hvac"><img alt="Overview of the SustainDC HVAC system" class="align-center" id="sustaindc-hvac" src="../_images/Data_center_modelled.png" style="width: 614.4px; height: 262.8px;" /></a>
@@ -305,22 +302,31 @@
 </section>
 <section id="core-environments">
 <h2>Core Environments<a class="headerlink" href="#core-environments" title="Link to this heading">¶</a></h2>
-<p>SustainDC consist of three main environments reflecting different aspects of a data center that can be optimized to reduce carbon footprint or other sustainability metrics:</p>
+<p>SustainDC consist of three interconnected environments that simulate various aspects of data center operations:</p>
 <ul class="simple">
-<li><p>Workload Envronment - model and control the execution and scheduling of delay-tolerant workloads within the DC</p></li>
-<li><p>Data Center Environment - model and manage the servers in the IT room cabinets that process workloads and the HVAC system and components</p></li>
-<li><p>Battery Environment - simulates the DC battery charging behavior during off-peak hours and provides auxiliary energy to the DC during peak grid carbon intensity periods</p></li>
+<li><p><strong>Workload Envronment</strong> - model and control the execution and scheduling of delay-tolerant workloads within the DC</p></li>
+<li><p><strong>Data Center Environment</strong> - model and manage the servers in the IT room cabinets that process workloads and the HVAC system and components</p></li>
+<li><p><strong>Battery Environment</strong> - simulates the DC battery charging behavior during off-peak hours and provides auxiliary energy to the DC during peak grid carbon intensity periods</p></li>
 </ul>
-<p>SustainDC enables a comprehensive set of customizations for each of the three environmentsdeveloped in Python. A high-level overview that highlights their individual components, customization capabilities, and associated control problems is given in th figure below.</p>
+<p>These environments work together to provide a comprehensive platform for benchmarking MARL algorithms aimed at optimizing energy consumption and reducing the carbon footprint of DCs.</p>
+<p>SustainDC enables a comprehensive set of customizations for each of the three environments developed in Python. A high-level overview that highlights their individual components, customization capabilities, and associated control problems is given in th figure below.</p>
 <a class="reference internal image-reference" href="../_images/schematic.png" id="sustaindc-envs"><img alt="Overview of the SustainDC components and parameters" class="align-center" id="sustaindc-envs" src="../_images/schematic.png" style="width: 614.4px; height: 433.8px;" /></a>
+</section>
+<section id="interconnected-environments">
+<h2>Interconnected Environments<a class="headerlink" href="#interconnected-environments" title="Link to this heading">¶</a></h2>
+<p>These three environments are interconnected to simulate realistic DC operations:</p>
+<ul class="simple">
+<li><p>The <strong>Workload Environment</strong> generates the computational demand that the <strong>Data Center Environment</strong> must process. This includes managing the scheduling of delayable tasks to optimize energy consumption and reduce the carbon footprint.</p></li>
+<li><p>The <strong>Data Center Environment</strong> handles the cooling and IT operations required to process the workloads. Higher computational demand results in increased heat generation, necessitating more cooling and energy consumption.</p></li>
+<li><p>The <strong>Battery Environment</strong> supports the DC by providing auxiliary energy during periods of high carbon intensity, helping to reduce the overall carbon footprint. It is affected by both the <strong>Workload Environment</strong> and the <strong>Data Center Environment</strong>. The workload impacts heat generation, which in turn affects the cooling requirements and energy consumption, influencing the battery’s charging and discharging cycles.</p></li>
+</ul>
+<p>Together, these interconnected environments provide a dynamic platform for benchmarking MARL algorithms, helping to develop strategies for more sustainable and efficient DC operations.</p>
+<p>For more detals on each individual environment check the links below.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="workload.html">Workload Environment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="environment.html">Environment</a></li>
-<li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
-<li class="toctree-l1"><a class="reference internal" href="observations.html">Observations</a></li>
-<li class="toctree-l1"><a class="reference internal" href="actions.html">Actions</a></li>
-<li class="toctree-l1"><a class="reference internal" href="reward_function.html">Reward function</a></li>
+<li class="toctree-l1"><a class="reference internal" href="datacenter.html">Data Center Environment</a></li>
+<li class="toctree-l1"><a class="reference internal" href="battery.html">Battery Environment</a></li>
 </ul>
 </div>
 </section>
@@ -384,6 +390,7 @@
 <li><a class="reference internal" href="#">Overview</a><ul>
 <li><a class="reference internal" href="#data-center-model">Data Center Model</a></li>
 <li><a class="reference internal" href="#core-environments">Core Environments</a></li>
+<li><a class="reference internal" href="#interconnected-environments">Interconnected Environments</a></li>
 </ul>
 </li>
 </ul>
@@ -401,6 +408,5 @@
     <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
-    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     </body>
 </html>

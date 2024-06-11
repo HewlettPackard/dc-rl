@@ -9,7 +9,7 @@ High-level overview of the operational model of a |F| data center is given in th
 .. _sustaindc_model:
 
 .. figure:: ../images/SustainDC.png
-   :scale: 40 %
+   :scale: 25 %
    :alt: Overview of the SustainDC main environments
    :align: center
 
@@ -28,13 +28,16 @@ Big data centers also incorporate battery banks. Batteries can be charged from t
 Core Environments 
 -----------------------
 
-|F| consist of three main environments reflecting different aspects of a data center that can be optimized to reduce carbon footprint or other sustainability metrics:
+|F| consist of three interconnected environments that simulate various aspects of data center operations:
 
-* Workload Envronment - model and control the execution and scheduling of delay-tolerant workloads within the DC 
-* Data Center Environment - model and manage the servers in the IT room cabinets that process workloads and the HVAC system and components 
-* Battery Environment - simulates the DC battery charging behavior during off-peak hours and provides auxiliary energy to the DC during peak grid carbon intensity periods
+* **Workload Envronment** - model and control the execution and scheduling of delay-tolerant workloads within the DC 
+* **Data Center Environment** - model and manage the servers in the IT room cabinets that process workloads and the HVAC system and components 
+* **Battery Environment** - simulates the DC battery charging behavior during off-peak hours and provides auxiliary energy to the DC during peak grid carbon intensity periods
 
-|F| enables a comprehensive set of customizations for each of the three environmentsdeveloped in Python. A high-level overview that highlights their individual components, customization capabilities, and associated control problems is given in th figure below.
+
+These environments work together to provide a comprehensive platform for benchmarking MARL algorithms aimed at optimizing energy consumption and reducing the carbon footprint of DCs.
+
+|F| enables a comprehensive set of customizations for each of the three environments developed in Python. A high-level overview that highlights their individual components, customization capabilities, and associated control problems is given in th figure below.
 
 .. _sustaindc_envs:
 
@@ -43,7 +46,22 @@ Core Environments
    :alt: Overview of the SustainDC components and parameters
    :align: center
 
-.. update this 
+Interconnected Environments 
+-------------------------------
+
+These three environments are interconnected to simulate realistic DC operations:
+
+- The **Workload Environment** generates the computational demand that the **Data Center Environment** must process. This includes managing the scheduling of delayable tasks to optimize energy consumption and reduce the carbon footprint.
+
+- The **Data Center Environment** handles the cooling and IT operations required to process the workloads. Higher computational demand results in increased heat generation, necessitating more cooling and energy consumption.
+
+- The **Battery Environment** supports the DC by providing auxiliary energy during periods of high carbon intensity, helping to reduce the overall carbon footprint. It is affected by both the **Workload Environment** and the **Data Center Environment**. The workload impacts heat generation, which in turn affects the cooling requirements and energy consumption, influencing the battery's charging and discharging cycles.
+
+
+Together, these interconnected environments provide a dynamic platform for benchmarking MARL algorithms, helping to develop strategies for more sustainable and efficient DC operations.
+
+For more detals on each individual environment check the links below.
+
 .. toctree::
    :maxdepth: 1
 
@@ -52,10 +70,10 @@ Core Environments
    battery
 
    .. model
-   environment
-   agents
-   observations
-   actions
-   reward_function
+   .. environment
+   .. agents
+   .. observations
+   .. actions
+   .. reward_function
 
    

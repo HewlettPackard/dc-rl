@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Environment" href="environment.html" /><link rel="prev" title="&lt;no title&gt;" href="datacenter.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Usage" href="../usage/index.html" /><link rel="prev" title="Data Center Environment" href="datacenter.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
-        <title>&lt;no title&gt; - SustainDC 0.0.1 documentation</title>
+        <title>Battery Environment - SustainDC 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -192,7 +192,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -212,16 +212,13 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Overview</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="workload.html">Workload Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="environment.html">Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="agents.html">Agents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="observations.html">Observations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="actions.html">Actions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reward_function.html">Reward function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="datacenter.html">Data Center Environment</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Battery Environment</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
@@ -285,24 +282,50 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          
+          <section id="battery-environment">
+<h1>Battery Environment<a class="headerlink" href="#battery-environment" title="Link to this heading">¶</a></h1>
+<p>The <strong>Battery Environment</strong> simulates the charging and discharging cycles of batteries used in the DC. It models how batteries can be charged from the grid during periods of low carbon intensity and provide auxiliary energy during periods of high carbon intensity.</p>
+<a class="reference internal image-reference" href="../_images/agent_bat_explanation.png" id="agent-bat-explanation"><img alt="BAT Agent" class="align-center" id="agent-bat-explanation" src="../_images/agent_bat_explanation.png" style="width: 311.4px; height: 264.0px;" /></a>
+<section id="observation-space">
+<h2>Observation Space<a class="headerlink" href="#observation-space" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>Time of Day and Year: Provides a periodic understanding of time using sine and cosine representations.</p></li>
+<li><p>State of Charge (SoC): Current energy level of the battery.</p></li>
+<li><p>Grid Energy Consumption: Combined energy consumption of IT and cooling systems.</p></li>
+<li><p>Grid Carbon Intensity (CI): Current and forecasted carbon intensity values to determine optimal charging and discharging times.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="action-space">
+<h2>Action Space<a class="headerlink" href="#action-space" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>Charge Battery: Stores energy in the battery during periods of low carbon intensity.</p></li>
+<li><p>Hold Energy: Maintains the current state of charge.</p></li>
+<li><p>Discharge Battery: Provides auxiliary energy to the data center during periods of high carbon intensity.</p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+
         </article>
       </div>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="environment.html">
+          <a class="next-page" href="../usage/index.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Environment</div>
+                <div class="title">Usage</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -313,7 +336,7 @@
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">&lt;no title&gt;</div>
+                <div class="title">Data Center Environment</div>
                 
               </div>
             </a>
@@ -335,8 +358,28 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Battery Environment</a><ul>
+<li><a class="reference internal" href="#observation-space">Observation Space</a></li>
+<li><a class="reference internal" href="#action-space">Action Space</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

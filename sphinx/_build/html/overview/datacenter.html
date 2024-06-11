@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="&lt;no title&gt;" href="battery.html" /><link rel="prev" title="Workload Environment" href="workload.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Battery Environment" href="battery.html" /><link rel="prev" title="Workload Environment" href="workload.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
-        <title>&lt;no title&gt; - SustainDC 0.0.1 documentation</title>
+        <title>Data Center Environment - SustainDC 0.0.1 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -192,7 +192,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -212,16 +212,13 @@
   <input type="hidden" name="area" value="default">
 </form>
 <div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
-  <ul>
+  <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Overview</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="workload.html">Workload Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="environment.html">Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="agents.html">Agents</a></li>
-<li class="toctree-l2"><a class="reference internal" href="observations.html">Observations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="actions.html">Actions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reward_function.html">Reward function</a></li>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Data Center Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="battery.html">Battery Environment</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
@@ -285,13 +282,41 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          
+          <section id="data-center-environment">
+<h1>Data Center Environment<a class="headerlink" href="#data-center-environment" title="Link to this heading">¶</a></h1>
+<p>The <strong>Data Center Environment</strong> models the IT and HVAC systems of a data center, focusing on optimizing energy consumption and cooling. It simulates the electrical and thermal behavior of the DC components, including servers and cooling systems.</p>
+<a class="reference internal image-reference" href="../_images/Data_center_modelled.png" id="data-center-modelled"><img alt="Data Center Modelled" class="align-center" id="data-center-modelled" src="../_images/Data_center_modelled.png" style="width: 614.4px; height: 262.8px;" /></a>
+<a class="reference internal image-reference" href="../_images/agent_dc_explanation.png" id="agent-dc-explanation"><img alt="DC Agent" class="align-center" id="agent-dc-explanation" src="../_images/agent_dc_explanation.png" style="width: 198.0px; height: 203.4px;" /></a>
+<section id="observation-space">
+<h2>Observation Space<a class="headerlink" href="#observation-space" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>Time of Day and Year: Provides a periodic understanding of time using sine and cosine representations.</p></li>
+<li><p>Ambient Weather (Dry Bulb Temperature): Current outside temperature affecting the cooling load.</p></li>
+<li><p>IT Room Temperature: Current temperature inside the data center, crucial for maintaining optimal server performance.</p></li>
+<li><p>Previous Step Energy Consumption: Historical data on cooling and IT energy consumption for trend analysis.</p></li>
+<li><p>Grid Carbon Intensity (CI): Forecasted carbon intensity values to optimize cooling strategies.</p></li>
+</ul>
+</div></blockquote>
+</section>
+<section id="action-space">
+<h2>Action Space<a class="headerlink" href="#action-space" title="Link to this heading">¶</a></h2>
+<blockquote>
+<div><ul class="simple">
+<li><p>Decrease Setpoint: Lowers the cooling setpoint to increase cooling, consuming more energy for cooling but reducing IT energy consumption.</p></li>
+<li><p>Maintain Setpoint: Keeps the current cooling setpoint constant.</p></li>
+<li><p>Increase Setpoint: Raises the cooling setpoint to reduce cooling energy consumption but increases IT energy consumption.</p></li>
+</ul>
+</div></blockquote>
+</section>
+</section>
+
         </article>
       </div>
       <footer>
@@ -302,7 +327,7 @@
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">&lt;no title&gt;</div>
+                <div class="title">Battery Environment</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -335,8 +360,28 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Data Center Environment</a><ul>
+<li><a class="reference internal" href="#observation-space">Observation Space</a></li>
+<li><a class="reference internal" href="#action-space">Action Space</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>
