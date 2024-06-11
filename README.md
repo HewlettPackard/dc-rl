@@ -39,7 +39,7 @@ Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documen
 - **Benchmarking Suite:** Includes scripts and tools for evaluating the performance of various MARL algorithms, providing insights into their effectiveness in reducing energy consumption and carbon emissions.
 
 <p align="center">
-  <img src="media/RLLoopv3.png" alt="RL Loop" width="500">
+  <img src="media/RLloop.png" alt="RL Loop" width="500">
 </p>
 
 
