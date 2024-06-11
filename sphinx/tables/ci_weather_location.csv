@@ -1,0 +1,9 @@
+Location,Typical Weather,Carbon Emissions
+Arizona,"Hot, dry summers; mild winters","High avg CI, High variation"
+California,"Mild, Mediterranean climate","Medium avg CI, Medium variation"
+Georgia,"Hot, humid summers; mild winters","High avg CI, Medium variation"
+Illinois,"Cold winters; hot, humid summers","High avg CI, Medium variation"
+New York,"Cold winters; hot, humid summers","Medium avg CI, Medium variation"
+Texas,"Hot summers; mild winters","Medium avg CI, High variation"
+Virginia,"Mild climate, seasonal variations","Medium avg CI, Medium variation"
+Washington,"Mild, temperate climate; wet winters","Low avg CI, Low variation"

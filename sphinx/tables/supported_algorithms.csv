@@ -1,0 +1,9 @@
+Abbr.,Algorithm,Description,Use Case
+PPO,Proximal Policy Optimization,Balances simplicity and performance with a clipped objective function for stable training,Single-agent environments
+IPPO,Independent PPO,Each agent operates independently with its own policy and value function,Multi-agent systems with distinct roles
+MAPPO,Multi-Agent PPO,Uses a centralized value function for better coordination among agents,Cooperative multi-agent tasks
+HAPPO,Heterogeneous Agent PPO,Designed for heterogeneous agents with different observation and action spaces,Complex environments with diverse agents
+HATRPO,Heterogeneous Agent Trust Region Policy Optimization,Adapts TRPO for heterogeneous multi-agent settings with stability and robustness,Complex environments requiring robust policy updates
+HAA2C,Heterogeneous Agent Advantage Actor-Critic,Extends A2C to multi-agent settings with individual actor and critic networks,Scenarios with different types of observations and actions
+HAD3QN,Heterogeneous Agent Dueling Double Deep Q-Network,Combines dueling networks and double Q-learning for stability and performance,Environments needing fine-grained action distinctions
+HASAC,Heterogeneous Agent Soft Actor-Critic,Uses entropy regularization for exploration in multi-agent settings,Adapted to discrete action spaces and high exploration needs
