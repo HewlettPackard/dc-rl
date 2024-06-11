@@ -192,7 +192,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -216,6 +216,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="overview/index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview/workload.html">Workload Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="overview/environment.html">Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="overview/agents.html">Agents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="overview/observations.html">Observations</a></li>
@@ -223,7 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="overview/reward_function.html">Reward function</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/index.html">Usage</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="code/index.html">Code</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Code</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="code/folder_structure.html">Folder Structure</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="code/modules.html">Class and member documentation</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Class and member documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -284,7 +285,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -292,29 +293,34 @@
         <article role="main" id="furo-main-content">
           <section id="f">
 <h1>SustainDC<a class="headerlink" href="#f" title="Link to this heading">¶</a></h1>
-<p>SustainDC is a framework for testing Multi-Agent Reinforcement Learning (MARL) algorithms that optimizes data center clusters in a hierarchical manner for multiple objectives of carbon footprint reduction, energy consumption, and energy
-cost.</p>
-<p>It uses OpenAI Gym standard and supports modeling and control of three different types of problems:</p>
+<p>SustainDC is a set of Python environments for benchmarking multi-agent reinforcement learning (MARL) algorithms in data centers (DC). It focuses on sustainable DC operations, including workload scheduling, cooling optimization, and auxiliary battery management.</p>
+<p>This page contains the documentation for the GitHub <a class="reference external" href="https://github.com/HewlettPackard/dc-rl">repository</a> for the paper <a class="reference external" href="https://openreview.net/forum?id=UYgE9IfQIV">“SustainDC: Benchmarking for Sustainable Data Center Control”</a></p>
+<p>Note that SustainDC is continuation to <strong>#TODO: COMPLETE</strong></p>
+<p>SustainDC uses OpenAI Gym standard and supports modeling and control of three different types of problems:</p>
 <ul class="simple">
-<li><p>Carbon-aware flexible load shifting</p></li>
+<li><p>Carbon-aware flexible computational load shifting</p></li>
 <li><p>Data center HVAC cooling energy optimization</p></li>
 <li><p>Carbon-aware battery auxiliary supply</p></li>
 </ul>
-<a class="reference internal image-reference" href="_images/DCRL-sim1.png"><img alt="Overview of the physical and digital systems" class="align-center" src="_images/DCRL-sim1.png" style="width: 444.3px; height: 374.09999999999997px;" /></a>
-<p>Main contributions of SustainDC:</p>
+<a class="reference internal image-reference" href="_images/SustainDC.png"><img alt="Overview of the SustainDC environments" class="align-center" src="_images/SustainDC.png" style="width: 641.0px; height: 272.0px;" /></a>
+<section id="demo-of-f">
+<h2>Demo of SustainDC<a class="headerlink" href="#demo-of-f" title="Link to this heading">¶</a></h2>
+<p>A demo of SustainDC is given in the Google Colab notebook below</p>
+<a class="reference external image-reference" href="https://colab.research.google.com/drive/1XF92aR6nVYxENrviHeFyuRu0exKBb-nh?usp=sharing"><img alt="GoogleColab" src="_images/colab-badge.png" /></a>
+</section>
+<section id="features-of-f">
+<h2>Features of SustainDC<a class="headerlink" href="#features-of-f" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>the first OpenAI framework, to the best of our knowledge, focused on carbon footprint reduction for data center clusters</p></li>
-<li><p>support for hierarchical data center clusters modeling where users have flexibility in specifying the cluster architecture</p></li>
-<li><p>Modular design, i.e users can utilize pre-defined modules for load shifting, energy and battery or build their own</p></li>
-<li><p>Scalable architecture that allows multiple different types of modules and connections between them</p></li>
-<li><p>Robust data center model that provides in-depth customization to fit users’ needs</p></li>
-<li><p>Provides pre-defined reward functions as well as interface to create custom reward functions</p></li>
-<li><p>Built-in mechanisms for reward shaping focused on degree of cooperation between the agents and level of prioritization of carbon footprint reduction versus other metrics such as energy cost</p></li>
-<li><p>Reward shaping through custom reward functions</p></li>
-<li><p>Built-in MARL algorithms, with ability to incorporate user-specified custom agents</p></li>
+<li><p><strong>Highly Customizable and Scalable Environments:</strong> Allows users to define and modify various aspects of DC operations, including server configurations, cooling systems, and workload traces.</p></li>
+<li><p><strong>Multi-Agent Support:</strong> Enables testing of MARL controllers with both homogeneous and heterogeneous agents, facilitating the study of collaborative and competitive DC management strategies.</p></li>
+<li><p><strong>Gymnasium Integration:</strong> Environments are wrapped in the Gymnasium <code class="code docutils literal notranslate"><span class="pre">Env</span></code> class, making it easy to benchmark different control strategies using standard reinforcement learning libraries.</p></li>
+<li><p><strong>Realistic External Variables:</strong> Incorporates real-world data such as weather conditions, carbon intensity, and workload traces to simulate the dynamic and complex nature of DC operations.</p></li>
+<li><p><strong>Collaborative Reward Mechanisms:</strong> Supports the design of custom reward structures to promote collaborative optimization across different DC components.</p></li>
+<li><p><strong>Benchmarking Suite:</strong> Includes scripts and tools for evaluating the performance of various MARL algorithms, providing insights into their effectiveness in reducing energy consumption and carbon emissions.</p></li>
 </ul>
 <div class="toctree-wrapper compound">
 </div>
+</section>
 </section>
 
         </article>
@@ -350,8 +356,28 @@ cost.</p>
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">SustainDC</a><ul>
+<li><a class="reference internal" href="#demo-of-f">Demo of SustainDC</a></li>
+<li><a class="reference internal" href="#features-of-f">Features of SustainDC</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

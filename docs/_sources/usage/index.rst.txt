@@ -103,3 +103,9 @@ The hyperparameters are specific to the MARL algorithms discussed above. The fol
 .. csv-table::
    :file: ../tables/hperparameters_table.csv
    :header-rows: 1
+
+The default configurations in DCRL-Green are:
+
+.. csv-table::
+   :file: tables/default_args.csv
+   :header-rows: 1

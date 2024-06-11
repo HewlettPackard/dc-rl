@@ -216,6 +216,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../overview/index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../overview/workload.html">Workload Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../overview/environment.html">Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../overview/agents.html">Agents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../overview/observations.html">Observations</a></li>
@@ -223,7 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../overview/reward_function.html">Reward function</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Code</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Code</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="folder_structure.html">Folder Structure</a></li>
 <li class="toctree-l2 current has-children"><a class="reference internal" href="modules.html">Class and member documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Class and member documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
@@ -292,106 +293,8 @@
         <article role="main" id="furo-main-content">
           <section id="utils-package">
 <h1>utils package<a class="headerlink" href="#utils-package" title="Link to this heading">¶</a></h1>
-<section id="module-utils.base_agents">
-<span id="utils-base-agents-module"></span><h2>utils.base_agents module<a class="headerlink" href="#module-utils.base_agents" title="Link to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="utils.base_agents.BaseBatteryAgent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.base_agents.</span></span><span class="sig-name descname"><span class="pre">BaseBatteryAgent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseBatteryAgent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseBatteryAgent" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Base class for battery agents.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>parameters</strong> (<em>dict</em>) – Dictionary containing the agent parameters.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="utils.base_agents.BaseBatteryAgent.act">
-<span class="sig-name descname"><span class="pre">act</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseBatteryAgent.act"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseBatteryAgent.act" title="Link to this definition">¶</a></dt>
-<dd><p>Return the do nothing action regardless of the input parameters.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>*args</strong> – Arbitrary positional arguments.</p></li>
-<li><p><strong>**kwargs</strong> – Arbitrary keyword arguments.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The action (do nothing) to be taken.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>action (int)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="utils.base_agents.BaseBatteryAgent.do_nothing_action">
-<span class="sig-name descname"><span class="pre">do_nothing_action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseBatteryAgent.do_nothing_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseBatteryAgent.do_nothing_action" title="Link to this definition">¶</a></dt>
-<dd><p>Return the do nothing action.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The action (do nothing) to be taken.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>action (int)</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="utils.base_agents.BaseHVACAgent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.base_agents.</span></span><span class="sig-name descname"><span class="pre">BaseHVACAgent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseHVACAgent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseHVACAgent" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Base class for HVAC agents.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>parameters</strong> (<em>dict</em>) – Dictionary containing the agent parameters.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="utils.base_agents.BaseHVACAgent.do_nothing_action">
-<span class="sig-name descname"><span class="pre">do_nothing_action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseHVACAgent.do_nothing_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseHVACAgent.do_nothing_action" title="Link to this definition">¶</a></dt>
-<dd><p>Return the do nothing action.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The action (do nothing) to be taken.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>action (int)</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="utils.base_agents.BaseLoadShiftingAgent">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.base_agents.</span></span><span class="sig-name descname"><span class="pre">BaseLoadShiftingAgent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseLoadShiftingAgent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseLoadShiftingAgent" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>Base class for load shifting agents.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>parameters</strong> (<em>dict</em>) – Dictionary containing the agent parameters.</p>
-</dd>
-</dl>
-<dl class="py method">
-<dt class="sig sig-object py" id="utils.base_agents.BaseLoadShiftingAgent.do_nothing_action">
-<span class="sig-name descname"><span class="pre">do_nothing_action</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/base_agents.html#BaseLoadShiftingAgent.do_nothing_action"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.base_agents.BaseLoadShiftingAgent.do_nothing_action" title="Link to this definition">¶</a></dt>
-<dd><p>Return the do nothing action.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>The action (do nothing) to be taken.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>action (int)</p>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+<section id="utils-base-agents-module">
+<h2>utils.base_agents module<a class="headerlink" href="#utils-base-agents-module" title="Link to this heading">¶</a></h2>
 </section>
 <section id="module-utils.dc_config">
 <span id="utils-dc-config-module"></span><h2>utils.dc_config module<a class="headerlink" href="#module-utils.dc_config" title="Link to this heading">¶</a></h2>
@@ -637,62 +540,8 @@ promoting reduced water consumption.</p>
 <section id="utils-rllib-callbacks-module">
 <h2>utils.rllib_callbacks module<a class="headerlink" href="#utils-rllib-callbacks-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-utils.utils_cf">
-<span id="utils-utils-cf-module"></span><h2>utils.utils_cf module<a class="headerlink" href="#module-utils.utils_cf" title="Link to this heading">¶</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="utils.utils_cf.get_energy_variables">
-<span class="sig-prename descclassname"><span class="pre">utils.utils_cf.</span></span><span class="sig-name descname"><span class="pre">get_energy_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">state</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/utils_cf.html#get_energy_variables"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.utils_cf.get_energy_variables" title="Link to this definition">¶</a></dt>
-<dd><p>Obtain energy variables from the energy observation</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>state</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – agent_dc observation</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Subset of the agent_dc observation</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>List[float]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="utils.utils_cf.get_init_day">
-<span class="sig-prename descclassname"><span class="pre">utils.utils_cf.</span></span><span class="sig-name descname"><span class="pre">get_init_day</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">start_month</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/utils_cf.html#get_init_day"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.utils_cf.get_init_day" title="Link to this definition">¶</a></dt>
-<dd><p>Obtain the initial day of the year to start the episode on</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>start_month</strong> (<em>int</em><em>, </em><em>optional</em>) – Starting month. Defaults to 0.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Day of the year corresponding to the first day of the month</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="utils.utils_cf.obtain_paths">
-<span class="sig-prename descclassname"><span class="pre">utils.utils_cf.</span></span><span class="sig-name descname"><span class="pre">obtain_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">location</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/utils_cf.html#obtain_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.utils_cf.obtain_paths" title="Link to this definition">¶</a></dt>
-<dd><p>Obtain the correct name for the data files</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>location</strong> (<em>string</em>) – Location identifier</p>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If location identifier is not defined</p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Naming for the data files</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>List[string]</p>
-</dd>
-</dl>
-</dd></dl>
-
+<section id="utils-utils-cf-module">
+<h2>utils.utils_cf module<a class="headerlink" href="#utils-utils-cf-module" title="Link to this heading">¶</a></h2>
 </section>
 <section id="module-utils">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-utils" title="Link to this heading">¶</a></h2>
@@ -756,22 +605,7 @@ promoting reduced water consumption.</p>
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">utils package</a><ul>
-<li><a class="reference internal" href="#module-utils.base_agents">utils.base_agents module</a><ul>
-<li><a class="reference internal" href="#utils.base_agents.BaseBatteryAgent"><code class="docutils literal notranslate"><span class="pre">BaseBatteryAgent</span></code></a><ul>
-<li><a class="reference internal" href="#utils.base_agents.BaseBatteryAgent.act"><code class="docutils literal notranslate"><span class="pre">BaseBatteryAgent.act()</span></code></a></li>
-<li><a class="reference internal" href="#utils.base_agents.BaseBatteryAgent.do_nothing_action"><code class="docutils literal notranslate"><span class="pre">BaseBatteryAgent.do_nothing_action()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#utils.base_agents.BaseHVACAgent"><code class="docutils literal notranslate"><span class="pre">BaseHVACAgent</span></code></a><ul>
-<li><a class="reference internal" href="#utils.base_agents.BaseHVACAgent.do_nothing_action"><code class="docutils literal notranslate"><span class="pre">BaseHVACAgent.do_nothing_action()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#utils.base_agents.BaseLoadShiftingAgent"><code class="docutils literal notranslate"><span class="pre">BaseLoadShiftingAgent</span></code></a><ul>
-<li><a class="reference internal" href="#utils.base_agents.BaseLoadShiftingAgent.do_nothing_action"><code class="docutils literal notranslate"><span class="pre">BaseLoadShiftingAgent.do_nothing_action()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a class="reference internal" href="#utils-base-agents-module">utils.base_agents module</a></li>
 <li><a class="reference internal" href="#module-utils.dc_config">utils.dc_config module</a></li>
 <li><a class="reference internal" href="#module-utils.dc_config_reader">utils.dc_config_reader module</a><ul>
 <li><a class="reference internal" href="#utils.dc_config_reader.DC_Config"><code class="docutils literal notranslate"><span class="pre">DC_Config</span></code></a></li>
@@ -796,12 +630,7 @@ promoting reduced water consumption.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#utils-rllib-callbacks-module">utils.rllib_callbacks module</a></li>
-<li><a class="reference internal" href="#module-utils.utils_cf">utils.utils_cf module</a><ul>
-<li><a class="reference internal" href="#utils.utils_cf.get_energy_variables"><code class="docutils literal notranslate"><span class="pre">get_energy_variables()</span></code></a></li>
-<li><a class="reference internal" href="#utils.utils_cf.get_init_day"><code class="docutils literal notranslate"><span class="pre">get_init_day()</span></code></a></li>
-<li><a class="reference internal" href="#utils.utils_cf.obtain_paths"><code class="docutils literal notranslate"><span class="pre">obtain_paths()</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#utils-utils-cf-module">utils.utils_cf module</a></li>
 <li><a class="reference internal" href="#module-utils">Module contents</a></li>
 </ul>
 </li>

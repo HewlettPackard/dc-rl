@@ -216,6 +216,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../overview/index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../overview/workload.html">Workload Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../overview/environment.html">Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../overview/agents.html">Agents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../overview/observations.html">Observations</a></li>
@@ -223,7 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../overview/reward_function.html">Reward function</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Code</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Code</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="folder_structure.html">Folder Structure</a></li>
 <li class="toctree-l2 current has-children"><a class="reference internal" href="modules.html">Class and member documentation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Class and member documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
@@ -301,247 +302,8 @@
 <section id="envs-carbon-ls-module">
 <h2>envs.carbon_ls module<a class="headerlink" href="#envs-carbon-ls-module" title="Link to this heading">¶</a></h2>
 </section>
-<section id="module-envs.datacenter">
-<span id="envs-datacenter-module"></span><h2>envs.datacenter module<a class="headerlink" href="#module-envs.datacenter" title="Link to this heading">¶</a></h2>
-<dl class="py class">
-<dt class="sig sig-object py" id="envs.datacenter.CPU">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">CPU</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">full_load_pwr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">idle_pwr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cpu_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.CPU.cpu_curve1">
-<span class="sig-name descname"><span class="pre">cpu_curve1</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.cpu_curve1"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.cpu_curve1" title="Link to this definition">¶</a></dt>
-<dd><p>initialize the  cpu power ratio curve at different IT workload ratios as a function of inlet temperatures [3]</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.CPU.itfan_curve2">
-<span class="sig-name descname"><span class="pre">itfan_curve2</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#CPU.itfan_curve2"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.CPU.itfan_curve2" title="Link to this definition">¶</a></dt>
-<dd><p>initialize the itfan velocity ratio curve at different IT workload ratios as a function of inlet temperatures [3]</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="envs.datacenter.DataCenter_ITModel">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">DataCenter_ITModel</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">num_racks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_supply_approach_temp_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_CPU_config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_W_per_rack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DC_ITModel_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chiller_sizing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.DataCenter_ITModel.calculate_cooling_tower_water_usage">
-<span class="sig-name descname"><span class="pre">calculate_cooling_tower_water_usage</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel.calculate_cooling_tower_water_usage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel.calculate_cooling_tower_water_usage" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the estimated water usage of the cooling tower.</p>
-<p>This function uses the attributes set in the class to estimate the water usage based
-[Sharma, R.K., Shah, A., Bash, C.E., Christian, T., &amp; Patel, C.D. (2009). Water efficiency management in datacenters: Metrics and methodology. 2009 IEEE International Symposium on Sustainable Systems and Technology, 1-6.]
-[Mohammed Shublaq, Ahmad K. Sleiti., (2020).  Experimental analysis of water evaporation losses in cooling towers using filters]
-<a class="reference external" href="https://spxcooling.com/water-calculator/">https://spxcooling.com/water-calculator/</a></p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp">
-<span class="sig-name descname"><span class="pre">compute_datacenter_IT_load_outlet_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ITE_load_pct_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CRAC_setpoint</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the average outlet temperature of all the racks</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ITE_load_pct_list</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – CPU load for each rack</p></li>
-<li><p><strong>CRAC_setpoint</strong> (<em>float</em>) – CRAC setpoint</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Rackwise CPU power usage
-rackwise_itfan_pwr (List[float]):  Rackwise IT fan power usage
-rackwise_outlet_temp (List[float]): Rackwise outlet temperature</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>rackwise_cpu_pwr (List[float])</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.DataCenter_ITModel.total_datacenter_full_load">
-<span class="sig-name descname"><span class="pre">total_datacenter_full_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#DataCenter_ITModel.total_datacenter_full_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.DataCenter_ITModel.total_datacenter_full_load" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the total DC IT(IT CPU POWER + IT FAN POWER) power consumption</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="envs.datacenter.Rack">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">Rack</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">CPU_config_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_W_per_rack</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rack_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.Rack.clamp_supply_approach_temp">
-<span class="sig-name descname"><span class="pre">clamp_supply_approach_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">supply_approach_temperature</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.clamp_supply_approach_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.clamp_supply_approach_temp" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the clamped delta/ supply approach temperature between the range [3.8, 5.3]</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Supply approach temperature</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.Rack.compute_instantaneous_pwr">
-<span class="sig-name descname"><span class="pre">compute_instantaneous_pwr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inlet_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ITE_load_pct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.compute_instantaneous_pwr"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.compute_instantaneous_pwr" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the power consumption of the whole rack at the current step</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>inlet_temp</strong> (<em>float</em>) – Room temperature</p></li>
-<li><p><strong>ITE_load_pct</strong> (<em>float</em>) – Current CPU usage</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Current CPU power usage</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>cpu_power (float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.Rack.compute_instantaneous_pwr_vecd">
-<span class="sig-name descname"><span class="pre">compute_instantaneous_pwr_vecd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inlet_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ITE_load_pct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.compute_instantaneous_pwr_vecd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.compute_instantaneous_pwr_vecd" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.Rack.cpu_and_fan_init">
-<span class="sig-name descname"><span class="pre">cpu_and_fan_init</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.cpu_and_fan_init"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.cpu_and_fan_init" title="Link to this definition">¶</a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.Rack.get_average_rack_fan_v">
-<span class="sig-name descname"><span class="pre">get_average_rack_fan_v</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_average_rack_fan_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_average_rack_fan_v" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the average fan velocity for each rack
-:returns: Average fan flow rate for the rack
-:rtype: (float)</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.Rack.get_current_rack_load">
-<span class="sig-name descname"><span class="pre">get_current_rack_load</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_current_rack_load"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_current_rack_load" title="Link to this definition">¶</a></dt>
-<dd><p>Returns the total power consumption of the rack</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Total power consumption of the rack</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="envs.datacenter.Rack.get_total_rack_fan_v">
-<span class="sig-name descname"><span class="pre">get_total_rack_fan_v</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_total_rack_fan_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_total_rack_fan_v" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the total fan velocity for each rack
-:returns: Total fan flow rate for the rack
-:rtype: (float)</p>
-</dd></dl>
-
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="envs.datacenter.calculate_HVAC_power">
-<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">calculate_HVAC_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">CRAC_setpoint</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">avg_CRAC_return_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ambient_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_center_full_load</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">DC_Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ctafr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#calculate_HVAC_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.calculate_HVAC_power" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the HVAV power attributes</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>CRAC_Setpoint</strong> (<em>float</em>) – The control action</p></li>
-<li><p><strong>avg_CRAC_return_temp</strong> (<em>float</em>) – The average of the temperatures from all the Racks + their corresponding return approach temperature (Delta)</p></li>
-<li><p><strong>ambient_temp</strong> (<em>float</em>) – outside air temperature</p></li>
-<li><p><strong>data_center_full_load</strong> (<em>float</em>) – total data center capacity</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>CRAC fan power
-CT_Fan_pwr (float):  Cooling tower fan power
-CRAC_cooling_load (float): CRAC cooling load
-Compressor_load (float): Chiller compressor load</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>CRAC_Fan_load (float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="envs.datacenter.calculate_avg_CRAC_return_temp">
-<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">calculate_avg_CRAC_return_temp</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rack_return_approach_temp_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rackwise_outlet_temp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#calculate_avg_CRAC_return_temp"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.calculate_avg_CRAC_return_temp" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the CRAC return air temperature</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>rack_return_approach_temp_list</strong> (<em>List</em><em>[</em><em>float</em><em>]</em>) – The delta change in temperature from each rack to the CRAC unit</p></li>
-<li><p><strong>rackwise_outlet_temp</strong> (<em>float</em>) – The outlet temperature of each rack</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>CRAC return air temperature</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(float)</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="envs.datacenter.calculate_chiller_power">
-<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">calculate_chiller_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cooling_cap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ambient_temp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#calculate_chiller_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.calculate_chiller_power" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the chiller power consumption based on load and operating conditions.
-Obtained from:</p>
-<blockquote>
-<div><ol class="arabic simple">
-<li><p><a class="reference external" href="https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/testfiles/AirCooledElectricChiller.idf">https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/testfiles/AirCooledElectricChiller.idf</a></p></li>
-<li><p><a class="reference external" href="https://github.com/NREL/EnergyPlus/issues/763">https://github.com/NREL/EnergyPlus/issues/763</a></p></li>
-<li><p><a class="reference external" href="https://dmey.github.io/EnergyPlusFortran-Reference/proc/calcelectricchillermodel.html">https://dmey.github.io/EnergyPlusFortran-Reference/proc/calcelectricchillermodel.html</a></p></li>
-<li><p><a class="reference external" href="https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/tst/EnergyPlus/unit/ChillerElectric.unit.cc#L95">https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/tst/EnergyPlus/unit/ChillerElectric.unit.cc#L95</a></p></li>
-</ol>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>max_cooling_cap</strong> (<em>float</em>) – Maximum cooling capacity of the chiller (Watts).</p></li>
-<li><p><strong>load</strong> (<em>float</em>) – The heat load to be removed by the chiller (Watts).</p></li>
-<li><p><strong>ambient_temp</strong> (<em>float</em>) – Current ambient temperature (Celsius).</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Estimated power consumption of the chiller (Watts).</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="envs.datacenter.chiller_sizing">
-<span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">chiller_sizing</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">DC_Config</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_CRAC_setpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_CRAC_setpoint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">22</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_ambient_temp</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">40.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#chiller_sizing"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.chiller_sizing" title="Link to this definition">¶</a></dt>
-<dd><p>Calculates the chiller sizing for a data center based on the given configuration and parameters.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>DC_Config</strong> (<em>object</em>) – The data center configuration object.</p></li>
-<li><p><strong>min_CRAC_setpoint</strong> (<em>float</em>) – The minimum CRAC setpoint temperature in degrees Celsius. Default is 16.</p></li>
-<li><p><strong>max_CRAC_setpoint</strong> (<em>float</em>) – The maximum CRAC setpoint temperature in degrees Celsius. Default is 22.</p></li>
-<li><p><strong>max_ambient_temp</strong> (<em>float</em>) – The maximum ambient temperature in degrees Celsius. Default is 40.0.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A tuple containing the cooling tower reference air flow rate (ctafr) and the rated load of the cooling tower (CT_rated_load).</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple</p>
-</dd>
-</dl>
-</dd></dl>
-
+<section id="envs-datacenter-module">
+<h2>envs.datacenter module<a class="headerlink" href="#envs-datacenter-module" title="Link to this heading">¶</a></h2>
 </section>
 <section id="envs-dc-gym-module">
 <h2>envs.dc_gym module<a class="headerlink" href="#envs-dc-gym-module" title="Link to this heading">¶</a></h2>
@@ -611,34 +373,7 @@ Obtained from:</p>
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#envs-bat-env-fwd-view-module">envs.bat_env_fwd_view module</a></li>
 <li><a class="reference internal" href="#envs-carbon-ls-module">envs.carbon_ls module</a></li>
-<li><a class="reference internal" href="#module-envs.datacenter">envs.datacenter module</a><ul>
-<li><a class="reference internal" href="#envs.datacenter.CPU"><code class="docutils literal notranslate"><span class="pre">CPU</span></code></a><ul>
-<li><a class="reference internal" href="#envs.datacenter.CPU.cpu_curve1"><code class="docutils literal notranslate"><span class="pre">CPU.cpu_curve1()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.CPU.itfan_curve2"><code class="docutils literal notranslate"><span class="pre">CPU.itfan_curve2()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#envs.datacenter.DataCenter_ITModel"><code class="docutils literal notranslate"><span class="pre">DataCenter_ITModel</span></code></a><ul>
-<li><a class="reference internal" href="#envs.datacenter.DataCenter_ITModel.calculate_cooling_tower_water_usage"><code class="docutils literal notranslate"><span class="pre">DataCenter_ITModel.calculate_cooling_tower_water_usage()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp"><code class="docutils literal notranslate"><span class="pre">DataCenter_ITModel.compute_datacenter_IT_load_outlet_temp()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.DataCenter_ITModel.total_datacenter_full_load"><code class="docutils literal notranslate"><span class="pre">DataCenter_ITModel.total_datacenter_full_load()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#envs.datacenter.Rack"><code class="docutils literal notranslate"><span class="pre">Rack</span></code></a><ul>
-<li><a class="reference internal" href="#envs.datacenter.Rack.clamp_supply_approach_temp"><code class="docutils literal notranslate"><span class="pre">Rack.clamp_supply_approach_temp()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.Rack.compute_instantaneous_pwr"><code class="docutils literal notranslate"><span class="pre">Rack.compute_instantaneous_pwr()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.Rack.compute_instantaneous_pwr_vecd"><code class="docutils literal notranslate"><span class="pre">Rack.compute_instantaneous_pwr_vecd()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.Rack.cpu_and_fan_init"><code class="docutils literal notranslate"><span class="pre">Rack.cpu_and_fan_init()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.Rack.get_average_rack_fan_v"><code class="docutils literal notranslate"><span class="pre">Rack.get_average_rack_fan_v()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.Rack.get_current_rack_load"><code class="docutils literal notranslate"><span class="pre">Rack.get_current_rack_load()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.Rack.get_total_rack_fan_v"><code class="docutils literal notranslate"><span class="pre">Rack.get_total_rack_fan_v()</span></code></a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#envs.datacenter.calculate_HVAC_power"><code class="docutils literal notranslate"><span class="pre">calculate_HVAC_power()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.calculate_avg_CRAC_return_temp"><code class="docutils literal notranslate"><span class="pre">calculate_avg_CRAC_return_temp()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.calculate_chiller_power"><code class="docutils literal notranslate"><span class="pre">calculate_chiller_power()</span></code></a></li>
-<li><a class="reference internal" href="#envs.datacenter.chiller_sizing"><code class="docutils literal notranslate"><span class="pre">chiller_sizing()</span></code></a></li>
-</ul>
-</li>
+<li><a class="reference internal" href="#envs-datacenter-module">envs.datacenter module</a></li>
 <li><a class="reference internal" href="#envs-dc-gym-module">envs.dc_gym module</a></li>
 <li><a class="reference internal" href="#module-envs">Module contents</a></li>
 </ul>

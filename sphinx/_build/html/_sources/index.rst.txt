@@ -1,38 +1,65 @@
 .. dc-rl documentation master file, created by
-   sphinx-quickstart on Thu Jun  1 22:41:38 2023.
+   sphinx-quickstart on Thu Jun  1 22:41:38 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
 |F|
 ==========
 
-|F| is a framework for testing Multi-Agent Reinforcement Learning (MARL) algorithms that optimizes data center clusters in a hierarchical manner for multiple objectives of carbon footprint reduction, energy consumption, and energy
-cost.
+|F| is a set of Python environments for benchmarking multi-agent reinforcement learning (MARL) algorithms in data centers (DC). It focuses on sustainable DC operations, including workload scheduling, cooling optimization, and auxiliary battery management. 
 
-It uses OpenAI Gym standard and supports modeling and control of three different types of problems:
+This page contains the documentation for the GitHub `repository <https://github.com/HewlettPackard/dc-rl>`_ for the paper `"SustainDC: Benchmarking for Sustainable Data Center Control" <https://openreview.net/forum?id=UYgE9IfQIV>`_
 
-- Carbon-aware flexible load shifting
+Note that |F| is continuation to **#TODO: COMPLETE**
+
+.. >Avisek Naug, Antonio Guillen, Ricardo Luna Gutierrez, Vineet Gundecha, Desik Rengarajan, Sahand Ghorbanpour, Sajad Mousavi, Ashwin Ramesh Babu, Dejan Markovikj, Lekhapriya Dheeraj Kashyap, Soumyendu Sarkar, "SustainDC: Benchmarking for Sustainable Data Center Control" in _Thirty-eight Conference on Neural Information Processing Systems Datasets and Benchmarks Track_[Online]. Available: [pdf](https://openreview.net/attachment?id=UYgE9IfQIV&name=pdf).
+
+.. <details markdown="block">
+.. <summary>BibTeX</summary>
+
+.. ```tex
+.. @inproceedings{naug2024sustaindc,
+    title = {{SustainDC}: Benchmarking for Sustainable Data Center Control},
+    author = {Naug, Avisek and Guillen, Antonio and Luna Gutierrez, Ricardo and Gundecha, Vineet and Rengarajan, Desik and Ghorbanpour, Sahand and Mousavi, Sajad and Babu, Ashwin Ramesh and Markovikj, Dejan and Dheeraj Kashyap, Lekhapriya and Sarkar, Soumyendu},
+    year = 2024,
+    month = 12,
+    booktitle = {Thirty-eight Conference on Neural Information Processing Systems Datasets and Benchmarks Track},
+    address = {Vancouver, Canada},
+    url = {https://openreview.net/forum?id=UYgE9IfQIV}
+.. }
+.. ```
+.. </details>
+
+|F| uses OpenAI Gym standard and supports modeling and control of three different types of problems:
+
+- Carbon-aware flexible computational load shifting
 - Data center HVAC cooling energy optimization
 - Carbon-aware battery auxiliary supply
 
-.. image:: images/DCRL-sim1.png
-   :scale: 30 %
-   :alt: Overview of the physical and digital systems
+
+.. image:: images/SustainDC.png
+   :scale: 25 %
+   :alt: Overview of the SustainDC environments 
    :align: center
 
+Demo of |F|
+------------------
+A demo of |F| is given in the Google Colab notebook below
+
+.. image:: images/colab-badge.png
+   :alt: GoogleColab
+   :target: https://colab.research.google.com/drive/1XF92aR6nVYxENrviHeFyuRu0exKBb-nh?usp=sharing
 
 
-Main contributions of |F|:
+Features of |F|
+-----------------
 
-- the first OpenAI framework, to the best of our knowledge, focused on carbon footprint reduction for data center clusters
-- support for hierarchical data center clusters modeling where users have flexibility in specifying the cluster architecture
-- Modular design, i.e users can utilize pre-defined modules for load shifting, energy and battery or build their own
-- Scalable architecture that allows multiple different types of modules and connections between them
-- Robust data center model that provides in-depth customization to fit users' needs
-- Provides pre-defined reward functions as well as interface to create custom reward functions
-- Built-in mechanisms for reward shaping focused on degree of cooperation between the agents and level of prioritization of carbon footprint reduction versus other metrics such as energy cost
-- Reward shaping through custom reward functions
-- Built-in MARL algorithms, with ability to incorporate user-specified custom agents
+- **Highly Customizable and Scalable Environments:** Allows users to define and modify various aspects of DC operations, including server configurations, cooling systems, and workload traces.
+- **Multi-Agent Support:** Enables testing of MARL controllers with both homogeneous and heterogeneous agents, facilitating the study of collaborative and competitive DC management strategies.
+- **Gymnasium Integration:** Environments are wrapped in the Gymnasium :code:`Env` class, making it easy to benchmark different control strategies using standard reinforcement learning libraries.
+- **Realistic External Variables:** Incorporates real-world data such as weather conditions, carbon intensity, and workload traces to simulate the dynamic and complex nature of DC operations.
+- **Collaborative Reward Mechanisms:** Supports the design of custom reward structures to promote collaborative optimization across different DC components.
+- **Benchmarking Suite:** Includes scripts and tools for evaluating the performance of various MARL algorithms, providing insights into their effectiveness in reducing energy consumption and carbon emissions.
 
 .. toctree::
    :hidden:
@@ -40,7 +67,7 @@ Main contributions of |F|:
    installation
    gettingstarted
    overview/index
-   usage
+   usage/index
    code/index
    train_evaluate/index
    contribution_guidelines

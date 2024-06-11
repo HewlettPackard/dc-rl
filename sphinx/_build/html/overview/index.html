@@ -3,7 +3,7 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Environment" href="environment.html" /><link rel="prev" title="Getting Started" href="../gettingstarted.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Workload Environment" href="workload.html" /><link rel="prev" title="Getting Started" href="../gettingstarted.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
         <title>Overview - SustainDC 0.0.1 documentation</title>
@@ -192,7 +192,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -216,6 +216,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
 <li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">Overview</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workload.html">Workload Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="environment.html">Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="agents.html">Agents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="observations.html">Observations</a></li>
@@ -223,7 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="reward_function.html">Reward function</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../code/index.html">Code</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Code</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../code/folder_structure.html">Folder Structure</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="../code/modules.html">Class and member documentation</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Class and member documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -284,7 +285,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -292,8 +293,29 @@
         <article role="main" id="furo-main-content">
           <section id="overview">
 <h1>Overview<a class="headerlink" href="#overview" title="Link to this heading">¶</a></h1>
+<section id="data-center-model">
+<h2>Data Center Model<a class="headerlink" href="#data-center-model" title="Link to this heading">¶</a></h2>
+<p>High-level overview of the operational model of a SustainDC data center is given in the figure below.</p>
+<figure class="align-center" id="sustaindc-model">
+<a class="reference internal image-reference" href="../_images/SustainDC.png"><img alt="Overview of the SustainDC main environments" src="../_images/SustainDC.png" style="width: 1025.6000000000001px; height: 435.20000000000005px;" /></a>
+</figure>
+<p>Workloads are uploaded to the DC from a proxy client. A fraction of these jobs can be flexible or delayed to different time periods. The servers that process these jobs generate heat that needs to be removed from the DC. This is done by a complex HVAC system that ensures optimal temperature in the DC. As shown in the figure below, the warm air leaves the servers and is moved to the Computer Room Air Handler (CRAH) by the forced draft of the HVAC fan. Next, the hot air is cooled down to optimal setpoint using a chilled water loop and then send back to the IT room. Parallely, a second water loop transfers the removed heat to a cooling tower, where it is rejected to the outside environment.</p>
+<a class="reference internal image-reference" href="../_images/Data_center_modelled.png" id="sustaindc-hvac"><img alt="Overview of the SustainDC HVAC system" class="align-center" id="sustaindc-hvac" src="../_images/Data_center_modelled.png" style="width: 614.4px; height: 262.8px;" /></a>
+<p>Big data centers also incorporate battery banks. Batteries can be charged from the grid during low Carbon Intensity (CI) periods. During higher CI periods, they provide auxiliary energy to the DC.</p>
+</section>
+<section id="core-environments">
+<h2>Core Environments<a class="headerlink" href="#core-environments" title="Link to this heading">¶</a></h2>
+<p>SustainDC consist of three main environments reflecting different aspects of a data center that can be optimized to reduce carbon footprint or other sustainability metrics:</p>
+<ul class="simple">
+<li><p>Workload Envronment - model and control the execution and scheduling of delay-tolerant workloads within the DC</p></li>
+<li><p>Data Center Environment - model and manage the servers in the IT room cabinets that process workloads and the HVAC system and components</p></li>
+<li><p>Battery Environment - simulates the DC battery charging behavior during off-peak hours and provides auxiliary energy to the DC during peak grid carbon intensity periods</p></li>
+</ul>
+<p>SustainDC enables a comprehensive set of customizations for each of the three environmentsdeveloped in Python. A high-level overview that highlights their individual components, customization capabilities, and associated control problems is given in th figure below.</p>
+<a class="reference internal image-reference" href="../_images/schematic.png" id="sustaindc-envs"><img alt="Overview of the SustainDC components and parameters" class="align-center" id="sustaindc-envs" src="../_images/schematic.png" style="width: 614.4px; height: 433.8px;" /></a>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="workload.html">Workload Environment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">Environment</a></li>
 <li class="toctree-l1"><a class="reference internal" href="agents.html">Agents</a></li>
 <li class="toctree-l1"><a class="reference internal" href="observations.html">Observations</a></li>
@@ -302,18 +324,19 @@
 </ul>
 </div>
 </section>
+</section>
 
         </article>
       </div>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="environment.html">
+          <a class="next-page" href="workload.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Environment</div>
+                <div class="title">Workload Environment</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -346,8 +369,28 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer no-toc">
+    <aside class="toc-drawer">
       
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Overview</a><ul>
+<li><a class="reference internal" href="#data-center-model">Data Center Model</a></li>
+<li><a class="reference internal" href="#core-environments">Core Environments</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
       
       
     </aside>

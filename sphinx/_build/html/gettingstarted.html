@@ -192,7 +192,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -216,6 +216,7 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">Getting Started</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="overview/index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="overview/workload.html">Workload Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="overview/environment.html">Environment</a></li>
 <li class="toctree-l2"><a class="reference internal" href="overview/agents.html">Agents</a></li>
 <li class="toctree-l2"><a class="reference internal" href="overview/observations.html">Observations</a></li>
@@ -223,7 +224,7 @@
 <li class="toctree-l2"><a class="reference internal" href="overview/reward_function.html">Reward function</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="usage.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/index.html">Usage</a></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="code/index.html">Code</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Code</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="code/folder_structure.html">Folder Structure</a></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="code/modules.html">Class and member documentation</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Class and member documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -284,7 +285,7 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
@@ -292,38 +293,46 @@
         <article role="main" id="furo-main-content">
           <section id="getting-started">
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h1>
-<section id="basic-example">
-<h2>1. Basic example<a class="headerlink" href="#basic-example" title="Link to this heading">¶</a></h2>
-<p>Run the SustainDC environment to simulate one episode and view the roll-out information using the following command:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">sustaindc_env</span><span class="o">.</span><span class="n">py</span>
+<ol class="arabic">
+<li><p><strong>Setup Configuration</strong></p>
+<p>Customize the <code class="code docutils literal notranslate"><span class="pre">dc_config.json</span></code> file to specify your DC environment settings. To learn more about the DC parameters you can customize, check <strong>#TODO: ADD LINK TO DC PARAMS</strong>.</p>
+</li>
+<li><p><strong>Environment Configuration</strong></p>
+<p>The main environment for wrapping the environments is <code class="code docutils literal notranslate"><span class="pre">dclr_env_harl_partialobs.py</span></code>, which reads configurations from the <code class="code docutils literal notranslate"><span class="pre">EnvConfig</span></code> class and manages the external variables using managers for weather, carbon intensity, and workload. For instructions how to customize the enviroment configuration, check <strong>#TODO: ADD LINK TO ENV PARAMS</strong>.</p>
+</li>
+<li><p><strong>Run Example:</strong></p>
+<p>Execute a simple example to get started: <strong>#TODO: UPDATE THIS</strong></p>
+</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">examples</span><span class="o">/</span><span class="n">run_random</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-</section>
-<section id="train-the-agents">
-<h2>2. Train the agents<a class="headerlink" href="#train-the-agents" title="Link to this heading">¶</a></h2>
-<p>Run the following commands to simulate the DC enivronment and optimize the agents with default configurations:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">train_ppo</span><span class="o">.</span><span class="n">py</span>
+<ol class="arabic" start="4">
+<li><p><strong>Run Example:</strong></p>
+<p>Execute a simple example to get started:</p>
+</li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">examples</span><span class="o">/</span><span class="n">evaluate</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
-</section>
-<section id="running-in-background-mode">
-<h2>3. Running in background mode<a class="headerlink" href="#running-in-background-mode" title="Link to this heading">¶</a></h2>
-<p>If you want to run the SustainDC framework in background mode use the following command:</p>
+<ol class="arabic simple" start="5">
+<li><p><strong>Running in background mode</strong></p></li>
+</ol>
+<p>If you want to run the SustainDC framework in background mode use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nohup</span> <span class="n">python</span> <span class="n">PYTHON_SCRIPT</span> <span class="o">&gt;</span> <span class="n">OUTPUT_FILE</span><span class="o">.</span><span class="n">txt</span>  <span class="o">&amp;</span>
 </pre></div>
 </div>
-<p>where <code class="code docutils literal notranslate"><span class="pre">PYTHON_SCRIPT</span></code> is the script you want to run (e.g., <code class="code docutils literal notranslate"><span class="pre">train_ppo.py</span></code>) and <code class="code docutils literal notranslate"><span class="pre">OUTPUT_FILE</span></code> is the name of the file that will contain the output (e.g. <code class="code docutils literal notranslate"><span class="pre">latest_experiment_output</span></code>).</p>
-</section>
-<section id="monitor-the-results">
-<h2>4. Monitor the results<a class="headerlink" href="#monitor-the-results" title="Link to this heading">¶</a></h2>
+<p>where <code class="code docutils literal notranslate"><span class="pre">PYTHON_SCRIPT</span></code> is the script you want to run (e.g., <code class="code docutils literal notranslate"><span class="pre">run_random.py</span></code>) and <code class="code docutils literal notranslate"><span class="pre">OUTPUT_FILE</span></code> is the name of the file that will contain the output (e.g. <code class="code docutils literal notranslate"><span class="pre">latest_experiment_output</span></code>).</p>
+<ol class="arabic simple" start="6">
+<li><p><strong>Monitor the results</strong></p></li>
+</ol>
 <p>The training logs and the results of each trial are stored in the specified local directory, under a sub-folder called <code class="code docutils literal notranslate"><span class="pre">results</span></code> and can be visualized with TensorBoard by specifying the output directory of the results.</p>
 <p>Example:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="o">./</span><span class="n">results</span>
 </pre></div>
 </div>
 <p>In this example, <code class="code docutils literal notranslate"><span class="pre">test</span></code> is the default name of the experiment.</p>
-<p>A detailed description of the configurations are provided in the <a class="reference internal" href="usage.html"><span class="doc">Usage</span></a> section.</p>
-</section>
+<p>A detailed description of the configurations are provided in the <span class="xref std std-doc">Usage</span> section. <strong>#TODO:UPDATE THIS</strong></p>
 </section>
 
         </article>
@@ -369,30 +378,8 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">Getting Started</a><ul>
-<li><a class="reference internal" href="#basic-example">1. Basic example</a></li>
-<li><a class="reference internal" href="#train-the-agents">2. Train the agents</a></li>
-<li><a class="reference internal" href="#running-in-background-mode">3. Running in background mode</a></li>
-<li><a class="reference internal" href="#monitor-the-results">4. Monitor the results</a></li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>
