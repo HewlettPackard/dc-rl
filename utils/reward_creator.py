@@ -18,22 +18,28 @@ def default_ls_reward(params: dict) -> float:
     norm_CI = params['norm_CI']
     dcload_min = params['bat_dcload_min']
     dcload_max = params['bat_dcload_max']
-    
-    # Penalty part of the reward
-    norm_load_left = params['ls_norm_load_left']
-    out_of_time = params['ls_penalty_flag']
-    penalty = 1e3
-    
+        
     # Calculate the reward associted to the energy consumption
-    norm_net_dc_load = (total_energy_with_battery / 1e3 - dcload_min) / (dcload_max - dcload_min)
+    norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
     footprint = -1.0 * norm_CI * norm_net_dc_load
-    # Obtain the penalty if there is load at the end of the day
-    if out_of_time:
-        penalty = -norm_load_left*penalty
-    else:
-        penalty = 0
-    # Add the rewards
-    reward = footprint + penalty
+
+    # Penalize the agent for each task that was dropped due to queue limit
+    penalty_per_dropped_task = -10  # Define the penalty value per dropped task
+    tasks_dropped = params['ls_tasks_dropped']
+    penalty_dropped_tasks = tasks_dropped * penalty_per_dropped_task
+    
+    tasks_in_queue = params['ls_tasks_in_queue']
+    current_step = params['ls_current_hour']
+    penalty_tasks_queue = 0
+    if current_step % (24*4) >= (23*4):   # Penalty for queued tasks at the end of the day
+        factor_hour = (current_step % (24*4)) / 96 # min = 0.95833, max = 0.98953
+        factor_hour = (factor_hour - 0.95833) / (0.98935 - 0.95833)
+        penalty_tasks_queue = -1.0 * factor_hour * tasks_in_queue/10  # Penalty for each task left in the queue
+    
+    if current_step % (24*4) == 0:   # Penalty for queued tasks at the end of the day
+        penalty_tasks_queue = -1.0 * tasks_in_queue/10 # Penalty for each task left in the queue
+    
+    reward = footprint + penalty_dropped_tasks + penalty_tasks_queue    
     return reward
 
 
@@ -77,7 +83,7 @@ def default_bat_reward(params: dict) -> float:
     dcload_min = params['bat_dcload_min']
     dcload_max = params['bat_dcload_max']
     
-    norm_net_dc_load = (total_energy_with_battery / 1e3 - dcload_min) / (dcload_max - dcload_min)
+    norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
     rew_footprint = -1.0 * norm_CI * norm_net_dc_load #Added scalar to line up with dc reward
 
     return rew_footprint
@@ -247,6 +253,28 @@ def temperature_efficiency_reward(params: dict) -> float:
             reward = -abs(current_temperature - max_temp)
     return reward
 
+def water_usage_efficiency_reward(params: dict) -> float:
+    """
+    Calculates a reward value based on the efficiency of water usage in the data center.
+    
+    A lower value of water usage results in a higher reward, promoting sustainability
+    and efficiency in water consumption.
+
+    Args:
+        params (dict): Dictionary containing parameters:
+            dc_water_usage (float): The amount of water used by the data center in a given period.
+
+    Returns:
+        float: Reward value. The reward is higher for lower values of water usage, 
+        promoting reduced water consumption.
+    """
+    dc_water_usage = params['dc_water_usage']
+    
+    # Calculate the reward. This is a simple inverse relationship; many other functions could be applied.
+    # Adjust the scalar as needed to fit the scale of your rewards or to emphasize the importance of water savings.
+    reward = -0.01 * dc_water_usage
+    
+    return reward
 
 # Other reward methods can be added here.
 
@@ -261,6 +289,7 @@ REWARD_METHOD_MAP = {
     'energy_efficiency_reward' : energy_efficiency_reward,
     'energy_PUE_reward' : energy_PUE_reward,
     'temperature_efficiency_reward' : temperature_efficiency_reward,
+    'water_usage_efficiency_reward' : water_usage_efficiency_reward,
 }
 
 def get_reward_method(reward_method : str = 'default_dc_reward'):

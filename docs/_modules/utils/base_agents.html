@@ -1,25 +1,25 @@
 <!DOCTYPE html>
-<html class="writer-html5" lang="en" >
+<html class="writer-html5" lang="en" data-content_root="../../">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>utils.base_agents &mdash; DCRL-Green 0.0.1 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
+  <title>utils.base_agents &mdash; Sustain-DC 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+
+  
   <!--[if lt IE 9]>
     <script src="../../_static/js/html5shiv.min.js"></script>
   <![endif]-->
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/clipboard.min.js"></script>
-        <script src="../../_static/copybutton.js"></script>
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../_static/copybutton.js?v=f281be69"></script>
     <script src="../../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" /> 
@@ -34,7 +34,7 @@
           
           
           <a href="../../index.html" class="icon icon-home">
-            DCRL-Green
+            Sustain-DC
           </a>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
@@ -61,7 +61,7 @@
 
     <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
           <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">DCRL-Green</a>
+          <a href="../../index.html">Sustain-DC</a>
       </nav>
 
       <div class="wy-nav-content">
@@ -82,7 +82,9 @@
   <h1>Source code for utils.base_agents</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<div class="viewcode-block" id="BaseLoadShiftingAgent"><a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseLoadShiftingAgent">[docs]</a><span class="k">class</span> <span class="nc">BaseLoadShiftingAgent</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseLoadShiftingAgent">
+<a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseLoadShiftingAgent">[docs]</a>
+<span class="k">class</span> <span class="nc">BaseLoadShiftingAgent</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for load shifting agents.</span>
 
@@ -95,16 +97,22 @@
 <span class="sd">            parameters (dict) :  Dictionary containing the agent parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">parameters</span>
-<div class="viewcode-block" id="BaseLoadShiftingAgent.do_nothing_action"><a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseLoadShiftingAgent.do_nothing_action">[docs]</a>    <span class="k">def</span> <span class="nf">do_nothing_action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseLoadShiftingAgent.do_nothing_action">
+<a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseLoadShiftingAgent.do_nothing_action">[docs]</a>
+    <span class="k">def</span> <span class="nf">do_nothing_action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the do nothing action.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
 <span class="sd">            action (int): The action (do nothing) to be taken.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="mi">1</span></div></div>
+        <span class="k">return</span> <span class="mi">1</span></div>
+</div>
+
     
-<div class="viewcode-block" id="BaseHVACAgent"><a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseHVACAgent">[docs]</a><span class="k">class</span> <span class="nc">BaseHVACAgent</span><span class="p">:</span>
+<div class="viewcode-block" id="BaseHVACAgent">
+<a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseHVACAgent">[docs]</a>
+<span class="k">class</span> <span class="nc">BaseHVACAgent</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for HVAC agents.</span>
 
@@ -122,16 +130,26 @@
 <span class="sd">            Dictionary containing the agent parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">parameters</span>
-<div class="viewcode-block" id="BaseHVACAgent.do_nothing_action"><a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseHVACAgent.do_nothing_action">[docs]</a>    <span class="k">def</span> <span class="nf">do_nothing_action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">do_nothing_action_value</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># Add a warning message to inform the user to check if the do nothing action is the &#39;1&#39; action.</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Please check if the do nothing action for HVAC is the &#39;</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">do_nothing_action_value</span><span class="si">}</span><span class="s2">&#39; action.&quot;</span><span class="p">)</span>
+        
+<div class="viewcode-block" id="BaseHVACAgent.do_nothing_action">
+<a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseHVACAgent.do_nothing_action">[docs]</a>
+    <span class="k">def</span> <span class="nf">do_nothing_action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the do nothing action.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
 <span class="sd">            action (int): The action (do nothing) to be taken.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span></div></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_nothing_action_value</span></div>
+</div>
 
-<div class="viewcode-block" id="BaseBatteryAgent"><a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseBatteryAgent">[docs]</a><span class="k">class</span> <span class="nc">BaseBatteryAgent</span><span class="p">:</span>
+
+<div class="viewcode-block" id="BaseBatteryAgent">
+<a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseBatteryAgent">[docs]</a>
+<span class="k">class</span> <span class="nc">BaseBatteryAgent</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Base class for battery agents.</span>
 
@@ -144,14 +162,34 @@
 <span class="sd">            parameters (dict) :  Dictionary containing the agent parameters.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">parameters</span> <span class="o">=</span> <span class="n">parameters</span>
-<div class="viewcode-block" id="BaseBatteryAgent.do_nothing_action"><a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseBatteryAgent.do_nothing_action">[docs]</a>    <span class="k">def</span> <span class="nf">do_nothing_action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="BaseBatteryAgent.do_nothing_action">
+<a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseBatteryAgent.do_nothing_action">[docs]</a>
+    <span class="k">def</span> <span class="nf">do_nothing_action</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Return the do nothing action.</span>
 <span class="sd">        </span>
 <span class="sd">        Returns:</span>
 <span class="sd">            action (int): The action (do nothing) to be taken.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="mi">2</span></div></div>
+        <span class="k">return</span> <span class="mi">2</span></div>
+
+    
+<div class="viewcode-block" id="BaseBatteryAgent.act">
+<a class="viewcode-back" href="../../code/utils.html#utils.base_agents.BaseBatteryAgent.act">[docs]</a>
+    <span class="k">def</span> <span class="nf">act</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return the do nothing action regardless of the input parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            *args: Arbitrary positional arguments.</span>
+<span class="sd">            **kwargs: Arbitrary keyword arguments.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            action (int): The action (do nothing) to be taken.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">do_nothing_action</span><span class="p">()</span></div>
+</div>
+
 </pre></div>
 
            </div>
@@ -161,7 +199,7 @@
   <hr/>
 
   <div role="contentinfo">
-    <p>&#169; Copyright 2023, HPE.</p>
+    <p>&#169; Copyright 2024, HPE.</p>
   </div>
 
   Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a

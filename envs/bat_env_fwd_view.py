@@ -1,5 +1,6 @@
 import numpy as np
 import gymnasium as gym
+from gymnasium import spaces
 
 import envs.battery_model as batt
 from utils import reward_creator
@@ -11,7 +12,7 @@ class BatteryEnvFwd(gym.Env):
         Args:
             env_config (dict): Customizable environment confing.
                 n_fwd_steps(int): Number of forward forecast steps available
-                max_bat_cap(float): Maximun battery capacity in MW
+                max_bat_cap(float): Maximun battery capacity in MWh
                 charging_rate(float): Rate of charge of the battery
                 reward_metod(function): Method used to calculate the reward
         """
@@ -19,16 +20,20 @@ class BatteryEnvFwd(gym.Env):
         n_fwd_steps = env_config['n_fwd_steps']
         max_bat_cap = env_config['max_bat_cap']
         charging_rate = env_config['charging_rate']
-        self.observation_space = gym.spaces.Box(low=np.float32(-5 * np.ones(1 + 1 + 4 + n_fwd_steps)),
-                                                high=np.float32(5 * np.ones(1 + 1 + 4 + n_fwd_steps)))
-        self.max_dc_pw = 7.24
-        self.action_space = gym.spaces.Discrete(3)
+        self.observation_space = spaces.Box(low=np.float32(-1.0 * np.ones(1 + 1 + 4 + n_fwd_steps)),
+                                            high=np.float32(1.0 * np.ones(1 + 1 + 4 + n_fwd_steps)))
+        
+        self.max_dc_pw_MW = env_config['max_dc_pw_MW'] # 7.24  # in MW
+        self.action_space = spaces.Discrete(3)
         self._action_to_direction = {0: 'charge', 1: 'discharge', 2: 'idle'}
-        other_states_max = np.array([self.max_dc_pw, max_bat_cap])
-        other_states_min = np.array([0.1, 0])
+        
+        other_states_max = np.array([self.max_dc_pw_MW, max_bat_cap])
+        other_states_min = np.array([0.0, 0])
+        
         self.observation_max = other_states_max
         self.observation_min = other_states_min
         self.delta = self.observation_max - self.observation_min
+        
         self.battery = batt.Battery2(capacity=max_bat_cap, current_load=0 * max_bat_cap)
         self.n_fwd_steps = n_fwd_steps
         self.charging_rate = charging_rate
@@ -58,8 +63,12 @@ class BatteryEnvFwd(gym.Env):
             temp_state (List[float]): Current state of the environmment
             info (dict): A dictionary that containing additional information about the environment state
         """
+        self.battery.reset() # Reset the battery with a random current_load between 0 and 25% max capacity
+        self.energy_added_removed = []
+
+        self.dcload = self.dcload_min
         self.raw_obs = self._hist_data_collector()
-        self.dcload = 0
+        
         self.temp_state = self._process_obs(self.raw_obs)
         return self.temp_state, {
             'action': -1,
@@ -126,7 +135,7 @@ class BatteryEnvFwd(gym.Env):
             normalized_observations (List[float])
         """
         scaled_value = (state - self.observation_min) / self.delta
-        return scaled_value
+        return np.float32(scaled_value)
 
     def _process_action(self, action_id):
         """Maps agent actions to actoniable action for the model
@@ -183,7 +192,7 @@ class BatteryEnvFwd(gym.Env):
             self.var_to_dc = battery.charge(battery.capacity, self.charging_rate_modifier(battery) * 15 / 60)
         elif battery_action == 'discharge':
             discharge_energy = battery.discharge(battery.capacity, self.discharging_rate_modifier(battery) * 15 / 60,
-                                                 self.dcload * 0.25)
+                                                 self.dcload / 4)
             self.var_to_dc = -discharge_energy
         else:
             discharge_energy = 0
@@ -205,11 +214,14 @@ class BatteryEnvFwd(gym.Env):
         """
         if a_t == 'charge':
             self.total_energy_with_battery = dc_load * 1e3 * 0.25 + self.battery.charging_load * 1e3
+            self.energy_added_removed.append(self.battery.charging_load * 1e3)
             self.battery.charging_load = 0  # *Added*
+
             CO2_footprint = (self.total_energy_with_battery) * ci
         elif a_t == 'discharge':
             assert dc_load * 1e3 * 0.25 >= discharge_energy * 1e3, "Battery discharge rate should not be higher than the datacenter energy consumption rate"
             self.total_energy_with_battery = dc_load * 1e3 * 0.25 - discharge_energy * 1e3
+            self.energy_added_removed.append(-1.0*discharge_energy * 1e3)
             CO2_footprint = max(self.total_energy_with_battery, 0) * ci  # (KWh) * gCO2/KWh
         else:
             self.total_energy_with_battery = dc_load * 1e3 * 0.25
@@ -217,8 +229,11 @@ class BatteryEnvFwd(gym.Env):
 
         return CO2_footprint
 
+    def sigmoid(self, x):
+        return 1 / (1 + np.exp(-x))
+    
     def charging_rate_modifier(self, battery):
-        """Calculates the battery state depeding charging rate
+        """Calculates the battery state depending on the charging rate
 
         Args:
             battery (batt.Battery2): Battery model
@@ -226,17 +241,17 @@ class BatteryEnvFwd(gym.Env):
         Returns:
             charging_rate (float): Battery charging rate
         """
-        # https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range
         curr_load = battery.current_load
         bat_max, bat_min = battery.capacity, 0
-        sigmoid_max, sigmoid_min = 4, -4
-        scaled_curr_load = (curr_load - bat_min) * (sigmoid_max - sigmoid_min) / (bat_max - bat_min) + sigmoid_min
-        charging_rate = 0.3
+        scaled_curr_load = (curr_load - bat_min) / (bat_max - bat_min)  # Scale current load to [0, 1]
 
-        return charging_rate
+        # Use a sigmoid function to model the charging rate
+        charging_rate = 0.5*(1 - self.sigmoid(10* (scaled_curr_load - 0.5)))  # Shift and scale sigmoid to model charging rate
+
+        return np.round(charging_rate, 4)
 
     def discharging_rate_modifier(self, battery):
-        """Calculates the battery state depeding discharging rate
+        """Calculates the battery state depending on the discharging rate
 
         Args:
             battery (batt.Battery2): Battery model
@@ -244,13 +259,12 @@ class BatteryEnvFwd(gym.Env):
         Returns:
             discharging_rate (float): Battery discharging rate
         """
-        # https://stats.stackexchange.com/questions/281162/scale-a-number-between-a-range
         curr_load = battery.current_load
         bat_max, bat_min = battery.capacity, 0
-        sigmoid_max, sigmoid_min = 4, -4
-        scaled_curr_load = (curr_load - bat_min) * (sigmoid_max - sigmoid_min) / (bat_max - bat_min) + sigmoid_min
-        discharging_rate = 0.3
+        scaled_curr_load = (curr_load - bat_min) / (bat_max - bat_min)  # Scale current load to [0, 1]
 
-        return discharging_rate
-        
+        # Use a sigmoid function to model the discharging rate
+        discharging_rate = 4*self.sigmoid(10 * (scaled_curr_load - 0.25))  # Shift and scale sigmoid to model discharging rate
+
+        return max(0.5, discharging_rate)
         

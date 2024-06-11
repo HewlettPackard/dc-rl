@@ -13,6 +13,10 @@ class BaseLoadShiftingAgent:
             parameters (dict) :  Dictionary containing the agent parameters.
         """
         self.parameters = parameters
+        self.do_nothing_action_value = 1
+        # Add a warning message to inform the user to check if the do nothing action is the '1' action.
+        print(f"Warning: Please check if the do nothing action for Load Shifting Agent is the '{self.do_nothing_action_value}' action.")
+        
     def do_nothing_action(self):
         """
         Return the do nothing action.
@@ -20,7 +24,7 @@ class BaseLoadShiftingAgent:
         Returns:
             action (int): The action (do nothing) to be taken.
         """
-        return 1
+        return self.do_nothing_action_value
     
 class BaseHVACAgent:
     """
@@ -40,6 +44,10 @@ class BaseHVACAgent:
             Dictionary containing the agent parameters.
         """
         self.parameters = parameters
+        self.do_nothing_action_value = np.int64(1)
+        # Add a warning message to inform the user to check if the do nothing action is the '1' action.
+        print(f"Warning: Please check if the do nothing action for HVAC is the '{self.do_nothing_action_value}' action.")
+        
     def do_nothing_action(self):
         """
         Return the do nothing action.
@@ -47,7 +55,7 @@ class BaseHVACAgent:
         Returns:
             action (int): The action (do nothing) to be taken.
         """
-        return np.int64(4)
+        return self.do_nothing_action_value
 
 class BaseBatteryAgent:
     """
@@ -62,6 +70,10 @@ class BaseBatteryAgent:
             parameters (dict) :  Dictionary containing the agent parameters.
         """
         self.parameters = parameters
+        self.do_nothing_action_value = 2
+        # Add a warning message to inform the user to check if the do nothing action is the '1' action.
+        print(f"Warning: Please check if the do nothing action for Battery is the '{self.do_nothing_action_value}' action.")
+        
     def do_nothing_action(self):
         """
         Return the do nothing action.
@@ -69,4 +81,17 @@ class BaseBatteryAgent:
         Returns:
             action (int): The action (do nothing) to be taken.
         """
-        return 2
+        return self.do_nothing_action_value
+    
+    def act(self, *args, **kwargs):
+        """
+        Return the do nothing action regardless of the input parameters.
+
+        Args:
+            *args: Arbitrary positional arguments.
+            **kwargs: Arbitrary keyword arguments.
+
+        Returns:
+            action (int): The action (do nothing) to be taken.
+        """
+        return self.do_nothing_action()

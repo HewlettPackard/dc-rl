@@ -1,0 +1,9 @@
+sphinx==7.3.7
+sphinxcontrib-bibtex==2.6.2
+sphinxemoji==0.3.1
+sphinx-copybutton==0.5.2
+sphinx-multitoc-numbering==0.1.3
+sphinxcontrib-globalsubs==0.1.1
+sphinxcontrib-jquery==4.1
+#sphinx-rtd-theme==2.0.0
+furo==2024.5.6

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>utils.dc_config_reader &mdash; Sustain-DC 0.0.1 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=80d5e7a1" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=19f00094" />
+      <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script src="../../_static/jquery.js?v=5d32c60e"></script>
+        <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="../../_static/documentation_options.js?v=d45e8c67"></script>
+        <script src="../../_static/doctools.js?v=9a2dae69"></script>
+        <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+        <script src="../../_static/copybutton.js?v=f281be69"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            Sustain-DC
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../usage/index.html">Usage</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../overview/index.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../code/index.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribution_guidelines.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">Sustain-DC</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">utils.dc_config_reader</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for utils.dc_config_reader</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This file is used to read the data center configuration from  user inputs provided inside dc_config.json. It also performs some auxiliary steps to calculate the server power specifications based on the given parameters.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">concurrent.futures</span> <span class="kn">import</span> <span class="n">ThreadPoolExecutor</span><span class="p">,</span> <span class="n">as_completed</span>
+
+<div class="viewcode-block" id="DC_Config">
+<a class="viewcode-back" href="../../code/utils.html#utils.dc_config_reader.DC_Config">[docs]</a>
+<span class="k">class</span> <span class="nc">DC_Config</span><span class="p">:</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dc_config_file</span><span class="o">=</span><span class="s1">&#39;dc_config.json&#39;</span><span class="p">,</span> <span class="n">datacenter_capacity_mw</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initializes a new instance of the DC_Config class, loading configuration</span>
+<span class="sd">        data from the specified JSON configuration file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            dc_config_file (str): The path to the data center configuration JSON file.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Determine the full path to the configuration file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)),</span> <span class="n">dc_config_file</span><span class="p">)</span>
+        
+        <span class="c1"># Define the maximum compute power capacity of the datacenter on MW</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">datacenter_capacity_mw</span> <span class="o">=</span> <span class="n">datacenter_capacity_mw</span>
+        
+        <span class="c1"># Load the JSON data from the configuration file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_load_config</span><span class="p">()</span>
+
+        <span class="c1"># Set up configuration parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_config</span><span class="p">()</span>
+        
+    <span class="k">def</span> <span class="nf">_load_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Loads the data center configuration from the specified JSON file.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            dict: A dictionary containing the loaded configuration data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file</span><span class="p">)</span>
+    
+    <span class="k">def</span> <span class="nf">_setup_config</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Sets up various configuration parameters based on the loaded JSON data.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">##################################################################</span>
+        <span class="c1">#################### GEOMETRY DEPENDENT PARAMETERS ###############</span>
+        <span class="c1">##################################################################</span>
+        <span class="n">json_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_data</span>
+        <span class="c1"># Data Center Geometric configuration</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NUM_ROWS</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;data_center_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;NUM_ROWS&#39;</span><span class="p">]</span>  <span class="c1"># number of rows in which data centers are arranged</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NUM_RACKS_PER_ROW</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;data_center_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;NUM_RACKS_PER_ROW&#39;</span><span class="p">]</span>  <span class="c1"># number of racks/ITcabinets in each row</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">NUM_RACKS</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">NUM_ROWS</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">NUM_RACKS_PER_ROW</span>  <span class="c1"># calculate total number of racks/ITcabinets in the data center model</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">TOTAM_MAX_PWR</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">datacenter_capacity_mw</span> <span class="o">*</span> <span class="mf">1e6</span>  <span class="c1"># specify maximum allowed power consumption (W) for the entire data center</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">MAX_W_PER_RACK</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TOTAM_MAX_PWR</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">NUM_RACKS</span><span class="p">)</span>  <span class="c1"># calculate maximum allowable power consumption for each rack/ITcabinet</span>
+
+
+        <span class="c1"># CFD may be used to precompute the &quot;supply/return approach temperature&quot; for each rack under given</span>
+        <span class="c1"># geometry, containment, CRAC Air flow rate, Load</span>
+        
+        <span class="c1"># Supply approach temperature: It is the delta T i.e. the temperature difference between </span>
+        <span class="c1"># CRAC_setpoint and the actual inlet temperature to the rack .Its value depends on the geometry</span>
+        <span class="c1"># of the data center rack arrangements and can be pre-computed from CFD analysis. The length of</span>
+        <span class="c1"># the list should be the same as NUM_RACKS; Default values are populated from paper [3] assuming:</span>
+        <span class="c1"># Scenario # 19 from Table 5</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RACK_SUPPLY_APPROACH_TEMP_LIST</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;data_center_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;RACK_SUPPLY_APPROACH_TEMP_LIST&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Return approach temperature: It is the delta T i.e. the temperature difference between </span>
+        <span class="c1"># CRAC return temperature and the rack Outlet temperature .Its value also depends on the geometry</span>
+        <span class="c1"># of the data center rack arrangements and can be pre-computed from CFD analysis. The length of</span>
+        <span class="c1"># the list should be the same as NUM_RACKS; Default values are populated from paper [3] assuming:</span>
+        <span class="c1"># Scenario # 19 from Table 5</span>
+        <span class="c1"># we add some variation to the default values to highlight change in geometry</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RACK_RETURN_APPROACH_TEMP_LIST</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;data_center_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;RACK_RETURN_APPROACH_TEMP_LIST&#39;</span><span class="p">]</span>
+
+        <span class="c1"># how many servers are assigned in each rack. The actual number of servers per rack may be limited while</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CPUS_PER_RACK</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;data_center_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CPUS_PER_RACK&#39;</span><span class="p">]</span>  
+
+        <span class="c1">##################################################################</span>
+        <span class="c1">#################### SERVER CONFIGURATION ########################</span>
+        <span class="c1">##################################################################</span>
+
+        <span class="c1"># Specify the CPU Config for each cpu/server in each rack </span>
+        <span class="c1"># The full load power and the idle power may be populated using spec sheets from common servers in use</span>
+        <span class="c1"># This value may be ignored internally if total rack load exceeds MAX_W_PER_RACK</span>
+
+
+        <span class="c1"># CPU Power Parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_SERVER_POWER_CHARACTERISTICS</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;server_characteristics&#39;</span><span class="p">][</span><span class="s1">&#39;DEFAULT_SERVER_POWER_CHARACTERISTICS&#39;</span><span class="p">]</span>
+
+        <span class="c1"># This list should be of length NUM_RACKS; Here DEFAULT_SERVER_POWER_CHARACTERISTICS is of same length as NUM_RACKS</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_SERVER_POWER_CHARACTERISTICS</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">NUM_RACKS</span><span class="p">,</span> <span class="s2">&quot;DEFAULT_SERVER_POWER_CHARACTERISTICS should be of length as NUM_RACKS&quot;</span>
+        <span class="c1"># self.RACK_CPU_CONFIG = [[{&#39;full_load_pwr&#39; : j[0],</span>
+                            <span class="c1"># &#39;idle_pwr&#39;: j[-1]} for _ in range(int(self.CPUS_PER_RACK))] for j in self.DEFAULT_SERVER_POWER_CHARACTERISTICS]</span>
+
+        <span class="c1"># Parallelize the construction of RACK_CPU_CONFIG</span>
+        <span class="k">def</span> <span class="nf">construct_cpu_config</span><span class="p">(</span><span class="n">server_power_characteristics</span><span class="p">):</span>
+<span class="w">            </span><span class="sd">&quot;&quot;&quot;Function to construct CPU configuration for a single server.&quot;&quot;&quot;</span>
+            <span class="k">return</span> <span class="p">[{</span><span class="s1">&#39;full_load_pwr&#39;</span><span class="p">:</span> <span class="n">j</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;idle_pwr&#39;</span><span class="p">:</span> <span class="n">j</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]}</span> <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CPUS_PER_RACK</span><span class="p">))</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">server_power_characteristics</span><span class="p">]</span>
+        
+        <span class="c1"># Use ThreadPoolExecutor to parallelize the operation</span>
+        <span class="k">with</span> <span class="n">ThreadPoolExecutor</span><span class="p">()</span> <span class="k">as</span> <span class="n">executor</span><span class="p">:</span>
+            <span class="c1"># Submit tasks to the executor</span>
+            <span class="n">futures</span> <span class="o">=</span> <span class="p">[</span><span class="n">executor</span><span class="o">.</span><span class="n">submit</span><span class="p">(</span><span class="n">construct_cpu_config</span><span class="p">,</span> <span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">DEFAULT_SERVER_POWER_CHARACTERISTICS</span><span class="p">]</span>
+            
+            <span class="c1"># Wait for the futures to complete and collect the results</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">RACK_CPU_CONFIG</span> <span class="o">=</span> <span class="p">[</span><span class="n">future</span><span class="o">.</span><span class="n">result</span><span class="p">()</span> <span class="k">for</span> <span class="n">future</span> <span class="ow">in</span> <span class="n">as_completed</span><span class="p">(</span><span class="n">futures</span><span class="p">)]</span>
+
+        <span class="c1"># A default value of HP_PROLIANT server for standalone testing</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">HP_PROLIANT</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s2">&quot;server_characteristics&quot;</span><span class="p">][</span><span class="s1">&#39;HP_PROLIANT&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Serve/cpu parameters; Obtained from [3]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CPU_POWER_RATIO_LB</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;server_characteristics&#39;</span><span class="p">][</span><span class="s1">&#39;CPU_POWER_RATIO_LB&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CPU_POWER_RATIO_UB</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;server_characteristics&#39;</span><span class="p">][</span><span class="s1">&#39;CPU_POWER_RATIO_UB&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">IT_FAN_AIRFLOW_RATIO_LB</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;server_characteristics&#39;</span><span class="p">][</span><span class="s1">&#39;IT_FAN_AIRFLOW_RATIO_LB&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">IT_FAN_AIRFLOW_RATIO_UB</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;server_characteristics&#39;</span><span class="p">][</span><span class="s1">&#39;IT_FAN_AIRFLOW_RATIO_UB&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">IT_FAN_FULL_LOAD_V</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;server_characteristics&#39;</span><span class="p">][</span><span class="s1">&#39;IT_FAN_FULL_LOAD_V&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ITFAN_REF_V_RATIO</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">ITFAN_REF_P</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;server_characteristics&#39;</span><span class="p">][</span><span class="s1">&#39;ITFAN_REF_V_RATIO&#39;</span><span class="p">],</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;server_characteristics&#39;</span><span class="p">][</span><span class="s1">&#39;ITFAN_REF_P&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">INLET_TEMP_RANGE</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;server_characteristics&#39;</span><span class="p">][</span><span class="s1">&#39;INLET_TEMP_RANGE&#39;</span><span class="p">]</span>
+
+        <span class="c1">##################################################################</span>
+        <span class="c1">#################### HVAC CONFIGURATION ##########################</span>
+        <span class="c1">##################################################################</span>
+
+        <span class="c1"># Air parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">C_AIR</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;C_AIR&#39;</span><span class="p">]</span>  <span class="c1"># J/kg.K</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">RHO_AIR</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;RHO_AIR&#39;</span><span class="p">]</span>  <span class="c1"># kg/m3</span>
+
+        <span class="c1"># CRAC Unit paramters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CRAC_SUPPLY_AIR_FLOW_RATE_pu</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CRAC_SUPPLY_AIR_FLOW_RATE_pu&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CRAC_REFRENCE_AIR_FLOW_RATE_pu</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CRAC_REFRENCE_AIR_FLOW_RATE_pu&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CRAC_FAN_REF_P</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CRAC_FAN_REF_P&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Chiller Stats</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CHILLER_COP</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CHILLER_COP_BASE&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CW_PRESSURE_DROP</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CW_PRESSURE_DROP&#39;</span><span class="p">]</span> <span class="c1">#Pa </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CW_WATER_FLOW_RATE</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CW_WATER_FLOW_RATE&#39;</span><span class="p">]</span> <span class="c1">#m3/s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CW_PUMP_EFFICIENCY</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CW_PUMP_EFFICIENCY&#39;</span><span class="p">]</span> <span class="c1">#%</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CHILLER_COP_K</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CHILLER_COP_K&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CHILLER_COP_T_NOMINAL</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CHILLER_COP_T_NOMINAL&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Cooling Tower parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CT_FAN_REF_P</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CT_FAN_REF_P&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CT_REFRENCE_AIR_FLOW_RATE</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CT_REFRENCE_AIR_FLOW_RATE&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CT_PRESSURE_DROP</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CT_PRESSURE_DROP&#39;</span><span class="p">]</span> <span class="c1">#Pa </span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CT_WATER_FLOW_RATE</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CT_WATER_FLOW_RATE&#39;</span><span class="p">]</span><span class="c1">#m3/s</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">CT_PUMP_EFFICIENCY</span> <span class="o">=</span> <span class="n">json_obj</span><span class="p">[</span><span class="s1">&#39;hvac_configuration&#39;</span><span class="p">][</span><span class="s1">&#39;CT_PUMP_EFFICIENCY&#39;</span><span class="p">]</span> <span class="c1">#%</span></div>
+
+
+
+<span class="c1">#References:</span>
+<span class="c1">#[1]: Postema, Björn Frits. &quot;Energy-efficient data centres: model-based analysis of power-performance trade-offs.&quot; (2018).</span>
+<span class="c1">#[2]: Raghunathan, S., &amp; Vk, M. (2014). Power management using dynamic power state transitions and dynamic voltage frequency scaling controls in virtualized server clusters. Turkish Journal of Electrical Engineering and Computer Sciences, 24(4). doi: 10.3906/elk-1403-264</span>
+<span class="c1">#[3]: Sun, Kaiyu, et al. &quot;Prototype energy models for data centers.&quot; Energy and Buildings 231 (2021): 110603.</span>
+<span class="c1">#[4]: Breen, Thomas J., et al. &quot;From chip to cooling tower data center modeling: Part I influence of server inlet temperature and temperature rise across cabinet.&quot; 2010 12th IEEE Intersociety Conference on Thermal and Thermomechanical Phenomena in Electronic Systems. IEEE, 2010.</span>
+<span class="c1">#[5]: https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water.</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2024, HPE.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

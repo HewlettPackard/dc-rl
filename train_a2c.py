@@ -7,7 +7,7 @@ import ray
 from ray.rllib.algorithms.a2c import A2CConfig
 
 from dcrl_env import DCRL
-from dcrl_eplus_env import DCRLeplus
+# from dcrl_eplus_env import DCRLeplus
 from train import train
 from utils.rllib_callbacks import CustomCallbacks
 
@@ -20,7 +20,7 @@ NUM_WORKERS = 24
 CONFIG = (
         A2CConfig()
         .environment(
-            env=DCRL if not os.getenv('EPLUS') else DCRLeplus,
+            env=DCRL,
             env_config={
                 # Agents active
                 'agents': ['agent_ls', 'agent_dc', 'agent_bat'],
@@ -38,7 +38,7 @@ CONFIG = (
                 'individual_reward_weight': 0.8,
                 
                 # Flexible load ratio
-                'flexible_load': 0.1,
+                'flexible_load': 0.4,
                 
                 # Specify reward methods
                 'ls_reward': 'default_ls_reward',
@@ -50,10 +50,10 @@ CONFIG = (
         .rollouts(num_rollout_workers=NUM_WORKERS)
         .training(
             use_gae=True,
-            gamma=0.99, 
+            gamma=0.995, 
             lr=1e-4,
             train_batch_size=32,
-            model={'fcnet_hiddens': [128, 64, 16], 'fcnet_activation': 'relu'}, 
+            model={'fcnet_hiddens': [16, 8]}, 
             lr_schedule=[[0, 1e-3], [1000000, 1e-5]],
         )
         .callbacks(CustomCallbacks)

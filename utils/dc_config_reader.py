@@ -1,109 +1,148 @@
 """
 This file is used to read the data center configuration from  user inputs provided inside dc_config.json. It also performs some auxiliary steps to calculate the server power specifications based on the given parameters.
 """
-
 import json
-
 import os
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-file_path = os.path.abspath(__file__)
-PATH = os.path.split(os.path.dirname(file_path))[0]
+class DC_Config:
+    def __init__(self, dc_config_file='dc_config.json', datacenter_capacity_mw=1):
+        """
+        Initializes a new instance of the DC_Config class, loading configuration
+        data from the specified JSON configuration file.
 
-##################################################################
-#################### READ DATA CENTER CONFIGURATIONS #############
-##################################################################
-with open(PATH + '/utils/dc_config.json', 'r') as myfile:
-    data=myfile.read()
-json_obj = json.loads(data)
+        Args:
+            dc_config_file (str): The path to the data center configuration JSON file.
+        """
+        # Determine the full path to the configuration file
+        self.config_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), dc_config_file)
+        
+        # Define the maximum compute power capacity of the datacenter on MW
+        self.datacenter_capacity_mw = datacenter_capacity_mw
+        
+        # Load the JSON data from the configuration file
+        self.config_data = self._load_config()
 
-##################################################################
-#################### GEOMETRY DEPENDENT PARAMETERS ###############
-##################################################################
+        # Set up configuration parameters
+        self._setup_config()
+        
+    def _load_config(self):
+        """
+        Loads the data center configuration from the specified JSON file.
 
-# Data Center Geometric configuration
-NUM_ROWS = json_obj['data_center_configuration']['NUM_ROWS']  # number of rows in which data centers are arranged
-NUM_RACKS_PER_ROW = json_obj['data_center_configuration']['NUM_RACKS_PER_ROW']  # number of racks/ITcabinets in each row
-NUM_RACKS = NUM_ROWS * NUM_RACKS_PER_ROW  # calculate total number of racks/ITcabinets in the data center model
+        Returns:
+            dict: A dictionary containing the loaded configuration data.
+        """
+        with open(self.config_path, 'r') as file:
+            return json.load(file)
+    
+    def _setup_config(self):
+        """
+        Sets up various configuration parameters based on the loaded JSON data.
+        """
+        ##################################################################
+        #################### GEOMETRY DEPENDENT PARAMETERS ###############
+        ##################################################################
+        json_obj = self.config_data
+        # Data Center Geometric configuration
+        self.NUM_ROWS = json_obj['data_center_configuration']['NUM_ROWS']  # number of rows in which data centers are arranged
+        self.NUM_RACKS_PER_ROW = json_obj['data_center_configuration']['NUM_RACKS_PER_ROW']  # number of racks/ITcabinets in each row
+        self.NUM_RACKS = self.NUM_ROWS * self.NUM_RACKS_PER_ROW  # calculate total number of racks/ITcabinets in the data center model
 
-TOTAM_MAX_PWR = 2400 * 1e3  # specify maximum allowed power consumption for the data center
-MAX_W_PER_RACK = int(TOTAM_MAX_PWR/NUM_RACKS)  # calculate maximum allowable power consumption for each rack/ITcabinet
-
-
-# CFD may be used to precompute the "supply/return approach temperature" for each rack under given
-# geometry, containment, CRAC Air flow rate, Load
- 
-# Supply approach temperature: It is the delta T i.e. the temperature difference between 
-# CRAC_setpoint and the actual inlet temperature to the rack .Its value depends on the geometry
-# of the data center rack arrangements and can be pre-computed from CFD analysis. The length of
-# the list should be the same as NUM_RACKS; Default values are populated from paper [3] assuming:
-# Scenario # 19 from Table 5
-RACK_SUPPLY_APPROACH_TEMP_LIST = json_obj['data_center_configuration']['RACK_SUPPLY_APPROACH_TEMP_LIST']
-
-# Return approach temperature: It is the delta T i.e. the temperature difference between 
-# CRAC return temperature and the rack Outlet temperature .Its value also depends on the geometry
-# of the data center rack arrangements and can be pre-computed from CFD analysis. The length of
-# the list should be the same as NUM_RACKS; Default values are populated from paper [3] assuming:
-# Scenario # 19 from Table 5
-# we add some variation to the default values to highlight change in geometry
-RACK_RETURN_APPROACH_TEMP_LIST = json_obj['data_center_configuration']['RACK_RETURN_APPROACH_TEMP_LIST']
-
-# how many servers are assigned in each rack. The actual number of servers per rack may be limited while
-CPUS_PER_RACK = json_obj['data_center_configuration']['CPUS_PER_RACK']  
-
-##################################################################
-#################### SERVER CONFIGURATION ########################
-##################################################################
-
-# Specify the CPU Config for each cpu/server in each rack 
-# The full load power and the idle power may be populated using spec sheets from common servers in use
-# This value may be ignored internally if total rack load exceeds MAX_W_PER_RACK
+        self.TOTAM_MAX_PWR = self.datacenter_capacity_mw * 1e6  # specify maximum allowed power consumption (W) for the entire data center
+        self.MAX_W_PER_RACK = int(self.TOTAM_MAX_PWR/self.NUM_RACKS)  # calculate maximum allowable power consumption for each rack/ITcabinet
 
 
-# CPU Power Parameters
-DEFAULT_SERVER_POWER_CHARACTERISTICS = json_obj['server_characteristics']['DEFAULT_SERVER_POWER_CHARACTERISTICS']
+        # CFD may be used to precompute the "supply/return approach temperature" for each rack under given
+        # geometry, containment, CRAC Air flow rate, Load
+        
+        # Supply approach temperature: It is the delta T i.e. the temperature difference between 
+        # CRAC_setpoint and the actual inlet temperature to the rack .Its value depends on the geometry
+        # of the data center rack arrangements and can be pre-computed from CFD analysis. The length of
+        # the list should be the same as NUM_RACKS; Default values are populated from paper [3] assuming:
+        # Scenario # 19 from Table 5
+        self.RACK_SUPPLY_APPROACH_TEMP_LIST = json_obj['data_center_configuration']['RACK_SUPPLY_APPROACH_TEMP_LIST']
 
-# This list should be of length NUM_RACKS; Here DEFAULT_SERVER_POWER_CHARACTERISTICS is of same length as NUM_RACKS
-assert len(DEFAULT_SERVER_POWER_CHARACTERISTICS) == NUM_RACKS, "DEFAULT_SERVER_POWER_CHARACTERISTICS should be of length as NUM_RACKS"
-RACK_CPU_CONFIG = [[{'full_load_pwr' : j[0],
-                     'idle_pwr': j[-1]} for _ in range(CPUS_PER_RACK)] for j in DEFAULT_SERVER_POWER_CHARACTERISTICS]
+        # Return approach temperature: It is the delta T i.e. the temperature difference between 
+        # CRAC return temperature and the rack Outlet temperature .Its value also depends on the geometry
+        # of the data center rack arrangements and can be pre-computed from CFD analysis. The length of
+        # the list should be the same as NUM_RACKS; Default values are populated from paper [3] assuming:
+        # Scenario # 19 from Table 5
+        # we add some variation to the default values to highlight change in geometry
+        self.RACK_RETURN_APPROACH_TEMP_LIST = json_obj['data_center_configuration']['RACK_RETURN_APPROACH_TEMP_LIST']
 
-# A default value of HP_PROLIANT server for standalone testing
-HP_PROLIANT = json_obj["server_characteristics"]['HP_PROLIANT']
+        # how many servers are assigned in each rack. The actual number of servers per rack may be limited while
+        self.CPUS_PER_RACK = json_obj['data_center_configuration']['CPUS_PER_RACK']  
 
-# Serve/cpu parameters; Obtained from [3]
-CPU_POWER_RATIO_LB = json_obj['server_characteristics']['CPU_POWER_RATIO_LB']
-CPU_POWER_RATIO_UB = json_obj['server_characteristics']['CPU_POWER_RATIO_UB']
-IT_FAN_AIRFLOW_RATIO_LB = json_obj['server_characteristics']['IT_FAN_AIRFLOW_RATIO_LB']
-IT_FAN_AIRFLOW_RATIO_UB = json_obj['server_characteristics']['IT_FAN_AIRFLOW_RATIO_UB']
-IT_FAN_FULL_LOAD_V = json_obj['server_characteristics']['IT_FAN_FULL_LOAD_V']
-ITFAN_REF_V_RATIO, ITFAN_REF_P = json_obj['server_characteristics']['ITFAN_REF_V_RATIO'], json_obj['server_characteristics']['ITFAN_REF_P']
-INLET_TEMP_RANGE = json_obj['server_characteristics']['INLET_TEMP_RANGE']
+        ##################################################################
+        #################### SERVER CONFIGURATION ########################
+        ##################################################################
 
-##################################################################
-#################### HVAC CONFIGURATION ##########################
-##################################################################
+        # Specify the CPU Config for each cpu/server in each rack 
+        # The full load power and the idle power may be populated using spec sheets from common servers in use
+        # This value may be ignored internally if total rack load exceeds MAX_W_PER_RACK
 
-# Air parameters
-C_AIR = json_obj['hvac_configuration']['C_AIR']  # J/kg.K
-RHO_AIR = json_obj['hvac_configuration']['RHO_AIR']  # kg/m3
 
-# CRAC Unit paramters
-CRAC_SUPPLY_AIR_FLOW_RATE_pu = json_obj['hvac_configuration']['CRAC_SUPPLY_AIR_FLOW_RATE_pu']
-CRAC_REFRENCE_AIR_FLOW_RATE_pu = json_obj['hvac_configuration']['CRAC_REFRENCE_AIR_FLOW_RATE_pu']
-CRAC_FAN_REF_P = json_obj['hvac_configuration']['CRAC_FAN_REF_P']
+        # CPU Power Parameters
+        self.DEFAULT_SERVER_POWER_CHARACTERISTICS = json_obj['server_characteristics']['DEFAULT_SERVER_POWER_CHARACTERISTICS']
 
-# Chiller Stats
-CHILLER_COP = json_obj['hvac_configuration']['CHILLER_COP']
-CW_PRESSURE_DROP = json_obj['hvac_configuration']['CW_PRESSURE_DROP'] #Pa 
-CW_WATER_FLOW_RATE = json_obj['hvac_configuration']['CW_WATER_FLOW_RATE'] #m3/s
-CW_PUMP_EFFICIENCY = json_obj['hvac_configuration']['CW_PUMP_EFFICIENCY'] #%
+        # This list should be of length NUM_RACKS; Here DEFAULT_SERVER_POWER_CHARACTERISTICS is of same length as NUM_RACKS
+        assert len(self.DEFAULT_SERVER_POWER_CHARACTERISTICS) == self.NUM_RACKS, "DEFAULT_SERVER_POWER_CHARACTERISTICS should be of length as NUM_RACKS"
+        # self.RACK_CPU_CONFIG = [[{'full_load_pwr' : j[0],
+                            # 'idle_pwr': j[-1]} for _ in range(int(self.CPUS_PER_RACK))] for j in self.DEFAULT_SERVER_POWER_CHARACTERISTICS]
 
-# Cooling Tower parameters
-CT_FAN_REF_P = json_obj['hvac_configuration']['CT_FAN_REF_P']
-CT_REFRENCE_AIR_FLOW_RATE = json_obj['hvac_configuration']['CT_REFRENCE_AIR_FLOW_RATE']
-CT_PRESSURE_DROP = json_obj['hvac_configuration']['CT_PRESSURE_DROP'] #Pa 
-CT_WATER_FLOW_RATE = json_obj['hvac_configuration']['CT_WATER_FLOW_RATE']#m3/s
-CT_PUMP_EFFICIENCY = json_obj['hvac_configuration']['CT_PUMP_EFFICIENCY'] #%
+        # Parallelize the construction of RACK_CPU_CONFIG
+        def construct_cpu_config(server_power_characteristics):
+            """Function to construct CPU configuration for a single server."""
+            return [{'full_load_pwr': j[0], 'idle_pwr': j[-1]} for _ in range(int(self.CPUS_PER_RACK)) for j in server_power_characteristics]
+        
+        # Use ThreadPoolExecutor to parallelize the operation
+        with ThreadPoolExecutor() as executor:
+            # Submit tasks to the executor
+            futures = [executor.submit(construct_cpu_config, [j]) for j in self.DEFAULT_SERVER_POWER_CHARACTERISTICS]
+            
+            # Wait for the futures to complete and collect the results
+            self.RACK_CPU_CONFIG = [future.result() for future in as_completed(futures)]
+
+        # A default value of HP_PROLIANT server for standalone testing
+        self.HP_PROLIANT = json_obj["server_characteristics"]['HP_PROLIANT']
+
+        # Serve/cpu parameters; Obtained from [3]
+        self.CPU_POWER_RATIO_LB = json_obj['server_characteristics']['CPU_POWER_RATIO_LB']
+        self.CPU_POWER_RATIO_UB = json_obj['server_characteristics']['CPU_POWER_RATIO_UB']
+        self.IT_FAN_AIRFLOW_RATIO_LB = json_obj['server_characteristics']['IT_FAN_AIRFLOW_RATIO_LB']
+        self.IT_FAN_AIRFLOW_RATIO_UB = json_obj['server_characteristics']['IT_FAN_AIRFLOW_RATIO_UB']
+        self.IT_FAN_FULL_LOAD_V = json_obj['server_characteristics']['IT_FAN_FULL_LOAD_V']
+        self.ITFAN_REF_V_RATIO, self.ITFAN_REF_P = json_obj['server_characteristics']['ITFAN_REF_V_RATIO'], json_obj['server_characteristics']['ITFAN_REF_P']
+        self.INLET_TEMP_RANGE = json_obj['server_characteristics']['INLET_TEMP_RANGE']
+
+        ##################################################################
+        #################### HVAC CONFIGURATION ##########################
+        ##################################################################
+
+        # Air parameters
+        self.C_AIR = json_obj['hvac_configuration']['C_AIR']  # J/kg.K
+        self.RHO_AIR = json_obj['hvac_configuration']['RHO_AIR']  # kg/m3
+
+        # CRAC Unit paramters
+        self.CRAC_SUPPLY_AIR_FLOW_RATE_pu = json_obj['hvac_configuration']['CRAC_SUPPLY_AIR_FLOW_RATE_pu']
+        self.CRAC_REFRENCE_AIR_FLOW_RATE_pu = json_obj['hvac_configuration']['CRAC_REFRENCE_AIR_FLOW_RATE_pu']
+        self.CRAC_FAN_REF_P = json_obj['hvac_configuration']['CRAC_FAN_REF_P']
+
+        # Chiller Stats
+        self.CHILLER_COP = json_obj['hvac_configuration']['CHILLER_COP_BASE']
+        self.CW_PRESSURE_DROP = json_obj['hvac_configuration']['CW_PRESSURE_DROP'] #Pa 
+        self.CW_WATER_FLOW_RATE = json_obj['hvac_configuration']['CW_WATER_FLOW_RATE'] #m3/s
+        self.CW_PUMP_EFFICIENCY = json_obj['hvac_configuration']['CW_PUMP_EFFICIENCY'] #%
+        self.CHILLER_COP_K = json_obj['hvac_configuration']['CHILLER_COP_K']
+        self.CHILLER_COP_T_NOMINAL = json_obj['hvac_configuration']['CHILLER_COP_T_NOMINAL']
+
+        # Cooling Tower parameters
+        self.CT_FAN_REF_P = json_obj['hvac_configuration']['CT_FAN_REF_P']
+        self.CT_REFRENCE_AIR_FLOW_RATE = json_obj['hvac_configuration']['CT_REFRENCE_AIR_FLOW_RATE']
+        self.CT_PRESSURE_DROP = json_obj['hvac_configuration']['CT_PRESSURE_DROP'] #Pa 
+        self.CT_WATER_FLOW_RATE = json_obj['hvac_configuration']['CT_WATER_FLOW_RATE']#m3/s
+        self.CT_PUMP_EFFICIENCY = json_obj['hvac_configuration']['CT_PUMP_EFFICIENCY'] #%
 
 
 #References:

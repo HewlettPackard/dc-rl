@@ -2,69 +2,44 @@
 Getting Started
 ===============
 
-1. Basic example
-----------------
+1. **Setup Configuration**
 
-Run the DCRL-Green environment to simulate one episode and view the roll-out information using the following command:
+   Customize the :code:`dc_config.json` file to specify your DC environment settings. To learn more about the DC parameters you can customize, check **#TODO: ADD LINK TO DC PARAMS**.
 
-.. code-block:: python
+2. **Environment Configuration**
 
-    python dcrl_env.py 
+   The main environment for wrapping the environments is :code:`dclr_env_harl_partialobs.py`, which reads configurations from the :code:`EnvConfig` class and manages the external variables using managers for weather, carbon intensity, and workload. For instructions how to customize the enviroment configuration, check **#TODO: ADD LINK TO ENV PARAMS**.
 
-2. Train the agents
--------------------
+3. **Run Example:**
 
-Run the following commands to simulate the DC enivronment and optimize the agents with default configurations:
+   Execute a simple example to get started: **#TODO: UPDATE THIS**
 
-2.1 Train using the DCRL environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code-block:: python
 
-    python train_ppo.py 
+   python examples/run_random.py
 
-2.2 Train using the DCRLeplus environment
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-If not done already, launch the docker container by executing the command:
+4. **Run Example:**
 
-.. code-block:: console
+   Execute a simple example to get started:
 
-   docker run -t -i -v $PWD:/sinergym/dc-rl --shm-size=10.24gb agnprz/carbon_sustain:v3
-
-If the docker container is launched successfully, the isolated :code:`sinergym` environment is enabled. Navigate to the to the source directory :code:`dc-rl` to be able to execute DCRL-Green:
-
-.. code-block:: console
-
-   cd dc-rl
-
-.. note::
-   Some useful Docker commands could be found here_
+.. code-block:: python
    
-.. _here: https://docs.docker.com/engine/reference/commandline/cli/
+   python examples/evaluate.py
 
-Next, run the script:
 
-.. code-block:: python
+5. **Running in background mode**
 
-    EPLUS=1 python train_ppo.py
-
-.. note::
-   The :code:`episode_reward_mean` will display nan values for the first few iterations until 1 episode is completed
-
-2.3 Running in background mode
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you want to run the DCRL-Green framework in background mode use the following command:
+If you want to run the |F| framework in background mode use:
 
 .. code-block:: python
 
     nohup python PYTHON_SCRIPT > OUTPUT_FILE.txt  &
 
-where :code:`PYTHON_SCRIPT` is the script you want to run (e.g., :code:`train_ppo.py`) and :code:`OUTPUT_FILE` is the name of the file that will contain the output (e.g. :code:`latest_experiment_output`).
+where :code:`PYTHON_SCRIPT` is the script you want to run (e.g., :code:`run_random.py`) and :code:`OUTPUT_FILE` is the name of the file that will contain the output (e.g. :code:`latest_experiment_output`).
 
-3. Monitor the results
-----------------------
+6. **Monitor the results**
 
 The training logs and the results of each trial are stored in the specified local directory, under a sub-folder called :code:`results` and can be visualized with TensorBoard by specifying the output directory of the results.
 
@@ -77,8 +52,4 @@ Example:
 In this example, :code:`test` is the default name of the experiment.
 
 
-A detailed description of the configurations are provided in the Usage section. The default configurations in DCRL-Green are:
-
-.. csv-table::
-   :file: tables/default_args.csv
-   :header-rows: 1
+A detailed description of the configurations are provided in the :doc:`Usage <usage>` section. **#TODO:UPDATE THIS**

@@ -2,8 +2,10 @@ import os
 from typing import Optional, Tuple, Union
 
 import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
 
+from ray.rllib.utils import check_env
 from ray.rllib.env import EnvContext
 from ray.rllib.env.multi_agent_env import MultiAgentEnv
 from ray.rllib.utils.typing import MultiAgentDict
@@ -31,9 +33,21 @@ class EnvConfig(dict):
         'cintensity_file': 'NYIS_NG_&_avgCI.csv',
         'weather_file': 'USA_NY_New.York-Kennedy.epw',
         'workload_file': 'Alibaba_CPU_Data_Hourly_1.csv',
-
+        
+        # Capacity (MW) of the datacenter
+        'datacenter_capacity_mw': 1,
+        
+        # Timezone shift
+        'timezone_shift': 0,
+        
+        # Days per simulated episode
+        'days_per_episode': 30,
+        
         # Maximum battery capacity
         'max_bat_cap_Mw': 2,
+        
+        # Data center configuration file
+        'dc_config_file': 'dc_config.json',
         
         # weight of the individual reward (1=full individual, 0=full collaborative, default=0.8)
         'individual_reward_weight': 0.8,
@@ -90,10 +104,15 @@ class DCRL(MultiAgentEnv):
         self.workload_file = env_config['workload_file']
         
         self.max_bat_cap_Mw = env_config['max_bat_cap_Mw']
+        self.dc_config_file = env_config['dc_config_file']
         self.indv_reward = env_config['individual_reward_weight']
         self.collab_reward = (1 - self.indv_reward) / 2
         
         self.flexible_load = env_config['flexible_load']
+
+        self.datacenter_capacity_mw = env_config['datacenter_capacity_mw']
+        self.timezone_shift = env_config['timezone_shift']
+        self.days_per_episode = env_config['days_per_episode']
 
         # Assign month according to worker index, if available
         if hasattr(env_config, 'worker_index'):
@@ -116,14 +135,23 @@ class DCRL(MultiAgentEnv):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        self.ls_env = make_ls_env(self.month, test_mode = self.evaluation_mode)
-        self.dc_env = make_dc_pyeplus_env(self.month+1, ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True) 
-        self.bat_env = make_bat_fwd_env(self.month, max_bat_cap_Mw=self.max_bat_cap_Mw)
+        n_vars_energy, n_vars_battery = 4,1        
+        n_vars_ci = 8
+        self.ls_env = make_ls_env(month=self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci, queue_max_len=1000)
+        self.dc_env, _ = make_dc_pyeplus_env(month=self.month+1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file) 
+        self.bat_env = make_bat_fwd_env(month=self.month, max_bat_cap_Mwh=self.dc_env.ranges['max_battery_energy_Mwh'], 
+                                        max_dc_pw_MW=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1]/1e6, 
+                                        dcload_max=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1],
+                                        dcload_min=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][0])
+        
+        self.bat_env.dcload_max = self.dc_env.power_ub_kW / 4 # Assuming 15 minutes timestep. Kwh
+        
+        self.bat_env.dcload_min = self.dc_env.power_lb_kW / 4 # Assuming 15 minutes timestep. Kwh
 
         self._obs_space_in_preferred_format = True
         
-        self.observation_space = gym.spaces.Dict({})
-        self.action_space = gym.spaces.Dict({})
+        self.observation_space = spaces.Dict({})
+        self.action_space = spaces.Dict({})
         self.base_agents = {}
         flexible_load = 0
         
@@ -150,10 +178,10 @@ class DCRL(MultiAgentEnv):
 
         # Create the managers: date/hour/time manager, workload manager, weather manager, and CI manager.
         self.init_day = get_init_day(self.month)
-        self.t_m = Time_Manager(self.init_day)
-        self.workload_m = Workload_Manager(workload_filename=self.workload_file, flexible_workload_ratio=flexible_load, init_day=self.init_day)
-        self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file)
-        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file)
+        self.t_m = Time_Manager(self.init_day, timezone_shift=self.timezone_shift, days_per_episode=self.days_per_episode)
+        self.workload_m = Workload_Manager(init_day=self.init_day, workload_filename=self.workload_file, timezone_shift=self.timezone_shift)
+        self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file, timezone_shift=self.timezone_shift)
+        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=n_vars_ci, timezone_shift=self.timezone_shift)
 
         # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
@@ -182,15 +210,15 @@ class DCRL(MultiAgentEnv):
 
         # Reset the managers
         t_i = self.t_m.reset() # Time manager
-        workload, day_workload = self.workload_m.reset() # Workload manager
-        temp, norm_temp = self.weather_m.reset() # Weather manager
+        workload = self.workload_m.reset() # Workload manager
+        temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.reset() # Weather manager
         ci_i, ci_i_future = self.ci_m.reset() # CI manager. ci_i -> CI in the current timestep.
         
         # Set the external ambient temperature to data center environment
-        self.dc_env.set_ambient_temp(temp)
+        self.dc_env.set_ambient_temp(temp, wet_bulb)
         
         # Update the workload of the load shifting environment
-        self.ls_env.update_workload(day_workload, workload)
+        self.ls_env.update_workload(workload)
         
         # Reset all the environments
         ls_s, self.ls_info = self.ls_env.reset()
@@ -201,14 +229,14 @@ class DCRL(MultiAgentEnv):
         batSoC = bat_s[1]
         
         # dc state -> [time (sine/cosine enconded), original dc observation, current workload, current normalized CI, battery SOC]
-        self.dc_state = np.hstack((t_i, self.dc_state, workload, ci_i_future[0], batSoC))
+        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, workload, ci_i_future[0], batSoC)))
         var_to_LS_energy = get_energy_variables(self.dc_state)
         
-        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, current workload, energy variables from DC, battery SoC]
-        self.ls_state = np.hstack((t_i, ls_s, ci_i_future, workload, var_to_LS_energy, batSoC))
+        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, energy variables from DC, battery SoC]
+        self.ls_state = np.float32(np.hstack((t_i, ls_s, ci_i_future, var_to_LS_energy, batSoC)))
         
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
-        self.bat_state = np.hstack((t_i, bat_s, ci_i_future))
+        self.bat_state = np.float32(np.hstack((t_i, bat_s, ci_i_future)))
 
         states = {}
         infos = {}
@@ -239,14 +267,14 @@ class DCRL(MultiAgentEnv):
             truncated (dict): Dictionary of truncated flags.
             infos (dict): Dictionary of infos.
         """
-        obs, rew, terminated, truncated, info = {}, {}, {}, {}, {}
-        terminated["__all__"] = False
-        truncated["__all__"] = False
+        obs, rew, terminateds, truncateds, info = {}, {}, {}, {}, {}
+        terminateds["__all__"] = False
+        truncateds["__all__"] = False
 
         # Step in the managers
         day, hour, t_i, terminal = self.t_m.step()
-        workload, day_workload = self.workload_m.step()
-        temp, norm_temp = self.weather_m.step()
+        workload = self.workload_m.step()
+        temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.step()
         ci_i, ci_i_future = self.ci_m.step()
 
         # Transform the actions if the algorithm uses continuous action space. Like RLLib with MADDPG.
@@ -264,7 +292,7 @@ class DCRL(MultiAgentEnv):
             action = self.base_agents["agent_ls"].do_nothing_action()
             
         # Now, update the load shifting environment/agent first.
-        self.ls_env.update_workload(day_workload, workload)
+        self.ls_env.update_workload(workload)
         
         # Do a step
         self.ls_state, _, self.ls_terminated, self.ls_truncated, self.ls_info = self.ls_env.step(action)
@@ -278,7 +306,7 @@ class DCRL(MultiAgentEnv):
         # Update the data center environment/agent.
         shifted_wkld = self.ls_info['ls_shifted_workload']
         self.dc_env.set_shifted_wklds(shifted_wkld)
-        self.dc_env.set_ambient_temp(temp)
+        self.dc_env.set_ambient_temp(temp, wet_bulb)
         
         # Do a step in the data center environment
         # By default, the reward is ignored. The reward is calculated after the battery env step with the total energy usage.
@@ -300,52 +328,58 @@ class DCRL(MultiAgentEnv):
         
         # Update the state of the bat state
         batSoC = self.bat_state[1]
-        self.bat_state = np.hstack((t_i, self.bat_state, ci_i_future))
+        self.bat_state = np.float32(np.hstack((t_i, self.bat_state, ci_i_future)))
         
         # self.dc_reward = -1.0 * self.bat_info['bat_total_energy_with_battery_KWh'] / 1e3  # The raw reward of the DC is directly the total energy consumption in MWh.
 
         # Update the shared variables
-        self.dc_state = np.hstack((t_i, self.dc_state, shifted_wkld, ci_i_future[0], batSoC))
+        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, shifted_wkld, ci_i_future[0], batSoC)))
         
         # We need to update the LS state with the DC energy variables and the final battery SoC.
         var_to_LS_energy = get_energy_variables(self.dc_state)
-        self.ls_state = np.hstack((t_i, self.ls_state, ci_i_future, workload, var_to_LS_energy, batSoC))
+        
+        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI, energy variables from DC, battery SoC]
+        self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future, var_to_LS_energy, batSoC)))
         
         # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
         # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
         info_dict = {**self.bat_info, **self.ls_info, **self.dc_info}
-        add_info = {"outside_temp": temp, "day": day, "hour": hour, "day_workload": day_workload, "norm_CI": ci_i_future[0]}
+        add_info = {"outside_temp": temp, "day": day, "hour": hour, "norm_CI": ci_i_future[0]}
         reward_params = {**info_dict, **add_info}
         self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
+        
+        # Respect the terminateds and truncateds check EER_MSG_OLD_GYM_API
+        # from here: https://github.com/ray-project/ray/blob/master/rllib/utils/error.py
         
         # If agent_ls is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_ls" in self.agents:
             obs['agent_ls'] = self.ls_state
             rew["agent_ls"] = self.indv_reward * self.ls_reward + self.collab_reward * self.bat_reward + self.collab_reward * self.dc_reward
-            terminated["agent_ls"] = terminal
+            terminateds["agent_ls"] = False
             info["agent_ls"] = self.ls_info
         
         # If agent_dc is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_dc" in self.agents:
             obs["agent_dc"] = self.dc_state
             rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_reward + self.collab_reward * self.bat_reward
-            terminated["agent_dc"] = terminal
+            terminateds["agent_dc"] = False
             info["agent_dc"] = self.dc_info
             
          # If agent_bat is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_bat" in self.agents:
             obs["agent_bat"] = self.bat_state
             rew["agent_bat"] = self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_reward
-            terminated["agent_bat"] = terminal
+            terminateds["agent_bat"] = False
             info["agent_bat"] = self.bat_info
-
+        
+        info["__common__"] = reward_params
         if terminal:
-            terminated["__all__"] = True
-            truncated["__all__"] = True
+            terminateds["__all__"] = False
+            truncateds["__all__"] = True
             for agent in self.agents:
-                truncated[agent] = True
+                truncateds[agent] = True
                 
-        return obs, rew, terminated, truncated, info
+        return obs, rew, terminateds, truncateds, info
 
     def calculate_reward(self, params):
         """
@@ -365,9 +399,29 @@ class DCRL(MultiAgentEnv):
         bat_reward = self.bat_reward_method(params)
         return ls_reward, dc_reward, bat_reward
 
+    def get_hierarchical_variables(self):
+        return self.datacenter_capacity_mw, self.workload_m.get_current_workload(), self.weather_m.get_current_weather(), self.ci_m.get_current_ci()
+        
+    def set_hierarchical_workload(self, workload):
+        self.workload_m.set_current_workload(workload)
+        
+        
 if __name__ == '__main__':
 
     env = DCRL()
+    env_config = EnvConfig({})
+    try:
+        check_env(env, env_config)
+    except Exception as e:
+        print(
+            "We've added a module for checking environments that "
+            "are used in experiments. Your env may not be set up"
+            "correctly. You can disable env checking for now by setting "
+            "`disable_env_checking` to True in your experiment config "
+            "dictionary. You can run the environment checking module "
+            "standalone by calling ray.rllib.utils.check_env(env)."
+        )
+        raise e
 
     # Set seeds for reproducibility    
     np.random.seed(0)
@@ -387,8 +441,8 @@ if __name__ == '__main__':
             'agent_bat': env.bat_env.action_space.sample()
         }
 
-        _, rewards, terminated, _, _ = env.step(action_dict)
-        done = terminated['__all__']
+        _, rewards, terminated, truncateds, _ = env.step(action_dict)
+        done = truncateds['__all__']
         
         reward_ls += rewards['agent_ls']
         reward_dc += rewards['agent_dc']

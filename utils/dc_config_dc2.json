@@ -1,0 +1,73 @@
+{
+    "data_center_configuration" : 
+    {
+        "NUM_ROWS" : 5,
+        "NUM_RACKS_PER_ROW" : 5,
+        "RACK_SUPPLY_APPROACH_TEMP_LIST" : [
+                                            5.3, 5.3, 5.3, 5.3,
+                                            5.0, 5.0, 5.0, 5.0,
+                                            5.0, 5.0, 5.0, 5.0,
+                                            5.0, 5.0, 5.0, 5.0,
+                                            5.3, 5.3, 5.3, 5.3
+
+                                            ],
+        "RACK_RETURN_APPROACH_TEMP_LIST" :  [
+                                            -3.7, -3.7, -3.7, -3.7,
+                                            -2.5, -2.5, -2.5, -2.5,
+                                            -2.5, -2.5, -2.5, -2.5,
+                                            -2.5, -2.5, -2.5, -2.5,
+                                            -3.7, -3.7, -3.7, -3.7
+                                            ],
+        "CPUS_PER_RACK" : 1e6                                                                                                                                                  
+    },
+    "hvac_configuration" : 
+    {
+        "C_AIR" : 1006,
+        "RHO_AIR" : 1.225,
+        "CRAC_SUPPLY_AIR_FLOW_RATE_pu" : 0.00005663,
+        "CRAC_REFRENCE_AIR_FLOW_RATE_pu" : 0.00009438,
+        "CRAC_FAN_REF_P" : 150,
+        "CHILLER_COP" : 6.0,
+        "CT_FAN_REF_P" : 1000,
+        "CT_REFRENCE_AIR_FLOW_RATE" : 2.8315,
+        "CW_PRESSURE_DROP" : 300000,
+        "CW_WATER_FLOW_RATE" : 0.0011,
+        "CW_PUMP_EFFICIENCY" : 0.87,
+        "CT_PRESSURE_DROP" : 300000,
+        "CT_WATER_FLOW_RATE" : 0.0011,
+        "CT_PUMP_EFFICIENCY" : 0.87
+
+    },
+    "server_characteristics" : 
+    {
+        "CPU_POWER_RATIO_LB" : [0.01, 1.00],
+        "CPU_POWER_RATIO_UB" : [0.03, 1.02],
+        "IT_FAN_AIRFLOW_RATIO_LB" : [0.01, 0.225],
+        "IT_FAN_AIRFLOW_RATIO_UB" : [0.225, 1.0],
+        "IT_FAN_FULL_LOAD_V" : 0.051,
+        "ITFAN_REF_V_RATIO" : 1.0,
+        "ITFAN_REF_P" : 10.0,
+        "INLET_TEMP_RANGE" : [16, 28],
+        "DEFAULT_SERVER_POWER_CHARACTERISTICS":[[170, 20],
+                                                [120, 10],
+                                                [130, 10],
+                                                [130, 10],
+                                                [130, 10],
+                                                [130, 10],
+                                                [130, 10],
+                                                [130, 10],
+                                                [130, 10],
+                                                [130, 10],
+                                                [130, 10],
+                                                [130, 10],
+                                                [130, 10],
+                                                [170, 10],
+                                                [130, 10],
+                                                [130, 10],
+                                                [110, 10],
+                                                [170, 10],
+                                                [170, 10],
+                                                [170, 10]],
+        "HP_PROLIANT" : [110,170]
+    }
+}
