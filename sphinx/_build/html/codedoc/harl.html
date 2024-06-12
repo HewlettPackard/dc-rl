@@ -1,0 +1,647 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" />
+
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+        <title>harl package - SustainDC 0.0.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" /
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">SustainDC 0.0.4 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  
+  <span class="sidebar-brand-text">SustainDC 0.0.4 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../gettingstarted.html">Getting Started</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../overview/index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../overview/environments.html">SustainDC Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../overview/interconnected.html">Inter-connected Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../overview/externaldata.html">External Input Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../overview/algorithms.html">Benchmarking Algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../overview/reward_function.html">Reward Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../usage/index.html">Custom Use</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Custom Use</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../usage/mainconf.html">Main Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/dcconf.html">Data Center Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/customworkload.html">Custom Workload Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/customci.html">Custom Carbon Intensity Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/customweather.html">Custom Weather Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/customreward.html">Custom Reward Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/confalgos.html">Configure Algorithms</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../evaluation/index.html">Evaluation</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Evaluation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../evaluation/dashboard.html">Monitor Results with SustainDC Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../evaluation/tensorboard.html">Monitor Results with TensorBoard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../evaluation/evaluate.html">How to evaluate SustainDC model</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="index.html">Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../contribution_guidelines.html">Contribution Guidelines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/codedoc/harl.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="harl-package">
+<h1>harl package<a class="headerlink" href="#harl-package" title="Link to this heading">¶</a></h1>
+<section id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Link to this heading">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="harl.algorithms.html">harl.algorithms package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="harl.algorithms.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.algorithms.actors.html">harl.algorithms.actors package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.haa2c">harl.algorithms.actors.haa2c module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.had3qn">harl.algorithms.actors.had3qn module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.haddpg">harl.algorithms.actors.haddpg module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.happo">harl.algorithms.actors.happo module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.hasac">harl.algorithms.actors.hasac module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.hatd3">harl.algorithms.actors.hatd3 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.hatrpo">harl.algorithms.actors.hatrpo module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.maddpg">harl.algorithms.actors.maddpg module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.mappo">harl.algorithms.actors.mappo module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.matd3">harl.algorithms.actors.matd3 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.off_policy_base">harl.algorithms.actors.off_policy_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors.on_policy_base">harl.algorithms.actors.on_policy_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html#module-harl.algorithms.actors">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="harl.algorithms.critics.html">harl.algorithms.critics package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.critics.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.critics.html#module-harl.algorithms.critics.continuous_q_critic">harl.algorithms.critics.continuous_q_critic module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.critics.html#module-harl.algorithms.critics.discrete_q_critic">harl.algorithms.critics.discrete_q_critic module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.critics.html#module-harl.algorithms.critics.soft_twin_continuous_q_critic">harl.algorithms.critics.soft_twin_continuous_q_critic module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.critics.html#module-harl.algorithms.critics.twin_continuous_q_critic">harl.algorithms.critics.twin_continuous_q_critic module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.critics.html#module-harl.algorithms.critics.v_critic">harl.algorithms.critics.v_critic module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.critics.html#module-harl.algorithms.critics">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.algorithms.html#module-harl.algorithms">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="harl.common.html">harl.common package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="harl.common.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.common.buffers.html">harl.common.buffers package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.buffers.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.buffers.html#module-harl.common.buffers.off_policy_buffer_base">harl.common.buffers.off_policy_buffer_base module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.buffers.html#module-harl.common.buffers.off_policy_buffer_ep">harl.common.buffers.off_policy_buffer_ep module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.buffers.html#module-harl.common.buffers.off_policy_buffer_fp">harl.common.buffers.off_policy_buffer_fp module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.buffers.html#module-harl.common.buffers.on_policy_actor_buffer">harl.common.buffers.on_policy_actor_buffer module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.buffers.html#module-harl.common.buffers.on_policy_critic_buffer_ep">harl.common.buffers.on_policy_critic_buffer_ep module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.buffers.html#module-harl.common.buffers.on_policy_critic_buffer_fp">harl.common.buffers.on_policy_critic_buffer_fp module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.buffers.html#module-harl.common.buffers">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.common.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="harl.common.html#module-harl.common.base_logger">harl.common.base_logger module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger"><code class="docutils literal notranslate"><span class="pre">BaseLogger</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.close"><code class="docutils literal notranslate"><span class="pre">BaseLogger.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.episode_init"><code class="docutils literal notranslate"><span class="pre">BaseLogger.episode_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.episode_log"><code class="docutils literal notranslate"><span class="pre">BaseLogger.episode_log()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.eval_init"><code class="docutils literal notranslate"><span class="pre">BaseLogger.eval_init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.eval_init_off_policy"><code class="docutils literal notranslate"><span class="pre">BaseLogger.eval_init_off_policy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.eval_log"><code class="docutils literal notranslate"><span class="pre">BaseLogger.eval_log()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.eval_per_step"><code class="docutils literal notranslate"><span class="pre">BaseLogger.eval_per_step()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.eval_thread_done"><code class="docutils literal notranslate"><span class="pre">BaseLogger.eval_thread_done()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.get_task_name"><code class="docutils literal notranslate"><span class="pre">BaseLogger.get_task_name()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.init"><code class="docutils literal notranslate"><span class="pre">BaseLogger.init()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.log_env"><code class="docutils literal notranslate"><span class="pre">BaseLogger.log_env()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.log_train"><code class="docutils literal notranslate"><span class="pre">BaseLogger.log_train()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.base_logger.BaseLogger.per_step"><code class="docutils literal notranslate"><span class="pre">BaseLogger.per_step()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.common.html#module-harl.common.valuenorm">harl.common.valuenorm module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.common.html#harl.common.valuenorm.ValueNorm"><code class="docutils literal notranslate"><span class="pre">ValueNorm</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.valuenorm.ValueNorm.denormalize"><code class="docutils literal notranslate"><span class="pre">ValueNorm.denormalize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.valuenorm.ValueNorm.normalize"><code class="docutils literal notranslate"><span class="pre">ValueNorm.normalize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.valuenorm.ValueNorm.running_mean_var"><code class="docutils literal notranslate"><span class="pre">ValueNorm.running_mean_var()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#harl.common.valuenorm.ValueNorm.update"><code class="docutils literal notranslate"><span class="pre">ValueNorm.update()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.common.html#module-harl.common">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="harl.envs.html">harl.envs package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="harl.envs.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="harl.envs.html#module-harl.envs.env_wrappers">harl.envs.env_wrappers module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.CloudpickleWrapper"><code class="docutils literal notranslate"><span class="pre">CloudpickleWrapper</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareDummyVecEnv"><code class="docutils literal notranslate"><span class="pre">ShareDummyVecEnv</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareDummyVecEnv.close"><code class="docutils literal notranslate"><span class="pre">ShareDummyVecEnv.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareDummyVecEnv.render"><code class="docutils literal notranslate"><span class="pre">ShareDummyVecEnv.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareDummyVecEnv.reset"><code class="docutils literal notranslate"><span class="pre">ShareDummyVecEnv.reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareDummyVecEnv.step_async"><code class="docutils literal notranslate"><span class="pre">ShareDummyVecEnv.step_async()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareDummyVecEnv.step_wait"><code class="docutils literal notranslate"><span class="pre">ShareDummyVecEnv.step_wait()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareSubprocVecEnv"><code class="docutils literal notranslate"><span class="pre">ShareSubprocVecEnv</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareSubprocVecEnv.close"><code class="docutils literal notranslate"><span class="pre">ShareSubprocVecEnv.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareSubprocVecEnv.reset"><code class="docutils literal notranslate"><span class="pre">ShareSubprocVecEnv.reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareSubprocVecEnv.reset_task"><code class="docutils literal notranslate"><span class="pre">ShareSubprocVecEnv.reset_task()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareSubprocVecEnv.step_async"><code class="docutils literal notranslate"><span class="pre">ShareSubprocVecEnv.step_async()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareSubprocVecEnv.step_wait"><code class="docutils literal notranslate"><span class="pre">ShareSubprocVecEnv.step_wait()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.close"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.close_extras"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.close_extras()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.closed"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.closed</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.get_images"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.get_images()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.get_viewer"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.get_viewer()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.metadata"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.metadata</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.render"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.reset"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.reset()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.step"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.step()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.step_async"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.step_async()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.step_wait"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.step_wait()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.unwrapped"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.unwrapped</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.ShareVecEnv.viewer"><code class="docutils literal notranslate"><span class="pre">ShareVecEnv.viewer</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.shareworker"><code class="docutils literal notranslate"><span class="pre">shareworker()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.envs.html#harl.envs.env_wrappers.tile_images"><code class="docutils literal notranslate"><span class="pre">tile_images()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.envs.html#module-harl.envs">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="harl.models.html">harl.models package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="harl.models.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.models.base.html">harl.models.base package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.base.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.base.html#module-harl.models.base.act">harl.models.base.act module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.base.html#module-harl.models.base.cnn">harl.models.base.cnn module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.base.html#module-harl.models.base.distributions">harl.models.base.distributions module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.base.html#module-harl.models.base.flatten">harl.models.base.flatten module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.base.html#module-harl.models.base.mlp">harl.models.base.mlp module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.base.html#module-harl.models.base.plain_cnn">harl.models.base.plain_cnn module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.base.html#module-harl.models.base.plain_mlp">harl.models.base.plain_mlp module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.base.html#module-harl.models.base.rnn">harl.models.base.rnn module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.base.html#module-harl.models.base">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="harl.models.policy_models.html">harl.models.policy_models package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.policy_models.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.policy_models.html#module-harl.models.policy_models.deterministic_policy">harl.models.policy_models.deterministic_policy module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.policy_models.html#module-harl.models.policy_models.squashed_gaussian_policy">harl.models.policy_models.squashed_gaussian_policy module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.policy_models.html#module-harl.models.policy_models.stochastic_mlp_policy">harl.models.policy_models.stochastic_mlp_policy module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.policy_models.html#module-harl.models.policy_models.stochastic_policy">harl.models.policy_models.stochastic_policy module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.policy_models.html#module-harl.models.policy_models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="harl.models.value_function_models.html">harl.models.value_function_models package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.value_function_models.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.value_function_models.html#module-harl.models.value_function_models.continuous_q_net">harl.models.value_function_models.continuous_q_net module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.value_function_models.html#module-harl.models.value_function_models.dueling_q_net">harl.models.value_function_models.dueling_q_net module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.value_function_models.html#module-harl.models.value_function_models.v_net">harl.models.value_function_models.v_net module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.value_function_models.html#module-harl.models.value_function_models">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.models.html#module-harl.models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="harl.runners.html">harl.runners package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="harl.runners.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="harl.runners.html#module-harl.runners.off_policy_base_runner">harl.runners.off_policy_base_runner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.close"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.eval"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner.eval()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.get_actions"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner.get_actions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.insert"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner.insert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.render"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.restore"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner.restore()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.run"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.sample_actions"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner.sample_actions()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.save"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.train"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner.train()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.warmup"><code class="docutils literal notranslate"><span class="pre">OffPolicyBaseRunner.warmup()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.runners.html#module-harl.runners.off_policy_ha_runner">harl.runners.off_policy_ha_runner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_ha_runner.OffPolicyHARunner"><code class="docutils literal notranslate"><span class="pre">OffPolicyHARunner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_ha_runner.OffPolicyHARunner.train"><code class="docutils literal notranslate"><span class="pre">OffPolicyHARunner.train()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.runners.html#module-harl.runners.off_policy_ma_runner">harl.runners.off_policy_ma_runner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_ma_runner.OffPolicyMARunner"><code class="docutils literal notranslate"><span class="pre">OffPolicyMARunner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.off_policy_ma_runner.OffPolicyMARunner.train"><code class="docutils literal notranslate"><span class="pre">OffPolicyMARunner.train()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.runners.html#module-harl.runners.on_policy_base_runner">harl.runners.on_policy_base_runner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.after_update"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.after_update()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.close"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.close()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.collect"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.collect()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.compute"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.compute()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.dump_metrics_to_csv"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.dump_metrics_to_csv()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.eval"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.eval()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.insert"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.insert()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.prep_rollout"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.prep_rollout()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.prep_training"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.prep_training()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.render"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.render()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.restore"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.restore()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.run"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.run()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.save"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.save()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.train"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.train()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_base_runner.OnPolicyBaseRunner.warmup"><code class="docutils literal notranslate"><span class="pre">OnPolicyBaseRunner.warmup()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.runners.html#module-harl.runners.on_policy_ha_runner">harl.runners.on_policy_ha_runner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_ha_runner.OnPolicyHARunner"><code class="docutils literal notranslate"><span class="pre">OnPolicyHARunner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_ha_runner.OnPolicyHARunner.train"><code class="docutils literal notranslate"><span class="pre">OnPolicyHARunner.train()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.runners.html#module-harl.runners.on_policy_ma_runner">harl.runners.on_policy_ma_runner module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_ma_runner.OnPolicyMARunner"><code class="docutils literal notranslate"><span class="pre">OnPolicyMARunner</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#harl.runners.on_policy_ma_runner.OnPolicyMARunner.train"><code class="docutils literal notranslate"><span class="pre">OnPolicyMARunner.train()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.runners.html#module-harl.runners">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="harl.utils.html">harl.utils package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="harl.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="harl.utils.html#module-harl.utils.configs_tools">harl.utils.configs_tools module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.configs_tools.convert_json"><code class="docutils literal notranslate"><span class="pre">convert_json()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.configs_tools.get_defaults_yaml_args"><code class="docutils literal notranslate"><span class="pre">get_defaults_yaml_args()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.configs_tools.get_task_name"><code class="docutils literal notranslate"><span class="pre">get_task_name()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.configs_tools.init_dir"><code class="docutils literal notranslate"><span class="pre">init_dir()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.configs_tools.is_json_serializable"><code class="docutils literal notranslate"><span class="pre">is_json_serializable()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.configs_tools.save_config"><code class="docutils literal notranslate"><span class="pre">save_config()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.configs_tools.update_args"><code class="docutils literal notranslate"><span class="pre">update_args()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.utils.html#module-harl.utils.discrete_util">harl.utils.discrete_util module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.discrete_util.gumbel_softmax"><code class="docutils literal notranslate"><span class="pre">gumbel_softmax()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.discrete_util.gumbel_softmax_sample"><code class="docutils literal notranslate"><span class="pre">gumbel_softmax_sample()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.discrete_util.onehot_from_logits"><code class="docutils literal notranslate"><span class="pre">onehot_from_logits()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.discrete_util.sample_gumbel"><code class="docutils literal notranslate"><span class="pre">sample_gumbel()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.utils.html#module-harl.utils.envs_tools">harl.utils.envs_tools module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.envs_tools.check"><code class="docutils literal notranslate"><span class="pre">check()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.envs_tools.get_num_agents"><code class="docutils literal notranslate"><span class="pre">get_num_agents()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.envs_tools.get_shape_from_act_space"><code class="docutils literal notranslate"><span class="pre">get_shape_from_act_space()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.envs_tools.get_shape_from_obs_space"><code class="docutils literal notranslate"><span class="pre">get_shape_from_obs_space()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.envs_tools.make_eval_env"><code class="docutils literal notranslate"><span class="pre">make_eval_env()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.envs_tools.make_render_env"><code class="docutils literal notranslate"><span class="pre">make_render_env()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.envs_tools.make_train_env"><code class="docutils literal notranslate"><span class="pre">make_train_env()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.envs_tools.set_seed"><code class="docutils literal notranslate"><span class="pre">set_seed()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.utils.html#module-harl.utils.models_tools">harl.utils.models_tools module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.models_tools.get_active_func"><code class="docutils literal notranslate"><span class="pre">get_active_func()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.models_tools.get_clones"><code class="docutils literal notranslate"><span class="pre">get_clones()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.models_tools.get_grad_norm"><code class="docutils literal notranslate"><span class="pre">get_grad_norm()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.models_tools.get_init_method"><code class="docutils literal notranslate"><span class="pre">get_init_method()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.models_tools.huber_loss"><code class="docutils literal notranslate"><span class="pre">huber_loss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.models_tools.init"><code class="docutils literal notranslate"><span class="pre">init()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.models_tools.init_device"><code class="docutils literal notranslate"><span class="pre">init_device()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.models_tools.mse_loss"><code class="docutils literal notranslate"><span class="pre">mse_loss()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.models_tools.update_linear_schedule"><code class="docutils literal notranslate"><span class="pre">update_linear_schedule()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.utils.html#module-harl.utils.trans_tools">harl.utils.trans_tools module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="harl.utils.html#module-harl.utils.trpo_util">harl.utils.trpo_util module</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.trpo_util.conjugate_gradient"><code class="docutils literal notranslate"><span class="pre">conjugate_gradient()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.trpo_util.fisher_vector_product"><code class="docutils literal notranslate"><span class="pre">fisher_vector_product()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.trpo_util.flat_grad"><code class="docutils literal notranslate"><span class="pre">flat_grad()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.trpo_util.flat_hessian"><code class="docutils literal notranslate"><span class="pre">flat_hessian()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.trpo_util.flat_params"><code class="docutils literal notranslate"><span class="pre">flat_params()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.trpo_util.kl_approx"><code class="docutils literal notranslate"><span class="pre">kl_approx()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.trpo_util.kl_divergence"><code class="docutils literal notranslate"><span class="pre">kl_divergence()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html#harl.utils.trpo_util.update_model"><code class="docutils literal notranslate"><span class="pre">update_model()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.utils.html#module-harl.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</section>
+<section id="module-harl">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-harl" title="Link to this heading">¶</a></h2>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, HPE
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">harl package</a><ul>
+<li><a class="reference internal" href="#subpackages">Subpackages</a></li>
+<li><a class="reference internal" href="#module-harl">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=8c5712d9"></script>
+    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    </body>
+</html>

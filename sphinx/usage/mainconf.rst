@@ -1,6 +1,6 @@
-==============
+========================
 Main Configuration File 
-==============
+========================
 
 The main environment for wrapping the environments is :code:`dclr_env_harl_partialobs.py`, which reads configurations from :code:`dc_config.json` and manages the external variables using managers for weather, carbon intensity, and workload.
 

@@ -6,7 +6,7 @@ The customization of the DC is done through the :code:`dc_config.json` file loca
 
 
 Example Configuration
---------------------------------------
+------------------------
 
 .. code-block:: python
 

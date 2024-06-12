@@ -1,124 +1,343 @@
-<!DOCTYPE html>
-<html class="writer-html5" lang="en" >
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>utils.make_envs_pyenv &mdash; DCRL-Green 0.0.1 documentation</title>
-      <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/copybutton.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/panels-main.c949a650a448cc0ae9fd3441c0e17fb0.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/panels-bootstrap.5fd3999ee7762ccc51105388f4a9d115.css" type="text/css" />
-      <link rel="stylesheet" href="../../_static/panels-variables.06eb56fa6e07937060861dad626602ad.css" type="text/css" />
-  <!--[if lt IE 9]>
-    <script src="../../_static/js/html5shiv.min.js"></script>
-  <![endif]-->
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
+
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+        <title>utils.make_envs_pyenv - SustainDC 0.0.4 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=a746c00c" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=387cc868" />
+    <link rel="stylesheet" type="text/css" href="../../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=36a5483c" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
   
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
-        <script src="../../_static/jquery.js"></script>
-        <script src="../../_static/underscore.js"></script>
-        <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/clipboard.min.js"></script>
-        <script src="../../_static/copybutton.js"></script>
-    <script src="../../_static/js/theme.js"></script>
-    <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
-</head>
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
 
-<body class="wy-body-for-nav"> 
-  <div class="wy-grid-for-nav">
-    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
-      <div class="wy-side-scroll">
-        <div class="wy-side-nav-search" >
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-half" viewBox="0 0 24 24">
+    <title>Auto light/dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+      <circle cx="12" cy="12" r="9" />
+      <path d="M13 12h5" />
+      <path d="M13 15h4" />
+      <path d="M13 18h1" />
+      <path d="M13 9h4" />
+      <path d="M13 6h1" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" /
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
 
-          
-          
-          <a href="../../index.html" class="icon icon-home">
-            DCRL-Green
-          </a>
-<div role="search">
-  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
-    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
-    <input type="hidden" name="check_keywords" value="yes" />
-    <input type="hidden" name="area" value="default" />
-  </form>
-</div>
-        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
-              <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../installation/index.html">Installation</a></li>
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">SustainDC 0.0.4 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  
+  <span class="sidebar-brand-text">SustainDC 0.0.4 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../gettingstarted.html">Getting Started</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../usage/index.html">Usage</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../overview/index.html">Overview</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../code/index.html">Code</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../train_evaluate/index.html">Train and Evaluate Statistics</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../overview/index.html">Overview</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of Overview</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../overview/environments.html">SustainDC Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../overview/interconnected.html">Inter-connected Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../overview/externaldata.html">External Input Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../overview/algorithms.html">Benchmarking Algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../overview/reward_function.html">Reward Functions</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../usage/index.html">Custom Use</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Custom Use</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../usage/mainconf.html">Main Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../usage/dcconf.html">Data Center Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../usage/customworkload.html">Custom Workload Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../usage/customci.html">Custom Carbon Intensity Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../usage/customweather.html">Custom Weather Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../usage/customreward.html">Custom Reward Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../usage/confalgos.html">Configure Algorithms</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../evaluation/index.html">Evaluation</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Evaluation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../evaluation/dashboard.html">Monitor Results with SustainDC Dashboard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../evaluation/tensorboard.html">Monitor Results with TensorBoard</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../evaluation/evaluate.html">How to evaluate SustainDC model</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../codedoc/index.html">Code</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribution_guidelines.html">Contribution Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../references.html">References</a></li>
 </ul>
 
-        </div>
-      </div>
-    </nav>
-
-    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../index.html">DCRL-Green</a>
-      </nav>
-
-      <div class="wy-nav-content">
-        <div class="rst-content">
-          <div role="navigation" aria-label="Page navigation">
-  <ul class="wy-breadcrumbs">
-      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
-      <li class="breadcrumb-item active">utils.make_envs_pyenv</li>
-      <li class="wy-breadcrumbs-aside">
-      </li>
-  </ul>
-  <hr/>
 </div>
-          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
-           <div itemprop="articleBody">
-             
-  <h1>Source code for utils.make_envs_pyenv</h1><div class="highlight"><pre>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for utils.make_envs_pyenv</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">import</span> <span class="nn">gymnasium</span> <span class="k">as</span> <span class="nn">gym</span>
+<span class="kn">from</span> <span class="nn">gymnasium</span> <span class="kn">import</span> <span class="n">spaces</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 
 <span class="kn">from</span> <span class="nn">envs.bat_env_fwd_view</span> <span class="kn">import</span> <span class="n">BatteryEnvFwd</span> <span class="k">as</span> <span class="n">battery_env_fwd</span>
 <span class="kn">from</span> <span class="nn">envs.carbon_ls</span> <span class="kn">import</span> <span class="n">CarbonLoadEnv</span>
-<span class="kn">from</span> <span class="nn">envs.dc_gym</span> <span class="kn">import</span> <span class="n">dc_gymenv</span><span class="p">,</span> <span class="n">dc_gymenv_standalone</span>
+<span class="kn">from</span> <span class="nn">envs.dc_gym</span> <span class="kn">import</span> <span class="n">dc_gymenv</span>
 <span class="kn">from</span> <span class="nn">utils.utils_cf</span> <span class="kn">import</span> <span class="n">get_init_day</span>
 
+<span class="kn">import</span> <span class="nn">envs.datacenter</span> <span class="k">as</span> <span class="nn">DataCenter</span>
+<span class="kn">from</span> <span class="nn">utils.dc_config_reader</span> <span class="kn">import</span> <span class="n">DC_Config</span>
 
-<div class="viewcode-block" id="make_ls_env"><a class="viewcode-back" href="../../code/utils.html#utils.make_envs_pyenv.make_ls_env">[docs]</a><span class="k">def</span> <span class="nf">make_ls_env</span><span class="p">(</span><span class="n">month</span><span class="p">,</span>
+<span class="kn">import</span> <span class="nn">itertools</span>
+
+<div class="viewcode-block" id="make_ls_env">
+<a class="viewcode-back" href="../../codedoc/utils.html#utils.make_envs_pyenv.make_ls_env">[docs]</a>
+<span class="k">def</span> <span class="nf">make_ls_env</span><span class="p">(</span><span class="n">month</span><span class="p">,</span>
+                <span class="n">n_vars_ci</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
                 <span class="n">n_vars_energy</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
-                <span class="n">n_vars_battery</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">):</span>
+                <span class="n">n_vars_battery</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                <span class="n">queue_max_len</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">500</span><span class="p">,</span>
+                <span class="n">test_mode</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Method to build the Load shifting environment</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        month (int): Month of the year in which the agent is training.</span>
 <span class="sd">        n_vars_energy (int, optional): Number of variables from the Energy environment. Defaults to 4.</span>
 <span class="sd">        n_vars_battery (int, optional): Number of variables from the Battery environment. Defaults to 1.</span>
+<span class="sd">        queue_max_len (int, optional): The size of the queue where the tasks are stored to be processed latter. Default to 500.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        CarbonLoadEnv: Load Shifting environment</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
-    <span class="k">return</span> <span class="n">CarbonLoadEnv</span><span class="p">(</span><span class="n">n_vars_energy</span><span class="o">=</span><span class="n">n_vars_energy</span><span class="p">,</span>
-                         <span class="n">n_vars_battery</span><span class="o">=</span><span class="n">n_vars_battery</span>
-                         <span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">CarbonLoadEnv</span><span class="p">(</span><span class="n">n_vars_ci</span><span class="o">=</span><span class="n">n_vars_ci</span><span class="p">,</span>
+                         <span class="n">n_vars_energy</span><span class="o">=</span><span class="n">n_vars_energy</span><span class="p">,</span>
+                         <span class="n">n_vars_battery</span><span class="o">=</span><span class="n">n_vars_battery</span><span class="p">,</span>
+                         <span class="n">queue_max_len</span><span class="o">=</span><span class="n">queue_max_len</span><span class="p">,</span>
+                         <span class="n">test_mode</span><span class="o">=</span><span class="n">test_mode</span><span class="p">)</span></div>
 
-<div class="viewcode-block" id="make_bat_fwd_env"><a class="viewcode-back" href="../../code/utils.html#utils.make_envs_pyenv.make_bat_fwd_env">[docs]</a><span class="k">def</span> <span class="nf">make_bat_fwd_env</span><span class="p">(</span><span class="n">month</span><span class="p">,</span>
-                    <span class="n">max_bat_cap_Mw</span> <span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
+    
+    
+
+<div class="viewcode-block" id="make_bat_fwd_env">
+<a class="viewcode-back" href="../../codedoc/utils.html#utils.make_envs_pyenv.make_bat_fwd_env">[docs]</a>
+<span class="k">def</span> <span class="nf">make_bat_fwd_env</span><span class="p">(</span><span class="n">month</span><span class="p">,</span>
+                    <span class="n">max_bat_cap_Mwh</span> <span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
                     <span class="n">charging_rate</span> <span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.5</span><span class="p">,</span>
+                    <span class="n">max_dc_pw_MW</span> <span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">7.23</span><span class="p">,</span>
+                    <span class="n">dcload_max</span> <span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.5</span><span class="p">,</span>
+                    <span class="n">dcload_min</span> <span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span>
+                    <span class="n">n_fwd_steps</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span>
                     <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Method to build the Battery environment.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        month (int): Month of the year in which the agent is training.</span>
-<span class="sd">        max_bat_cap_Mw (float, optional): Max battery capacity. Defaults to 2.0.</span>
+<span class="sd">        max_bat_cap_Mwh (float, optional): Max battery capacity. Defaults to 2.0.</span>
 <span class="sd">        charging_rate (float, optional): Charging rate of the battery. Defaults to 0.5.</span>
 <span class="sd">        reward_method (str, optional): Method used to calculate the rewards. Defaults to &#39;default_bat_reward&#39;.</span>
 
@@ -126,25 +345,28 @@
 <span class="sd">        battery_env_fwd: Batery environment.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">init_day</span> <span class="o">=</span> <span class="n">get_init_day</span><span class="p">(</span><span class="n">month</span><span class="p">)</span>
-    <span class="n">env_config</span><span class="o">=</span> <span class="p">{</span><span class="s1">&#39;n_fwd_steps&#39;</span><span class="p">:</span><span class="mi">4</span><span class="p">,</span>
-                 <span class="s1">&#39;max_bat_cap&#39;</span><span class="p">:</span><span class="n">max_bat_cap_Mw</span><span class="p">,</span>
+    <span class="n">env_config</span><span class="o">=</span> <span class="p">{</span><span class="s1">&#39;n_fwd_steps&#39;</span><span class="p">:</span><span class="n">n_fwd_steps</span><span class="p">,</span>
+                 <span class="s1">&#39;max_dc_pw_MW&#39;</span><span class="p">:</span><span class="n">max_dc_pw_MW</span><span class="p">,</span>
+                 <span class="s1">&#39;max_bat_cap&#39;</span><span class="p">:</span><span class="n">max_bat_cap_Mwh</span><span class="p">,</span>
                  <span class="s1">&#39;charging_rate&#39;</span><span class="p">:</span><span class="n">charging_rate</span><span class="p">,</span>
                  <span class="s1">&#39;start_point&#39;</span><span class="p">:</span><span class="n">init_day</span><span class="p">,</span>
-                 <span class="s1">&#39;dcload_max&#39;</span><span class="p">:</span> <span class="mf">1.81</span><span class="p">,</span> 
-                 <span class="s1">&#39;dcload_min&#39;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">}</span>
+                 <span class="s1">&#39;dcload_max&#39;</span><span class="p">:</span><span class="n">dcload_max</span><span class="p">,</span> 
+                 <span class="s1">&#39;dcload_min&#39;</span><span class="p">:</span><span class="n">dcload_min</span><span class="p">}</span>
     <span class="n">bat_env</span> <span class="o">=</span> <span class="n">battery_env_fwd</span><span class="p">(</span><span class="n">env_config</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">bat_env</span></div>
 
-<div class="viewcode-block" id="make_dc_pyeplus_env"><a class="viewcode-back" href="../../code/utils.html#utils.make_envs_pyenv.make_dc_pyeplus_env">[docs]</a><span class="k">def</span> <span class="nf">make_dc_pyeplus_env</span><span class="p">(</span><span class="n">month</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+
+<div class="viewcode-block" id="make_dc_pyeplus_env">
+<a class="viewcode-back" href="../../codedoc/utils.html#utils.make_envs_pyenv.make_dc_pyeplus_env">[docs]</a>
+<span class="k">def</span> <span class="nf">make_dc_pyeplus_env</span><span class="p">(</span><span class="n">month</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
                         <span class="n">location</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;NYIS&#39;</span><span class="p">,</span>
-                        <span class="n">weather_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;USA_NY_New.York-Kennedy.epw&#39;</span><span class="p">,</span>
-                        <span class="n">workload_filename</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;Alibaba_CPU_Data_Hourly_1.csv&#39;</span><span class="p">,</span>
+                        <span class="n">dc_config_file</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;dc_config_file.json&#39;</span><span class="p">,</span>
+                        <span class="n">datacenter_capacity_mw</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
                         <span class="n">max_bat_cap_Mw</span> <span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
                         <span class="n">add_cpu_usage</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                         <span class="n">add_CI</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
                         <span class="n">episode_length_in_time</span> <span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">Timedelta</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                         <span class="n">use_ls_cpu_load</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
-                        <span class="n">standalone_pyeplus</span> <span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
                         <span class="n">num_sin_cos_vars</span> <span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span>
                         <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Method that creates the data center environment with the timeline, location, proper data files, gym specifications and auxiliary methods</span>
@@ -153,21 +375,16 @@
 <span class="sd">        month (int, optional): The month of the year for which the Environment uses the weather and Carbon Intensity data. Defaults to 1.</span>
 <span class="sd">        location (str, optional): The geographical location in a standard format for which Carbon Intensity files are accessed. Supported options are </span>
 <span class="sd">                                &#39;NYIS&#39;, &#39;AZPS&#39;, &#39;BPAT&#39;. Defaults to &#39;NYIS&#39;.</span>
-<span class="sd">        weather_filename (str, optional): Filename that stores the weather data. Files should be stored under ./data/Weather. Currently supports .epw file only.  Defaults to</span>
-<span class="sd">                                        &#39;USA_NY_New.York-Kennedy.epw&#39;.</span>
-<span class="sd">        workload_filename (str, optional): Filename that stores the default CPU workload data. Files should be stored under ./data/Workload. Defaults to</span>
-<span class="sd">                                        &#39;Alibaba_CPU_Data_Hourly_1.csv&#39;.</span>
+<span class="sd">        datacenter_capacity_mw (int, optional): Maximum capacity (MW) of the data center. This value will scale the number of servers installed in the data center.</span>
 <span class="sd">        max_bat_cap_Mw (float, optional): The battery capacity in Megawatts for the installed battery. Defaults to 2.0.</span>
 <span class="sd">        add_cpu_usage (bool, optional): Boolean Flag to indicate whether cpu usage is part of the environment statespace. Defaults to True.</span>
 <span class="sd">        add_CI (bool, optional): Boolean Flag to indicate whether Carbon Intensity is part of the environment statespace. Defaults to True.</span>
 <span class="sd">        episode_length_in_time (pd.Timedelta, optional): Length of an episode in terms of pandas time-delta object. Defaults to None.</span>
 <span class="sd">        use_ls_cpu_load (bool, optional): Use the cpu workload value from a separate Load Shifting agent. This turns of reading default cpu data. Defaults to False.</span>
-<span class="sd">        standalone_pyeplus (bool, optional): Boolean Flag to indicate whether the data center environment is being tested in a standalone manner or not. Defaults to False.</span>
 <span class="sd">        num_sin_cos_vars (int, optional): Number of sin and cosine variable that will be added externally from the centralized data source</span>
 <span class="sd">    Returns:</span>
 <span class="sd">        envs.dc_gym.dc_gymenv: The environment instantiated with the particular month.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">carbon_intensity_filename</span> <span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">location</span><span class="si">}</span><span class="s1">_NG_&amp;_avgCI.csv&#39;</span>
     <span class="n">observation_variables</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="c1">############################################################################</span>
     <span class="c1">######################### Standard Variables included as default ###########</span>
@@ -180,10 +397,14 @@
         <span class="c1"># TODO: Will add sum of IT POWER  and HVAC Power Here if AGP wants it</span>
         <span class="s1">&#39;Facility Total Building Electricity Demand Rate(Whole Building)&#39;</span>  <span class="c1">#  &#39;IT POWER&#39;</span>
     <span class="p">]</span>
-        
-    <span class="n">observation_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="o">-</span><span class="mf">2.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observation_variables</span><span class="p">)</span><span class="o">+</span><span class="n">num_sin_cos_vars</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">add_cpu_usage</span><span class="p">)))),</span>
-                                       <span class="n">high</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">5.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observation_variables</span><span class="p">)</span><span class="o">+</span><span class="n">num_sin_cos_vars</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">add_cpu_usage</span><span class="p">)))),</span>
-                                       <span class="p">)</span>
+    <span class="k">if</span> <span class="n">add_cpu_usage</span><span class="p">:</span>    
+        <span class="n">observation_space</span> <span class="o">=</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">0.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observation_variables</span><span class="p">)</span><span class="o">+</span><span class="n">num_sin_cos_vars</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">add_cpu_usage</span><span class="p">)))),</span>
+                                        <span class="n">high</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observation_variables</span><span class="p">)</span><span class="o">+</span><span class="n">num_sin_cos_vars</span><span class="o">+</span><span class="nb">int</span><span class="p">(</span><span class="mi">3</span><span class="o">*</span><span class="nb">float</span><span class="p">(</span><span class="n">add_cpu_usage</span><span class="p">)))),</span>
+                                        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">observation_space</span> <span class="o">=</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Box</span><span class="p">(</span><span class="n">low</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">0.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observation_variables</span><span class="p">)</span><span class="o">+</span><span class="n">num_sin_cos_vars</span><span class="o">+</span><span class="mi">1</span><span class="p">)),</span>  <span class="c1"># p.o.</span>
+                                        <span class="n">high</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">observation_variables</span><span class="p">)</span><span class="o">+</span><span class="n">num_sin_cos_vars</span><span class="o">+</span><span class="mi">1</span><span class="p">)),</span>  <span class="c1"># p.o. here we add 1 to only include current CI</span>
+                                        <span class="p">)</span>
     
     <span class="c1">################################################################################</span>
     <span class="c1">########################## Action Variables ####################################</span>
@@ -194,22 +415,77 @@
     <span class="n">min_temp</span> <span class="o">=</span> <span class="mf">15.0</span>
     <span class="n">max_temp</span> <span class="o">=</span> <span class="mf">21.6</span>
     <span class="n">action_mapping</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="mi">0</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">),</span>
-        <span class="mi">1</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">2</span><span class="p">),</span>
-        <span class="mi">2</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
-        <span class="mi">3</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mf">0.5</span><span class="p">),</span>
-        <span class="mi">4</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">),</span>
-        <span class="mi">5</span><span class="p">:</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">),</span>
-        <span class="mi">6</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">),</span>
-        <span class="mi">7</span><span class="p">:</span> <span class="p">(</span><span class="mi">2</span><span class="p">),</span>
-        <span class="mi">8</span><span class="p">:</span> <span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="mi">0</span><span class="p">:</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span>
+        <span class="mi">1</span><span class="p">:</span> <span class="p">(</span><span class="mi">0</span><span class="p">),</span>
+        <span class="mi">2</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">),</span>
     <span class="p">}</span>
-    <span class="n">action_space</span> <span class="o">=</span> <span class="n">gym</span><span class="o">.</span><span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">action_mapping</span><span class="p">))</span>
+    <span class="n">action_space</span> <span class="o">=</span> <span class="n">spaces</span><span class="o">.</span><span class="n">Discrete</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">action_mapping</span><span class="p">))</span>
     
     
     <span class="c1">################################################################################</span>
-    <span class="c1">########################## Variable Ranges #####################################</span>
+    <span class="c1">##########################  System Sizing  #####################################</span>
     <span class="c1">################################################################################</span>
+    
+    <span class="c1"># from DC_Config, scale the variable number of CPUs to have a similar value to &quot;datacenter_capacity_mw&quot;</span>
+    <span class="n">dc_config</span> <span class="o">=</span> <span class="n">DC_Config</span><span class="p">(</span><span class="n">dc_config_file</span><span class="o">=</span><span class="n">dc_config_file</span><span class="p">,</span> <span class="n">datacenter_capacity_mw</span><span class="o">=</span><span class="n">datacenter_capacity_mw</span><span class="p">)</span>  <span class="c1"># Specify the relative or absolute path</span>
+
+    <span class="c1"># Perform Cooling Tower Sizing</span>
+    <span class="c1"># This step determines the potential maximum loading of the CT</span>
+    <span class="c1"># setting a higher ambient temp here will cause the CT to consume less power for cooling water under normal ambient temperature. Lower amb temp -&gt; higher HVAC power</span>
+    <span class="c1"># setting a lower value of min_CRAC_setpoint will cause the CT to consume more power for higher crac setpoints during normal use. Lower min_CRAC_set -&gt; higher HVAC power</span>
+    
+    <span class="c1"># dictionary with locations and min_CRAC_setpoint/max_amb_temp</span>
+
+    <span class="k">if</span> <span class="s1">&#39;NY&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">max_amb_temperature</span> <span class="o">=</span> <span class="mf">30.0</span>
+    <span class="k">elif</span> <span class="s1">&#39;AZ&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">max_amb_temperature</span> <span class="o">=</span> <span class="mf">40.0</span>
+    <span class="k">elif</span> <span class="s1">&#39;WA&#39;</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="n">location</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+        <span class="n">max_amb_temperature</span> <span class="o">=</span> <span class="mf">20.0</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WARNING, using default values for chiller sizing...&#39;</span><span class="p">)</span>
+        <span class="n">max_amb_temperature</span> <span class="o">=</span> <span class="mf">40.0</span>
+        
+    <span class="n">ctafr</span><span class="p">,</span> <span class="n">ct_rated_load</span> <span class="o">=</span> <span class="n">DataCenter</span><span class="o">.</span><span class="n">chiller_sizing</span><span class="p">(</span><span class="n">dc_config</span><span class="p">,</span> <span class="n">min_CRAC_setpoint</span><span class="o">=</span><span class="n">min_temp</span><span class="p">,</span> <span class="n">max_CRAC_setpoint</span><span class="o">=</span><span class="n">max_temp</span><span class="p">,</span> <span class="n">max_ambient_temp</span><span class="o">=</span><span class="n">max_amb_temperature</span><span class="p">)</span>
+    <span class="n">dc_config</span><span class="o">.</span><span class="n">CT_REFRENCE_AIR_FLOW_RATE</span> <span class="o">=</span> <span class="n">ctafr</span>
+    <span class="n">dc_config</span><span class="o">.</span><span class="n">CT_FAN_REF_P</span> <span class="o">=</span> <span class="n">ct_rated_load</span>
+    
+    
+    <span class="c1"># Perform sizing of ITE power and ambient temperature</span>
+    <span class="c1"># Find highest and lowest values of ITE power, rackwise outlet temperature</span>
+    <span class="n">dc</span> <span class="o">=</span> <span class="n">DataCenter</span><span class="o">.</span><span class="n">DataCenter_ITModel</span><span class="p">(</span><span class="n">num_racks</span><span class="o">=</span><span class="n">dc_config</span><span class="o">.</span><span class="n">NUM_RACKS</span><span class="p">,</span> <span class="n">rack_supply_approach_temp_list</span><span class="o">=</span><span class="n">dc_config</span><span class="o">.</span><span class="n">RACK_SUPPLY_APPROACH_TEMP_LIST</span><span class="p">,</span>
+                                    <span class="n">rack_CPU_config</span><span class="o">=</span><span class="n">dc_config</span><span class="o">.</span><span class="n">RACK_CPU_CONFIG</span><span class="p">,</span> <span class="n">max_W_per_rack</span><span class="o">=</span><span class="n">dc_config</span><span class="o">.</span><span class="n">MAX_W_PER_RACK</span><span class="p">,</span> <span class="n">DC_ITModel_config</span><span class="o">=</span><span class="n">dc_config</span><span class="p">)</span>
+    <span class="n">raw_curr_stpt_list</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">15</span><span class="p">,</span><span class="mi">23</span><span class="p">)</span>
+    <span class="n">cpu_load_list</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">110</span><span class="p">,</span><span class="mi">10</span><span class="p">)</span> <span class="c1"># We assume same data center load for all servers; Here it will be max</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">itertools</span><span class="o">.</span><span class="n">product</span><span class="p">(</span><span class="n">raw_curr_stpt_list</span><span class="p">,</span><span class="n">cpu_load_list</span><span class="p">)</span>
+    <span class="n">dc_ambient_temp_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">total_ite_pwr</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">raw_curr_stpt</span><span class="p">,</span> <span class="n">cpu_load</span> <span class="ow">in</span> <span class="n">p</span><span class="p">:</span>
+        <span class="n">ITE_load_pct_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">cpu_load</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dc_config</span><span class="o">.</span><span class="n">NUM_RACKS</span><span class="p">)]</span> 
+        <span class="n">rackwise_cpu_pwr</span><span class="p">,</span> <span class="n">rackwise_itfan_pwr</span><span class="p">,</span> <span class="n">rackwise_outlet_temp</span> <span class="o">=</span> \
+            <span class="n">dc</span><span class="o">.</span><span class="n">compute_datacenter_IT_load_outlet_temp</span><span class="p">(</span><span class="n">ITE_load_pct_list</span><span class="o">=</span><span class="n">ITE_load_pct_list</span><span class="p">,</span> <span class="n">CRAC_setpoint</span><span class="o">=</span><span class="n">raw_curr_stpt</span><span class="p">)</span>
+        <span class="n">total_ite_pwr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">rackwise_cpu_pwr</span><span class="p">)</span> <span class="o">+</span> <span class="nb">sum</span><span class="p">(</span><span class="n">rackwise_itfan_pwr</span><span class="p">))</span>
+        <span class="n">dc_ambient_temp_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">sum</span><span class="p">(</span><span class="n">rackwise_outlet_temp</span><span class="p">)</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">rackwise_outlet_temp</span><span class="p">))</span>   
+    
+    
+    <span class="c1"># Calculate the maximum power consumption of the chiller</span>
+    <span class="c1"># Assuming the worst-case scenario with the highest load and ambient temperature</span>
+    <span class="n">max_cooling_cap</span> <span class="o">=</span> <span class="n">ct_rated_load</span>  <span class="c1"># Maximum cooling capacity of the chiller</span>
+    <span class="n">highest_ambient_temp</span> <span class="o">=</span> <span class="n">max_amb_temperature</span>  <span class="c1"># Highest ambient temperature</span>
+    <span class="n">max_load</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="n">total_ite_pwr</span><span class="p">)</span>  <span class="c1"># Maximum load from your previous calculations</span>
+
+    <span class="n">chiller_max_load</span> <span class="o">=</span> <span class="n">DataCenter</span><span class="o">.</span><span class="n">calculate_chiller_power</span><span class="p">(</span><span class="n">max_cooling_cap</span><span class="p">,</span> <span class="n">max_load</span><span class="p">,</span> <span class="n">highest_ambient_temp</span><span class="p">)</span>
+
+    <span class="c1"># This will be battery sizing</span>
+    <span class="n">max_dc_power_w</span> <span class="o">=</span>  <span class="mf">1.1</span><span class="o">*</span><span class="nb">max</span><span class="p">(</span><span class="n">total_ite_pwr</span><span class="p">)</span> <span class="o">+</span> <span class="mf">1.1</span><span class="o">*</span><span class="n">ct_rated_load</span> <span class="o">+</span> <span class="mf">1.1</span><span class="o">*</span><span class="n">chiller_max_load</span> <span class="c1"># Watts</span>
+    
+    <span class="c1"># By carbon explorer paper, we need a battery to feed the DC by at least 1 hours, so we need the energy metric</span>
+    <span class="n">num_hours_battery</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">num_timestep_hour</span> <span class="o">=</span> <span class="mi">4</span>
+    
+    <span class="n">max_dc_energy</span> <span class="o">=</span> <span class="p">(</span><span class="n">max_dc_power_w</span> <span class="o">/</span> <span class="n">num_timestep_hour</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">num_timestep_hour</span> <span class="o">*</span> <span class="n">num_hours_battery</span><span class="p">)</span> <span class="c1"># (energy_per_timestep) * (timestep * num_hours) Wh</span>
+    <span class="n">max_dc_energy</span> <span class="o">=</span> <span class="n">max_dc_energy</span> <span class="o">/</span> <span class="mf">1e6</span> <span class="c1"># Mhw</span>
+    
     <span class="n">ranges</span> <span class="o">=</span> <span class="p">{</span>
         <span class="s1">&#39;sinhour&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="c1">#0</span>
         <span class="s1">&#39;coshour&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span> <span class="c1">#1</span>
@@ -219,87 +495,82 @@
         <span class="s1">&#39;dayOTY&#39;</span><span class="p">:[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">366.0</span><span class="p">],</span> <span class="c1">#5 </span>
         
         <span class="s1">&#39;Site Outdoor Air Drybulb Temperature(Environment)&#39;</span><span class="p">:</span> <span class="p">[</span><span class="o">-</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">40.0</span><span class="p">],</span> <span class="c1">#6</span>
-        <span class="s1">&#39;Zone Thermostat Cooling Setpoint Temperature(West Zone)&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">10.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">],</span>  <span class="c1"># reasonable range for setpoint; can be updated based on need #7</span>
-        <span class="s1">&#39;Zone Air Temperature(West Zone)&#39;</span><span class="p">:[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">35</span><span class="p">],</span>
-        <span class="s1">&#39;Facility Total HVAC Electricity Demand Rate(Whole Building)&#39;</span><span class="p">:</span>  <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">2.5e6</span><span class="p">],</span>
-        <span class="s1">&#39;Facility Total Electricity Demand Rate(Whole Building)&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">1.0e5</span><span class="p">,</span> <span class="mf">1.0e6</span><span class="p">],</span>  <span class="c1"># TODO: This is not a part of the observation variables right now</span>
-        <span class="s1">&#39;Facility Total Building Electricity Demand Rate(Whole Building)&#39;</span><span class="p">:[</span><span class="mf">3.0e5</span><span class="p">,</span> <span class="mf">5.0e6</span><span class="p">],</span>
+        <span class="s1">&#39;Zone Thermostat Cooling Setpoint Temperature(West Zone)&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">15.0</span><span class="p">,</span> <span class="mf">30.0</span><span class="p">],</span>  <span class="c1"># reasonable range for setpoint; can be updated based on need #7</span>
+        <span class="s1">&#39;Zone Air Temperature(West Zone)&#39;</span><span class="p">:[</span><span class="mf">0.9</span><span class="o">*</span><span class="nb">min</span><span class="p">(</span><span class="n">dc_ambient_temp_list</span><span class="p">),</span> <span class="mf">1.1</span><span class="o">*</span><span class="nb">max</span><span class="p">(</span><span class="n">dc_ambient_temp_list</span><span class="p">)],</span>
+        <span class="s1">&#39;Facility Total HVAC Electricity Demand Rate(Whole Building)&#39;</span><span class="p">:</span>  <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.1</span><span class="o">*</span><span class="n">ct_rated_load</span> <span class="o">+</span> <span class="mf">1.1</span><span class="o">*</span><span class="n">chiller_max_load</span><span class="p">],</span>  <span class="c1"># this is cooling tower power and chiller power</span>
+        <span class="s1">&#39;Facility Total Electricity Demand Rate(Whole Building)&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.9</span><span class="o">*</span><span class="nb">min</span><span class="p">(</span><span class="n">total_ite_pwr</span><span class="p">),</span> <span class="mf">1.1</span><span class="o">*</span><span class="nb">max</span><span class="p">(</span><span class="n">total_ite_pwr</span><span class="p">)</span> <span class="o">+</span>  <span class="mf">1.1</span><span class="o">*</span><span class="n">ct_rated_load</span> <span class="o">+</span> <span class="mf">1.1</span><span class="o">*</span><span class="n">chiller_max_load</span><span class="p">],</span>  <span class="c1"># TODO: This is not a part of the observation variables right now</span>
+        <span class="s1">&#39;Facility Total Building Electricity Demand Rate(Whole Building)&#39;</span><span class="p">:[</span><span class="mf">0.9</span><span class="o">*</span><span class="nb">min</span><span class="p">(</span><span class="n">total_ite_pwr</span><span class="p">),</span> <span class="mf">1.1</span><span class="o">*</span><span class="nb">max</span><span class="p">(</span><span class="n">total_ite_pwr</span><span class="p">)],</span>  <span class="c1"># this is it power</span>
         
         <span class="s1">&#39;cpuUsage&#39;</span><span class="p">:[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
         <span class="s1">&#39;carbonIntensity&#39;</span><span class="p">:[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">],</span>
-        <span class="s1">&#39;batterySoC&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">max_bat_cap_Mw</span><span class="o">*</span><span class="mf">1e6</span><span class="p">]</span>
-        
+        <span class="s1">&#39;batterySoC&#39;</span><span class="p">:</span> <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">max_bat_cap_Mw</span><span class="o">*</span><span class="mf">1e6</span><span class="p">],</span>
+        <span class="s1">&#39;max_battery_energy_Mwh&#39;</span> <span class="p">:</span> <span class="n">max_dc_energy</span>
     <span class="p">}</span>
     
     <span class="c1">################################################################################</span>
     <span class="c1">############################## Create the Environment ##########################</span>
     <span class="c1">################################################################################</span>
+        
+    <span class="n">dc_env</span> <span class="o">=</span> <span class="n">dc_gymenv</span><span class="p">(</span><span class="n">observation_variables</span><span class="o">=</span><span class="n">observation_variables</span><span class="p">,</span>
+                    <span class="n">observation_space</span><span class="o">=</span><span class="n">observation_space</span><span class="p">,</span>
+                    <span class="n">action_variables</span><span class="o">=</span><span class="n">action_variables</span><span class="p">,</span>
+                    <span class="n">action_space</span><span class="o">=</span><span class="n">action_space</span><span class="p">,</span>
+                    <span class="n">action_mapping</span><span class="o">=</span><span class="n">action_mapping</span><span class="p">,</span>
+                    <span class="n">ranges</span><span class="o">=</span><span class="n">ranges</span><span class="p">,</span>
+                    <span class="n">add_cpu_usage</span><span class="o">=</span><span class="n">add_cpu_usage</span><span class="p">,</span>
+                    <span class="n">min_temp</span><span class="o">=</span><span class="n">min_temp</span><span class="p">,</span>
+                    <span class="n">max_temp</span><span class="o">=</span><span class="n">max_temp</span><span class="p">,</span>
+                    <span class="n">action_definition</span><span class="o">=</span><span class="n">action_definition</span><span class="p">,</span>
+                    <span class="n">DC_Config</span><span class="o">=</span><span class="n">dc_config</span><span class="p">,</span>
+                    <span class="n">episode_length_in_time</span><span class="o">=</span><span class="n">episode_length_in_time</span>
+                    <span class="p">)</span>
     
-    <span class="k">if</span> <span class="ow">not</span> <span class="n">standalone_pyeplus</span><span class="p">:</span>
-        
-        <span class="n">dc_env</span> <span class="o">=</span> <span class="n">dc_gymenv</span><span class="p">(</span><span class="n">observation_variables</span><span class="o">=</span><span class="n">observation_variables</span><span class="p">,</span>
-                        <span class="n">observation_space</span><span class="o">=</span><span class="n">observation_space</span><span class="p">,</span>
-                        <span class="n">action_variables</span><span class="o">=</span><span class="n">action_variables</span><span class="p">,</span>
-                        <span class="n">action_space</span><span class="o">=</span><span class="n">action_space</span><span class="p">,</span>
-                        <span class="n">action_mapping</span><span class="o">=</span><span class="n">action_mapping</span><span class="p">,</span>
-                        <span class="n">ranges</span><span class="o">=</span><span class="n">ranges</span><span class="p">,</span>
-                        <span class="n">add_cpu_usage</span><span class="o">=</span><span class="n">add_cpu_usage</span><span class="p">,</span>
-                        <span class="n">min_temp</span><span class="o">=</span><span class="n">min_temp</span><span class="p">,</span>
-                        <span class="n">max_temp</span><span class="o">=</span><span class="n">max_temp</span><span class="p">,</span>
-                        <span class="n">action_definition</span><span class="o">=</span><span class="n">action_definition</span><span class="p">,</span>
-                        <span class="n">episode_length_in_time</span><span class="o">=</span><span class="n">episode_length_in_time</span>
-                        <span class="p">)</span>
-        
-        <span class="n">dc_env</span><span class="o">.</span><span class="n">NormalizeObservation</span><span class="p">()</span>
-        
-        <span class="k">return</span> <span class="n">dc_env</span>
-    <span class="c1"># test in standalone mode</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">env_config</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;observation_variables&#39;</span><span class="p">:</span> <span class="n">observation_variables</span><span class="p">,</span>
-                        <span class="s1">&#39;observation_space&#39;</span><span class="p">:</span><span class="n">observation_space</span><span class="p">,</span>
-                        <span class="s1">&#39;action_variables&#39;</span><span class="p">:</span><span class="n">action_variables</span><span class="p">,</span>
-                        <span class="s1">&#39;action_space&#39;</span><span class="p">:</span><span class="n">action_space</span><span class="p">,</span>
-                        <span class="s1">&#39;action_mapping&#39;</span> <span class="p">:</span> <span class="n">action_mapping</span><span class="p">,</span>
-                        <span class="s1">&#39;ranges&#39;</span><span class="p">:</span> <span class="n">ranges</span><span class="p">,</span>
-                        <span class="s1">&#39;add_cpu_usage&#39;</span><span class="p">:</span><span class="n">add_cpu_usage</span><span class="p">,</span>
-                        <span class="s1">&#39;min_temp&#39;</span><span class="p">:</span><span class="n">min_temp</span><span class="p">,</span>
-                        <span class="s1">&#39;max_temp&#39;</span><span class="p">:</span><span class="n">max_temp</span><span class="p">,</span>
-                        <span class="s1">&#39;action_definition&#39;</span><span class="p">:</span><span class="n">action_definition</span><span class="p">,</span>
-                        <span class="s1">&#39;use_ls_cpu_load&#39;</span> <span class="p">:</span> <span class="n">use_ls_cpu_load</span><span class="p">,</span>  <span class="c1"># changed here</span>
-                        <span class="s1">&#39;episode_length_in_time&#39;</span><span class="p">:</span> <span class="n">episode_length_in_time</span>
-        <span class="p">}</span>
-        
-        <span class="k">return</span> <span class="n">dc_gymenv_standalone</span><span class="p">,</span> <span class="n">env_config</span></div>
+    <span class="n">dc_env</span><span class="o">.</span><span class="n">NormalizeObservation</span><span class="p">()</span>
+    <span class="n">max_dc_pw</span> <span class="o">=</span> <span class="n">ranges</span><span class="p">[</span><span class="s1">&#39;Facility Total HVAC Electricity Demand Rate(Whole Building)&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span>\
+        <span class="n">ranges</span><span class="p">[</span><span class="s1">&#39;Facility Total Building Electricity Demand Rate(Whole Building)&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+    
+    <span class="k">return</span> <span class="n">dc_env</span><span class="p">,</span> <span class="n">max_dc_pw</span></div>
+
     
     
     
 </pre></div>
-
-           </div>
-          </div>
-          <footer>
-
-  <hr/>
-
-  <div role="contentinfo">
-    <p>&#169; Copyright 2023, HPE.</p>
-  </div>
-
-  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
-    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
-    provided by <a href="https://readthedocs.org">Read the Docs</a>.
-   
-
-</footer>
-        </div>
+        </article>
       </div>
-    </section>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2024, HPE
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
   </div>
-  <script>
-      jQuery(function () {
-          SphinxRtdTheme.Navigation.enable(true);
-      });
-  </script> 
-
-</body>
+</div><script src="../../_static/documentation_options.js?v=8c5712d9"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../../_static/copybutton.js?v=f281be69"></script>
+    </body>
 </html>

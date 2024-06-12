@@ -69,6 +69,14 @@ Features of |F|
    overview/index
    usage/index
    evaluation/index
-   code/index
+   codedoc/index
    contribution_guidelines
    references
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
