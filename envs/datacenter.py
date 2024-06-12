@@ -76,6 +76,9 @@ class Rack():
         self.v_fan_rack = None  # will be later pointing to a 1d np array whose shape is the number of cpus in the rack class
   
     def cpu_and_fan_init(self,):
+        """
+        Initialize the CPU and Fan parameters for the servers in each rack with the specified data center configurations
+        """
         
         #common to both cpu and fan 
         inlet_temp_lb,inlet_temp_ub =[],[]
@@ -152,6 +155,13 @@ class Rack():
         return tot_cpu_pwr, np.array(tot_itfan_pwr).sum()
 
     def compute_instantaneous_pwr_vecd(self, inlet_temp, ITE_load_pct):
+        """Calculate the power consumption of the whole rack at the current step in a vectorized manner
+        Args:
+            inlet_temp (float): Room temperature
+            ITE_load_pct (float): Current CPU usage
+        Returns:
+            cpu_power (float): Current CPU power usage
+        """
         
         # CPU
         base_cpu_power_ratio = (self.m_cpu+0.05)*inlet_temp + self.c_cpu
