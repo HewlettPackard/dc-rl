@@ -5,7 +5,7 @@ import json
 import numpy as np
 warnings.filterwarnings('ignore') 
 
-sys.path.insert(0,os.getcwd())  # or sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'heterogeneous_dcrl')))
+sys.path.insert(0,os.getcwd())  # or sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'heterogeneous_sustaindc')))
 from harl.runners import RUNNER_REGISTRY
 from harl.utils.trans_tools import _t2n
 

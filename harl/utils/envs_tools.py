@@ -51,8 +51,8 @@ def make_train_env(env_name, seed, n_threads, env_args):
 
     def get_env_fn(rank):
         def init_env():
-            if env_name == 'dcrl':
-                from harl.envs.dcrl.dcrl_env import DCRLEnv
+            if env_name == 'sustaindc':
+                from harl.envs.sustaindc.harlsustaindc_env import HARLSustainDCEnv
                 if 'month' in env_args:
                         env_args['month'] = env_args['month']
                 elif rank < 12:
@@ -60,7 +60,7 @@ def make_train_env(env_name, seed, n_threads, env_args):
                 else:
                     # 33% June (5), 33% July (6), 33% August (7)
                     env_args['month'] = rank % 3 + 5
-                env = DCRLEnv(env_args)
+                env = HARLSustainDCEnv(env_args)
             else:
                 print("Can not support the " + env_name + "environment.")
                 raise NotImplementedError
@@ -79,8 +79,8 @@ def make_eval_env(env_name, seed, n_threads, env_args):
 
     def get_env_fn(rank):
         def init_env():
-            if env_name == 'dcrl':
-                from harl.envs.dcrl.dcrl_env import DCRLEnv
+            if env_name == 'sustaindc':
+                from harl.envs.sustaindc.harlsustaindc_env import HARLSustainDCEnv
                 if 'month' in env_args:
                     env_args['month'] = env_args['month']
                 elif rank < 12:
@@ -88,7 +88,7 @@ def make_eval_env(env_name, seed, n_threads, env_args):
                 else:
                     # 33% June (5), 33% July (6), 33% August (7)
                     env_args['month'] = rank % 3 + 5
-                env = DCRLEnv(env_args)
+                env = HARLSustainDCEnv(env_args)
             else:
                 print("Can not support the " + env_name + "environment.")
                 raise NotImplementedError
@@ -129,7 +129,7 @@ def set_seed(args):
 
 def get_num_agents(env, env_args, envs):
     """Get the number of agents in the environment."""
-    if env == 'dcrl':
+    if env == 'sustaindc':
         return envs.n_agents
     else:
         raise ValueError(f"Unsupported environment type: '{env}'. Check the environment name and try again.")

@@ -2,7 +2,7 @@ from harl.common.base_logger import BaseLogger
 
 import numpy as np
 
-class DCRLLogger(BaseLogger):
+class SustainDCLogger(BaseLogger):
     
     def __init__(self, args, algo_args, env_args, num_agents, writter, run_dir):
         super().__init__(args, algo_args, env_args, num_agents, writter, run_dir)

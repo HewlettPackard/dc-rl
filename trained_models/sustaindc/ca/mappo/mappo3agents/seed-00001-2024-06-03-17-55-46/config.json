@@ -97,7 +97,7 @@
     },
     "main_args":	{
         "algo":	"mappo",
-        "env":	"dcrl",
+        "env":	"sustaindc",
         "exp_name":	"mappo3agents",
         "load_config":	""
     }

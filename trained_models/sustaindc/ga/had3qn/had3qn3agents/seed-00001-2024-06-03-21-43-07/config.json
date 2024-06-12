@@ -85,7 +85,7 @@
     },
     "main_args":	{
         "algo":	"had3qn",
-        "env":	"dcrl",
+        "env":	"sustaindc",
         "exp_name":	"had3qn3agents",
         "load_config":	""
     }

@@ -2,18 +2,16 @@ from pettingzoo import ParallelEnv
 from gymnasium import spaces
 import numpy as np
 
-class DCRLPettingZooEnv(ParallelEnv):
+class SustainDCPettingZooEnv(ParallelEnv):
     def __init__(self, env_config):
         super().__init__()
         if env_config['partial_obs']:
             if env_config['month'] == 1:
                 print("\n using partially observable states \n")
-            from sustaindc_env import DCRL  # pylint: disable=import-error,import-outside-toplevel
+            from sustaindc_env import SustainDC  # pylint: disable=import-error,import-outside-toplevel
         else:
-            if env_config['month'] == 1:
-                print("\n using fully observable states \n")
-            from dcrl_env_harl import DCRL  # pylint: disable=import-error,import-outside-toplevel
-        self.env = DCRL(env_config)  # Your existing DCRL environment
+            raise NotImplementedError("Fully observable states are no longer supported. Please set 'partial_obs' to True.")
+        self.env = SustainDC(env_config)  # Your existing SustainDC environment
         self.possible_agents = self.env.agents  # List of agents
         self.agents = self.env.agents
 

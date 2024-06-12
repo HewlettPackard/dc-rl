@@ -1,5 +1,5 @@
 import torch
-from harl.envs.dcrl.dcrl_ptzoo import DCRLPettingZooEnv
+from harl.envs.sustaindc.sustaindc_ptzoo import SustainDCPettingZooEnv
 from pettingzoo.utils.conversions import parallel_wrapper_fn
 
 import gymnasium
@@ -9,17 +9,17 @@ import numpy as np
 
 import supersuit as ss
 
-class DCRLEnv:
+class HARLSustainDCEnv:
     def __init__(self, env_args):
         self.env_args = env_args
-        self.env = DCRLPettingZooEnv(self.env_args)
+        self.env = SustainDCPettingZooEnv(self.env_args)
         self.n_agents = len(self.env.env.agents)
         self.max_cycles = 25
         self.cur_step = 0
         
         # env1 = ls, env2 = dc, env3 = bat
         # The observation should be padded to have the same shape
-        # Define observation spaces and action spaces according to the DCRL environment
+        # Define observation spaces and action spaces according to the SustainDC environment
         
         self.env = ss.pad_action_space_v0(ss.pad_observations_v0(self.env))
         
@@ -48,7 +48,7 @@ class DCRLEnv:
         states = tuple(o for o in obs)
         if self.env_args['nonoverlapping_shared_obs_space']:
             # these are hardcoded because the location/indices of these values are decided inside base environment currently
-            # and not specified in the .yaml config for the dcrl env
+            # and not specified in the .yaml config for the sustaindc env
             # Extract from states[0] if agent_ls is in self.agents
             # Extract from states[1] if agent_dc is in self.agents
             # Extract from states[2] if agent_bat is in self.agents
@@ -124,7 +124,7 @@ class DCRLEnv:
             
             states = np.array(concat_states, dtype=np.float16)
             # these are hardcoded because the location/indices of these values are decided inside base environment currently
-            # and not specified in the .yaml config for the dcrl env
+            # and not specified in the .yaml config for the sustaindc env
             # states =  np.concatenate((states[0][0:10], states[1][4:9], states[2][5].reshape(1,)), axis=None)
         else:
             states =  np.concatenate(states, axis=None)

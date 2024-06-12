@@ -35,9 +35,9 @@ def main():
     parser.add_argument(
         "--env",
         type=str,
-        default="dcrl",
+        default="sustaindc",
         choices=[
-            "dcrl",
+            "sustaindc",
             "smac",
             "mamujoco",
             "pettingzoo_mpe",

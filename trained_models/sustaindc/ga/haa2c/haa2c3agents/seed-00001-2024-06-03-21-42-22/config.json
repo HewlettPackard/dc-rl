@@ -97,7 +97,7 @@
     },
     "main_args":	{
         "algo":	"haa2c",
-        "env":	"dcrl",
+        "env":	"sustaindc",
         "exp_name":	"haa2c3agents",
         "load_config":	""
     }

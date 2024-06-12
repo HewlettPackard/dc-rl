@@ -1,9 +1,9 @@
 from absl import flags
-from harl.envs.dcrl.dcrl_logger import DCRLLogger
+from harl.envs.sustaindc.sustaindc_logger import SustainDCLogger
 
 FLAGS = flags.FLAGS
 FLAGS(["train_sc.py"])
 
 LOGGER_REGISTRY = {
-    "dcrl": DCRLLogger,
+    "sustaindc": SustainDCLogger,
 }

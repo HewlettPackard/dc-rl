@@ -527,7 +527,7 @@ class OffPolicyBaseRunner:
             eval_episode_rewards.append([])
         eval_episode = 0
         # do eval init
-        if "dcrl" in self.args["env"]:
+        if "sustaindc" in self.args["env"]:
             self.logger.eval_init_off_policy(total_num_steps=step)  # logger callback at the beginning of evaluation
         episode_lens = []
         one_episode_len = np.zeros(
@@ -552,7 +552,7 @@ class OffPolicyBaseRunner:
                 one_episode_rewards[eval_i].append(eval_rewards[eval_i])
                 
             # do eval per step    
-            if "dcrl" in self.args["env"]:
+            if "sustaindc" in self.args["env"]:
                 # append the information from each environment into the variables previously created using a for loop (for i in range(n_agents), for j in range(n_environments) -> eval_infos[j][i]... extract information)
                 eval_data = (
                     eval_obs,
@@ -580,7 +580,7 @@ class OffPolicyBaseRunner:
                     episode_lens.append(one_episode_len[eval_i].copy())
                     one_episode_len[eval_i] = 0
                     
-                    if "dcrl" in self.args["env"]:
+                    if "sustaindc" in self.args["env"]:
                         self.logger.eval_thread_done(eval_i)
 
             if eval_episode >= self.algo_args["eval"]["eval_episodes"]:
@@ -588,7 +588,7 @@ class OffPolicyBaseRunner:
                 eval_episode_rewards = np.concatenate(
                     [rewards for rewards in eval_episode_rewards if rewards]
                 )
-                if "dcrl" in self.args["env"]:
+                if "sustaindc" in self.args["env"]:
                     self.logger.eval_log(eval_episode)
                 eval_avg_rew = np.mean(eval_episode_rewards)
                 eval_avg_len = np.mean(episode_lens)

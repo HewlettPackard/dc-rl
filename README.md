@@ -75,21 +75,21 @@ Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documen
    The main environment for wrapping the environments is `dclr_env_harl_partialobs.py`, which reads configurations from `env_config` and manages the external variables using managers for weather, carbon intensity, and workload. 
 
 3. **Train Example:**
-   Specify `location` inside `harl.config.envs_cfgs.dcrl.yaml`. Specify other algorithm hyperparameteres in `harl.config.algos_cfgs.happo.yaml`. User can also specify the choice of reinforcement learning vs baseline agents in the `happ.yaml`.
+   Specify `location` inside `harl.config.envs_cfgs.sustaindc.yaml`. Specify other algorithm hyperparameteres in `harl.config.algos_cfgs.happo.yaml`. User can also specify the choice of reinforcement learning vs baseline agents in the `happo.yaml`.
    
    ```bash
-   python train.py --algo happo --exp_name happo
+   python train_sustaindc.py --algo happo --exp_name happo 
    ```
 
 4. **Monitor training on Tensorboard**
    ```bash
-   tensorboard --logdir /results/dcrl/<location>/happo
+   tensorboard --logdir /results/sustaindc/<location>/happo
    ```
 
 5. **Evaluation Example:**
    
    ```bash
-   python eval_harl.py
+   python eval_sustaindc.py
    ```
    The results are stored in the `SAVE_EVAL`(can be configured inside `eval_harl.py` with other parameters like choice of `checkpoint`, `location`, `run` etc) folder.
 

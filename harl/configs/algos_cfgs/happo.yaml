@@ -31,7 +31,7 @@ train:
 
   # if set, load models from this directory; otherwise, randomly initialise the models
   model_dir: ~
-  # model_dir: /lustre/guillant/HARL/results/dcrl/ny/happo/installtest/seed-00001-2024-04-19-17-23-29/models
+  # model_dir: /lustre/guillant/HARL/results/sustaindc/ny/happo/installtest/seed-00001-2024-04-19-17-23-29/models
 eval:
   # whether to use evaluation
   use_eval: True

@@ -98,7 +98,7 @@
     },
     "main_args":	{
         "algo":	"happo",
-        "env":	"dcrl",
+        "env":	"sustaindc",
         "exp_name":	"happo3agents",
         "load_config":	""
     }

@@ -47,7 +47,7 @@ def update_args(unparsed_dict, *args):
 
 def get_task_name(env, env_args):
     """Get task name."""
-    if env == 'dcrl':
+    if env == 'sustaindc':
         task = env_args["location"]
     else:
         raise ValueError('Environment not defined')

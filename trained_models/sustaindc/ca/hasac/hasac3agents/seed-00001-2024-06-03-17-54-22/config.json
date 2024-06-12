@@ -87,7 +87,7 @@
     },
     "main_args":	{
         "algo":	"hasac",
-        "env":	"dcrl",
+        "env":	"sustaindc",
         "exp_name":	"hasac3agents",
         "load_config":	""
     }
