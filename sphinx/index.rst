@@ -68,7 +68,15 @@ Features of |F|
    gettingstarted
    overview/index
    usage/index
-   code/index
-   train_evaluate/index
+   evaluation/index
+   codedoc/index
    contribution_guidelines
    references
+
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`

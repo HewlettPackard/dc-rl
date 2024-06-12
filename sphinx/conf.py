@@ -22,7 +22,7 @@ copyright = '2024, HPE'
 author = 'HPE'
 
 # The full version, including alpha/beta/rc tags
-release = '0.0.2'
+release = '0.0.4'
 
 
 # -- General configuration ---------------------------------------------------
@@ -46,6 +46,10 @@ extensions = [
 #define global substitutions
 global_substitutions = {
     'F': 'SustainDC' #define framework name 
+}
+
+latex_elements = {
+    'sphinxsetup': 'verbatimwithframe=false',
 }
 
 # source for bib references
