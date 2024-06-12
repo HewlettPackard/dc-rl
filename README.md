@@ -305,7 +305,7 @@ Workload trace files should be in CSV format, with two columns: a timestamp or i
 
 #### Example Workload Trace File
 ```csv
-,index,cpu_load
+,cpu_load
 1,0.380
 2,0.434
 3,0.402
