@@ -8,7 +8,7 @@ class DCRLPettingZooEnv(ParallelEnv):
         if env_config['partial_obs']:
             if env_config['month'] == 1:
                 print("\n using partially observable states \n")
-            from dcrl_env_harl_partialobs import DCRL  # pylint: disable=import-error,import-outside-toplevel
+            from sustaindc_env import DCRL  # pylint: disable=import-error,import-outside-toplevel
         else:
             if env_config['month'] == 1:
                 print("\n using fully observable states \n")
