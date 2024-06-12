@@ -1,8 +1,11 @@
-Train and Evaluate Statistics
+Evaluation
 =============================
+
+In this section we cover the |F| Dashboard, implemented evaluation metrics for benchmarking, and how to monitor and evaluate results 
 
 .. toctree::
    :maxdepth: 1
 
-   monitor_results
+   dashboard 
+   tensorboard
    evaluate

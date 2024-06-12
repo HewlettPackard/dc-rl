@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="How to evaluate DCRL-Green model" href="evaluate.html" /><link rel="prev" title="Train and Evaluate Statistics" href="index.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="How to evaluate DCRL-Green model" href="evaluate.html" /><link rel="prev" title="Dashboard" href="dashboard.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
-        <title>How to Monitor Training Results Using TensorBoard - SustainDC 0.0.2 documentation</title>
+        <title>How to Monitor Training Results Using TensorBoard - SustainDC 0.0.3 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -180,7 +180,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">SustainDC 0.0.2 documentation</div></a>
+      <a href="../index.html"><div class="brand">SustainDC 0.0.3 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -204,7 +204,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
   
-  <span class="sidebar-brand-text">SustainDC 0.0.2 documentation</span>
+  <span class="sidebar-brand-text">SustainDC 0.0.3 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -219,12 +219,23 @@
 <li class="toctree-l2"><a class="reference internal" href="../overview/environments.html">SustainDC Environments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../overview/interconnected.html">Inter-connected Environments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../overview/externaldata.html">External Input Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../overview/algorithms.html">Benchmarking Algorithms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../overview/reward_function.html">Reward Functions</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../usage/index.html">Usage</a></li>
-<li class="toctree-l1 has-children"><a class="reference internal" href="../code/index.html">Code</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Code</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../usage/index.html">Custom Use</a><input class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><div class="visually-hidden">Toggle navigation of Custom Use</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../usage/mainconf.html">Main Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/dcconf.html">Data Center Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/customworkload.html">Custom Workload Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/customci.html">Custom Carbon Intensity Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/customweather.html">Custom Weather Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/customreward.html">Custom Reward Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../usage/confalgos.html">Configure Algorithms</a></li>
+</ul>
+</li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../code/index.html">Code</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Code</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l2"><a class="reference internal" href="../code/folder_structure.html">Folder Structure</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="../code/modules.html">Class and member documentation</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Class and member documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../code/modules.html">Class and member documentation</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Class and member documentation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="../code/create_trainable.html">create_trainable module</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../code/data.html">Data package</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../code/dcrl_env.html">dcrl_env module</a></li>
@@ -240,7 +251,8 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Train and Evaluate Statistics</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Train and Evaluate Statistics</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Evaluation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Evaluation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dashboard.html">Dashboard</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">How to Monitor Training Results Using TensorBoard</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#how-to-add-custom-metrics">How to add Custom Metrics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="evaluate.html">How to evaluate DCRL-Green model</a></li>
@@ -348,14 +360,14 @@
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="index.html">
+          <a class="prev-page" href="dashboard.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Train and Evaluate Statistics</div>
+                <div class="title">Dashboard</div>
                 
               </div>
             </a>
@@ -383,7 +395,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=e3a6060d"></script>
+</div><script src="../_static/documentation_options.js?v=47de8214"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
