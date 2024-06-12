@@ -225,7 +225,7 @@ Below is a summary of the selected locations, typical weather values, and carbon
 
 
 ### Main Configuration File
-The main environment for wrapping the environments is `dclr_env_harl_partialobs.py`, which reads configurations from `dc_config.json` and manages the external variables using managers for weather, carbon intensity, and workload.
+The main environment for wrapping the environments is `sustaindc_env.py`, which reads configurations from `dc_config.json` and manages the external variables using managers for weather, carbon intensity, and workload.
 
 #### Example Configuration
 ```bash
