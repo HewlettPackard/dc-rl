@@ -14,21 +14,25 @@
 11. [Contact](#contact)
 12. [License](#license)
 
+## Disclaimer
+
+This work builds on our previous research and extends the methodologies and insights gained from our previous work. The original code, referred to as DCRL-Green, can be found in the legacy branch of this repository. For users looking for the original implementation, please visit the [legacy branch](https://github.com/HewlettPackard/dc-rl/tree/legacy). The current repository, **SustainDC**, represents an advanced iteration of DCRL-Green, incorporating enhanced features and improved benchmarking capabilities. This evolution reflects our ongoing commitment to advancing sustainable data center control. Consequently, the repository name remains dc-rl to maintain continuity with our previous work.
+
 
 ## Introduction
-SustainDC is a set of Python environments for benchmarking multi-agent reinforcement learning (MARL) algorithms in data centers (DC). It focuses on sustainable DC operations, including workload scheduling, cooling optimization, and auxiliary battery management. This repository contains the code and datasets for the paper `SustainDC - Benchmarking for Sustainable Data Center Control`.
+**SustainDC** is a set of Python environments for benchmarking multi-agent reinforcement learning (MARL) algorithms in data centers (DC). It focuses on sustainable DC operations, including workload scheduling, cooling optimization, and auxiliary battery management. This repository contains the code and datasets for the paper `SustainDC - Benchmarking for Sustainable Data Center Control`.
 
 <p align="center">
   <img src="media/SustainDC.png" alt="SustainDC" width="1000">
 </p>
 
-Demo of SustainDC
+Demo of **SustainDC**
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1XF92aR6nVYxENrviHeFyuRu0exKBb-nh?usp=sharing)
 
 TODO: This demo should be updated
 
 ### Documentation and Installation
-Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documentation of SustainDC.
+Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documentation of **SustainDC**.
 
 ## Features
 - **Highly Customizable Environments:** Allows users to define and modify various aspects of DC operations, including server configurations, cooling systems, and workload traces.
@@ -85,7 +89,7 @@ Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documen
 
 ## Environment Details
 
-SustainDC consists of three interconnected environments that simulate various aspects of data center operations: the **Workload Environment**, the **Data Center Environment**, and the **Battery Environment**. These environments work together to provide a comprehensive platform for benchmarking MARL algorithms aimed at optimizing energy consumption and reducing the carbon footprint of DCs.
+**SustainDC** consists of three interconnected environments that simulate various aspects of data center operations: the **Workload Environment**, the **Data Center Environment**, and the **Battery Environment**. These environments work together to provide a comprehensive platform for benchmarking MARL algorithms aimed at optimizing energy consumption and reducing the carbon footprint of DCs.
 
 ### Workload Environment
 The **Workload Environment** manages the execution and scheduling of delayable workloads within the data center. It simulates the computational demand placed on the data center by using real-world workload traces from sources like Alibaba and Google.
@@ -165,22 +169,22 @@ Together, these interconnected environments provide a dynamic platform for bench
 
 
 ### External Input Data
-SustainDC uses external input data to provide a realistic simulation environment:
+**SustainDC** uses external input data to provide a realistic simulation environment:
 
 #### Workload
-The Workload external data in SustainDC represents the computational demand placed on the DC. By default, SustainDC includes a collection of open-source workload traces from Alibaba and Google DCs. Users can customize this component by adding new workload traces to the `data/Workload` folder or specifying a path to existing traces in the `dcrl_env_harl_partialobs.py` file under the `workload_file` configuration.
+The Workload external data in **SustainDC** represents the computational demand placed on the DC. By default, **SustainDC** includes a collection of open-source workload traces from Alibaba and Google DCs. Users can customize this component by adding new workload traces to the `data/Workload` folder or specifying a path to existing traces in the `dcrl_env_harl_partialobs.py` file under the `workload_file` configuration.
 
 ![Comparison between two workload traces of Alibaba trace (2017) and Google (2011).](media/workload_comparison.png)
 
 #### Weather
-The Weather external data in SustainDC captures the ambient environmental conditions impacting the DC's cooling requirements. By default, SustainDC includes weather data files in the .epw format from various locations where DCs are commonly situated. These locations include Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. Users can customize this component by adding new weather files to the `data/Weather` folder or specifying a path to existing weather files in the `dcrl_env_harl_partialobs.py` file under the `weather_file` configuration.
+The Weather external data in **SustainDC** captures the ambient environmental conditions impacting the DC's cooling requirements. By default, **SustainDC** includes weather data files in the .epw format from various locations where DCs are commonly situated. These locations include Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. Users can customize this component by adding new weather files to the `data/Weather` folder or specifying a path to existing weather files in the `dcrl_env_harl_partialobs.py` file under the `weather_file` configuration.
 
 Each .epw file contains hourly data for various weather parameters, but for our purposes, we focus on the ambient temperature.
 
 ![Comparison between external temperature of the different selected locations.](media/weather_all_locations.png)
 
 #### Carbon Intensity
-The Carbon Intensity (CI) external data in SustainDC represents the carbon emissions associated with electricity consumption. By default, SustainDC includes CI data files for various locations: Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. These files are located in the `data/CarbonIntensity` folder and are extracted from [https://api.eia.gov/bulk/EBA.zip](https://api.eia.gov/bulk/EBA.zip). Users can customize this component by adding new CI files to the `data/CarbonIntensity` folder or specifying a path to existing files in the `dcrl_env_harl_partialobs.py` file under the `cintensity_file` configuration.
+The Carbon Intensity (CI) external data in **SustainDC** represents the carbon emissions associated with electricity consumption. By default, **SustainDC** includes CI data files for various locations: Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. These files are located in the `data/CarbonIntensity` folder and are extracted from [https://api.eia.gov/bulk/EBA.zip](https://api.eia.gov/bulk/EBA.zip). Users can customize this component by adding new CI files to the `data/CarbonIntensity` folder or specifying a path to existing files in the `dcrl_env_harl_partialobs.py` file under the `cintensity_file` configuration.
 
 ![Comparison of carbon intensity across the different selected locations.](media/ci_all_locations.png)
 
@@ -207,7 +211,7 @@ Below is a summary of the selected locations, typical weather values, and carbon
 
 
 ## Customization
-SustainDC offers extensive customization options to tailor the environments to specific needs and configurations. Users can modify various parameters and components across the **Workload**, **Data Center**, and **Battery** environments, as well as external variables like weather carbon intensity data, and workload trace.
+**SustainDC** offers extensive customization options to tailor the environments to specific needs and configurations. Users can modify various parameters and components across the **Workload**, **Data Center**, and **Battery** environments, as well as external variables like weather carbon intensity data, and workload trace.
 
 <p align="center">
   <img src="media/schematic.png" alt="Schematic" width="1000">
@@ -289,7 +293,7 @@ The customization of the DC is done through the `dc_config.json` file located in
 ### Adding New Workload Data
 
 #### Overview
-By default, SustainDC includes workload traces from [Alibaba](https://github.com/alibaba/clusterdata) and [Google](https://github.com/google/cluster-data) DC. These traces are used to simulate the tasks that the DC needs to process, providing a realistic and dynamic workload for benchmarking purposes.
+By default, **SustainDC** includes workload traces from [Alibaba](https://github.com/alibaba/clusterdata) and [Google](https://github.com/google/cluster-data) DC. These traces are used to simulate the tasks that the DC needs to process, providing a realistic and dynamic workload for benchmarking purposes.
 
 #### Data Source
 The default workload traces are extracted from:
@@ -317,7 +321,7 @@ Workload trace files should be in CSV format, with two columns: a timestamp or i
 ### Adding New Carbon Intensity Data
 
 #### Overview
-Carbon Intensity (CI) data represents the carbon emissions associated with electricity consumption. SustainDC includes CI data files for various locations to simulate the carbon footprint of the DC's energy usage.
+Carbon Intensity (CI) data represents the carbon emissions associated with electricity consumption. **SustainDC** includes CI data files for various locations to simulate the carbon footprint of the DC's energy usage.
 
 #### Data Source
 The default carbon intensity data files are extracted from:
@@ -354,7 +358,7 @@ timestamp,WND,SUN,WAT,OIL,NG,COL,NUC,OTH,avg_CI
 ### Adding New Weather Data
 
 #### Overview
-Weather data captures the ambient environmental conditions that impact the DC's cooling requirements. SustainDC includes weather data files in the .epw format from various locations where DCs are commonly situated.
+Weather data captures the ambient environmental conditions that impact the DC's cooling requirements. **SustainDC** includes weather data files in the .epw format from various locations where DCs are commonly situated.
 
 #### Data Source
 The default weather data files are extracted from:
@@ -382,14 +386,14 @@ DATA PERIODS,1,1,Data,Sunday, 1/ 1,12/31
 
 
 ### Custom Reward Structures
-SustainDC allows users to define custom reward structures to promote collaborative optimization across different DC components. Users can modify the reward functions in the `utils/reward_creator.py` file to suit their specific optimization goals.
+**SustainDC** allows users to define custom reward structures to promote collaborative optimization across different DC components. Users can modify the reward functions in the `utils/reward_creator.py` file to suit their specific optimization goals.
 
 By leveraging these customization options, users can create highly specific and optimized simulations that reflect the unique requirements and challenges of their DC operations.
 
 
 ## Benchmarking Algorithms
 
-SustainDC supports a variety of reinforcement learning algorithms for benchmarking. This section provides an overview of the supported algorithms and highlights their differences.
+**SustainDC** supports a variety of reinforcement learning algorithms for benchmarking. This section provides an overview of the supported algorithms and highlights their differences.
 
 ### Supported Algorithms
 
@@ -414,7 +418,7 @@ SustainDC supports a variety of reinforcement learning algorithms for benchmarki
 - **HAA2C vs. HAD3QN:** HAA2C is an actor-critic method; HAD3QN uses value-based learning with dueling and double Q-learning
 - **HAD3QN vs. HASAC:** HAD3QN is value-based; HASAC uses entropy regularization for environments with continuous action spaces.
 
-By supporting a diverse set of algorithms, SustainDC allows researchers to benchmark and compare the performance of various reinforcement learning approaches in the context of sustainable DC control.
+By supporting a diverse set of algorithms, **SustainDC** allows researchers to benchmark and compare the performance of various reinforcement learning approaches in the context of sustainable DC control.
 
   
 ### Running Benchmarks
@@ -431,7 +435,7 @@ To configure the used algorithm, TBC..........
 
 ## Dashboard
 
-To get an in-depth look at the SustainDC dashboard and see real-time metrics, watch the video demonstration. The video showcases the dynamic plotting of variables from the agents, environments, and metrics, providing a comprehensive view of the DC operations.
+To get an in-depth look at the **SustainDC** dashboard and see real-time metrics, watch the video demonstration. The video showcases the dynamic plotting of variables from the agents, environments, and metrics, providing a comprehensive view of the DC operations.
 
 Click on the screenshot below to watch the video (right-click and select "Open link in new tab" to view in a new tab):
 
@@ -446,12 +450,12 @@ If you wish to download the video directly, [click here](https://www.dropbox.com
 
 
 ## Contributing
-We welcome contributions from the community! Whether it's bug fixes, new features, or improvements to the documentation, your help is appreciated. Please follow the guidelines below to contribute to SustainDC.
+We welcome contributions from the community! Whether it's bug fixes, new features, or improvements to the documentation, your help is appreciated. Please follow the guidelines below to contribute to **SustainDC**.
 
 ### How to Contribute
 
 1. **Fork the Repository:**
-   Fork the SustainDC repository to your own GitHub account.
+   Fork the **SustainDC** repository to your own GitHub account.
 
 2. **Clone the Repository:**
    Clone the forked repository to your local machine:
@@ -481,7 +485,7 @@ We welcome contributions from the community! Whether it's bug fixes, new feature
    ```
 
 7. **Create a Pull Request:**
-  Open a pull request on the original SustainDC repository. Provide a clear description of what your changes do and any relevant information for the review process.
+  Open a pull request on the original **SustainDC** repository. Provide a clear description of what your changes do and any relevant information for the review process.
 
 ### Code of Conduct
 Please note that we have a [Code of Conduct](CODE_OF_CONDUCT.md). By participating in this project, you agree to abide by its terms.
@@ -495,10 +499,10 @@ If you find a bug or have a feature request, please create an issue on the [GitH
 - Update documentation if necessary.
 - Add tests to cover your changes if applicable.
 
-Thank you for contributing to SustainDC!
+Thank you for contributing to **SustainDC**!
 
 ## Contact
-If you have any questions, suggestions, or issues, please feel free to contact us. We are here to help and support you in using SustainDC.
+If you have any questions, suggestions, or issues, please feel free to contact us. We are here to help and support you in using **SustainDC**.
 
 ### Contact Information
 - **Email:** [soumyendu.sarkar@hpe.com](mailto:soumyendu.sarkar@hpe.com)
