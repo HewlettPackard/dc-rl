@@ -14,7 +14,7 @@ from utils.base_agents import BaseLoadShiftingAgent, BaseHVACAgent, BaseBatteryA
 
 MODEL_PATH = 'trained_models'
 SAVE_EVAL = "results"
-ENV = 'dcrl'
+ENV = 'sustaindc'
 LOCATION = "az"
 AGENT_TYPE = "haa2c"
 RUN = "seed-00001-2024-06-04-20-41-56"
