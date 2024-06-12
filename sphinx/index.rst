@@ -68,7 +68,7 @@ Features of |F|
    gettingstarted
    overview/index
    usage/index
+   evaluation/index
    code/index
-   train_evaluate/index
    contribution_guidelines
    references
