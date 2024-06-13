@@ -22,7 +22,7 @@ copyright = '2024, HPE'
 author = 'HPE'
 
 # The full version, including alpha/beta/rc tags
-release = '2.0.4'
+release = '2.1.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -78,10 +78,19 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 #
 html_theme = 'furo' #'sphinx_rtd_theme'
 
+# html_logo = "images/logo.jpg"
+
+
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = []
+html_static_path = ["images"]
+
+html_theme_options = {
+    "light_logo": "logo.png",
+    "dark_logo": "logo_darkmode.png",
+}
 
 #numbered figures
 numfig = True
