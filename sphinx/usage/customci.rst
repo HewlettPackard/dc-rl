@@ -45,4 +45,4 @@ Integration Steps
 -----------------------
 
   - Add the new carbon intensity data files to the :code:`data/CarbonIntensity` folder
-  - Update the :code:`cintensity_file` entry in :code:`env_config` with the path to the new carbon intensity file
+  - Update the :code:`cintensity_file` entry in :code:`DEFAULT_CONFIG` dictionary in :code:`sustaindc_env.py` with the path to the new carbon intensity file

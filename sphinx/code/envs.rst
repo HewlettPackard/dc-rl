@@ -12,6 +12,14 @@ envs.bat\_env\_fwd\_view module
    :undoc-members:
    :show-inheritance:
 
+envs.battery\_model module
+--------------------------
+
+.. automodule:: envs.battery_model
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
 envs.carbon\_ls module
 ----------------------
 

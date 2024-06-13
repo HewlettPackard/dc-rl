@@ -10,7 +10,9 @@
 
 This page contains the documentation for the GitHub `repository <https://github.com/HewlettPackard/dc-rl>`_ for the paper `"SustainDC: Benchmarking for Sustainable Data Center Control" <https://openreview.net/forum?id=UYgE9IfQIV>`_
 
-Note that |F| is continuation to **#TODO: COMPLETE**
+
+**Disclaimer:** This work builds on our previous research and extends the methodologies and insights gained from our previous work. The original code, referred to as **DCRL-Green**, can be found in the `legacy branch <https://github.com/HewlettPackard/dc-rl/tree/legacy>`_ of this repository. The current repository, **SustainDC**, represents an advanced iteration of DCRL-Green, incorporating enhanced features and improved benchmarking capabilities. This evolution reflects our ongoing commitment to advancing sustainable data center control. Consequently, the repository name remains :code:`dc-rl` to maintain continuity with our previous work.
+
 
 .. >Avisek Naug, Antonio Guillen, Ricardo Luna Gutierrez, Vineet Gundecha, Desik Rengarajan, Sahand Ghorbanpour, Sajad Mousavi, Ashwin Ramesh Babu, Dejan Markovikj, Lekhapriya Dheeraj Kashyap, Soumyendu Sarkar, "SustainDC: Benchmarking for Sustainable Data Center Control" in _Thirty-eight Conference on Neural Information Processing Systems Datasets and Benchmarks Track_[Online]. Available: [pdf](https://openreview.net/attachment?id=UYgE9IfQIV&name=pdf).
 
@@ -42,13 +44,14 @@ Note that |F| is continuation to **#TODO: COMPLETE**
    :alt: Overview of the SustainDC environments 
    :align: center
 
-Demo of |F|
-------------------
-A demo of |F| is given in the Google Colab notebook below
+.. Demo of |F| (removed before colab is working)
+   ------------------
+   A demo of |F| is given in the Google Colab notebook below
 
-.. image:: images/colab-badge.png
-   :alt: GoogleColab
-   :target: https://colab.research.google.com/drive/1XF92aR6nVYxENrviHeFyuRu0exKBb-nh?usp=sharing
+   .. image:: images/colab-badge.png
+      :alt: GoogleColab
+      :target: https://colab.research.google.com/drive/1XF92aR6nVYxENrviHeFyuRu0exKBb-nh?usp=sharing
+
 
 
 Features of |F|
@@ -69,14 +72,9 @@ Features of |F|
    overview/index
    usage/index
    evaluation/index
-   codedoc/index
+   Code<code/modules>
    contribution_guidelines
    references
+   genindex
+   modindex
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

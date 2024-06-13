@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="genindex.html" /><link rel="search" title="Search" href="search.html" /><link rel="next" title="Overview" href="overview/index.html" /><link rel="prev" title="Installation" href="installation.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
-        <title>Getting Started - SustainDC 0.0.4 documentation</title>
+        <title>Getting Started - SustainDC 2.0.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=76b2166b" />
@@ -180,7 +180,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="index.html"><div class="brand">SustainDC 0.0.4 documentation</div></a>
+      <a href="index.html"><div class="brand">SustainDC 2.0.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -204,7 +204,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
   
   
-  <span class="sidebar-brand-text">SustainDC 0.0.4 documentation</span>
+  <span class="sidebar-brand-text">SustainDC 2.0.4 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -230,7 +230,6 @@
 <li class="toctree-l2"><a class="reference internal" href="usage/customci.html">Custom Carbon Intensity Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="usage/customweather.html">Custom Weather Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="usage/customreward.html">Custom Reward Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="usage/confalgos.html">Configure Algorithms</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="evaluation/index.html">Evaluation</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Evaluation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -239,9 +238,45 @@
 <li class="toctree-l2"><a class="reference internal" href="evaluation/evaluate.html">How to evaluate SustainDC model</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="codedoc/index.html">Code</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="code/modules.html">Code</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Code</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="code/sustaindc_env.html">Core Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code/train_sustaindc.html">Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code/eval_sustaindc.html">Evaluation</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="code/harl.html">Algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Algorithms</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="code/harl.algorithms.html">harl.algorithms package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of harl.algorithms package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="code/harl.algorithms.actors.html">harl.algorithms.actors package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="code/harl.algorithms.critics.html">harl.algorithms.critics package</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="code/harl.common.html">harl.common package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of harl.common package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="code/harl.common.buffers.html">harl.common.buffers package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="code/harl.envs.html">harl.envs package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="code/harl.models.html">harl.models package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of harl.models package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="code/harl.models.base.html">harl.models.base package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="code/harl.models.policy_models.html">harl.models.policy_models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="code/harl.models.value_function_models.html">harl.models.value_function_models package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="code/harl.runners.html">harl.runners package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="code/harl.utils.html">harl.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="code/envs.html">Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code/utils.html">Utilities</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="code/data.html">Data Sources</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Data Sources</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="code/data.CarbonIntensity.html">data.CarbonIntensity package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="code/data.Weather.html">data.Weather package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="code/data.Workload.html">data.Workload package</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="contribution_guidelines.html">Contribution Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="py-modindex.html">Module Index</a></li>
 </ul>
 
 </div>
@@ -286,44 +321,44 @@
 <h1>Getting Started<a class="headerlink" href="#getting-started" title="Link to this heading">¶</a></h1>
 <ol class="arabic">
 <li><p><strong>Setup Configuration</strong></p>
-<p>Customize the <code class="code docutils literal notranslate"><span class="pre">dc_config.json</span></code> file to specify your DC environment settings. To learn more about the DC parameters you can customize, check <strong>#TODO: ADD LINK TO DC PARAMS</strong>.</p>
+<p>Customize the <code class="code docutils literal notranslate"><span class="pre">dc_config.json</span></code> file to specify your DC environment settings. To learn more about the DC parameters you can customize, check <a class="reference internal" href="usage/dcconf.html#dcconf-ref"><span class="std std-ref">Data Center Configuration File</span></a></p>
 </li>
 <li><p><strong>Environment Configuration</strong></p>
-<p>The main environment for wrapping the environments is <code class="code docutils literal notranslate"><span class="pre">dclr_env_harl_partialobs.py</span></code>, which reads configurations from the <code class="code docutils literal notranslate"><span class="pre">EnvConfig</span></code> class and manages the external variables using managers for weather, carbon intensity, and workload. For instructions how to customize the enviroment configuration, check <strong>#TODO: ADD LINK TO ENV PARAMS</strong>.</p>
+<p>The main environment for wrapping the environments is <code class="code docutils literal notranslate"><span class="pre">sustaindc_env.py</span></code>, which reads configurations from the <code class="code docutils literal notranslate"><span class="pre">EnvConfig</span></code> class and manages the external data sources using managers for weather, carbon intensity, and workload. For instructions how to customize the enviroment configuration, check <a class="reference internal" href="usage/mainconf.html#mainconf-ref"><span class="std std-ref">Main Configuration File</span></a></p>
 </li>
-<li><p><strong>Run Example:</strong></p>
-<p>Execute a simple example to get started: <strong>#TODO: UPDATE THIS</strong></p>
+<li><p><strong>Train Example:</strong></p>
+<p>Specify <code class="code docutils literal notranslate"><span class="pre">location</span></code> inside <code class="code docutils literal notranslate"><span class="pre">harl.config.envs_cfgs.dcrl.yaml</span></code>. Specify other algorithm hyperparameteres in <code class="code docutils literal notranslate"><span class="pre">harl.config.algos_cfgs.happo.yaml</span></code>. User can also specify the choice of reinforcement learning vs baseline agents in the <code class="code docutils literal notranslate"><span class="pre">happ.yaml</span></code></p>
 </li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">examples</span><span class="o">/</span><span class="n">run_random</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>train_harl.py<span class="w"> </span>--algo<span class="w"> </span>happo<span class="w"> </span>--exp_name<span class="w"> </span>happo
 </pre></div>
 </div>
 <ol class="arabic" start="4">
-<li><p><strong>Run Example:</strong></p>
-<p>Execute a simple example to get started:</p>
+<li><p><strong>Evaluation Example:</strong></p>
+<p>To evaluate the trained model run:</p>
 </li>
 </ol>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">examples</span><span class="o">/</span><span class="n">evaluate</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>eval_harl.py
 </pre></div>
 </div>
+<p>The results are stored in the <code class="code docutils literal notranslate"><span class="pre">SAVE_EVAL</span></code> folder. This can be modified inside <code class="code docutils literal notranslate"><span class="pre">eval_harl.py</span></code> with other experiment identifiers such as <code class="code docutils literal notranslate"><span class="pre">checkpoint</span></code>, <code class="code docutils literal notranslate"><span class="pre">location</span></code> and <code class="code docutils literal notranslate"><span class="pre">run</span></code></p>
 <ol class="arabic simple" start="5">
 <li><p><strong>Running in background mode</strong></p></li>
 </ol>
 <p>If you want to run the SustainDC framework in background mode use:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">nohup</span> <span class="n">python</span> <span class="n">PYTHON_SCRIPT</span> <span class="o">&gt;</span> <span class="n">OUTPUT_FILE</span><span class="o">.</span><span class="n">txt</span>  <span class="o">&amp;</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nohup<span class="w"> </span>python<span class="w"> </span>PYTHON_SCRIPT<span class="w"> </span>&gt;<span class="w"> </span>OUTPUT_FILE.txt<span class="w">  </span><span class="p">&amp;</span>
 </pre></div>
 </div>
-<p>where <code class="code docutils literal notranslate"><span class="pre">PYTHON_SCRIPT</span></code> is the script you want to run (e.g., <code class="code docutils literal notranslate"><span class="pre">run_random.py</span></code>) and <code class="code docutils literal notranslate"><span class="pre">OUTPUT_FILE</span></code> is the name of the file that will contain the output (e.g. <code class="code docutils literal notranslate"><span class="pre">latest_experiment_output</span></code>).</p>
+<p>where <code class="code docutils literal notranslate"><span class="pre">PYTHON_SCRIPT</span></code> is the script you want to run (e.g., <code class="code docutils literal notranslate"><span class="pre">train_harl.py</span></code>) and <code class="code docutils literal notranslate"><span class="pre">OUTPUT_FILE</span></code> is the name of the file that will contain the output (e.g. <code class="code docutils literal notranslate"><span class="pre">latest_experiment_output</span></code>)</p>
 <ol class="arabic simple" start="6">
 <li><p><strong>Monitor the results</strong></p></li>
 </ol>
-<p>The training logs and the results of each trial are stored in the specified local directory, under a sub-folder called <code class="code docutils literal notranslate"><span class="pre">results</span></code> and can be visualized with TensorBoard by specifying the output directory of the results.</p>
+<p>The training logs and the results of each trial are stored in the specified local directory, under a sub-folder called <code class="code docutils literal notranslate"><span class="pre">results</span></code> and can be visualized with TensorBoard by specifying the output directory of the results</p>
 <p>Example:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tensorboard</span> <span class="o">--</span><span class="n">logdir</span> <span class="o">./</span><span class="n">results</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tensorboard<span class="w"> </span>--logdir<span class="w"> </span>./results/dcrl/&lt;location&gt;/happo
 </pre></div>
 </div>
-<p>In this example, <code class="code docutils literal notranslate"><span class="pre">test</span></code> is the default name of the experiment.</p>
-<p>A detailed description of the configurations are provided in the <span class="xref std std-doc">Usage</span> section. <strong>#TODO:UPDATE THIS</strong></p>
+<p>A detailed description of the configurations are provided in the <a class="reference internal" href="usage/index.html#usage-ref"><span class="std std-ref">Custom Use</span></a> section.</p>
 </section>
 
         </article>
@@ -375,7 +410,7 @@
       
     </aside>
   </div>
-</div><script src="_static/documentation_options.js?v=8c5712d9"></script>
+</div><script src="_static/documentation_options.js?v=adc66a14"></script>
     <script src="_static/doctools.js?v=9a2dae69"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=4e2eecee"></script>

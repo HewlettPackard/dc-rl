@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Code" href="../codedoc/index.html" /><link rel="prev" title="Monitor Results with TensorBoard" href="tensorboard.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="SustainDC" href="../code/modules.html" /><link rel="prev" title="Monitor Results with TensorBoard" href="tensorboard.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
-        <title>How to evaluate SustainDC model - SustainDC 0.0.4 documentation</title>
+        <title>How to evaluate SustainDC model - SustainDC 2.0.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -180,7 +180,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">SustainDC 0.0.4 documentation</div></a>
+      <a href="../index.html"><div class="brand">SustainDC 2.0.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -204,7 +204,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
   
-  <span class="sidebar-brand-text">SustainDC 0.0.4 documentation</span>
+  <span class="sidebar-brand-text">SustainDC 2.0.4 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -230,7 +230,6 @@
 <li class="toctree-l2"><a class="reference internal" href="../usage/customci.html">Custom Carbon Intensity Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../usage/customweather.html">Custom Weather Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../usage/customreward.html">Custom Reward Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../usage/confalgos.html">Configure Algorithms</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">Evaluation</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Evaluation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul class="current">
@@ -239,9 +238,45 @@
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">How to evaluate SustainDC model</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../codedoc/index.html">Code</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../code/modules.html">Code</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Code</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code/sustaindc_env.html">Core Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code/train_sustaindc.html">Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code/eval_sustaindc.html">Evaluation</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../code/harl.html">Algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Algorithms</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../code/harl.algorithms.html">harl.algorithms package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of harl.algorithms package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.algorithms.actors.html">harl.algorithms.actors package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.algorithms.critics.html">harl.algorithms.critics package</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../code/harl.common.html">harl.common package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of harl.common package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.common.buffers.html">harl.common.buffers package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../code/harl.envs.html">harl.envs package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../code/harl.models.html">harl.models package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of harl.models package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.models.base.html">harl.models.base package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.models.policy_models.html">harl.models.policy_models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.models.value_function_models.html">harl.models.value_function_models package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../code/harl.runners.html">harl.runners package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/harl.utils.html">harl.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code/envs.html">Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code/utils.html">Utilities</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../code/data.html">Data Sources</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Data Sources</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code/data.CarbonIntensity.html">data.CarbonIntensity package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/data.Weather.html">data.Weather package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/data.Workload.html">data.Workload package</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../contribution_guidelines.html">Contribution Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../py-modindex.html">Module Index</a></li>
 </ul>
 
 </div>
@@ -284,15 +319,26 @@
         <article role="main" id="furo-main-content">
           <section id="how-to-evaluate-f-model">
 <h1>How to evaluate SustainDC model<a class="headerlink" href="#how-to-evaluate-f-model" title="Link to this heading">¶</a></h1>
-<p><strong>#TODO: COMPLETE THIS!</strong></p>
 <p>In addition to monitoring the training process, it is essential to evaluate the performance of the SustainDC model after training.</p>
 <p>To evaluate your model:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>Modify the <code class="code docutils literal notranslate"><span class="pre">CHECKPOINT</span></code> variable in <code class="code docutils literal notranslate"><span class="pre">evaluate.py</span></code> module to point to the training data file (i.e. <code class="code docutils literal notranslate"><span class="pre">CHECKPOINT</span> <span class="pre">=</span> <span class="pre">'./results/test/PPO_DCRL_c2f2a_00000_0_2024-06-16_16-51-50/checkpoint_001215/'</span></code>)</p></li>
-<li><p>Run <code class="code docutils literal notranslate"><span class="pre">python</span> <span class="pre">eval_harl.py</span></code> for evaluation. The model is evaluated on the specifics, such as the RL algorithm, the Environment type used during training.</p></li>
+<li><p>Modify the constants in <code class="code docutils literal notranslate"><span class="pre">eval_harl.py</span></code> module to point to the training data file (by default it points to <code class="code docutils literal notranslate"><span class="pre">./trained_models/dcrl/az</span></code>)</p></li>
+<li><p>There are multiple trained models grouped by location in the <code class="code docutils literal notranslate"><span class="pre">./trained_models/dcrl/</span></code> directory</p></li>
+<li><p>Run <code class="code docutils literal notranslate"><span class="pre">python</span> <span class="pre">eval_harl.py</span></code> for evaluation. The model is evaluated on the specifics, such as the RL algorithm, DC location, and the Environment type used during training.</p></li>
 </ul>
 </div></blockquote>
+<p>The default constant values in <code class="code docutils literal notranslate"><span class="pre">eval_harl.py</span></code> are given below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">MODEL_PATH</span> <span class="o">=</span> <span class="s1">&#39;trained_models&#39;</span>
+<span class="n">SAVE_EVAL</span> <span class="o">=</span> <span class="s2">&quot;results&quot;</span>
+<span class="n">ENV</span> <span class="o">=</span> <span class="s1">&#39;dcrl&#39;</span>
+<span class="n">LOCATION</span> <span class="o">=</span> <span class="s2">&quot;az&quot;</span>
+<span class="n">AGENT_TYPE</span> <span class="o">=</span> <span class="s2">&quot;haa2c&quot;</span>
+<span class="n">RUN</span> <span class="o">=</span> <span class="s2">&quot;seed-00001-2024-06-04-20-41-56&quot;</span>
+<span class="n">ACTIVE_AGENTS</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;agent_ls&#39;</span><span class="p">,</span> <span class="s1">&#39;agent_dc&#39;</span><span class="p">,</span> <span class="s1">&#39;agent_bat&#39;</span><span class="p">]</span>
+<span class="n">NUM_EVAL_EPISODES</span> <span class="o">=</span> <span class="mi">1</span>
+</pre></div>
+</div>
 </section>
 
         </article>
@@ -300,12 +346,12 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../codedoc/index.html">
+          <a class="next-page" href="../code/modules.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">Code</div>
+                <div class="title">SustainDC</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -344,7 +390,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=8c5712d9"></script>
+</div><script src="../_static/documentation_options.js?v=adc66a14"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=4e2eecee"></script>

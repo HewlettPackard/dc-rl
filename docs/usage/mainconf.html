@@ -6,7 +6,7 @@
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Data Center Configuration File" href="dcconf.html" /><link rel="prev" title="Custom Use" href="index.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
-        <title>Main Configuration File - SustainDC 0.0.4 documentation</title>
+        <title>Main Configuration File - SustainDC 2.0.4 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -180,7 +180,7 @@
       </label>
     </div>
     <div class="header-center">
-      <a href="../index.html"><div class="brand">SustainDC 0.0.4 documentation</div></a>
+      <a href="../index.html"><div class="brand">SustainDC 2.0.4 documentation</div></a>
     </div>
     <div class="header-right">
       <div class="theme-toggle-container theme-toggle-header">
@@ -204,7 +204,7 @@
       <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
   
   
-  <span class="sidebar-brand-text">SustainDC 0.0.4 documentation</span>
+  <span class="sidebar-brand-text">SustainDC 2.0.4 documentation</span>
   
 </a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
   <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
@@ -230,7 +230,6 @@
 <li class="toctree-l2"><a class="reference internal" href="customci.html">Custom Carbon Intensity Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="customweather.html">Custom Weather Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="customreward.html">Custom Reward Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="confalgos.html">Configure Algorithms</a></li>
 </ul>
 </li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../evaluation/index.html">Evaluation</a><input class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><div class="visually-hidden">Toggle navigation of Evaluation</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
@@ -239,9 +238,45 @@
 <li class="toctree-l2"><a class="reference internal" href="../evaluation/evaluate.html">How to evaluate SustainDC model</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../codedoc/index.html">Code</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../code/modules.html">Code</a><input class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Code</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../code/sustaindc_env.html">Core Environment</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code/train_sustaindc.html">Training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code/eval_sustaindc.html">Evaluation</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../code/harl.html">Algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Algorithms</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../code/harl.algorithms.html">harl.algorithms package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of harl.algorithms package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.algorithms.actors.html">harl.algorithms.actors package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.algorithms.critics.html">harl.algorithms.critics package</a></li>
+</ul>
+</li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../code/harl.common.html">harl.common package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of harl.common package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.common.buffers.html">harl.common.buffers package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../code/harl.envs.html">harl.envs package</a></li>
+<li class="toctree-l3 has-children"><a class="reference internal" href="../code/harl.models.html">harl.models package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of harl.models package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.models.base.html">harl.models.base package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.models.policy_models.html">harl.models.policy_models package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="../code/harl.models.value_function_models.html">harl.models.value_function_models package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../code/harl.runners.html">harl.runners package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/harl.utils.html">harl.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../code/envs.html">Environments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../code/utils.html">Utilities</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../code/data.html">Data Sources</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Data Sources</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="../code/data.CarbonIntensity.html">data.CarbonIntensity package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/data.Weather.html">data.Weather package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../code/data.Workload.html">data.Workload package</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../contribution_guidelines.html">Contribution Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../py-modindex.html">Module Index</a></li>
 </ul>
 
 </div>
@@ -283,36 +318,45 @@
         </div>
         <article role="main" id="furo-main-content">
           <section id="main-configuration-file">
-<h1>Main Configuration File<a class="headerlink" href="#main-configuration-file" title="Link to this heading">¶</a></h1>
-<p>The main environment for wrapping the environments is <code class="code docutils literal notranslate"><span class="pre">dclr_env_harl_partialobs.py</span></code>, which reads configurations from <code class="code docutils literal notranslate"><span class="pre">dc_config.json</span></code> and manages the external variables using managers for weather, carbon intensity, and workload.</p>
+<span id="mainconf-ref"></span><h1>Main Configuration File<a class="headerlink" href="#main-configuration-file" title="Link to this heading">¶</a></h1>
+<p>The main environment for wrapping the environments is <code class="code docutils literal notranslate"><span class="pre">sustaindc_env.py</span></code>, which reads configurations from <code class="code docutils literal notranslate"><span class="pre">dc_config.json</span></code> and manages the external variables using managers for weather, carbon intensity, and workload.</p>
 <section id="example-configuration">
 <h2>Example Configuration<a class="headerlink" href="#example-configuration" title="Link to this heading">¶</a></h2>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">env_config</span> <span class="o">=</span> <span class="p">{</span>
- <span class="c1"># Agents active</span>
- <span class="s1">&#39;agents&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;agent_ls&#39;</span><span class="p">,</span> <span class="s1">&#39;agent_dc&#39;</span><span class="p">,</span> <span class="s1">&#39;agent_bat&#39;</span><span class="p">],</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Default configuration for this environment. New parameters should be</span>
+<span class="c1"># added here</span>
+<span class="n">DEFAULT_CONFIG</span> <span class="o">=</span> <span class="p">{</span>
+     <span class="c1"># Agents active</span>
+     <span class="s1">&#39;agents&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;agent_ls&#39;</span><span class="p">,</span> <span class="s1">&#39;agent_dc&#39;</span><span class="p">,</span> <span class="s1">&#39;agent_bat&#39;</span><span class="p">],</span>
 
- <span class="c1"># Datafiles</span>
- <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;ny&#39;</span><span class="p">,</span>
- <span class="s1">&#39;cintensity_file&#39;</span><span class="p">:</span> <span class="s1">&#39;NYIS_NG_&amp;_avgCI.csv&#39;</span><span class="p">,</span>
- <span class="s1">&#39;weather_file&#39;</span><span class="p">:</span> <span class="s1">&#39;USA_NY_New.York-Kennedy.epw&#39;</span><span class="p">,</span>
- <span class="s1">&#39;workload_file&#39;</span><span class="p">:</span> <span class="s1">&#39;Alibaba_CPU_Data_Hourly_1.csv&#39;</span><span class="p">,</span>
+     <span class="c1"># Datafiles</span>
+     <span class="s1">&#39;location&#39;</span><span class="p">:</span> <span class="s1">&#39;ny&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;cintensity_file&#39;</span><span class="p">:</span> <span class="s1">&#39;NYIS_NG_&amp;_avgCI.csv&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;weather_file&#39;</span><span class="p">:</span> <span class="s1">&#39;USA_NY_New.York-Kennedy.epw&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;workload_file&#39;</span><span class="p">:</span> <span class="s1">&#39;Alibaba_CPU_Data_Hourly_1.csv&#39;</span><span class="p">,</span>
 
- <span class="c1"># Data Center maximum capacity</span>
- <span class="s1">&#39;datacenter_capacity_mw&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
+     <span class="c1"># Capacity (MW) of the datacenter</span>
+     <span class="s1">&#39;datacenter_capacity_mw&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span>
 
- <span class="c1"># Battery capacity</span>
- <span class="s1">&#39;max_bat_cap_Mw&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+     <span class="c1"># Maximum battery capacity</span>
+     <span class="s1">&#39;max_bat_cap_Mw&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
 
- <span class="c1"># Collaborative weight in the reward</span>
- <span class="s1">&#39;individual_reward_weight&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+     <span class="c1"># weight of the individual reward (1=full individual, 0=full collaborative, default=0.8)</span>
+     <span class="s1">&#39;individual_reward_weight&#39;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
 
- <span class="c1"># Flexible load ratio</span>
- <span class="s1">&#39;flexible_load&#39;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
+     <span class="c1"># flexible load ratio of the total workload</span>
+     <span class="s1">&#39;flexible_load&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
 
- <span class="c1"># Specify reward methods</span>
- <span class="s1">&#39;ls_reward&#39;</span><span class="p">:</span> <span class="s1">&#39;default_ls_reward&#39;</span><span class="p">,</span>
- <span class="s1">&#39;dc_reward&#39;</span><span class="p">:</span> <span class="s1">&#39;default_dc_reward&#39;</span><span class="p">,</span>
- <span class="s1">&#39;bat_reward&#39;</span><span class="p">:</span> <span class="s1">&#39;default_bat_reward&#39;</span>
+     <span class="c1"># Specify reward methods. These are defined in utils/reward_creator.</span>
+     <span class="s1">&#39;ls_reward&#39;</span><span class="p">:</span> <span class="s1">&#39;default_ls_reward&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;dc_reward&#39;</span><span class="p">:</span> <span class="s1">&#39;default_dc_reward&#39;</span><span class="p">,</span>
+     <span class="s1">&#39;bat_reward&#39;</span><span class="p">:</span> <span class="s1">&#39;default_bat_reward&#39;</span><span class="p">,</span>
+
+     <span class="c1"># Evaluation flag that is required by the load-shifting environment</span>
+     <span class="c1"># To be set only during offline evaluation</span>
+     <span class="s1">&#39;evaluation&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+
+     <span class="c1"># Set this to True if an agent (like MADDPG) returns continuous actions,</span>
+     <span class="s2">&quot;actions_are_logits&quot;</span><span class="p">:</span> <span class="kc">False</span>
 <span class="p">}</span>
 </pre></div>
 </div>
@@ -387,7 +431,7 @@
       
     </aside>
   </div>
-</div><script src="../_static/documentation_options.js?v=8c5712d9"></script>
+</div><script src="../_static/documentation_options.js?v=adc66a14"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/furo.js?v=4e2eecee"></script>

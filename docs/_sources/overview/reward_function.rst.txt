@@ -1,6 +1,6 @@
-===============
+==================
 Reward Functions
-===============
+==================
 
 |F| provides an interface where the end-user can choose to train agents independently of each other's reward feedback, or consider a collaborative reward approach. 
 

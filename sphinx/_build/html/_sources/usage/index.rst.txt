@@ -1,8 +1,10 @@
+.. _usage_ref:
+
 =============
 Custom Use
 =============
 
-SustainDC offers extensive customization options to tailor the environments to specific needs and configurations. Users can modify various parameters and components across the **Workload**, **Data Center**, and **Battery** environments, as well as external variables like weather carbon intensity data, and workload trace.
+|F| offers extensive customization options to tailor the environments to specific needs and configurations. Users can modify various parameters and components across the **Workload**, **Data Center**, and **Battery** environments, as well as external variables like weather carbon intensity data, and workload trace.
 
 
 .. image:: ../images/schematic.png
@@ -21,4 +23,3 @@ In this section we will see how to modify the configuration files, external data
    customci
    customweather
    customreward
-   confalgos

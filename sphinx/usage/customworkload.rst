@@ -9,8 +9,8 @@ Data Source
 
 The default workload traces are extracted from:
 
-  - Alibaba 2017 CPU Data (`LINK <https://github.com/alibaba/clusterdata>`_)
-  - Google 2011 CPU Data ( `LINK <https://github.com/google/cluster-data>`_)
+  - Alibaba 2017 CPU Data (`LINK <https://github.com/alibaba/clusterdata>`__)
+  - Google 2011 CPU Data (`LINK <https://github.com/google/cluster-data>`__)
 
 Expected File Format
 -----------------------
@@ -22,7 +22,7 @@ Example Workload Trace File
 
 .. code-block:: python
 
-   ,index,cpu_load
+   ,cpu_load
    1,0.380
    2,0.434
    3,0.402
@@ -36,4 +36,4 @@ Example Workload Trace File
 Integration Steps
 ----------------------
   - Place the new workload trace file in the :code:`data/Workload` folder
-  - Update the workload_file entry in :code:`env_config` with the path to the new workload trace file
+  - Update the :code:`workload_file` entry in :code:`DEFAULT_CONFIG` dictionary in :code:`sustaindc_env.py` with the path to the new workload trace file

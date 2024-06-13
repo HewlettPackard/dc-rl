@@ -36,4 +36,4 @@ Integration Steps
 ---------------------
 
   - Add the new weather data files in the .epw format to the :code:`data/Weather` folder
-  - Update the :code:`weather_file` entry in :code:`env_config` with the path to the new weather file
+  - Update the :code:`weather_file` entry in :code:`DEFAULT_CONFIG` dictionary in :code:`sustaindc_env.py` with the path to the new weather file
