@@ -380,15 +380,15 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.models.policy_models.stochastic_mlp_policy.StochasticMlpPolicy.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stochastic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/models/policy_models/stochastic_mlp_policy.html#StochasticMlpPolicy.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.models.policy_models.stochastic_mlp_policy.StochasticMlpPolicy.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Compute actions from the given inputs.
-:param obs: (np.ndarray / torch.Tensor) observation inputs into network.
-:param available_actions: (np.ndarray / torch.Tensor) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Compute actions from the given inputs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>stochastic</strong> – (bool) whether to sample from action distribution or return the mode.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> – (np.ndarray / torch.Tensor) observation inputs into network.</p></li>
+<li><p><strong>available_actions</strong> – (np.ndarray / torch.Tensor) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+<li><p><strong>stochastic</strong> – (bool) whether to sample from action distribution or return the mode.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(torch.Tensor) actions to take.</p>
@@ -402,18 +402,20 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.models.policy_models.stochastic_mlp_policy.StochasticMlpPolicy.get_logits">
 <span class="sig-name descname"><span class="pre">get_logits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/models/policy_models/stochastic_mlp_policy.html#StochasticMlpPolicy.get_logits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.models.policy_models.stochastic_mlp_policy.StochasticMlpPolicy.get_logits" title="Link to this definition">¶</a></dt>
-<dd><p>Get action logits from the given inputs.
-:param obs: (np.ndarray / torch.Tensor) input to network.
-:param available_actions: (np.ndarray / torch.Tensor) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Get action logits from the given inputs.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(torch.Tensor) logits of actions for the given inputs.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> – (np.ndarray / torch.Tensor) input to network.</p></li>
+<li><p><strong>available_actions</strong> – (np.ndarray / torch.Tensor) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+</ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>action_logits</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(torch.Tensor) logits of actions for the given inputs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>action_logits</p>
 </dd>
 </dl>
 </dd></dl>
@@ -431,18 +433,18 @@ registered hooks while the latter silently ignores them.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.models.policy_models.stochastic_policy.StochasticPolicy.evaluate_actions">
 <span class="sig-name descname"><span class="pre">evaluate_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnn_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/models/policy_models/stochastic_policy.html#StochasticPolicy.evaluate_actions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.models.policy_models.stochastic_policy.StochasticPolicy.evaluate_actions" title="Link to this definition">¶</a></dt>
-<dd><p>Compute action log probability, distribution entropy, and action distribution.
-:param obs: (np.ndarray / torch.Tensor) observation inputs into network.
-:param rnn_states: (np.ndarray / torch.Tensor) if RNN network, hidden states for RNN.
-:param action: (np.ndarray / torch.Tensor) actions whose entropy and log probability to evaluate.
-:param masks: (np.ndarray / torch.Tensor) mask tensor denoting if hidden states should be reinitialized to zeros.
-:param available_actions: (np.ndarray / torch.Tensor) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Compute action log probability, distribution entropy, and action distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>active_masks</strong> – (np.ndarray / torch.Tensor) denotes whether an agent is active or dead.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> – (np.ndarray / torch.Tensor) observation inputs into network.</p></li>
+<li><p><strong>rnn_states</strong> – (np.ndarray / torch.Tensor) if RNN network, hidden states for RNN.</p></li>
+<li><p><strong>action</strong> – (np.ndarray / torch.Tensor) actions whose entropy and log probability to evaluate.</p></li>
+<li><p><strong>masks</strong> – (np.ndarray / torch.Tensor) mask tensor denoting if hidden states should be reinitialized to zeros.</p></li>
+<li><p><strong>available_actions</strong> – (np.ndarray / torch.Tensor) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+<li><p><strong>active_masks</strong> – (np.ndarray / torch.Tensor) denotes whether an agent is active or dead.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(torch.Tensor) log probabilities of the input actions.
@@ -458,17 +460,17 @@ action_distribution: (torch.distributions) action distribution.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.models.policy_models.stochastic_policy.StochasticPolicy.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnn_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/models/policy_models/stochastic_policy.html#StochasticPolicy.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.models.policy_models.stochastic_policy.StochasticPolicy.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Compute actions from the given inputs.
-:param obs: (np.ndarray / torch.Tensor) observation inputs into network.
-:param rnn_states: (np.ndarray / torch.Tensor) if RNN network, hidden states for RNN.
-:param masks: (np.ndarray / torch.Tensor) mask tensor denoting if hidden states should be reinitialized to zeros.
-:param available_actions: (np.ndarray / torch.Tensor) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Compute actions from the given inputs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>deterministic</strong> – (bool) whether to sample from action distribution or return the mode.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> – (np.ndarray / torch.Tensor) observation inputs into network.</p></li>
+<li><p><strong>rnn_states</strong> – (np.ndarray / torch.Tensor) if RNN network, hidden states for RNN.</p></li>
+<li><p><strong>masks</strong> – (np.ndarray / torch.Tensor) mask tensor denoting if hidden states should be reinitialized to zeros.</p></li>
+<li><p><strong>available_actions</strong> – (np.ndarray / torch.Tensor) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+<li><p><strong>deterministic</strong> – (bool) whether to sample from action distribution or return the mode.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(torch.Tensor) actions to take.

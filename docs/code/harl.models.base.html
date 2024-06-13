@@ -332,16 +332,16 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.models.base.act.ACTLayer.evaluate_actions">
 <span class="sig-name descname"><span class="pre">evaluate_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/models/base/act.html#ACTLayer.evaluate_actions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.models.base.act.ACTLayer.evaluate_actions" title="Link to this definition">¶</a></dt>
-<dd><p>Compute action log probability, distribution entropy, and action distribution.
-:param x: (torch.Tensor) input to network.
-:param action: (torch.Tensor) actions whose entropy and log probability to evaluate.
-:param available_actions: (torch.Tensor) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Compute action log probability, distribution entropy, and action distribution.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>active_masks</strong> – (torch.Tensor) denotes whether an agent is active or dead.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – (torch.Tensor) input to network.</p></li>
+<li><p><strong>action</strong> – (torch.Tensor) actions whose entropy and log probability to evaluate.</p></li>
+<li><p><strong>available_actions</strong> – (torch.Tensor) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+<li><p><strong>active_masks</strong> – (torch.Tensor) denotes whether an agent is active or dead.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(torch.Tensor) log probabilities of the input actions.
@@ -357,15 +357,15 @@ action_distribution: (torch.distributions) action distribution.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.models.base.act.ACTLayer.forward">
 <span class="sig-name descname"><span class="pre">forward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/models/base/act.html#ACTLayer.forward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.models.base.act.ACTLayer.forward" title="Link to this definition">¶</a></dt>
-<dd><p>Compute actions and action logprobs from given input.
-:param x: (torch.Tensor) input to network.
-:param available_actions: (torch.Tensor) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Compute actions and action logprobs from given input.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>deterministic</strong> – (bool) whether to sample from action distribution or return the mode.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – (torch.Tensor) input to network.</p></li>
+<li><p><strong>available_actions</strong> – (torch.Tensor) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+<li><p><strong>deterministic</strong> – (bool) whether to sample from action distribution or return the mode.</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(torch.Tensor) actions to take.
@@ -380,18 +380,20 @@ action_log_probs: (torch.Tensor) log probabilities of taken actions.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.models.base.act.ACTLayer.get_logits">
 <span class="sig-name descname"><span class="pre">get_logits</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/models/base/act.html#ACTLayer.get_logits"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.models.base.act.ACTLayer.get_logits" title="Link to this definition">¶</a></dt>
-<dd><p>Get action logits from inputs.
-:param x: (torch.Tensor) input to network.
-:param available_actions: (torch.Tensor) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Get action logits from inputs.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(torch.Tensor) logits of actions for the given inputs.</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x</strong> – (torch.Tensor) input to network.</p></li>
+<li><p><strong>available_actions</strong> – (torch.Tensor) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+</ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>action_logits</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(torch.Tensor) logits of actions for the given inputs.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>action_logits</p>
 </dd>
 </dl>
 </dd></dl>

@@ -324,6 +324,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">share_obs_space</span><span class="p">,</span> <span class="n">num_agents</span><span class="p">,</span> <span class="n">obs_spaces</span><span class="p">,</span> <span class="n">act_spaces</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize off-policy buffer.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            args: (dict) arguments</span>
 <span class="sd">            share_obs_space: (gym.Space or list) share observation space</span>
@@ -356,18 +357,19 @@
 <a class="viewcode-back" href="../../../../code/harl.common.buffers.html#harl.common.buffers.off_policy_buffer_ep.OffPolicyBufferEP.sample">[docs]</a>
     <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sample data for training.</span>
+<span class="sd">        </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            sp_share_obs: (batch_size, *dim)</span>
-<span class="sd">            sp_obs: (n_agents, batch_size, *dim)</span>
-<span class="sd">            sp_actions: (n_agents, batch_size, *dim)</span>
-<span class="sd">            sp_available_actions: (n_agents, batch_size, *dim)</span>
+<span class="sd">            sp_share_obs: (batch_size, \*dim)</span>
+<span class="sd">            sp_obs: (n_agents, batch_size, \*dim)</span>
+<span class="sd">            sp_actions: (n_agents, batch_size, \*dim)</span>
+<span class="sd">            sp_available_actions: (n_agents, batch_size, \*dim)</span>
 <span class="sd">            sp_reward: (batch_size, 1)</span>
 <span class="sd">            sp_done: (batch_size, 1)</span>
 <span class="sd">            sp_valid_transitions: (n_agents, batch_size, 1)</span>
 <span class="sd">            sp_term: (batch_size, 1)</span>
-<span class="sd">            sp_next_share_obs: (batch_size, *dim)</span>
-<span class="sd">            sp_next_obs: (n_agents, batch_size, *dim)</span>
-<span class="sd">            sp_next_available_actions: (n_agents, batch_size, *dim)</span>
+<span class="sd">            sp_next_share_obs: (batch_size, \*dim)</span>
+<span class="sd">            sp_next_obs: (n_agents, batch_size, \*dim)</span>
+<span class="sd">            sp_next_available_actions: (n_agents, batch_size, \*dim)</span>
 <span class="sd">            sp_gamma: (batch_size, 1)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_end_flag</span><span class="p">()</span>  <span class="c1"># update the current end flag</span>

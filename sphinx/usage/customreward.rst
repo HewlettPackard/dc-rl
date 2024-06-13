@@ -68,7 +68,7 @@ Next, users need to add the new custom reward function(s) to the :code:`REWARD_M
     }
 
 
-A dictionary of the environment parameters (:code:`reward_params`) is available to users in :code:`dcrl_env_harl_partialobs.py`. **#TODO: update file**
+A dictionary of the environment parameters (:code:`reward_params`) is available to users in :code:`sustaindc_env.py`.
 This object consists of the information dictionary of each environment, and some other global variables such as time, day, carbon intensity, outside temperature, etc.
 If a user wants to add additional custom parameters, they must be added in the dictionary :code:`reward_params` so that those variables are visible in the reward function.
 Within the dictionary, the following environment parameters are available to users:

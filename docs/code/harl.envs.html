@@ -554,13 +554,13 @@ already pending.</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="harl.envs.env_wrappers.tile_images">
 <span class="sig-prename descclassname"><span class="pre">harl.envs.env_wrappers.</span></span><span class="sig-name descname"><span class="pre">tile_images</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">img_nhwc</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/envs/env_wrappers.html#tile_images"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.envs.env_wrappers.tile_images" title="Link to this definition">¶</a></dt>
-<dd><p>Tile N images into one big PxQ image
-(P,Q) are chosen to be as close as possible, and if N
-is square, then P=Q.
-input: img_nhwc, list or array of images, ndim=4 once turned into array</p>
-<blockquote>
-<div><p>n = batch index, h = height, w = width, c = channel</p>
-</div></blockquote>
+<dd><dl class="simple">
+<dt>Tile N images into one big PxQ image</dt><dd><p>(P,Q) are chosen to be as close as possible, and if N
+is square, then P=Q.</p>
+</dd>
+<dt>input: img_nhwc, list or array of images, ndim=4 once turned into array</dt><dd><p>n = batch index, h = height, w = width, c = channel</p>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>bigim_HWc, ndarray with ndim=3</p>

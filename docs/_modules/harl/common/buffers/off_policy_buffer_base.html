@@ -393,19 +393,20 @@
 <a class="viewcode-back" href="../../../../code/harl.common.buffers.html#harl.common.buffers.off_policy_buffer_base.OffPolicyBufferBase.insert">[docs]</a>
     <span class="k">def</span> <span class="nf">insert</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Insert data into buffer.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            data: a tuple of (share_obs, obs, actions, available_actions, reward, done, valid_transitions, term, next_share_obs, next_obs, next_available_actions)</span>
-<span class="sd">            share_obs: EP: (n_rollout_threads, *share_obs_shape), FP: (n_rollout_threads, num_agents, *share_obs_shape)</span>
-<span class="sd">            obs: [(n_rollout_threads, *obs_shapes[agent_id]) for agent_id in range(num_agents)]</span>
-<span class="sd">            actions: [(n_rollout_threads, *act_shapes[agent_id]) for agent_id in range(num_agents)]</span>
-<span class="sd">            available_actions: [(n_rollout_threads, *act_shapes[agent_id]) for agent_id in range(num_agents)]</span>
+<span class="sd">            share_obs: EP: (n_rollout_threads, \*share_obs_shape), FP: (n_rollout_threads, num_agents, \*share_obs_shape)</span>
+<span class="sd">            obs: [(n_rollout_threads, \*obs_shapes[agent_id]) for agent_id in range(num_agents)]</span>
+<span class="sd">            actions: [(n_rollout_threads, \*act_shapes[agent_id]) for agent_id in range(num_agents)]</span>
+<span class="sd">            available_actions: [(n_rollout_threads, \*act_shapes[agent_id]) for agent_id in range(num_agents)]</span>
 <span class="sd">            reward: EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)</span>
 <span class="sd">            done: EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)</span>
 <span class="sd">            valid_transitions: [(n_rollout_threads, 1) for agent_id in range(num_agents)]</span>
 <span class="sd">            term: EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)</span>
-<span class="sd">            next_share_obs: EP: (n_rollout_threads, *share_obs_shape), FP: (n_rollout_threads, num_agents, *share_obs_shape)</span>
-<span class="sd">            next_obs: [(n_rollout_threads, *obs_shapes[agent_id]) for agent_id in range(num_agents)]</span>
-<span class="sd">            next_available_actions: [(n_rollout_threads, *act_shapes[agent_id]) for agent_id in range(num_agents)]</span>
+<span class="sd">            next_share_obs: EP: (n_rollout_threads, \*share_obs_shape), FP: (n_rollout_threads, num_agents, \*share_obs_shape)</span>
+<span class="sd">            next_obs: [(n_rollout_threads, \*obs_shapes[agent_id]) for agent_id in range(num_agents)]</span>
+<span class="sd">            next_available_actions: [(n_rollout_threads, \*act_shapes[agent_id]) for agent_id in range(num_agents)]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="p">(</span>
             <span class="n">share_obs</span><span class="p">,</span>

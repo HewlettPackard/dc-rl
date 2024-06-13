@@ -488,6 +488,7 @@
 <a class="viewcode-back" href="../../code/envs.html#envs.datacenter.Rack.compute_instantaneous_pwr_vecd">[docs]</a>
     <span class="k">def</span> <span class="nf">compute_instantaneous_pwr_vecd</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inlet_temp</span><span class="p">,</span> <span class="n">ITE_load_pct</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the power consumption of the whole rack at the current step in a vectorized manner</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            inlet_temp (float): Room temperature</span>
 <span class="sd">            ITE_load_pct (float): Current CPU usage</span>
@@ -516,6 +517,7 @@
 <a class="viewcode-back" href="../../code/envs.html#envs.datacenter.Rack.get_average_rack_fan_v">[docs]</a>
     <span class="k">def</span> <span class="nf">get_average_rack_fan_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the average fan velocity for each rack</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            (float): Average fan flow rate for the rack</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -527,6 +529,7 @@
 <a class="viewcode-back" href="../../code/envs.html#envs.datacenter.Rack.get_total_rack_fan_v">[docs]</a>
     <span class="k">def</span> <span class="nf">get_total_rack_fan_v</span><span class="p">(</span><span class="bp">self</span><span class="p">,):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculate the total fan velocity for each rack</span>
+
 <span class="sd">        Returns:</span>
 <span class="sd">            (float): Total fan flow rate for the rack</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -713,6 +716,7 @@
 <span class="k">def</span> <span class="nf">calculate_chiller_power</span><span class="p">(</span><span class="n">max_cooling_cap</span><span class="p">,</span> <span class="n">load</span><span class="p">,</span> <span class="n">ambient_temp</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate the chiller power consumption based on load and operating conditions.</span>
+<span class="sd">    </span>
 <span class="sd">    Obtained from:</span>
 <span class="sd">        1) https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/testfiles/AirCooledElectricChiller.idf</span>
 <span class="sd">        2) https://github.com/NREL/EnergyPlus/issues/763</span>

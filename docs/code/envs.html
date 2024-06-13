@@ -714,17 +714,19 @@ rackwise_outlet_temp (List[float]): Rackwise outlet temperature</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="envs.datacenter.Rack.compute_instantaneous_pwr_vecd">
 <span class="sig-name descname"><span class="pre">compute_instantaneous_pwr_vecd</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inlet_temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ITE_load_pct</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.compute_instantaneous_pwr_vecd"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.compute_instantaneous_pwr_vecd" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the power consumption of the whole rack at the current step in a vectorized manner
-:param inlet_temp: Room temperature
-:type inlet_temp: float
-:param ITE_load_pct: Current CPU usage
-:type ITE_load_pct: float</p>
+<dd><p>Calculate the power consumption of the whole rack at the current step in a vectorized manner</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Current CPU power usage</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inlet_temp</strong> (<em>float</em>) – Room temperature</p></li>
+<li><p><strong>ITE_load_pct</strong> (<em>float</em>) – Current CPU usage</p></li>
+</ul>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>cpu_power (float)</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Current CPU power usage</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>cpu_power (float)</p>
 </dd>
 </dl>
 </dd></dl>
@@ -738,9 +740,15 @@ rackwise_outlet_temp (List[float]): Rackwise outlet temperature</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="envs.datacenter.Rack.get_average_rack_fan_v">
 <span class="sig-name descname"><span class="pre">get_average_rack_fan_v</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_average_rack_fan_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_average_rack_fan_v" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the average fan velocity for each rack
-:returns: Average fan flow rate for the rack
-:rtype: (float)</p>
+<dd><p>Calculate the average fan velocity for each rack</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Average fan flow rate for the rack</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(float)</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -760,9 +768,15 @@ rackwise_outlet_temp (List[float]): Rackwise outlet temperature</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="envs.datacenter.Rack.get_total_rack_fan_v">
 <span class="sig-name descname"><span class="pre">get_total_rack_fan_v</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#Rack.get_total_rack_fan_v"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.Rack.get_total_rack_fan_v" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the total fan velocity for each rack
-:returns: Total fan flow rate for the rack
-:rtype: (float)</p>
+<dd><p>Calculate the total fan velocity for each rack</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Total fan flow rate for the rack</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>(float)</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
@@ -815,16 +829,16 @@ Compressor_load (float): Chiller compressor load</p>
 <dl class="py function">
 <dt class="sig sig-object py" id="envs.datacenter.calculate_chiller_power">
 <span class="sig-prename descclassname"><span class="pre">envs.datacenter.</span></span><span class="sig-name descname"><span class="pre">calculate_chiller_power</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">max_cooling_cap</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">load</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ambient_temp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/datacenter.html#calculate_chiller_power"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.datacenter.calculate_chiller_power" title="Link to this definition">¶</a></dt>
-<dd><p>Calculate the chiller power consumption based on load and operating conditions.
-Obtained from:</p>
-<blockquote>
-<div><ol class="arabic simple">
+<dd><p>Calculate the chiller power consumption based on load and operating conditions.</p>
+<dl class="simple">
+<dt>Obtained from:</dt><dd><ol class="arabic simple">
 <li><p><a class="reference external" href="https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/testfiles/AirCooledElectricChiller.idf">https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/testfiles/AirCooledElectricChiller.idf</a></p></li>
 <li><p><a class="reference external" href="https://github.com/NREL/EnergyPlus/issues/763">https://github.com/NREL/EnergyPlus/issues/763</a></p></li>
 <li><p><a class="reference external" href="https://dmey.github.io/EnergyPlusFortran-Reference/proc/calcelectricchillermodel.html">https://dmey.github.io/EnergyPlusFortran-Reference/proc/calcelectricchillermodel.html</a></p></li>
 <li><p><a class="reference external" href="https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/tst/EnergyPlus/unit/ChillerElectric.unit.cc#L95">https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/tst/EnergyPlus/unit/ChillerElectric.unit.cc#L95</a></p></li>
 </ol>
-</div></blockquote>
+</dd>
+</dl>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

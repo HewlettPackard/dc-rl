@@ -325,6 +325,7 @@
         <span class="bp">self</span><span class="p">,</span> <span class="n">action_space</span><span class="p">,</span> <span class="n">inputs_dim</span><span class="p">,</span> <span class="n">initialization_method</span><span class="p">,</span> <span class="n">gain</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize ACTLayer.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            action_space: (gym.Space) action space.</span>
 <span class="sd">            inputs_dim: (int) dimension of network input.</span>
@@ -360,6 +361,7 @@
 <a class="viewcode-back" href="../../../../code/harl.models.base.html#harl.models.base.act.ACTLayer.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">available_actions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deterministic</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute actions and action logprobs from given input.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            x: (torch.Tensor) input to network.</span>
 <span class="sd">            available_actions: (torch.Tensor) denotes which actions are available to agent</span>
@@ -403,6 +405,7 @@
 <a class="viewcode-back" href="../../../../code/harl.models.base.html#harl.models.base.act.ACTLayer.get_logits">[docs]</a>
     <span class="k">def</span> <span class="nf">get_logits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">available_actions</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get action logits from inputs.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            x: (torch.Tensor) input to network.</span>
 <span class="sd">            available_actions: (torch.Tensor) denotes which actions are available to agent</span>
@@ -426,6 +429,7 @@
 <a class="viewcode-back" href="../../../../code/harl.models.base.html#harl.models.base.act.ACTLayer.evaluate_actions">[docs]</a>
     <span class="k">def</span> <span class="nf">evaluate_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">available_actions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">active_masks</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute action log probability, distribution entropy, and action distribution.</span>
+<span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            x: (torch.Tensor) input to network.</span>
 <span class="sd">            action: (torch.Tensor) actions whose entropy and log probability to evaluate.</span>

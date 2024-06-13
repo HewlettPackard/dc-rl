@@ -326,6 +326,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">obs_space</span><span class="p">,</span> <span class="n">action_space</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize StochasticMlpPolicy model.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            args: (dict) arguments containing relevant model information.</span>
 <span class="sd">            obs_space: (gym.Space) observation space.</span>
@@ -357,6 +358,7 @@
 <a class="viewcode-back" href="../../../../code/harl.models.policy_models.html#harl.models.policy_models.stochastic_mlp_policy.StochasticMlpPolicy.forward">[docs]</a>
     <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">available_actions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stochastic</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute actions from the given inputs.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            obs: (np.ndarray / torch.Tensor) observation inputs into network.</span>
 <span class="sd">            available_actions: (np.ndarray / torch.Tensor) denotes which actions are available to agent</span>
@@ -382,6 +384,7 @@
 <a class="viewcode-back" href="../../../../code/harl.models.policy_models.html#harl.models.policy_models.stochastic_mlp_policy.StochasticMlpPolicy.get_logits">[docs]</a>
     <span class="k">def</span> <span class="nf">get_logits</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">available_actions</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get action logits from the given inputs.</span>
+<span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            obs: (np.ndarray / torch.Tensor) input to network.</span>
 <span class="sd">            available_actions: (np.ndarray / torch.Tensor) denotes which actions are available to agent</span>
