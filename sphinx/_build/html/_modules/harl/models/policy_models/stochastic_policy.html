@@ -328,6 +328,7 @@
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">obs_space</span><span class="p">,</span> <span class="n">action_space</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cpu&quot;</span><span class="p">)):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize StochasticPolicy model.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            args: (dict) arguments containing relevant model information.</span>
 <span class="sd">            obs_space: (gym.Space) observation space.</span>
@@ -373,6 +374,7 @@
         <span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">rnn_states</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="n">available_actions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">deterministic</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute actions from the given inputs.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            obs: (np.ndarray / torch.Tensor) observation inputs into network.</span>
 <span class="sd">            rnn_states: (np.ndarray / torch.Tensor) if RNN network, hidden states for RNN.</span>
@@ -409,6 +411,7 @@
         <span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">rnn_states</span><span class="p">,</span> <span class="n">action</span><span class="p">,</span> <span class="n">masks</span><span class="p">,</span> <span class="n">available_actions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">active_masks</span><span class="o">=</span><span class="kc">None</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Compute action log probability, distribution entropy, and action distribution.</span>
+<span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            obs: (np.ndarray / torch.Tensor) observation inputs into network.</span>
 <span class="sd">            rnn_states: (np.ndarray / torch.Tensor) if RNN network, hidden states for RNN.</span>

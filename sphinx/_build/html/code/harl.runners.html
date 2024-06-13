@@ -345,15 +345,15 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.runners.off_policy_base_runner.OffPolicyBaseRunner.get_actions">
 <span class="sig-name descname"><span class="pre">get_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">add_random</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.get_actions" title="Link to this definition">¶</a></dt>
-<dd><p>Get actions for rollout.
-:param obs: (np.ndarray) input observation, shape is (n_threads, n_agents, dim)
-:param available_actions: (np.ndarray) denotes which actions are available to agent (if None, all actions available),</p>
-<blockquote>
-<div><p>shape is (n_threads, n_agents, action_number) or (n_threads, ) of None</p>
-</div></blockquote>
+<dd><p>Get actions for rollout.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>add_random</strong> – (bool) whether to add randomness</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> – (np.ndarray) input observation, shape is (n_threads, n_agents, dim)</p></li>
+<li><p><strong>available_actions</strong> – (np.ndarray) denotes which actions are available to agent (if None, all actions available),
+shape is (n_threads, n_agents, action_number) or (n_threads, ) of None</p></li>
+<li><p><strong>add_random</strong> – (bool) whether to add randomness</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(np.ndarray) agent actions, shape is (n_threads, n_agents, dim)</p>
@@ -390,17 +390,17 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.runners.off_policy_base_runner.OffPolicyBaseRunner.sample_actions">
 <span class="sig-name descname"><span class="pre">sample_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#harl.runners.off_policy_base_runner.OffPolicyBaseRunner.sample_actions" title="Link to this definition">¶</a></dt>
-<dd><p>Sample random actions for warmup.
-:param available_actions: (np.ndarray) denotes which actions are available to agent (if None, all actions available),</p>
-<blockquote>
-<div><p>shape is (n_threads, n_agents, action_number) or (n_threads, ) of None</p>
-</div></blockquote>
+<dd><p>Sample random actions for warmup.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(np.ndarray) sampled actions, shape is (n_threads, n_agents, dim)</p>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>available_actions</strong> – (np.ndarray) denotes which actions are available to agent (if None, all actions available),
+shape is (n_threads, n_agents, action_number) or (n_threads, ) of None</p>
 </dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>actions</p>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>(np.ndarray) sampled actions, shape is (n_threads, n_agents, dim)</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>actions</p>
 </dd>
 </dl>
 </dd></dl>

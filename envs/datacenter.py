@@ -156,6 +156,7 @@ class Rack():
 
     def compute_instantaneous_pwr_vecd(self, inlet_temp, ITE_load_pct):
         """Calculate the power consumption of the whole rack at the current step in a vectorized manner
+
         Args:
             inlet_temp (float): Room temperature
             ITE_load_pct (float): Current CPU usage
@@ -181,6 +182,7 @@ class Rack():
 
     def get_average_rack_fan_v(self,):
         """Calculate the average fan velocity for each rack
+
         Returns:
             (float): Average fan flow rate for the rack
         """
@@ -189,6 +191,7 @@ class Rack():
     
     def get_total_rack_fan_v(self,):
         """Calculate the total fan velocity for each rack
+
         Returns:
             (float): Total fan flow rate for the rack
         """
@@ -353,6 +356,7 @@ class DataCenter_ITModel():
 def calculate_chiller_power(max_cooling_cap, load, ambient_temp):
     """
     Calculate the chiller power consumption based on load and operating conditions.
+    
     Obtained from:
         1) https://github.com/NREL/EnergyPlus/blob/9bb39b77a871dee7543c892ae53b0812c4c17b0d/testfiles/AirCooledElectricChiller.idf
         2) https://github.com/NREL/EnergyPlus/issues/763
