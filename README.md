@@ -86,10 +86,10 @@ Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documen
    Customize the `dc_config.json` file to specify your DC environment settings.
 
 2. **Environment Configuration:**
-   The main environment for wrapping the environments is `dclr_env_harl_partialobs.py`, which reads configurations from `env_config` and manages the external variables using managers for weather, carbon intensity, and workload. 
+   The main environment for wrapping the environments is `sustaindc_env.py`, which reads configurations from `env_config` and manages the external variables using managers for weather, carbon intensity, and workload. 
 
 3. **Train Example:**
-   Specify `location` inside `harl.config.envs_cfgs.sustaindc.yaml`. Specify other algorithm hyperparameteres in `harl.config.algos_cfgs.happo.yaml`. User can also specify the choice of reinforcement learning vs baseline agents in the `happo.yaml`.
+   Specify `location` inside `harl.config.envs_cfgs.sustaindc.yaml`. Specify other algorithm hyperparameteres in `harl.config.algos_cfgs.<algorith>.yaml`.
    
    ```bash
    python train_sustaindc.py --algo happo --exp_name happo 
