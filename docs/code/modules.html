@@ -3,10 +3,10 @@
   <head><meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="sustaindc_env module" href="sustaindc_env.html" /><link rel="prev" title="How to evaluate SustainDC model" href="../evaluation/evaluate.html" />
+<link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="data package" href="data.html" /><link rel="prev" title="How to evaluate SustainDC model" href="../evaluation/evaluate.html" />
 
     <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
-        <title>SustainDC - SustainDC 2.1.0 documentation</title>
+        <title>dc-rl - SustainDC 2.1.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
     <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
@@ -192,7 +192,7 @@
           <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
         </button>
       </div>
-      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
         <div class="visually-hidden">Toggle table of contents sidebar</div>
         <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
       </label>
@@ -243,21 +243,26 @@
 </ul>
 </li>
 <li class="toctree-l1 current has-children current-page"><a class="current reference internal" href="#">Code</a><input checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><div class="visually-hidden">Toggle navigation of Code</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l2"><a class="reference internal" href="sustaindc_env.html">Core Environment</a></li>
-<li class="toctree-l2"><a class="reference internal" href="train_sustaindc.html">Training</a></li>
-<li class="toctree-l2"><a class="reference internal" href="eval_sustaindc.html">Evaluation</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="harl.html">Algorithms</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of Algorithms</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3 has-children"><a class="reference internal" href="harl.algorithms.html">harl.algorithms package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of harl.algorithms package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="data.html">data package</a><input class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><div class="visually-hidden">Toggle navigation of data package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="data.CarbonIntensity.html">data.CarbonIntensity package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.Weather.html">data.Weather package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.Workload.html">data.Workload package</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="envs.html">envs package</a></li>
+<li class="toctree-l2"><a class="reference internal" href="eval_sustaindc.html">eval_sustaindc module</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="harl.html">harl package</a><input class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><div class="visually-hidden">Toggle navigation of harl package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="harl.algorithms.html">harl.algorithms package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of harl.algorithms package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="harl.algorithms.actors.html">harl.algorithms.actors package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="harl.algorithms.critics.html">harl.algorithms.critics package</a></li>
 </ul>
 </li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="harl.common.html">harl.common package</a><input class="toctree-checkbox" id="toctree-checkbox-7" name="toctree-checkbox-7" role="switch" type="checkbox"/><label for="toctree-checkbox-7"><div class="visually-hidden">Toggle navigation of harl.common package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="harl.common.html">harl.common package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of harl.common package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="harl.common.buffers.html">harl.common.buffers package</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="harl.envs.html">harl.envs package</a></li>
-<li class="toctree-l3 has-children"><a class="reference internal" href="harl.models.html">harl.models package</a><input class="toctree-checkbox" id="toctree-checkbox-8" name="toctree-checkbox-8" role="switch" type="checkbox"/><label for="toctree-checkbox-8"><div class="visually-hidden">Toggle navigation of harl.models package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l3 has-children"><a class="reference internal" href="harl.models.html">harl.models package</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of harl.models package</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
 <li class="toctree-l4"><a class="reference internal" href="harl.models.base.html">harl.models.base package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="harl.models.policy_models.html">harl.models.policy_models package</a></li>
 <li class="toctree-l4"><a class="reference internal" href="harl.models.value_function_models.html">harl.models.value_function_models package</a></li>
@@ -267,14 +272,9 @@
 <li class="toctree-l3"><a class="reference internal" href="harl.utils.html">harl.utils package</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="envs.html">Environments</a></li>
-<li class="toctree-l2"><a class="reference internal" href="utils.html">Utilities</a></li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="data.html">Data Sources</a><input class="toctree-checkbox" id="toctree-checkbox-9" name="toctree-checkbox-9" role="switch" type="checkbox"/><label for="toctree-checkbox-9"><div class="visually-hidden">Toggle navigation of Data Sources</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="data.CarbonIntensity.html">data.CarbonIntensity package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="data.Weather.html">data.Weather package</a></li>
-<li class="toctree-l3"><a class="reference internal" href="data.Workload.html">data.Workload package</a></li>
-</ul>
-</li>
+<li class="toctree-l2"><a class="reference internal" href="sustaindc_env.html">sustaindc_env module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="train_sustaindc.html">train_sustaindc module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">utils package</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../contribution_guidelines.html">Contribution Guidelines</a></li>
@@ -315,127 +315,36 @@
               <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
             </button>
           </div>
-          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
             <div class="visually-hidden">Toggle table of contents sidebar</div>
             <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <section id="f">
-<h1>SustainDC<a class="headerlink" href="#f" title="Link to this heading">¶</a></h1>
-<p>This section includes complete documentation of SustainDC including core environment, training, evaluation, algorithms, environments, utilities code and input data sets.</p>
-<section id="core-environment-link">
-<h2>Core Environment (<a class="reference external" href="https://github.com/HewlettPackard/dc-rl/blob/main/sustaindc_env.py">LINK</a>)<a class="headerlink" href="#core-environment-link" title="Link to this heading">¶</a></h2>
+          <section id="dc-rl">
+<h1>dc-rl<a class="headerlink" href="#dc-rl" title="Link to this heading">¶</a></h1>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="sustaindc_env.html">Core Environment</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.EnvConfig"><code class="docutils literal notranslate"><span class="pre">EnvConfig</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.EnvConfig.DEFAULT_CONFIG"><code class="docutils literal notranslate"><span class="pre">EnvConfig.DEFAULT_CONFIG</span></code></a></li>
+<li class="toctree-l1"><a class="reference internal" href="data.html">data package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="data.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="data.CarbonIntensity.html">data.CarbonIntensity package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.CarbonIntensity.html#module-data.CarbonIntensity">Module contents</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC"><code class="docutils literal notranslate"><span class="pre">SustainDC</span></code></a><ul>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.calculate_reward"><code class="docutils literal notranslate"><span class="pre">SustainDC.calculate_reward()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.close"><code class="docutils literal notranslate"><span class="pre">SustainDC.close()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.get_avail_actions"><code class="docutils literal notranslate"><span class="pre">SustainDC.get_avail_actions()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.get_avail_agent_actions"><code class="docutils literal notranslate"><span class="pre">SustainDC.get_avail_agent_actions()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.get_hierarchical_variables"><code class="docutils literal notranslate"><span class="pre">SustainDC.get_hierarchical_variables()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.render"><code class="docutils literal notranslate"><span class="pre">SustainDC.render()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.reset"><code class="docutils literal notranslate"><span class="pre">SustainDC.reset()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.seed"><code class="docutils literal notranslate"><span class="pre">SustainDC.seed()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.set_hierarchical_workload"><code class="docutils literal notranslate"><span class="pre">SustainDC.set_hierarchical_workload()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.state"><code class="docutils literal notranslate"><span class="pre">SustainDC.state()</span></code></a></li>
-<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.step"><code class="docutils literal notranslate"><span class="pre">SustainDC.step()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="data.Weather.html">data.Weather package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.Weather.html#module-data.Weather">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="data.Workload.html">data.Workload package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="data.Workload.html#module-data.Workload">Module contents</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-</div>
-</section>
-<section id="training-link">
-<h2>Training (<a class="reference external" href="https://github.com/HewlettPackard/dc-rl/blob/main/train_harl.py">LINK</a>)<a class="headerlink" href="#training-link" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="train_sustaindc.html">Training</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="train_sustaindc.html#train_sustaindc.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="data.html#module-data">Module contents</a></li>
 </ul>
 </li>
-</ul>
-</div>
-</section>
-<section id="evaluation-link">
-<h2>Evaluation (<a class="reference external" href="https://github.com/HewlettPackard/dc-rl/blob/main/eval_harl.py">LINK</a>)<a class="headerlink" href="#evaluation-link" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="eval_sustaindc.html">Evaluation</a></li>
-</ul>
-</div>
-</section>
-<section id="algorithms-link">
-<h2>Algorithms (<a class="reference external" href="https://github.com/HewlettPackard/dc-rl/tree/main/harl">LINK</a>)<a class="headerlink" href="#algorithms-link" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="harl.html">Algorithms</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="harl.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="harl.algorithms.html">harl.algorithms package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.html#subpackages">Subpackages</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.html#module-harl.algorithms">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="harl.common.html">harl.common package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="harl.common.html#subpackages">Subpackages</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.common.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.common.html#module-harl.common.base_logger">harl.common.base_logger module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.common.html#module-harl.common.valuenorm">harl.common.valuenorm module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.common.html#module-harl.common">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="harl.envs.html">harl.envs package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#module-harl.envs.env_wrappers">harl.envs.env_wrappers module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#module-harl.envs">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="harl.models.html">harl.models package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="harl.models.html#subpackages">Subpackages</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.models.html#module-harl.models">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="harl.runners.html">harl.runners package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.off_policy_base_runner">harl.runners.off_policy_base_runner module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.off_policy_ha_runner">harl.runners.off_policy_ha_runner module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.off_policy_ma_runner">harl.runners.off_policy_ma_runner module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.on_policy_base_runner">harl.runners.on_policy_base_runner module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.on_policy_ha_runner">harl.runners.on_policy_ha_runner module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.on_policy_ma_runner">harl.runners.on_policy_ma_runner module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="harl.utils.html">harl.utils package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#submodules">Submodules</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.configs_tools">harl.utils.configs_tools module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.discrete_util">harl.utils.discrete_util module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.envs_tools">harl.utils.envs_tools module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.models_tools">harl.utils.models_tools module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.trans_tools">harl.utils.trans_tools module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.trpo_util">harl.utils.trpo_util module</a></li>
-<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="harl.html#module-harl">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-<section id="environments-link">
-<h2>Environments (<a class="reference external" href="https://github.com/HewlettPackard/dc-rl/tree/main/envs">LINK</a>)<a class="headerlink" href="#environments-link" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="envs.html">Environments</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="envs.html">envs package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="envs.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="envs.html#module-envs.bat_env_fwd_view">envs.bat_env_fwd_view module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="envs.html#envs.bat_env_fwd_view.BatteryEnvFwd"><code class="docutils literal notranslate"><span class="pre">BatteryEnvFwd</span></code></a><ul>
@@ -529,14 +438,87 @@
 <li class="toctree-l2"><a class="reference internal" href="envs.html#module-envs">Module contents</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="eval_sustaindc.html">eval_sustaindc module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="eval_sustaindc.html#eval_sustaindc.baseline_actors"><code class="docutils literal notranslate"><span class="pre">baseline_actors</span></code></a></li>
 </ul>
-</div>
-</section>
-<section id="utilities-link">
-<h2>Utilities (<a class="reference external" href="https://github.com/HewlettPackard/dc-rl/tree/main/utils">LINK</a>)<a class="headerlink" href="#utilities-link" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="utils.html">Utilities</a><ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="harl.html">harl package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="harl.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="harl.algorithms.html">harl.algorithms package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.algorithms.html#module-harl.algorithms">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="harl.common.html">harl.common package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#module-harl.common.base_logger">harl.common.base_logger module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#module-harl.common.valuenorm">harl.common.valuenorm module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.common.html#module-harl.common">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="harl.envs.html">harl.envs package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#module-harl.envs.env_wrappers">harl.envs.env_wrappers module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.envs.html#module-harl.envs">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="harl.models.html">harl.models package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.html#subpackages">Subpackages</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.models.html#module-harl.models">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="harl.runners.html">harl.runners package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.off_policy_base_runner">harl.runners.off_policy_base_runner module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.off_policy_ha_runner">harl.runners.off_policy_ha_runner module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.off_policy_ma_runner">harl.runners.off_policy_ma_runner module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.on_policy_base_runner">harl.runners.on_policy_base_runner module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.on_policy_ha_runner">harl.runners.on_policy_ha_runner module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners.on_policy_ma_runner">harl.runners.on_policy_ma_runner module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.runners.html#module-harl.runners">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="harl.utils.html">harl.utils package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.configs_tools">harl.utils.configs_tools module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.discrete_util">harl.utils.discrete_util module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.envs_tools">harl.utils.envs_tools module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.models_tools">harl.utils.models_tools module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.trans_tools">harl.utils.trans_tools module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils.trpo_util">harl.utils.trpo_util module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="harl.utils.html#module-harl.utils">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="harl.html#module-harl">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="sustaindc_env.html">sustaindc_env module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.EnvConfig"><code class="docutils literal notranslate"><span class="pre">EnvConfig</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.EnvConfig.DEFAULT_CONFIG"><code class="docutils literal notranslate"><span class="pre">EnvConfig.DEFAULT_CONFIG</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC"><code class="docutils literal notranslate"><span class="pre">SustainDC</span></code></a><ul>
+<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.calculate_reward"><code class="docutils literal notranslate"><span class="pre">SustainDC.calculate_reward()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.close"><code class="docutils literal notranslate"><span class="pre">SustainDC.close()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.get_avail_actions"><code class="docutils literal notranslate"><span class="pre">SustainDC.get_avail_actions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.get_avail_agent_actions"><code class="docutils literal notranslate"><span class="pre">SustainDC.get_avail_agent_actions()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.render"><code class="docutils literal notranslate"><span class="pre">SustainDC.render()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.reset"><code class="docutils literal notranslate"><span class="pre">SustainDC.reset()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.seed"><code class="docutils literal notranslate"><span class="pre">SustainDC.seed()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.state"><code class="docutils literal notranslate"><span class="pre">SustainDC.state()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="sustaindc_env.html#sustaindc_env.SustainDC.step"><code class="docutils literal notranslate"><span class="pre">SustainDC.step()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="train_sustaindc.html">train_sustaindc module</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="train_sustaindc.html#train_sustaindc.main"><code class="docutils literal notranslate"><span class="pre">main()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="utils.html">utils package</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#submodules">Submodules</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html#module-utils.base_agents">utils.base_agents module</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="utils.html#utils.base_agents.BaseBatteryAgent"><code class="docutils literal notranslate"><span class="pre">BaseBatteryAgent</span></code></a><ul>
@@ -669,45 +651,18 @@
 </ul>
 </div>
 </section>
-<section id="data-sources-link">
-<h2>Data Sources (<a class="reference external" href="https://github.com/HewlettPackard/dc-rl/tree/main/data">LINK</a>)<a class="headerlink" href="#data-sources-link" title="Link to this heading">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="data.html">Data Sources</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="data.html#subpackages">Subpackages</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="data.CarbonIntensity.html">data.CarbonIntensity package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="data.CarbonIntensity.html#module-data.CarbonIntensity">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="data.Weather.html">data.Weather package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="data.Weather.html#module-data.Weather">Module contents</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="data.Workload.html">data.Workload package</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="data.Workload.html#module-data.Workload">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</li>
-<li class="toctree-l2"><a class="reference internal" href="data.html#module-data">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</section>
-</section>
 
         </article>
       </div>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="sustaindc_env.html">
+          <a class="next-page" href="data.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">sustaindc_env module</div>
+                <div class="title">data package</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -740,33 +695,8 @@
         
       </footer>
     </div>
-    <aside class="toc-drawer">
+    <aside class="toc-drawer no-toc">
       
-      
-      <div class="toc-sticky toc-scroll">
-        <div class="toc-title-container">
-          <span class="toc-title">
-            On this page
-          </span>
-        </div>
-        <div class="toc-tree-container">
-          <div class="toc-tree">
-            <ul>
-<li><a class="reference internal" href="#">SustainDC</a><ul>
-<li><a class="reference internal" href="#core-environment-link">Core Environment (LINK)</a></li>
-<li><a class="reference internal" href="#training-link">Training (LINK)</a></li>
-<li><a class="reference internal" href="#evaluation-link">Evaluation (LINK)</a></li>
-<li><a class="reference internal" href="#algorithms-link">Algorithms (LINK)</a></li>
-<li><a class="reference internal" href="#environments-link">Environments (LINK)</a></li>
-<li><a class="reference internal" href="#utilities-link">Utilities (LINK)</a></li>
-<li><a class="reference internal" href="#data-sources-link">Data Sources (LINK)</a></li>
-</ul>
-</li>
-</ul>
-
-          </div>
-        </div>
-      </div>
       
       
     </aside>

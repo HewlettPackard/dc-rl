@@ -12,11 +12,11 @@ Getting Started
 
 3. **Train Example:**
 
-   Specify :code:`location` inside :code:`harl.config.envs_cfgs.dcrl.yaml`. Specify other algorithm hyperparameteres in :code:`harl.config.algos_cfgs.happo.yaml`. User can also specify the choice of reinforcement learning vs baseline agents in the :code:`happ.yaml`
+   Specify :code:`location` inside :code:`harl.configs.envs_cfgs.sustaindc.yaml`. Specify other algorithm hyperparameteres in :code:`harl.configs.algos_cfgs.happo.yaml`. User can also specify the choice of reinforcement learning vs baseline agents in the :code:`happo.yaml`
    
 .. code-block:: bash
       
-      python train_harl.py --algo happo --exp_name happo
+      python train_sustaindc.py --algo happo --exp_name happo
 
 
 4. **Evaluation Example:**
@@ -25,9 +25,9 @@ Getting Started
 
 .. code-block:: bash
    
-   python eval_harl.py
+   python eval_sustaindc.py
 
-The results are stored in the :code:`SAVE_EVAL` folder. This can be modified inside :code:`eval_harl.py` with other experiment identifiers such as :code:`checkpoint`, :code:`location` and :code:`run`
+The results are stored in the :code:`SAVE_EVAL` folder. This can be modified inside :code:`eval_sustaindc.py` with other experiment identifiers such as :code:`checkpoint`, :code:`location` and :code:`run`
 
 5. **Running in background mode**
 
@@ -37,7 +37,7 @@ If you want to run the |F| framework in background mode use:
 
     nohup python PYTHON_SCRIPT > OUTPUT_FILE.txt  &
 
-where :code:`PYTHON_SCRIPT` is the script you want to run (e.g., :code:`train_harl.py`) and :code:`OUTPUT_FILE` is the name of the file that will contain the output (e.g. :code:`latest_experiment_output`)
+where :code:`PYTHON_SCRIPT` is the script you want to run (e.g., :code:`train_sustaindc.py`) and :code:`OUTPUT_FILE` is the name of the file that will contain the output (e.g. :code:`latest_experiment_output`)
 
 6. **Monitor the results**
 

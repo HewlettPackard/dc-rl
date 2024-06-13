@@ -41,7 +41,7 @@ extensions = [
     #'sphinx.ext.autosectionlabel', #for reference sections using its title
     'sphinx_multitoc_numbering', #numbering sections
     'sphinxcontrib.globalsubs', #global substitutions
-    'myst_parser'
+    'myst_parser',
 ]
 
 #define global substitutions
