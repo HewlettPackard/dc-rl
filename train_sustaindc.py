@@ -2,24 +2,28 @@
 Train the environment using the selected algorithm.
 
 The original code is from https://github.com/PKU-MARL/HARL
-Several modification are made to adapt to the SustainDC environment.
-
+Several modifications are made to adapt to the SustainDC environment.
 """
+
 import os
 import sys
 import warnings
 import argparse
 import json
+
 warnings.filterwarnings('ignore')
-# sys.path.insert(0,os.getcwd())
+# sys.path.insert(0, os.getcwd())
 
 from harl.utils.configs_tools import get_defaults_yaml_args, update_args
 
 def main():
-    """Main function."""
+    """Main function to train the environment using the selected algorithm."""
+    # Create an argument parser
     parser = argparse.ArgumentParser(
         formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
+
+    # Add command-line arguments
     parser.add_argument(
         "--algo",
         type=str,
@@ -36,52 +40,66 @@ def main():
             "matd3",
             "mappo",
         ],
-        help="Algorithm name. Choose from: happo, hatrpo, haa2c, haddpg, hatd3, hasac, had3qn, maddpg, matd3, mappo.",
+        help="Algorithm name. Choose from: happo, hatrpo, haa2c, haddpg, hatd3, hasac, had3qn, maddpg, matd3, mappo."
     )
     parser.add_argument(
         "--env",
         type=str,
         default="sustaindc",
-        choices=[
-            "sustaindc",
-        ],
-        help="Environment name. Choose from: sustaindc.",
+        choices=["sustaindc"],
+        help="Environment name. Choose from: sustaindc."
     )
     parser.add_argument(
-        "--exp_name", type=str, default="installtest", help="Experiment name."
+        "--exp_name",
+        type=str,
+        default="installtest",
+        help="Experiment name."
     )
     parser.add_argument(
         "--load_config",
         type=str,
         default="",
-        help="If set, load existing experiment config file instead of reading from yaml config file.",
+        help="If set, load existing experiment config file instead of reading from yaml config file."
     )
+    
+    # Parse known arguments and process unknown arguments
     args, unparsed_args = parser.parse_known_args()
 
     def process(arg):
+        """Evaluate the argument if possible, otherwise return the argument as is."""
         try:
             return eval(arg)
         except:
             return arg
 
+    # Process unparsed arguments to a dictionary
     keys = [k[2:] for k in unparsed_args[0::2]]  # remove -- from argument
     values = [process(v) for v in unparsed_args[1::2]]
     unparsed_dict = {k: v for k, v in zip(keys, values)}
-    args = vars(args)  # convert to dict
-    if args["load_config"] != "":  # load config from existing config file
+
+    # Convert args to dictionary
+    args = vars(args)
+
+    # Load configuration
+    if args["load_config"] != "":
+        # Load config from existing config file
         with open(args["load_config"], encoding="utf-8") as file:
             all_config = json.load(file)
         args["algo"] = all_config["main_args"]["algo"]
         args["env"] = all_config["main_args"]["env"]
         algo_args = all_config["algo_args"]
         env_args = all_config["env_args"]
-    else:  # load config from corresponding yaml file
+    else:
+        # Load config from corresponding yaml file
         algo_args, env_args = get_defaults_yaml_args(args["algo"], args["env"])
-    update_args(unparsed_dict, algo_args, env_args)  # update args from command line
 
-    # start training
+    # Update args from command line
+    update_args(unparsed_dict, algo_args, env_args)
+
+    # Start training
     from harl.runners import RUNNER_REGISTRY
 
+    # Initialize and run the selected algorithm
     runner = RUNNER_REGISTRY[args["algo"]](args, algo_args, env_args)
     runner.run()
     runner.close()

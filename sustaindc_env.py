@@ -2,10 +2,10 @@ import os
 import random
 from typing import Optional, Tuple, Union
 
-import gymnasium
-import gymnasium as gym
-import numpy as np
 import torch
+import numpy as np
+import gymnasium as gym
+
 from gymnasium import spaces
 from utils import reward_creator
 from utils.base_agents import (BaseBatteryAgent, BaseHVACAgent,
@@ -77,16 +77,18 @@ class EnvConfig(dict):
 class SustainDC(gym.Env):
     def __init__(self, env_config):
         '''
+        Initialize the SustainDC environment.
+
         Args:
             env_config (dict): Dictionary containing parameters as defined in 
-                            EnvConfig above
+                               EnvConfig above.
         '''
         super().__init__()
 
         # Initialize the environment config
         env_config = EnvConfig(env_config)
 
-        # create environments and agents
+        # Create environments and agents
         self.agents = env_config['agents']
         self.rbc_agents = env_config.get('rbc_agents', [])
         
@@ -128,21 +130,21 @@ class SustainDC(gym.Env):
         bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
-        n_vars_energy, n_vars_battery = 0, 0  # for partial observability (for p.o.)
+        n_vars_energy, n_vars_battery = 0, 0  # For partial observability (for p.o.)
         n_vars_ci = 8
-        self.ls_env = make_ls_env(month=self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci, \
-                                    n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, queue_max_len=1000)
-        self.dc_env, _ = make_dc_pyeplus_env(month=self.month+1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, \
-                                            datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file, add_cpu_usage=False)  # for p.o.
+        self.ls_env = make_ls_env(month=self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci, 
+                                  n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, queue_max_len=1000)
+        self.dc_env, _ = make_dc_pyeplus_env(month=self.month + 1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, 
+                                             datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file, add_cpu_usage=False)
         self.bat_env = make_bat_fwd_env(month=self.month, max_bat_cap_Mwh=self.dc_env.ranges['max_battery_energy_Mwh'], 
-                                        max_dc_pw_MW=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1]/1e6, 
+                                        max_dc_pw_MW=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1] / 1e6, 
                                         dcload_max=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1],
                                         dcload_min=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][0],
                                         n_fwd_steps=n_vars_ci)
 
-        self.bat_env.dcload_max = self.dc_env.power_ub_kW / 4 # Assuming 15 minutes timestep. Kwh
+        self.bat_env.dcload_max = self.dc_env.power_ub_kW / 4  # Assuming 15 minutes timestep. Kwh
         
-        self.bat_env.dcload_min = self.dc_env.power_lb_kW / 4 # Assuming 15 minutes timestep. Kwh
+        self.bat_env.dcload_min = self.dc_env.power_lb_kW / 4  # Assuming 15 minutes timestep. Kwh
         
         self._obs_space_in_preferred_format = True
         
@@ -186,12 +188,16 @@ class SustainDC(gym.Env):
         self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file, timezone_shift=self.timezone_shift)
         self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=n_vars_ci, timezone_shift=self.timezone_shift)
 
-        # This actions_are_logits is True only for MADDPG, because RLLib defines MADDPG only for continuous actions.
+        # This actions_are_logits is True only for MADDPG if continuous actions is used on the algorithm.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
-                
-    
 
     def seed(self, seed=None):
+        """
+        Set the random seed for the environment.
+
+        Args:
+            seed (int, optional): Random seed.
+        """
         if seed is None:
             np.random.seed(1)
         else:
@@ -224,9 +230,9 @@ class SustainDC(gym.Env):
         random_init_hour = random.randint(0, 23)
         
         t_i = self.t_m.reset(init_day=random_init_day, init_hour=random_init_hour)
-        workload = self.workload_m.reset(init_day=random_init_day, init_hour=random_init_hour) # Workload manager
-        temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.reset(init_day=random_init_day, init_hour=random_init_hour) # Weather manager
-        ci_i, ci_i_future = self.ci_m.reset(init_day=random_init_day, init_hour=random_init_hour) # CI manager. ci_i -> CI in the current timestep.
+        workload = self.workload_m.reset(init_day=random_init_day, init_hour=random_init_hour)  # Workload manager
+        temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.reset(init_day=random_init_day, init_hour=random_init_hour)  # Weather manager
+        ci_i, ci_i_future = self.ci_m.reset(init_day=random_init_day, init_hour=random_init_hour)  # CI manager. ci_i -> CI in the current timestep.
         
         # Set the external ambient temperature to data center environment
         self.dc_env.set_ambient_temp(temp, wet_bulb)
@@ -240,7 +246,7 @@ class SustainDC(gym.Env):
         bat_s, self.bat_info = self.bat_env.reset()
         
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
-        self.ls_state = np.float32(np.hstack((t_i, ls_s, ci_i_future)))  # for p.o.
+        self.ls_state = np.float32(np.hstack((t_i, ls_s, ci_i_future)))  # For p.o.
         
         # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]  # p.o.
         self.dc_state = np.float32(np.hstack((t_i, self.dc_state, ci_i_future[0])))  # p.o.
@@ -248,7 +254,7 @@ class SustainDC(gym.Env):
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
         self.bat_state = np.float32(np.hstack((t_i, bat_s, ci_i_future)))
 
-        # states should be a dictionary with agent names as keys and their observations as values
+        # States should be a dictionary with agent names as keys and their observations as values
         states = {}
         self.infos = {}
         # Update states and infos considering the agents defined in the environment config self.agents.
@@ -279,8 +285,6 @@ class SustainDC(gym.Env):
         available_actions = None
         
         return states
-
-            
 
     def step(self, action_dict):
         """
@@ -343,25 +347,25 @@ class SustainDC(gym.Env):
             action = self.base_agents["agent_bat"].do_nothing_action()
             
         # The battery environment/agent is updated.
-        self.bat_env.set_dcload(self.dc_info['dc_total_power_kW'] / 1e3) # The DC load is updated with the total power in MW.
-        self.bat_state = self.bat_env.update_state() # The state is updated with DC load
-        self.bat_env.update_ci(ci_i, ci_i_future[0]) # Update the CI with the current CI, and the normalized current CI.
+        self.bat_env.set_dcload(self.dc_info['dc_total_power_kW'] / 1e3)  # The DC load is updated with the total power in MW.
+        self.bat_state = self.bat_env.update_state()  # The state is updated with DC load
+        self.bat_env.update_ci(ci_i, ci_i_future[0])  # Update the CI with the current CI, and the normalized current CI.
         
         # Do a step in the battery environment
         self.bat_state, _, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
         
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
-        self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future)))  # for p.o.
+        self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future)))  # For p.o.
         
         # Update the shared variables
         # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]
-        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, ci_i_future[0])))  # for p.o.
+        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, ci_i_future[0])))  # For p.o.
         
         # Update the state of the bat state
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
         self.bat_state = np.float32(np.hstack((t_i, self.bat_state, ci_i_future)))
 
-        # params should be a dictionary with all of the info requiered plus other aditional information like the external temperature, the hour, the day of the year, etc.
+        # Params should be a dictionary with all of the info required plus other additional information like the external temperature, the hour, the day of the year, etc.
         # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
         info_dict = {**self.bat_info, **self.ls_info, **self.dc_info}
         add_info = {"outside_temp": temp, "day": day, "hour": hour, "norm_CI": ci_i_future[0]}
@@ -434,12 +438,24 @@ class SustainDC(gym.Env):
         return ls_reward, dc_reward, bat_reward
 
     def render(self):
+        """
+        Render the environment.
+        """
         pass
 
     def close(self):
+        """
+        Close the environment.
+        """
         self.env.close()  # pylint: disable=no-member
         
     def get_avail_actions(self):
+        """
+        Get the available actions for the agents.
+
+        Returns:
+            list: List of available actions for each agent.
+        """
         if self.discrete:  # pylint: disable=no-member
             avail_actions = []
             for agent_id in range(self.n_agents):  # pylint: disable=no-member
@@ -450,10 +466,24 @@ class SustainDC(gym.Env):
             return None
 
     def get_avail_agent_actions(self, agent_id):
-        """Returns the available actions for agent_id"""
+        """
+        Get the available actions for a specific agent.
+
+        Args:
+            agent_id (int): Agent ID.
+
+        Returns:
+            list: List of available actions for the agent.
+        """
         return [1] * self.action_space[agent_id].n
     
     def state(self):
+        """
+        Get the state of the environment.
+
+        Returns:
+            np.ndarray: State of the environment.
+        """
         states = tuple(
             self.scenario.observation(  # pylint: disable=no-member
                 self.world.agents[self._index_map[agent]], self.world  # pylint: disable=no-member
@@ -461,9 +491,3 @@ class SustainDC(gym.Env):
             for agent in self.possible_agents  # pylint: disable=no-member
         )
         return np.concatenate(states, axis=None)
-    
-    def get_hierarchical_variables(self):
-        return self.datacenter_capacity, self.workload_m.get_current_workload(), self.weather_m.get_current_weather(), self.ci_m.get_current_ci()  # pylint: disable=no-member
-        
-    def set_hierarchical_workload(self, workload):
-        self.workload_m.set_current_workload(workload)
