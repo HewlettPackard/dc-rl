@@ -44,14 +44,6 @@ utils.helper\_methods module
    :undoc-members:
    :show-inheritance:
 
-utils.make\_envs module
------------------------
-
-.. automodule:: utils.make_envs
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
 utils.make\_envs\_pyenv module
 ------------------------------
 
@@ -88,14 +80,6 @@ utils.rllib\_callbacks module
 -----------------------------
 
 .. automodule:: utils.rllib_callbacks
-   :members:
-   :undoc-members:
-   :show-inheritance:
-
-utils.test\_utils module
-------------------------
-
-.. automodule:: utils.test_utils
    :members:
    :undoc-members:
    :show-inheritance:

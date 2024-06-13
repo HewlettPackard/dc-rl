@@ -321,11 +321,13 @@
 <a class="viewcode-back" href="../../../../code/harl.common.buffers.html#harl.common.buffers.off_policy_buffer_fp.OffPolicyBufferFP">[docs]</a>
 <span class="k">class</span> <span class="nc">OffPolicyBufferFP</span><span class="p">(</span><span class="n">OffPolicyBufferBase</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Off-policy buffer that uses Feature-Pruned (FP) state.</span>
+
 <span class="sd">    When FP state is used, the critic takes different global state as input for different actors. Thus, OffPolicyBufferFP has an extra dimension for number of agents.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">share_obs_space</span><span class="p">,</span> <span class="n">num_agents</span><span class="p">,</span> <span class="n">obs_spaces</span><span class="p">,</span> <span class="n">act_spaces</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Initialize off-policy buffer.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            args: (dict) arguments</span>
 <span class="sd">            share_obs_space: (gym.Space or list) share observation space</span>
@@ -352,19 +354,20 @@
 <a class="viewcode-back" href="../../../../code/harl.common.buffers.html#harl.common.buffers.off_policy_buffer_fp.OffPolicyBufferFP.sample">[docs]</a>
     <span class="k">def</span> <span class="nf">sample</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Sample data for training.</span>
+<span class="sd">        </span>
 <span class="sd">        Returns:</span>
-<span class="sd">            sp_share_obs: (n_agents * batch_size, *dim)</span>
-<span class="sd">            sp_obs: (n_agents, batch_size, *dim)</span>
-<span class="sd">            sp_actions: (n_agents, batch_size, *dim)</span>
-<span class="sd">            sp_available_actions: (n_agents, batch_size, *dim)</span>
-<span class="sd">            sp_reward: (n_agents * batch_size, 1)</span>
-<span class="sd">            sp_done: (n_agents * batch_size, 1)</span>
+<span class="sd">            sp_share_obs: (n_agents \* batch_size, \*dim)</span>
+<span class="sd">            sp_obs: (n_agents, batch_size, \*dim)</span>
+<span class="sd">            sp_actions: (n_agents, batch_size, \*dim)</span>
+<span class="sd">            sp_available_actions: (n_agents, batch_size, \*dim)</span>
+<span class="sd">            sp_reward: (n_agents \* batch_size, 1)</span>
+<span class="sd">            sp_done: (n_agents \* batch_size, 1)</span>
 <span class="sd">            sp_valid_transitions: (n_agents, batch_size, 1)</span>
-<span class="sd">            sp_term: (n_agents * batch_size, 1)</span>
-<span class="sd">            sp_next_share_obs: (n_agents * batch_size, *dim)</span>
-<span class="sd">            sp_next_obs: (n_agents, batch_size, *dim)</span>
-<span class="sd">            sp_next_available_actions: (n_agents, batch_size, *dim)</span>
-<span class="sd">            sp_gamma: (n_agents * batch_size, 1)</span>
+<span class="sd">            sp_term: (n_agents \* batch_size, 1)</span>
+<span class="sd">            sp_next_share_obs: (n_agents \* batch_size, \*dim)</span>
+<span class="sd">            sp_next_obs: (n_agents, batch_size, \*dim)</span>
+<span class="sd">            sp_next_available_actions: (n_agents, batch_size, \*dim)</span>
+<span class="sd">            sp_gamma: (n_agents \* batch_size, 1)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">update_end_flag</span><span class="p">()</span>  <span class="c1"># update the current end flag</span>
         <span class="n">indice</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randperm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cur_size</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()[:</span> <span class="bp">self</span><span class="o">.</span><span class="n">batch_size</span><span class="p">]</span>  <span class="c1"># sample indice, shape: (batch_size, )</span>

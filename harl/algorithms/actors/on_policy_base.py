@@ -8,6 +8,7 @@ from harl.utils.models_tools import update_linear_schedule
 class OnPolicyBase:
     def __init__(self, args, obs_space, act_space, device=torch.device("cpu")):
         """Initialize Base class.
+
         Args:
             args: (dict) arguments.
             obs_space: (gym.spaces or list) observation space.
@@ -43,6 +44,7 @@ class OnPolicyBase:
 
     def lr_decay(self, episode, episodes):
         """Decay the learning rates.
+
         Args:
             episode: (int) current training episode.
             episodes: (int) total number of training episodes.
@@ -53,6 +55,7 @@ class OnPolicyBase:
         self, obs, rnn_states_actor, masks, available_actions=None, deterministic=False
     ):
         """Compute actions for the given inputs.
+
         Args:
             obs: (np.ndarray) local agent inputs to the actor.
             rnn_states_actor: (np.ndarray) if actor has RNN layer, RNN states for actor.
@@ -76,6 +79,7 @@ class OnPolicyBase:
         active_masks=None,
     ):
         """Get action logprobs, entropy, and distributions for actor update.
+
         Args:
             obs: (np.ndarray / torch.Tensor) local agent inputs to the actor.
             rnn_states_actor: (np.ndarray / torch.Tensor) if actor has RNN layer, RNN states for actor.
@@ -99,6 +103,7 @@ class OnPolicyBase:
         self, obs, rnn_states_actor, masks, available_actions=None, deterministic=False
     ):
         """Compute actions using the given inputs.
+
         Args:
             obs: (np.ndarray) local agent inputs to the actor.
             rnn_states_actor: (np.ndarray) if actor is RNN, RNN states for actor.
@@ -114,6 +119,7 @@ class OnPolicyBase:
 
     def update(self, sample):
         """Update actor network.
+
         Args:
             sample: (Tuple) contains data batch with which to update networks.
         """
@@ -121,6 +127,7 @@ class OnPolicyBase:
 
     def train(self, actor_buffer, advantages, state_type):
         """Perform a training update using minibatch GD.
+        
         Args:
             actor_buffer: (OnPolicyActorBuffer) buffer containing training data related to actor.
             advantages: (np.ndarray) advantages.

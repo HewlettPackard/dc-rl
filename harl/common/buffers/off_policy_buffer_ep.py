@@ -9,6 +9,7 @@ class OffPolicyBufferEP(OffPolicyBufferBase):
 
     def __init__(self, args, share_obs_space, num_agents, obs_spaces, act_spaces):
         """Initialize off-policy buffer.
+
         Args:
             args: (dict) arguments
             share_obs_space: (gym.Space or list) share observation space
@@ -39,18 +40,19 @@ class OffPolicyBufferEP(OffPolicyBufferBase):
 
     def sample(self):
         """Sample data for training.
+        
         Returns:
-            sp_share_obs: (batch_size, *dim)
-            sp_obs: (n_agents, batch_size, *dim)
-            sp_actions: (n_agents, batch_size, *dim)
-            sp_available_actions: (n_agents, batch_size, *dim)
+            sp_share_obs: (batch_size, \*dim)
+            sp_obs: (n_agents, batch_size, \*dim)
+            sp_actions: (n_agents, batch_size, \*dim)
+            sp_available_actions: (n_agents, batch_size, \*dim)
             sp_reward: (batch_size, 1)
             sp_done: (batch_size, 1)
             sp_valid_transitions: (n_agents, batch_size, 1)
             sp_term: (batch_size, 1)
-            sp_next_share_obs: (batch_size, *dim)
-            sp_next_obs: (n_agents, batch_size, *dim)
-            sp_next_available_actions: (n_agents, batch_size, *dim)
+            sp_next_share_obs: (batch_size, \*dim)
+            sp_next_obs: (n_agents, batch_size, \*dim)
+            sp_next_available_actions: (n_agents, batch_size, \*dim)
             sp_gamma: (batch_size, 1)
         """
         self.update_end_flag()  # update the current end flag

@@ -6,11 +6,13 @@ from harl.common.buffers.off_policy_buffer_base import OffPolicyBufferBase
 
 class OffPolicyBufferFP(OffPolicyBufferBase):
     """Off-policy buffer that uses Feature-Pruned (FP) state.
+
     When FP state is used, the critic takes different global state as input for different actors. Thus, OffPolicyBufferFP has an extra dimension for number of agents.
     """
 
     def __init__(self, args, share_obs_space, num_agents, obs_spaces, act_spaces):
         """Initialize off-policy buffer.
+
         Args:
             args: (dict) arguments
             share_obs_space: (gym.Space or list) share observation space
@@ -35,19 +37,20 @@ class OffPolicyBufferFP(OffPolicyBufferBase):
 
     def sample(self):
         """Sample data for training.
+        
         Returns:
-            sp_share_obs: (n_agents * batch_size, *dim)
-            sp_obs: (n_agents, batch_size, *dim)
-            sp_actions: (n_agents, batch_size, *dim)
-            sp_available_actions: (n_agents, batch_size, *dim)
-            sp_reward: (n_agents * batch_size, 1)
-            sp_done: (n_agents * batch_size, 1)
+            sp_share_obs: (n_agents \* batch_size, \*dim)
+            sp_obs: (n_agents, batch_size, \*dim)
+            sp_actions: (n_agents, batch_size, \*dim)
+            sp_available_actions: (n_agents, batch_size, \*dim)
+            sp_reward: (n_agents \* batch_size, 1)
+            sp_done: (n_agents \* batch_size, 1)
             sp_valid_transitions: (n_agents, batch_size, 1)
-            sp_term: (n_agents * batch_size, 1)
-            sp_next_share_obs: (n_agents * batch_size, *dim)
-            sp_next_obs: (n_agents, batch_size, *dim)
-            sp_next_available_actions: (n_agents, batch_size, *dim)
-            sp_gamma: (n_agents * batch_size, 1)
+            sp_term: (n_agents \* batch_size, 1)
+            sp_next_share_obs: (n_agents \* batch_size, \*dim)
+            sp_next_obs: (n_agents, batch_size, \*dim)
+            sp_next_available_actions: (n_agents, batch_size, \*dim)
+            sp_gamma: (n_agents \* batch_size, 1)
         """
         self.update_end_flag()  # update the current end flag
         indice = torch.randperm(self.cur_size).numpy()[: self.batch_size]  # sample indice, shape: (batch_size, )

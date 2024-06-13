@@ -520,15 +520,15 @@ imp_weights: (torch.Tensor) importance sampling weights.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.algorithms.actors.hasac.HASAC.get_actions">
 <span class="sig-name descname"><span class="pre">get_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stochastic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/algorithms/actors/hasac.html#HASAC.get_actions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.algorithms.actors.hasac.HASAC.get_actions" title="Link to this definition">¶</a></dt>
-<dd><p>Get actions for observations.
-:param obs: (np.ndarray) observations of actor, shape is (n_threads, dim) or (batch_size, dim)
-:param available_actions: (np.ndarray) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Get actions for observations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>stochastic</strong> – (bool) stochastic actions or deterministic actions</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> – (np.ndarray) observations of actor, shape is (n_threads, dim) or (batch_size, dim)</p></li>
+<li><p><strong>available_actions</strong> – (np.ndarray) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+<li><p><strong>stochastic</strong> – (bool) stochastic actions or deterministic actions</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(torch.Tensor) actions taken by this actor, shape is (n_threads, dim) or (batch_size, dim)</p>
@@ -542,15 +542,15 @@ imp_weights: (torch.Tensor) importance sampling weights.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.algorithms.actors.hasac.HASAC.get_actions_with_logprobs">
 <span class="sig-name descname"><span class="pre">get_actions_with_logprobs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stochastic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/algorithms/actors/hasac.html#HASAC.get_actions_with_logprobs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.algorithms.actors.hasac.HASAC.get_actions_with_logprobs" title="Link to this definition">¶</a></dt>
-<dd><p>Get actions and logprobs of actions for observations.
-:param obs: (np.ndarray) observations of actor, shape is (batch_size, dim)
-:param available_actions: (np.ndarray) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Get actions and logprobs of actions for observations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>stochastic</strong> – (bool) stochastic actions or deterministic actions</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> – (np.ndarray) observations of actor, shape is (batch_size, dim)</p></li>
+<li><p><strong>available_actions</strong> – (np.ndarray) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+<li><p><strong>stochastic</strong> – (bool) stochastic actions or deterministic actions</p></li>
+</ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>(torch.Tensor) actions taken by this actor, shape is (batch_size, dim)
@@ -799,17 +799,17 @@ imp_weights: (torch.Tensor) importance sampling weights.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.algorithms.actors.on_policy_base.OnPolicyBase.act">
 <span class="sig-name descname"><span class="pre">act</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnn_states_actor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/algorithms/actors/on_policy_base.html#OnPolicyBase.act"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.algorithms.actors.on_policy_base.OnPolicyBase.act" title="Link to this definition">¶</a></dt>
-<dd><p>Compute actions using the given inputs.
-:param obs: (np.ndarray) local agent inputs to the actor.
-:param rnn_states_actor: (np.ndarray) if actor is RNN, RNN states for actor.
-:param masks: (np.ndarray) denotes points at which RNN states should be reset.
-:param available_actions: (np.ndarray) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Compute actions using the given inputs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>deterministic</strong> – (bool) whether the action should be mode of distribution or should be sampled.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> – (np.ndarray) local agent inputs to the actor.</p></li>
+<li><p><strong>rnn_states_actor</strong> – (np.ndarray) if actor is RNN, RNN states for actor.</p></li>
+<li><p><strong>masks</strong> – (np.ndarray) denotes points at which RNN states should be reset.</p></li>
+<li><p><strong>available_actions</strong> – (np.ndarray) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+<li><p><strong>deterministic</strong> – (bool) whether the action should be mode of distribution or should be sampled.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -817,18 +817,18 @@ imp_weights: (torch.Tensor) importance sampling weights.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.algorithms.actors.on_policy_base.OnPolicyBase.evaluate_actions">
 <span class="sig-name descname"><span class="pre">evaluate_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnn_states_actor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_masks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/algorithms/actors/on_policy_base.html#OnPolicyBase.evaluate_actions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.algorithms.actors.on_policy_base.OnPolicyBase.evaluate_actions" title="Link to this definition">¶</a></dt>
-<dd><p>Get action logprobs, entropy, and distributions for actor update.
-:param obs: (np.ndarray / torch.Tensor) local agent inputs to the actor.
-:param rnn_states_actor: (np.ndarray / torch.Tensor) if actor has RNN layer, RNN states for actor.
-:param action: (np.ndarray / torch.Tensor) actions whose log probabilities and entropy to compute.
-:param masks: (np.ndarray / torch.Tensor) denotes points at which RNN states should be reset.
-:param available_actions: (np.ndarray / torch.Tensor) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Get action logprobs, entropy, and distributions for actor update.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>active_masks</strong> – (np.ndarray / torch.Tensor) denotes whether an agent is active or dead.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> – (np.ndarray / torch.Tensor) local agent inputs to the actor.</p></li>
+<li><p><strong>rnn_states_actor</strong> – (np.ndarray / torch.Tensor) if actor has RNN layer, RNN states for actor.</p></li>
+<li><p><strong>action</strong> – (np.ndarray / torch.Tensor) actions whose log probabilities and entropy to compute.</p></li>
+<li><p><strong>masks</strong> – (np.ndarray / torch.Tensor) denotes points at which RNN states should be reset.</p></li>
+<li><p><strong>available_actions</strong> – (np.ndarray / torch.Tensor) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+<li><p><strong>active_masks</strong> – (np.ndarray / torch.Tensor) denotes whether an agent is active or dead.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -836,17 +836,17 @@ imp_weights: (torch.Tensor) importance sampling weights.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.algorithms.actors.on_policy_base.OnPolicyBase.get_actions">
 <span class="sig-name descname"><span class="pre">get_actions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">obs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rnn_states_actor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">masks</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">available_actions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deterministic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/algorithms/actors/on_policy_base.html#OnPolicyBase.get_actions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.algorithms.actors.on_policy_base.OnPolicyBase.get_actions" title="Link to this definition">¶</a></dt>
-<dd><p>Compute actions for the given inputs.
-:param obs: (np.ndarray) local agent inputs to the actor.
-:param rnn_states_actor: (np.ndarray) if actor has RNN layer, RNN states for actor.
-:param masks: (np.ndarray) denotes points at which RNN states should be reset.
-:param available_actions: (np.ndarray) denotes which actions are available to agent</p>
-<blockquote>
-<div><p>(if None, all actions available)</p>
-</div></blockquote>
+<dd><p>Compute actions for the given inputs.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>deterministic</strong> – (bool) whether the action should be mode of distribution or should be sampled.</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>obs</strong> – (np.ndarray) local agent inputs to the actor.</p></li>
+<li><p><strong>rnn_states_actor</strong> – (np.ndarray) if actor has RNN layer, RNN states for actor.</p></li>
+<li><p><strong>masks</strong> – (np.ndarray) denotes points at which RNN states should be reset.</p></li>
+<li><p><strong>available_actions</strong> – (np.ndarray) denotes which actions are available to agent
+(if None, all actions available)</p></li>
+<li><p><strong>deterministic</strong> – (bool) whether the action should be mode of distribution or should be sampled.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -854,9 +854,15 @@ imp_weights: (torch.Tensor) importance sampling weights.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.algorithms.actors.on_policy_base.OnPolicyBase.lr_decay">
 <span class="sig-name descname"><span class="pre">lr_decay</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episodes</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/algorithms/actors/on_policy_base.html#OnPolicyBase.lr_decay"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.algorithms.actors.on_policy_base.OnPolicyBase.lr_decay" title="Link to this definition">¶</a></dt>
-<dd><p>Decay the learning rates.
-:param episode: (int) current training episode.
-:param episodes: (int) total number of training episodes.</p>
+<dd><p>Decay the learning rates.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>episode</strong> – (int) current training episode.</p></li>
+<li><p><strong>episodes</strong> – (int) total number of training episodes.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -874,17 +880,27 @@ imp_weights: (torch.Tensor) importance sampling weights.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.algorithms.actors.on_policy_base.OnPolicyBase.train">
 <span class="sig-name descname"><span class="pre">train</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">actor_buffer</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">advantages</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">state_type</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/algorithms/actors/on_policy_base.html#OnPolicyBase.train"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.algorithms.actors.on_policy_base.OnPolicyBase.train" title="Link to this definition">¶</a></dt>
-<dd><p>Perform a training update using minibatch GD.
-:param actor_buffer: (OnPolicyActorBuffer) buffer containing training data related to actor.
-:param advantages: (np.ndarray) advantages.
-:param state_type: (str) type of state.</p>
+<dd><p>Perform a training update using minibatch GD.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>actor_buffer</strong> – (OnPolicyActorBuffer) buffer containing training data related to actor.</p></li>
+<li><p><strong>advantages</strong> – (np.ndarray) advantages.</p></li>
+<li><p><strong>state_type</strong> – (str) type of state.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.algorithms.actors.on_policy_base.OnPolicyBase.update">
 <span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sample</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/algorithms/actors/on_policy_base.html#OnPolicyBase.update"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.algorithms.actors.on_policy_base.OnPolicyBase.update" title="Link to this definition">¶</a></dt>
-<dd><p>Update actor network.
-:param sample: (Tuple) contains data batch with which to update networks.</p>
+<dd><p>Update actor network.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>sample</strong> – (Tuple) contains data batch with which to update networks.</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

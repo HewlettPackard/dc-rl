@@ -13,6 +13,7 @@ class StochasticPolicy(nn.Module):
 
     def __init__(self, args, obs_space, action_space, device=torch.device("cpu")):
         """Initialize StochasticPolicy model.
+
         Args:
             args: (dict) arguments containing relevant model information.
             obs_space: (gym.Space) observation space.
@@ -56,6 +57,7 @@ class StochasticPolicy(nn.Module):
         self, obs, rnn_states, masks, available_actions=None, deterministic=False
     ):
         """Compute actions from the given inputs.
+
         Args:
             obs: (np.ndarray / torch.Tensor) observation inputs into network.
             rnn_states: (np.ndarray / torch.Tensor) if RNN network, hidden states for RNN.
@@ -89,6 +91,7 @@ class StochasticPolicy(nn.Module):
         self, obs, rnn_states, action, masks, available_actions=None, active_masks=None
     ):
         """Compute action log probability, distribution entropy, and action distribution.
+        
         Args:
             obs: (np.ndarray / torch.Tensor) observation inputs into network.
             rnn_states: (np.ndarray / torch.Tensor) if RNN network, hidden states for RNN.

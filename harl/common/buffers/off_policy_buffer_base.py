@@ -76,19 +76,20 @@ class OffPolicyBufferBase:
 
     def insert(self, data):
         """Insert data into buffer.
+
         Args:
             data: a tuple of (share_obs, obs, actions, available_actions, reward, done, valid_transitions, term, next_share_obs, next_obs, next_available_actions)
-            share_obs: EP: (n_rollout_threads, *share_obs_shape), FP: (n_rollout_threads, num_agents, *share_obs_shape)
-            obs: [(n_rollout_threads, *obs_shapes[agent_id]) for agent_id in range(num_agents)]
-            actions: [(n_rollout_threads, *act_shapes[agent_id]) for agent_id in range(num_agents)]
-            available_actions: [(n_rollout_threads, *act_shapes[agent_id]) for agent_id in range(num_agents)]
+            share_obs: EP: (n_rollout_threads, \*share_obs_shape), FP: (n_rollout_threads, num_agents, \*share_obs_shape)
+            obs: [(n_rollout_threads, \*obs_shapes[agent_id]) for agent_id in range(num_agents)]
+            actions: [(n_rollout_threads, \*act_shapes[agent_id]) for agent_id in range(num_agents)]
+            available_actions: [(n_rollout_threads, \*act_shapes[agent_id]) for agent_id in range(num_agents)]
             reward: EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)
             done: EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)
             valid_transitions: [(n_rollout_threads, 1) for agent_id in range(num_agents)]
             term: EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)
-            next_share_obs: EP: (n_rollout_threads, *share_obs_shape), FP: (n_rollout_threads, num_agents, *share_obs_shape)
-            next_obs: [(n_rollout_threads, *obs_shapes[agent_id]) for agent_id in range(num_agents)]
-            next_available_actions: [(n_rollout_threads, *act_shapes[agent_id]) for agent_id in range(num_agents)]
+            next_share_obs: EP: (n_rollout_threads, \*share_obs_shape), FP: (n_rollout_threads, num_agents, \*share_obs_shape)
+            next_obs: [(n_rollout_threads, \*obs_shapes[agent_id]) for agent_id in range(num_agents)]
+            next_available_actions: [(n_rollout_threads, \*act_shapes[agent_id]) for agent_id in range(num_agents)]
         """
         (
             share_obs,

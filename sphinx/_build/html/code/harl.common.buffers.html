@@ -338,19 +338,25 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.common.buffers.off_policy_buffer_base.OffPolicyBufferBase.insert">
 <span class="sig-name descname"><span class="pre">insert</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/common/buffers/off_policy_buffer_base.html#OffPolicyBufferBase.insert"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.common.buffers.off_policy_buffer_base.OffPolicyBufferBase.insert" title="Link to this definition">¶</a></dt>
-<dd><p>Insert data into buffer.
-:param data: a tuple of (share_obs, obs, actions, available_actions, reward, done, valid_transitions, term, next_share_obs, next_obs, next_available_actions)
-:param share_obs: EP: (n_rollout_threads, <a href="#id1"><span class="problematic" id="id2">*</span></a>share_obs_shape), FP: (n_rollout_threads, num_agents, <a href="#id3"><span class="problematic" id="id4">*</span></a>share_obs_shape)
-:param obs: [(n_rollout_threads, <a href="#id5"><span class="problematic" id="id6">*</span></a>obs_shapes[agent_id]) for agent_id in range(num_agents)]
-:param actions: [(n_rollout_threads, <a href="#id7"><span class="problematic" id="id8">*</span></a>act_shapes[agent_id]) for agent_id in range(num_agents)]
-:param available_actions: [(n_rollout_threads, <a href="#id9"><span class="problematic" id="id10">*</span></a>act_shapes[agent_id]) for agent_id in range(num_agents)]
-:param reward: EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)
-:param done: EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)
-:param valid_transitions: [(n_rollout_threads, 1) for agent_id in range(num_agents)]
-:param term: EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)
-:param next_share_obs: EP: (n_rollout_threads, <a href="#id11"><span class="problematic" id="id12">*</span></a>share_obs_shape), FP: (n_rollout_threads, num_agents, <a href="#id13"><span class="problematic" id="id14">*</span></a>share_obs_shape)
-:param next_obs: [(n_rollout_threads, <a href="#id15"><span class="problematic" id="id16">*</span></a>obs_shapes[agent_id]) for agent_id in range(num_agents)]
-:param next_available_actions: [(n_rollout_threads, <a href="#id17"><span class="problematic" id="id18">*</span></a>act_shapes[agent_id]) for agent_id in range(num_agents)]</p>
+<dd><p>Insert data into buffer.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – a tuple of (share_obs, obs, actions, available_actions, reward, done, valid_transitions, term, next_share_obs, next_obs, next_available_actions)</p></li>
+<li><p><strong>share_obs</strong> – EP: (n_rollout_threads, *share_obs_shape), FP: (n_rollout_threads, num_agents, *share_obs_shape)</p></li>
+<li><p><strong>obs</strong> – [(n_rollout_threads, *obs_shapes[agent_id]) for agent_id in range(num_agents)]</p></li>
+<li><p><strong>actions</strong> – [(n_rollout_threads, *act_shapes[agent_id]) for agent_id in range(num_agents)]</p></li>
+<li><p><strong>available_actions</strong> – [(n_rollout_threads, *act_shapes[agent_id]) for agent_id in range(num_agents)]</p></li>
+<li><p><strong>reward</strong> – EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)</p></li>
+<li><p><strong>done</strong> – EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)</p></li>
+<li><p><strong>valid_transitions</strong> – [(n_rollout_threads, 1) for agent_id in range(num_agents)]</p></li>
+<li><p><strong>term</strong> – EP: (n_rollout_threads, 1), FP: (n_rollout_threads, num_agents, 1)</p></li>
+<li><p><strong>next_share_obs</strong> – EP: (n_rollout_threads, *share_obs_shape), FP: (n_rollout_threads, num_agents, *share_obs_shape)</p></li>
+<li><p><strong>next_obs</strong> – [(n_rollout_threads, *obs_shapes[agent_id]) for agent_id in range(num_agents)]</p></li>
+<li><p><strong>next_available_actions</strong> – [(n_rollout_threads, *act_shapes[agent_id]) for agent_id in range(num_agents)]</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
@@ -388,24 +394,24 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.common.buffers.off_policy_buffer_ep.OffPolicyBufferEP.sample">
 <span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/common/buffers/off_policy_buffer_ep.html#OffPolicyBufferEP.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.common.buffers.off_policy_buffer_ep.OffPolicyBufferEP.sample" title="Link to this definition">¶</a></dt>
-<dd><p>Sample data for training.
-:returns: (batch_size, <a href="#id19"><span class="problematic" id="id20">*</span></a>dim)</p>
-<blockquote>
-<div><p>sp_obs: (n_agents, batch_size, <a href="#id21"><span class="problematic" id="id22">*</span></a>dim)
-sp_actions: (n_agents, batch_size, <a href="#id23"><span class="problematic" id="id24">*</span></a>dim)
-sp_available_actions: (n_agents, batch_size, <a href="#id25"><span class="problematic" id="id26">*</span></a>dim)
+<dd><p>Sample data for training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(batch_size, *dim)
+sp_obs: (n_agents, batch_size, *dim)
+sp_actions: (n_agents, batch_size, *dim)
+sp_available_actions: (n_agents, batch_size, *dim)
 sp_reward: (batch_size, 1)
 sp_done: (batch_size, 1)
 sp_valid_transitions: (n_agents, batch_size, 1)
 sp_term: (batch_size, 1)
-sp_next_share_obs: (batch_size, <a href="#id27"><span class="problematic" id="id28">*</span></a>dim)
-sp_next_obs: (n_agents, batch_size, <a href="#id29"><span class="problematic" id="id30">*</span></a>dim)
-sp_next_available_actions: (n_agents, batch_size, <a href="#id31"><span class="problematic" id="id32">*</span></a>dim)
+sp_next_share_obs: (batch_size, *dim)
+sp_next_obs: (n_agents, batch_size, *dim)
+sp_next_available_actions: (n_agents, batch_size, *dim)
 sp_gamma: (batch_size, 1)</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>sp_share_obs</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sp_share_obs</p>
 </dd>
 </dl>
 </dd></dl>
@@ -427,8 +433,8 @@ End flag is True at the steps which are the end of an episode or the latest but 
 <dt class="sig sig-object py" id="harl.common.buffers.off_policy_buffer_fp.OffPolicyBufferFP">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">harl.common.buffers.off_policy_buffer_fp.</span></span><span class="sig-name descname"><span class="pre">OffPolicyBufferFP</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">share_obs_space</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num_agents</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">obs_spaces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">act_spaces</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/common/buffers/off_policy_buffer_fp.html#OffPolicyBufferFP"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.common.buffers.off_policy_buffer_fp.OffPolicyBufferFP" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <a class="reference internal" href="#harl.common.buffers.off_policy_buffer_base.OffPolicyBufferBase" title="harl.common.buffers.off_policy_buffer_base.OffPolicyBufferBase"><code class="xref py py-class docutils literal notranslate"><span class="pre">OffPolicyBufferBase</span></code></a></p>
-<p>Off-policy buffer that uses Feature-Pruned (FP) state.
-When FP state is used, the critic takes different global state as input for different actors. Thus, OffPolicyBufferFP has an extra dimension for number of agents.</p>
+<p>Off-policy buffer that uses Feature-Pruned (FP) state.</p>
+<p>When FP state is used, the critic takes different global state as input for different actors. Thus, OffPolicyBufferFP has an extra dimension for number of agents.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.common.buffers.off_policy_buffer_fp.OffPolicyBufferFP.next">
 <span class="sig-name descname"><span class="pre">next</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">indices</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/common/buffers/off_policy_buffer_fp.html#OffPolicyBufferFP.next"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.common.buffers.off_policy_buffer_fp.OffPolicyBufferFP.next" title="Link to this definition">¶</a></dt>
@@ -438,24 +444,24 @@ When FP state is used, the critic takes different global state as input for diff
 <dl class="py method">
 <dt class="sig sig-object py" id="harl.common.buffers.off_policy_buffer_fp.OffPolicyBufferFP.sample">
 <span class="sig-name descname"><span class="pre">sample</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/harl/common/buffers/off_policy_buffer_fp.html#OffPolicyBufferFP.sample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#harl.common.buffers.off_policy_buffer_fp.OffPolicyBufferFP.sample" title="Link to this definition">¶</a></dt>
-<dd><p>Sample data for training.
-:returns: (n_agents * batch_size, <a href="#id33"><span class="problematic" id="id34">*</span></a>dim)</p>
-<blockquote>
-<div><p>sp_obs: (n_agents, batch_size, <a href="#id35"><span class="problematic" id="id36">*</span></a>dim)
-sp_actions: (n_agents, batch_size, <a href="#id37"><span class="problematic" id="id38">*</span></a>dim)
-sp_available_actions: (n_agents, batch_size, <a href="#id39"><span class="problematic" id="id40">*</span></a>dim)
+<dd><p>Sample data for training.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(n_agents * batch_size, *dim)
+sp_obs: (n_agents, batch_size, *dim)
+sp_actions: (n_agents, batch_size, *dim)
+sp_available_actions: (n_agents, batch_size, *dim)
 sp_reward: (n_agents * batch_size, 1)
 sp_done: (n_agents * batch_size, 1)
 sp_valid_transitions: (n_agents, batch_size, 1)
 sp_term: (n_agents * batch_size, 1)
-sp_next_share_obs: (n_agents * batch_size, <a href="#id41"><span class="problematic" id="id42">*</span></a>dim)
-sp_next_obs: (n_agents, batch_size, <a href="#id43"><span class="problematic" id="id44">*</span></a>dim)
-sp_next_available_actions: (n_agents, batch_size, <a href="#id45"><span class="problematic" id="id46">*</span></a>dim)
+sp_next_share_obs: (n_agents * batch_size, *dim)
+sp_next_obs: (n_agents, batch_size, *dim)
+sp_next_available_actions: (n_agents, batch_size, *dim)
 sp_gamma: (n_agents * batch_size, 1)</p>
-</div></blockquote>
-<dl class="field-list simple">
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>sp_share_obs</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>sp_share_obs</p>
 </dd>
 </dl>
 </dd></dl>

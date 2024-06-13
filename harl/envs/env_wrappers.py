@@ -13,6 +13,7 @@ def tile_images(img_nhwc):
     Tile N images into one big PxQ image
     (P,Q) are chosen to be as close as possible, and if N
     is square, then P=Q.
+    
     input: img_nhwc, list or array of images, ndim=4 once turned into array
         n = batch index, h = height, w = width, c = channel
     returns:

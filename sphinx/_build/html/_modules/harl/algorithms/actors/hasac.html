@@ -342,6 +342,7 @@
 <a class="viewcode-back" href="../../../../code/harl.algorithms.actors.html#harl.algorithms.actors.hasac.HASAC.get_actions">[docs]</a>
     <span class="k">def</span> <span class="nf">get_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">available_actions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stochastic</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get actions for observations.</span>
+
 <span class="sd">        Args:</span>
 <span class="sd">            obs: (np.ndarray) observations of actor, shape is (n_threads, dim) or (batch_size, dim)</span>
 <span class="sd">            available_actions: (np.ndarray) denotes which actions are available to agent</span>
@@ -362,6 +363,7 @@
 <a class="viewcode-back" href="../../../../code/harl.algorithms.actors.html#harl.algorithms.actors.hasac.HASAC.get_actions_with_logprobs">[docs]</a>
     <span class="k">def</span> <span class="nf">get_actions_with_logprobs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obs</span><span class="p">,</span> <span class="n">available_actions</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stochastic</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Get actions and logprobs of actions for observations.</span>
+<span class="sd">        </span>
 <span class="sd">        Args:</span>
 <span class="sd">            obs: (np.ndarray) observations of actor, shape is (batch_size, dim)</span>
 <span class="sd">            available_actions: (np.ndarray) denotes which actions are available to agent</span>

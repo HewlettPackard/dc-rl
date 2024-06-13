@@ -25,6 +25,7 @@ class HASAC(OffPolicyBase):
 
     def get_actions(self, obs, available_actions=None, stochastic=True):
         """Get actions for observations.
+
         Args:
             obs: (np.ndarray) observations of actor, shape is (n_threads, dim) or (batch_size, dim)
             available_actions: (np.ndarray) denotes which actions are available to agent
@@ -42,6 +43,7 @@ class HASAC(OffPolicyBase):
 
     def get_actions_with_logprobs(self, obs, available_actions=None, stochastic=True):
         """Get actions and logprobs of actions for observations.
+        
         Args:
             obs: (np.ndarray) observations of actor, shape is (batch_size, dim)
             available_actions: (np.ndarray) denotes which actions are available to agent

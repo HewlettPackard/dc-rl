@@ -10,6 +10,7 @@ class ACTLayer(nn.Module):
         self, action_space, inputs_dim, initialization_method, gain, args=None
     ):
         """Initialize ACTLayer.
+
         Args:
             action_space: (gym.Space) action space.
             inputs_dim: (int) dimension of network input.
@@ -43,6 +44,7 @@ class ACTLayer(nn.Module):
 
     def forward(self, x, available_actions=None, deterministic=False):
         """Compute actions and action logprobs from given input.
+
         Args:
             x: (torch.Tensor) input to network.
             available_actions: (torch.Tensor) denotes which actions are available to agent
@@ -83,6 +85,7 @@ class ACTLayer(nn.Module):
 
     def get_logits(self, x, available_actions=None):
         """Get action logits from inputs.
+
         Args:
             x: (torch.Tensor) input to network.
             available_actions: (torch.Tensor) denotes which actions are available to agent
@@ -103,6 +106,7 @@ class ACTLayer(nn.Module):
 
     def evaluate_actions(self, x, action, available_actions=None, active_masks=None):
         """Compute action log probability, distribution entropy, and action distribution.
+        
         Args:
             x: (torch.Tensor) input to network.
             action: (torch.Tensor) actions whose entropy and log probability to evaluate.

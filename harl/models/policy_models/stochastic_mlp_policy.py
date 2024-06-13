@@ -11,6 +11,7 @@ class StochasticMlpPolicy(nn.Module):
 
     def __init__(self, args, obs_space, action_space, device=torch.device("cpu")):
         """Initialize StochasticMlpPolicy model.
+
         Args:
             args: (dict) arguments containing relevant model information.
             obs_space: (gym.Space) observation space.
@@ -40,6 +41,7 @@ class StochasticMlpPolicy(nn.Module):
 
     def forward(self, obs, available_actions=None, stochastic=True):
         """Compute actions from the given inputs.
+
         Args:
             obs: (np.ndarray / torch.Tensor) observation inputs into network.
             available_actions: (np.ndarray / torch.Tensor) denotes which actions are available to agent
@@ -62,6 +64,7 @@ class StochasticMlpPolicy(nn.Module):
 
     def get_logits(self, obs, available_actions=None):
         """Get action logits from the given inputs.
+        
         Args:
             obs: (np.ndarray / torch.Tensor) input to network.
             available_actions: (np.ndarray / torch.Tensor) denotes which actions are available to agent
