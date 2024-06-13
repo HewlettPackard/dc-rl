@@ -26,7 +26,7 @@ This work builds on our previous research and extends the methodologies and insi
   <img src="media/SustainDC.png" alt="SustainDC" width="1000">
 </p>
 
-Demo of **SustainDC**
+Demo of **SustainDC**:    
 [![Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/drive/1AIe36Lo1Sl8OJXkS19D9D1TflLOTWvW4?usp=sharing)
 
 ### Documentation and Installation
