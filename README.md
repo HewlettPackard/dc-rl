@@ -64,17 +64,12 @@ Refer to the [docs](https://hewlettpackard.github.io/dc-rl/) for broader documen
     cd sustaindc
     ```
 
-3. **Create a new Conda environment**
-
-    Create a new Conda environment with Python 3.10:
-
+3. Create a new Conda environment with Python 3.10:
     ```bash
     conda create --name sustaindc python=3.10
     ```
-
-4. **Activate the environment**
-
-    Activate the newly created environment:
+    
+4. Activate the newly created environment:
 
     ```bash
     conda activate sustaindc
