@@ -1,4 +1,10 @@
-"""Train an algorithm."""
+"""
+Train the environment using the selected algorithm.
+
+The original code is from https://github.com/PKU-MARL/HARL
+Several modification are made to adapt to the SustainDC environment.
+
+"""
 import os
 import sys
 import warnings
@@ -38,16 +44,8 @@ def main():
         default="sustaindc",
         choices=[
             "sustaindc",
-            "smac",
-            "mamujoco",
-            "pettingzoo_mpe",
-            "gym",
-            "football",
-            "dexhands",
-            "smacv2",
-            "lag",
         ],
-        help="Environment name. Choose from: smac, mamujoco, pettingzoo_mpe, gym, football, dexhands, smacv2, lag.",
+        help="Environment name. Choose from: sustaindc.",
     )
     parser.add_argument(
         "--exp_name", type=str, default="installtest", help="Experiment name."
