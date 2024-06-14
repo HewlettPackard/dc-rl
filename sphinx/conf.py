@@ -22,7 +22,7 @@ copyright = '2024, HPE'
 author = 'HPE'
 
 # The full version, including alpha/beta/rc tags
-release = '2.1.0'
+release = '2.2.1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -38,7 +38,7 @@ extensions = [
     'sphinxemoji.sphinxemoji', # for emojis
     'sphinx_copybutton', # to copy code block
     #'sphinx_panels', # for backgrounds
-    #'sphinx.ext.autosectionlabel', #for reference sections using its title
+    'sphinx.ext.autosectionlabel', #for reference sections using its title
     'sphinx_multitoc_numbering', #numbering sections
     'sphinxcontrib.globalsubs', #global substitutions
     'myst_parser',

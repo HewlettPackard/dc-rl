@@ -44,13 +44,15 @@ This page contains the documentation for the GitHub `repository <https://github.
    :alt: Overview of the SustainDC environments 
    :align: center
 
-.. Demo of |F| (removed before colab is working)
-   ------------------
-   A demo of |F| is given in the Google Colab notebook below
 
-   .. image:: images/colab-badge.png
-      :alt: GoogleColab
-      :target: https://colab.research.google.com/drive/1XF92aR6nVYxENrviHeFyuRu0exKBb-nh?usp=sharing
+Demo of |F|
+-----------------
+
+A demo of |F| is given in the Google Colab notebook below
+
+.. image:: images/colab-badge.png
+   :alt: GoogleColab
+   :target: https://colab.research.google.com/drive/1AIe36Lo1Sl8OJXkS19D9D1TflLOTWvW4?usp=sharing
 
 
 

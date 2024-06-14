@@ -12,7 +12,7 @@ Core Environment (`LINK <https://github.com/HewlettPackard/dc-rl/blob/main/susta
    Core Environment<sustaindc_env>
 
 
-Training (`LINK <https://github.com/HewlettPackard/dc-rl/blob/main/train_harl.py>`__)
+Training (`LINK <https://github.com/HewlettPackard/dc-rl/blob/main/train_sustaindc.py>`__)
 ---------------------------------------------------------------------------------------------
 
 .. toctree::
@@ -20,7 +20,7 @@ Training (`LINK <https://github.com/HewlettPackard/dc-rl/blob/main/train_harl.py
    
    Training<train_sustaindc>
 
-Evaluation (`LINK <https://github.com/HewlettPackard/dc-rl/blob/main/eval_harl.py>`__)
+Evaluation (`LINK <https://github.com/HewlettPackard/dc-rl/blob/main/eval_sustaindc.py>`__)
 ---------------------------------------------------------------------------------------------
 
 .. toctree::
