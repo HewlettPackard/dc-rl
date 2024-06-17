@@ -20,7 +20,7 @@ This work builds on our previous research and extends the methodologies and insi
 
 
 ## Introduction
-**SustainDC** is a set of Python environments for benchmarking multi-agent reinforcement learning (MARL) algorithms in data centers (DC). It focuses on sustainable DC operations, including workload scheduling, cooling optimization, and auxiliary battery management. This repository contains the code and datasets for the paper [SustainDC: Benchmarking for Sustainable Data Center Control](https://openreview.net/pdf?id=UYgE9IfQIV) by Avisek Naug, Antonio Guillen, Ricardo Luna Gutierrez, Vineet Gundecha, Desik Rengarajan, Sahand Ghorbanpour, Sajad Mousavi, Ashwin Ramesh Babu, Dejan Markovikj, Lekhapriya Dheeraj Kashyap, and Soumyendu Sarkar, which is under review for the NeurIPS 2024 Datasets and Benchmarks Track.
+**SustainDC** is a set of Python environments for benchmarking multi-agent reinforcement learning (MARL) algorithms in data centers (DC). It focuses on sustainable DC operations, including workload scheduling, cooling optimization, and auxiliary battery management. This repository contains the code and datasets for the paper `[SustainDC: Benchmarking for Sustainable Data Center Control](https://openreview.net/pdf?id=UYgE9IfQIV) by Avisek Naug, Antonio Guillen, Ricardo Luna Gutierrez, Vineet Gundecha, Desik Rengarajan, Sahand Ghorbanpour, Sajad Mousavi, Ashwin Ramesh Babu, Dejan Markovikj, Lekhapriya Dheeraj Kashyap, and Soumyendu Sarkar`, which is under review for the `NeurIPS 2024 Datasets and Benchmarks Track`.
 
 
 <p align="center">
