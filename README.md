@@ -445,34 +445,42 @@ By supporting a diverse set of algorithms, **SustainDC** allows researchers to b
   
 ### Running Benchmarks
 
-To run the training script, follow these steps:
+Benchmarking the performance of different reinforcement learning algorithms using SustainDC involves several steps. This section provides a detailed explanation of the benchmarking process.
 
-1. **Run the Training Script:**
+1. **Configuring the Environment:**
 
-   You can launch the training script with the following command:
+   Before running the benchmarks, ensure that the environment is properly configured. Customize the `dc_config.json` file to specify your DC environment settings, and update the environment configurations in `harl.config.envs_cfgs.sustaindc.yaml`.
+
+2. **Setting Algorithm Parameters:**
+
+   Each algorithm has specific hyperparameters that need to be set before running the training script. Modify the parameters in the corresponding YAML configuration file located in the `harl/configs/algos_cfgs` directory. For example, to set the parameters for the `HAPPO` algorithm, edit the `harl/configs/algos_cfgs/happo.yaml` file.
+   
+3. **Run the Training Script:**
+
+   Once the environment and algorithm parameters are configured, you can run the training script. Use the following command, replacing `<algorithm>` with the desired algorithm and `<experiment_name>` with a name for the experiment:
    ```bash
    python train_sustaindc.py --algo <algorithm> --exp_name <experiment_name>
    ```
    For example, to run the training using the HAPPO algorithm and name the experiment happo, you would use:
     ```bash
-    python train_sustaindc.py --algo happo --exp_name my_exp
+    python train_sustaindc.py --algo happo --exp_name happo_experiment
     ```
 
-2. **Monitor Training with TensorBoard:**
+4. **Monitor Training with TensorBoard:**
 
    To visualize the progress of your experiments, you can use TensorBoard. Run the following command in another cell or terminal:
    ```bash
    %tensorboard --logdir results/sustaindc --port 6006
    ```
-   This command will start a TensorBoard server on port 6006, and you can monitor the training metrics and visualizations in real-time. You can use other unused port.
+   This command will start a TensorBoard server on `PORT` 6006, and you can monitor the training metrics and visualizations in real-time. You can use other unused `PORT`.
+   Open your web browser and navigate to `http://localhost:<PORT>` to view real-time metrics and visualizations of the training process.
 
-3. **Evaluate the Trained Results:**
+5. **Evaluate the Trained Results:**
 
-   Once the training is complete, you can evaluate the trained models using the evaluation script. Ensure you point the path to the desired trained experiment:
+   After training is complete, evaluate the performance of the trained models using the evaluation script. Make sure to specify the correct `RUN` to the trained experiment in the `eval_sustaindc.py` file:
    ```bash
    python eval_sustaindc.py
    ```
-   You need to modify the experiment `RUN` inside the `eval_sustaindc.py` file.
    
 ## Evaluation Metrics
 - Carbon Footprint (CFP): Cumulative carbon emissions over the evaluation period.
