@@ -444,9 +444,36 @@ By supporting a diverse set of algorithms, **SustainDC** allows researchers to b
 
   
 ### Running Benchmarks
-To configure the used algorithm, TBC..........
 
+To run the training script, follow these steps:
 
+1. **Run the Training Script:**
+
+   You can launch the training script with the following command:
+   ```bash
+   python train_sustaindc.py --algo <algorithm> --exp_name <experiment_name>
+   ```
+   For example, to run the training using the HAPPO algorithm and name the experiment happo, you would use:
+    ```bash
+    python train_sustaindc.py --algo happo --exp_name my_exp
+    ```
+
+2. **Monitor Training with TensorBoard:**
+
+   To visualize the progress of your experiments, you can use TensorBoard. Run the following command in another cell or terminal:
+   ```bash
+   %tensorboard --logdir results/sustaindc --port 6006
+   ```
+   This command will start a TensorBoard server on port 6006, and you can monitor the training metrics and visualizations in real-time. You can use other unused port.
+
+3. **Evaluate the Trained Results:**
+
+   Once the training is complete, you can evaluate the trained models using the evaluation script. Ensure you point the path to the desired trained experiment:
+   ```bash
+   python eval_sustaindc.py
+   ```
+   You need to modify the experiment `RUN` inside the `eval_sustaindc.py` file.
+   
 ## Evaluation Metrics
 - Carbon Footprint (CFP): Cumulative carbon emissions over the evaluation period.
 - HVAC Energy: Energy consumed by the DC cooling system.
