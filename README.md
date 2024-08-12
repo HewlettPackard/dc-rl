@@ -13,6 +13,7 @@
 10. [Contributing](#contributing)
 11. [Contact](#contact)
 12. [License](#license)
+13. [Citation](#citation)
 
 ## Disclaimer
 
@@ -581,4 +582,22 @@ Some parts of this project are derived from code originally published under the 
 ### Combined Work
 This combined work is available under both the MIT License for the new contributions and the CC BY-NC 4.0 License for the portions derived from the original work.
 
+## Citation
+
+If you find our paper or this repository helpful in your research or project, please consider citing our works using the following BibTeX citation:
+
+```tex
+@article{Sarkar2024Mar,
+	author = {Sarkar, Soumyendu and Naug, Avisek and Luna, Ricardo and Guillen, Antonio and Gundecha, Vineet and Ghorbanpour, Sahand and Mousavi, Sajad and Markovikj, Dejan and Babu, Ashwin Ramesh},
+	title = {{Carbon Footprint Reduction for Sustainable Data Centers in Real-Time}},
+	journal = {Proceedings of the AAAI Conference on Artificial Intelligence},
+	volume = {38},
+	number = {20},
+	pages = {22322--22330},
+	year = {2024},
+	month = mar,
+	issn = {2374-3468},
+	doi = {10.1609/aaai.v38i20.30238}
+}
+```
 
