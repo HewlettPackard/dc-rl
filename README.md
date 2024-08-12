@@ -584,7 +584,7 @@ This combined work is available under both the MIT License for the new contribut
 
 ## Citation
 
-If you find our paper or this repository helpful in your research or project, please consider citing our works using the following BibTeX citation:
+If you find our paper or this repository helpful in your research or project, please consider citing our work using the following BibTeX citation:
 
 ```tex
 @article{Sarkar2024Mar,
