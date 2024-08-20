@@ -54,7 +54,8 @@ def make_train_env(env_name, seed, n_threads, env_args):
             if env_name == 'sustaindc':
                 from harl.envs.sustaindc.harlsustaindc_env import HARLSustainDCEnv
                 if 'month' in env_args:
-                        env_args['month'] = env_args['month']
+                    print(f'Warning: month {env_args["month"]} is specified in the environment arguments, only simulating that month.')
+                    env_args['month'] = env_args['month']
                 elif rank < 12:
                     env_args['month'] = rank % 12
                 else:
@@ -82,6 +83,7 @@ def make_eval_env(env_name, seed, n_threads, env_args):
             if env_name == 'sustaindc':
                 from harl.envs.sustaindc.harlsustaindc_env import HARLSustainDCEnv
                 if 'month' in env_args:
+                    print(f'Warning: month {env_args["month"]} is specified in the environment arguments, only simulating that month.')
                     env_args['month'] = env_args['month']
                 elif rank < 12:
                     env_args['month'] = rank % 12

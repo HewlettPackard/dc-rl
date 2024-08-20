@@ -18,12 +18,14 @@ class HARLSustainDCEnv:
         self.env_args = env_args
         self.env = SustainDCPettingZooEnv(self.env_args)
         self.n_agents = len(self.env.env.agents)
-        self.max_cycles = 25
         self.cur_step = 0
 
         # Pad action and observation spaces to have the same shape (To use MAPPO 
         # and the algorithms that require the same shape)
+        # self.env = ss.pad_action_space_v0(ss.pad_observations_v0(self.env))
         self.env = ss.pad_action_space_v0(ss.pad_observations_v0(self.env))
+
+        # self.env = ss.frame_stack_v1(self.env, 2)
 
         self._seed = 0
         self.agents = self.env.possible_agents
@@ -67,7 +69,7 @@ class HARLSustainDCEnv:
 
             # Info from dc_env
             dc_env_info = envs_infos['agent_dc']
-            concat_states.extend(dc_env_info[4:9])  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power]
+            concat_states.extend(dc_env_info[4:-1])  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
 
             # Info from bat_env
             bat_env_info = envs_infos['agent_bat']
@@ -116,7 +118,7 @@ class HARLSustainDCEnv:
 
             # Info from dc_env
             dc_env_info = envs_infos['agent_dc']
-            concat_states.extend(dc_env_info[4:9])  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power]
+            concat_states.extend(dc_env_info[4:-1])  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
 
             # Info from bat_env
             bat_env_info = envs_infos['agent_bat']

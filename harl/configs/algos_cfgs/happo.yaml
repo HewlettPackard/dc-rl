@@ -13,7 +13,7 @@ device:
   torch_threads: 4
 train:
   # number of parallel environments for training data collection
-  n_rollout_threads: 12
+  n_rollout_threads: 64
   # number of total training steps
   num_env_steps: 2000000000
   # number of steps per environment per training data collection
@@ -50,7 +50,7 @@ render:
 model:
   # network parameters
   # hidden sizes for mlp module in the network
-  hidden_sizes: [16, 16, 16]
+  hidden_sizes: [16]
   # activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
   activation_func: tanh
   # whether to use feature normalization
@@ -70,11 +70,11 @@ model:
   data_chunk_length: 10
   # optimizer parameters
   # actor learning rate
-  lr: 0.0003
+  lr: 0.001
   # critic learning rate
-  critic_lr: 0.0003
+  critic_lr: 0.001
   # eps in Adam
-  opti_eps: 0.00001
+  opti_eps: 0.01
   # weight_decay in Adam
   weight_decay: 0
   # parameters of diagonal Gaussian distribution
@@ -106,7 +106,7 @@ algo:
   # whether to use Generalized Advantage Estimation (GAE)
   use_gae: True
   # discount factor
-  gamma: 0.995
+  gamma: 0.9
   # GAE lambda
   gae_lambda: 0.9
   # whether to use huber loss

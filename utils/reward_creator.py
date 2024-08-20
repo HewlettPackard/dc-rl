@@ -1,4 +1,5 @@
 # File where the rewards are defined
+import numpy as np
 
 def default_ls_reward(params: dict) -> float:
     """
@@ -39,9 +40,84 @@ def default_ls_reward(params: dict) -> float:
     if current_step % (24*4) == 0:   # Penalty for queued tasks at the end of the day
         penalty_tasks_queue = -1.0 * tasks_in_queue/10 # Penalty for each task left in the queue
     
-    reward = footprint + penalty_dropped_tasks + penalty_tasks_queue    
+    current_CI = params['norm_CI']
+    forecast_CI = np.mean(params['forecast_CI'])
+    ls_action = params['ls_action'] #  Actions: 0 - Postpone (decrease utilization), 1 - Do Nothing, 2 - execute (Increase utilization)
+    # Time-based incentive using tasks_in_queue
+    postpone_bonus = 0
+    if current_CI > forecast_CI and ls_action == 0: # Encourage postponing tasks when CI is high and perform action is to postpone
+        postpone_bonus = 0.1  # Reward for postponing tasks during high CI periods
+    
+    # Encourage executing tasks when CI is low
+    execute_bonus = 0
+    if current_CI < forecast_CI and ls_action == 2: # Encourage executing tasks when CI is low and perform action is to execute
+        execute_bonus = 0.1  # Reward for executing tasks during low CI periods
+    
+    reward = footprint + penalty_dropped_tasks + penalty_tasks_queue + postpone_bonus + execute_bonus
     return reward
 
+# Initialize these values with extreme values
+min_load = 950 #  float('inf')
+max_load = 3400 #  float('-inf')
+
+# Initialize running mean and standard deviation
+mean_load = 1500.0
+std_load = 300.0
+load_count = 0
+
+# def update_mean_std(total_load):
+#     global mean_load, std_load, load_count
+    
+#     load_count += 1
+    
+#     # Update the mean using a running average formula
+#     old_mean = mean_load
+#     mean_load += (total_load - mean_load) / load_count
+    
+#     # Update the standard deviation using Welford's method
+#     std_load += (total_load - old_mean) * (total_load - mean_load)
+    
+#     print(f"New mean: {mean_load}, New std: {np.sqrt(std_load / load_count)}")
+
+
+def normalize_reward_mean_std(total_load):
+    # Update the running statistics
+    # update_mean_std(total_load)
+    
+    if std_load == 0:
+        return 0.0
+    
+    # Z-score normalization
+    # z_score = (total_load - mean_load) / np.sqrt(std_load / load_count)
+    z_score = -1 * (total_load - mean_load) / std_load
+    
+    # Optionally scale to a desired range, such as [-1, 1]
+    # normalized_reward = np.tanh(-z_score)  # Apply negative to align with minimizing load
+    
+    return z_score
+
+
+def update_load_bounds(total_load):
+    global min_load, max_load
+    if total_load < min_load:
+        min_load = total_load
+        print(f"New min load: {min_load}")
+    if total_load > max_load:
+        max_load = total_load
+        print(f"New max load: {max_load}")
+
+def normalize_reward(total_load):
+    if max_load == min_load:
+        # Avoid division by zero; this would happen if the load hasn't varied at all
+        return 0.0
+    
+    # Normalize total_load to the range [-1, 1] and negate it to encourage reduction
+    normalized_reward = -1 * (2 * (total_load - min_load) / (max_load - min_load) - 1)
+    return normalized_reward
+
+def dynamic_normalized_dc_reward(total_load):
+    # update_load_bounds(total_load)
+    return normalize_reward(total_load)
 
 def default_dc_reward(params: dict) -> float:
     """
@@ -51,17 +127,63 @@ def default_dc_reward(params: dict) -> float:
         params (dict): Dictionary containing parameters:
             data_center_total_ITE_Load (float): Total ITE Load of the data center.
             CT_Cooling_load (float): CT Cooling load of the data center.
-            energy_lb (float): Lower bound of the energy.
-            energy_ub (float): Upper bound of the energy.
+            load_lb (float): Lower bound of the load (kW).
+            load_ub (float): Upper bound of the load (kW).
 
     Returns:
         float: Reward value.
     """
     data_center_total_ITE_Load = params['dc_ITE_total_power_kW']
-    CT_Cooling_load = params['dc_HVAC_total_power_kW']
-    energy_lb,  energy_ub = params['dc_power_lb_kW'], params['dc_power_ub_kW']
+    cooling_load = params['dc_HVAC_total_power_kW']
+    # load_lb,  load_ub = params['dc_power_lb_kW']*1.75, params['dc_power_ub_kW']*0.75
     
-    return - 1.0 * ((data_center_total_ITE_Load + CT_Cooling_load) - energy_lb) / (energy_ub - energy_lb)
+    total_load = data_center_total_ITE_Load + cooling_load
+    # if total_load < load_lb:
+    #     print(f"Warning: Total load {total_load} is below the lower bound {load_lb}")
+    # elif total_load > load_ub:
+    #     print(f"Warning: Total load {total_load} is above the upper bound {load_ub}")
+        
+    # reward = dynamic_normalized_dc_reward(total_load)
+    reward = normalize_reward_mean_std(total_load)
+
+    return reward
+
+
+def dc_reward_with_temp_stability(params: dict) -> float:
+    """
+    Calculates a reward value based on the data center's total ITE Load, CT Cooling load, 
+    and CPU temperature stability.
+
+    Args:
+        params (dict): Dictionary containing parameters:
+            data_center_total_ITE_Load (float): Total ITE Load of the data center.
+            CT_Cooling_load (float): CT Cooling load of the data center.
+            current_cpu_temp (float): Current CPU temperature.
+            previous_cpu_temp (float): Previous CPU temperature 15 minutes ago.
+
+    Returns:
+        float: Reward value.
+    """
+    data_center_total_ITE_Load = params['dc_ITE_total_power_kW']
+    cooling_load = params['dc_HVAC_total_power_kW']
+    # load_lb,  load_ub = params['dc_power_lb_kW']*1.75, params['dc_power_ub_kW']*0.75
+    
+    total_load = data_center_total_ITE_Load + cooling_load
+    
+    base_reward = normalize_reward_mean_std(total_load)
+
+    # Penalize temperature variations
+    current_cpu_temp = params.get('dc_current_cpu_temp', 0.0)
+    previous_cpu_temp = params.get('dc_previous_cpu_temp', 0.0)
+    
+    temp_rise = current_cpu_temp - previous_cpu_temp
+    temp_penalty = 0
+    
+    if np.abs(temp_rise) > 10:  # Example threshold for penalizing temperature rise
+        temp_penalty = -0.1 * (np.abs(temp_rise) - 10)  # Penalty increases with temperature rise
+    
+    return base_reward + temp_penalty
+
 
 
 def default_bat_reward(params: dict) -> float:

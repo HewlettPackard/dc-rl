@@ -272,9 +272,12 @@ class OnPolicyBaseRunner:
                     self.prep_rollout()
                     self.update_chkpoints = self.eval()
                 if self.update_chkpoints:
-                    self.save()
+                    self.save()  # Save best checkpoint
                     self.update_chkpoints = False
 
+                # Save the latest checkpoint after every episode
+                self.save(latest=True)
+        
             self.after_update()
 
     def warmup(self):
@@ -836,22 +839,24 @@ class OnPolicyBaseRunner:
             self.actor[agent_id].prep_training()
         self.critic.prep_training()
 
-    def save(self):
+    def save(self, latest=False):
         """Save model parameters."""
+        suffix = "_latest" if latest else ""
+        
         for agent_id in range(self.num_agents):
             policy_actor = self.actor[agent_id].actor
             torch.save(
                 policy_actor.state_dict(),
-                str(self.save_dir) + "/actor_agent" + str(agent_id) + ".pt",
+                str(self.save_dir) + f"/actor_agent{agent_id}{suffix}.pt",
             )
         policy_critic = self.critic.critic
         torch.save(
-            policy_critic.state_dict(), str(self.save_dir) + "/critic_agent" + ".pt"
+            policy_critic.state_dict(), str(self.save_dir) + f"/critic_agent{suffix}.pt"
         )
         if self.value_normalizer is not None:
             torch.save(
                 self.value_normalizer.state_dict(),
-                str(self.save_dir) + "/value_normalizer" + ".pt",
+                str(self.save_dir) + f"/value_normalizer{suffix}.pt",
             )
         self.logger.save_weights_log()
 

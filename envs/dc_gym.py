@@ -1,7 +1,9 @@
+import os
 from typing import Optional, Tuple
 import numpy as np
 import pandas as pd
 
+import pyfmi
 import gymnasium as gym
 from gymnasium import spaces
 
@@ -57,7 +59,23 @@ class dc_gymenv(gym.Env):
         self.obs_max = []
         self.obs_min = []
         self.DC_Config = DC_Config
-                
+        
+        path2fmu = "SLC_MIMO.fmu"
+
+        fmu_path = os.path.join(os.getcwd(), 'envs', path2fmu)
+        # Check if the FMU file exists
+        try:
+            # Load the FMU from the path + current working directory
+            fmu = pyfmi.load_fmu(fmu_path, kind='CS')
+            # Continue with the rest of the code
+            self.fmu = fmu
+            print(f"FMU file loaded correctly: {path2fmu}")
+        except Exception as e:
+            print(f"Error loading FMU file: {e}")
+
+        self.step_size = 15*60 # 15 Minutes
+        self.liquid_guideline_temp = 27  # ASHRAE W27 Guidelines
+        
         # similar to reset
         self.dc = DataCenter.DataCenter_ITModel(num_racks=self.DC_Config.NUM_RACKS,
                                                 rack_supply_approach_temp_list=self.DC_Config.RACK_SUPPLY_APPROACH_TEMP_LIST,
@@ -86,7 +104,12 @@ class dc_gymenv(gym.Env):
         self.power_lb_kW = (self.ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][0] + self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]) / 1e3
         self.power_ub_kW = (self.ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][1] + self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][1]) / 1e3
         
+        
+        # Initialize running min/max for each observation variable
+        self.min_values = np.array([np.inf] * len(self.observation_variables))
+        self.max_values = np.array([-np.inf] * len(self.observation_variables))
         super().__init__()
+    
     
     def reset(self, *, seed=None, options=None):
 
@@ -104,22 +127,30 @@ class dc_gymenv(gym.Env):
 
         super().reset(seed=self.seed)
 
+        # Reset the FMU to the initial state
+        self.fmu.reset()
+        
+        # Initialize the model
+        self.fmu.setup_experiment(start_time=0, stop_time=60*60*30)
+        self.fmu.initialize()
+        self.current_time = 0
+        self.pump_speed = (np.random.random()*(self.max_temp-self.min_temp)) + self.min_temp
+        self.temp_at_mixer = None
+        self.coo_mov_flow_actual = 0.5
+        self.prev_server_temps = 27  # ASHRAE W27 Guidelines
+        
         self.CRAC_Fan_load, self.CRAC_cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = None, None, None, None, None
         self.HVAC_load = self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         self.water_usage = None
         
         self.raw_curr_state = self.get_obs()
-        
-        self.consecutive_actions = 0
-        self.last_action = None
-        self.action_scaling_factor = 1  # Starts with a scale factor of 1
-        
+                
         if self.scale_obs:
             return self.normalize(self.raw_curr_state), {}  
     
+    
     def step(self, action):
-
         """
         Makes an environment step in`dc_gymenv.
 
@@ -133,23 +164,12 @@ class dc_gymenv(gym.Env):
             info (dict): A dictionary that containing additional information about the environment state
         """
         
-        crac_setpoint_delta = self.action_mapping[action]
+        pump_speed_delta = self.action_mapping[action]
         
-        # Check if the current action is in the same direction as the last one
-        if crac_setpoint_delta == self.last_action and action != 0:
-            self.consecutive_actions += 1
-        else:
-            self.consecutive_actions = 1
-            self.action_scaling_factor = 1  # Reset scaling factor if the direction changes
-
-        # Adjust the scaling factor based on consecutive actions
-        if self.consecutive_actions > 3:
-            self.action_scaling_factor += 1  # Increase the scale factor after every 3 consecutive actions
-        
-        self.raw_curr_stpt += crac_setpoint_delta * self.action_scaling_factor
-        self.raw_curr_stpt = max(min(self.raw_curr_stpt, self.max_temp), self.min_temp)
+        self.pump_speed += pump_speed_delta
+        self.pump_speed = max(min(self.pump_speed, self.max_temp), self.min_temp)
     
-        ITE_load_pct_list = [self.cpu_load_frac*100 for i in range(self.DC_Config.NUM_RACKS)] 
+        ITE_load_pct_list = [self.cpu_load_frac*100 for _ in range(self.DC_Config.NUM_RACKS)] 
         
     
         # Util, Setpoint, Average return temperature, Average CRAC Ret Temp, DC ITE power, CT power, Chiller power
@@ -158,91 +178,116 @@ class dc_gymenv(gym.Env):
         # 100, 15, 35.45, 32.44, 1248170
         # 100, 21, 36.88, 26.78, 1462910
 
-        self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = \
-            self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=self.raw_curr_stpt)
-           
-        # for a in [0, 100]:
-        #     for b in [15, 23]:
-        #         ITE_load_pct_list = [a for i in range(self.DC_Config.NUM_RACKS)]
-        #         _, _, outlet = self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=b)
-        #         print(f'CPU util: {a}, Setpoint: {b}, Average Outlet Temp: {np.mean(outlet)}')
-            
-        avg_CRAC_return_temp = DataCenter.calculate_avg_CRAC_return_temp(rack_return_approach_temp_list=self.DC_Config.RACK_RETURN_APPROACH_TEMP_LIST,
-                                                                         rackwise_outlet_temp=self.rackwise_outlet_temp)
+        input_var_names = ['processer_utilization',  #  Percentaje of utilization of the servers
+                           'stPT',                   #  Supply temperature of the liquid to the chiller. Kelvins
+                           'm_flow_in',              #  Prescribed mass flow rate [kg/s] or [l/s]
+                           ]
         
-        data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
+        cpu_util = self.cpu_load_frac*100 #  % Percentage
+        supply_liquid_temp = self.liquid_guideline_temp + 273.15 #  Kelvins. Following the W27 ASHRAE Guidelines
+        input_ts_list = [cpu_util, supply_liquid_temp, self.pump_speed]
         
-        # Now, I want to obtain the CT_Cooling_load and the Compressor_load for the whole range of input parameters (setpoint, CRAC return temp, ambient temp)
-        # for a in [15, 21]:
-        #     for c in [5, 20, 30, 40]:
-        #         for util in [0, 100]:
-        #             ITE_load_pct_list = [util for i in range(self.DC_Config.NUM_RACKS)]
-        #             self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = \
-        #             self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=a)
-            
-        #             avg_CRAC_return_temp = DataCenter.calculate_avg_CRAC_return_temp(rack_return_approach_temp_list=self.DC_Config.RACK_RETURN_APPROACH_TEMP_LIST,
-        #                                     rackwise_outlet_temp=self.rackwise_outlet_temp)
-            
-        #             data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
-            
-        #             self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load  = DataCenter.calculate_HVAC_power(CRAC_setpoint=a,
-        #                                                                                     avg_CRAC_return_temp=avg_CRAC_return_temp,
-        #                                                                                     ambient_temp=c,
-        #                                                                                     data_center_full_load=data_center_total_ITE_Load,
-        #                                                                                     DC_Config=self.DC_Config)
-        #             # print(f'CRAC setpoint:{a}, CPU util: {util}, Return temp: {avg_CRAC_return_temp}, Amb temp: {c}, HVAC CT power: {self.CT_Cooling_load}, Compressor power: {self.Compressor_load}')
-        #             # PUE = (data_center_total_ITE_Load + self.CT_Cooling_load + self.Compressor_load) / data_center_total_ITE_Load
-        #             print(f'{a}  | {c} | {util} | {avg_CRAC_return_temp:.0f} | {data_center_total_ITE_Load:.0f} | {self.CT_Cooling_load:.0f} | {self.Compressor_load:.0f} | {(data_center_total_ITE_Load + self.CT_Cooling_load + self.Compressor_load)/data_center_total_ITE_Load:.3f}')
-        # Setpoint | Ambient | CPU Util | Avg CRAC Return Temp | DC ITE Load | HVAC CT Power | Compressor Power | PUE
-        # 15  | 5 | 0 | 23 | 656834 | 1952 | 161933 | 1.250
-        # 15  | 5 | 100 | 32 | 1248294 | 130864 | 585781 | 1.574
-        # 15  | 20 | 0 | 23 | 656834 | 4628 | 149192 | 1.234
-        # 15  | 20 | 100 | 32 | 1248294 | 310196 | 637508 | 1.759
-        # 15  | 30 | 0 | 23 | 656834 | 9836 | 135291 | 1.221
-        # 15  | 30 | 100 | 32 | 1248294 | 659281 | 596291 | 2.006
-        # 15  | 40 | 0 | 23 | 656834 | 26990 | 119636 | 1.223
-        # 15  | 40 | 100 | 32 | 1248294 | 1809066 | 493200 | 2.844
-        # 21  | 5 | 0 | 29 | 871574 | 3077 | 207725 | 1.242
-        # 21  | 5 | 100 | 37 | 1463034 | 117203 | 585781 | 1.480
-        # 21  | 20 | 0 | 29 | 871574 | 6668 | 189589 | 1.225
-        # 21  | 20 | 100 | 37 | 1463034 | 254015 | 637508 | 1.609
-        # 21  | 30 | 0 | 29 | 871574 | 12835 | 170185 | 1.210
-        # 21  | 30 | 100 | 37 | 1463034 | 488897 | 640734 | 1.772
-        # 21  | 40 | 0 | 29 | 871574 | 29693 | 148729 | 1.205
-        # 21  | 40 | 100 | 37 | 1463034 | 1131057 | 528365 | 2.134
+        self.fmu.set(input_var_names, input_ts_list)
+        self.fmu.do_step(current_t=self.current_time, step_size=self.step_size)
+        self.current_time += self.step_size # 15 Minutes
         
-        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load  = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
-                                                                                                                                                                       avg_CRAC_return_temp=avg_CRAC_return_temp,
-                                                                                                                                                                       ambient_temp=self.ambient_temp,
-                                                                                                                                                                       data_center_full_load=data_center_total_ITE_Load,
-                                                                                                                                                                       DC_Config=self.DC_Config)
-        self.HVAC_load = self.CT_Cooling_load + self.Compressor_load
-        # for a in [15, 24]:
-        #     for c in [5, 20, 30]:
-        #         for util in [0, 100]:
-        #             ITE_load_pct_list = [util for i in range(self.DC_Config.NUM_RACKS)]
-        #             self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = \
-        #             self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=self.raw_curr_stpt)
-            
-        #             avg_CRAC_return_temp = DataCenter.calculate_avg_CRAC_return_temp(rack_return_approach_temp_list=self.DC_Config.RACK_RETURN_APPROACH_TEMP_LIST,
-        #                                                                 rackwise_outlet_temp=self.rackwise_outlet_temp)
+        # # Let's obtain the limits of the variables under cpu_util = 0 and cpu_util = 100, and self.pump_speed = 0.05 and self.pump_speed = 0.5
+        # for temp_cpu_util in [0, 100]:
+        #     for temp_pump_speed in [0.05, 0.5]:
+        #         input_ts_list = [temp_cpu_util, supply_liquid_temp, temp_pump_speed]
+        #         self.fmu.set(input_var_names, input_ts_list)
+        #         self.fmu.do_step(current_t=self.current_time, step_size=self.step_size*10) # To simulate steady state
+        #         self.current_time += self.step_size*10
+
+        #         modelica_pump_power = self.fmu.get('mov.P')[0] * 15000 * 20 # W. To Simulate 20 Pumps
+        #         inlet_temp_liq = self.fmu.get('tempout.T')[0]   # Kelvins
+        #         return_temp_liq = self.fmu.get('tempin.T')[0]   # Kelvins
+        #         coo_m_flow_nominal = np.abs(self.fmu.get('coo.m_flow_nominal'))[0]  #Kg/s
+        #         self.coo_mov_flow_actual = np.abs(self.fmu.get('mov.m_flow_actual'))[0]  #Kg/s
+        #         coo_Q_flow = np.abs(self.fmu.get('coo.Q_flow'))[0] * 100 #  To simulate a datacenter with 300 cabinets
+        #         self.temp_at_mixer = self.fmu.get('tempatmixer.T')[0]  # Kelvins
+                
+        #         pipe1_temp = self.fmu.get('pipe1.sta_b.T')[0]  # Kelvins
+        #         pipe2_temp = self.fmu.get('pipe2.sta_b.T')[0]  # Kelvins
+        #         pipe3_temp = self.fmu.get('pipe3.sta_b.T')[0]  # Kelvins
+                
+        #         server1_temp = self.fmu.get('serverblock1.heatCapacitor.T')[0]  # Kelvins
+        #         server2_temp = self.fmu.get('serverblock2.heatCapacitor.T')[0]  # Kelvins
+        #         server3_temp = self.fmu.get('serverblock3.heatCapacitor.T')[0]  # Kelvins
+                
+        #         server_temps = [server1_temp, server2_temp, server3_temp]
+
+        #         ITE_load_pct_list = [temp_cpu_util for _ in range(self.DC_Config.NUM_RACKS)] 
+
+        #         self.rackwise_cpu_pwr, _, _ = \
+        #             self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=self.liquid_guideline_temp, server_temps=server_temps)
+        #         # Now print the values
+        #         print(f"CPU Utilization: {temp_cpu_util}%, Pump Speed: {temp_pump_speed}")
+        #         print(f"Modelica Pump Power: {modelica_pump_power} W")
+        #         print(f"Inlet Temp Liquid: {inlet_temp_liq-273.15} C")
+        #         print(f"Return Temp Liquid: {return_temp_liq-273.15} C")
+        #         print(f"Cooling Mass Flow Nominal: {coo_m_flow_nominal} Kg/s")
+        #         print(f"Cooling Mass Flow Actual: {self.coo_mov_flow_actual} Kg/s")
+        #         print(f"Cooling Q Flow: {coo_Q_flow} W")
+        #         print(f"Temp at Mixer: {self.temp_at_mixer-273.15} C")
+        #         print(f"Pipe1 Temp: {pipe1_temp-273.15} C")
+        #         print(f"Pipe2 Temp: {pipe2_temp-273.15} C")
+        #         print(f"Pipe3 Temp: {pipe3_temp-273.15} C")
+        #         print(f"Server1 Temp: {server1_temp-273.15} C")
+        #         print(f"Server2 Temp: {server2_temp-273.15} C")
+        #         print(f"Server3 Temp: {server3_temp-273.15} C")
+        #         print(f"ITE Load: {sum(self.rackwise_cpu_pwr)} W")
+        #         print("\n")
+                
+                
         
-        #             data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
+        # We can extract the pump power consumption from 'mov.P', althought this is a normalized value, so, the value should be multiplied by 15 to obtain the power consumption in KW
+        # More info:
+        '''
+        For a liquid-cooled data center with a 1MW compute capacity, a typical pump in the primary loop might consume approximately 13 to 15 kW. 
+        This estimate assumes a nominal head of around 20 meters and a flow rate sufficient to maintain a 30°C temperature difference across the
+        cooling system, with typical pump efficiencies.
+        '''
         
-        #             _, ct, _, _, _, _ = DataCenter.calculate_HVAC_power(CRAC_setpoint=a,
-        #                                                                     avg_CRAC_return_temp=avg_CRAC_return_temp,
-        #                                                                     ambient_temp=c,
-        #                                                                     data_center_full_load=data_center_total_ITE_Load,
-        #                                                                     DC_Config=self.DC_Config)
-        #             print(f'CRAC setpoint:{a}, CPU util: {util}, Return temp: {avg_CRAC_return_temp}, Amb temp: {c}, HVAC CT power: {ct}')
+        modelica_pump_power = self.fmu.get('mov.P')[0] * 15000 * 3 # W. To Simulate 3 Pumps
+        inlet_temp_liq = self.fmu.get('tempout.T')[0]   # Kelvins
+        return_temp_liq = self.fmu.get('tempin.T')[0]   # Kelvins
+        coo_m_flow_nominal = np.abs(self.fmu.get('coo.m_flow_nominal'))[0]  #Kg/s
+        self.coo_mov_flow_actual = np.abs(self.fmu.get('mov.m_flow_actual'))[0]  #Kg/s
+        self.coo_Q_flow = np.abs(self.fmu.get('coo.Q_flow'))[0] * 350 #  To simulate a datacenter with 350 cabinets and a total power of 1MW
+        self.temp_at_mixer = self.fmu.get('tempatmixer.T')[0]  # Kelvins
+        
+        pipe1_temp = self.fmu.get('pipe1.sta_b.T')[0]  # Kelvins
+        pipe2_temp = self.fmu.get('pipe2.sta_b.T')[0]  # Kelvins
+        pipe3_temp = self.fmu.get('pipe3.sta_b.T')[0]  # Kelvins
+        
+        server1_temp = self.fmu.get('serverblock1.heatCapacitor.T')[0]  # Kelvins
+        server2_temp = self.fmu.get('serverblock2.heatCapacitor.T')[0]  # Kelvins
+        server3_temp = self.fmu.get('serverblock3.heatCapacitor.T')[0]  # Kelvins
+        
+        server_temps = [server1_temp, server2_temp, server3_temp]
+        self.rackwise_cpu_pwr, _, _ = \
+            self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=self.liquid_guideline_temp, server_temps=server_temps)
+
+        data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr)
+        data_center_total_ITE_Load = (self.coo_Q_flow + data_center_total_ITE_Load)/2
+
+        # print(f'Q_flow: {coo_Q_flow} W, ITE Load: {data_center_total_ITE_Load} W, average of those metrics: {(coo_Q_flow + data_center_total_ITE_Load)/2} W')
+        
+        self.CT_Fan_pwr, self.CRAC_cooling_load, self.chiller_power, self.power_water_pump_CT  = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.liquid_guideline_temp,
+                                                                                                                                 chiller_heat_removed=data_center_total_ITE_Load*0.2,
+                                                                                                                                 ambient_temp=self.ambient_temp,
+                                                                                                                                 DC_Config=self.DC_Config)
+        self.HVAC_load = self.CT_Fan_pwr + self.CRAC_cooling_load + self.power_water_pump_CT + modelica_pump_power
+
         
         # Set the additional attributes for the cooling tower water usage calculation
-        self.dc.hot_water_temp = avg_CRAC_return_temp  # °C
-        self.dc.cold_water_temp = self.raw_curr_stpt  # °C
+        self.dc.hot_water_temp = return_temp_liq - 273.15 # °C
+        self.dc.cold_water_temp = self.liquid_guideline_temp  # °C
         self.dc.wet_bulb_temp = self.wet_bulb  # °C from weather data
 
         # Calculate the cooling tower water usage
-        self.water_usage = self.dc.calculate_cooling_tower_water_usage()
+        self.water_usage = self.dc.calculate_cooling_tower_water_usage()  # liters per 15 minutes
         # water_usage_meth2 = DataCenter.calculate_water_consumption_15min(self.CRAC_Cooling_load,  self.dc.hot_water_temp, self.dc.cold_water_temp)
         # print(f"Estimated cooling tower water usage method1 (liters per 15 min): {water_usage}")
         # print(f"Estimated cooling tower water usage method2 (liters per 15 min): {water_usage_meth2}")
@@ -254,34 +299,51 @@ class dc_gymenv(gym.Env):
         self.raw_next_state = self.get_obs()
         
         # Update the last action
-        self.last_action = crac_setpoint_delta
+        self.last_action = pump_speed_delta
         
         # add info dictionary 
         self.info = {
             'dc_ITE_total_power_kW': data_center_total_ITE_Load / 1e3,
-            'dc_CT_total_power_kW': self.CT_Cooling_load / 1e3,
-            'dc_Compressor_total_power_kW': self.Compressor_load / 1e3,
-            'dc_HVAC_total_power_kW': (self.CT_Cooling_load + self.Compressor_load) / 1e3,
-            'dc_total_power_kW': (data_center_total_ITE_Load + self.CT_Cooling_load + self.Compressor_load) / 1e3,
-            'dc_crac_setpoint_delta': crac_setpoint_delta,
-            'dc_crac_setpoint': self.raw_curr_stpt,
+            'dc_CT_total_power_kW': self.CT_Fan_pwr / 1e3,
+            'dc_Compressor_total_power_kW': (modelica_pump_power + self.coo_Q_flow) / 1e3,
+            'dc_HVAC_total_power_kW': (self.HVAC_load) / 1e3,
+            'dc_total_power_kW': (data_center_total_ITE_Load + self.HVAC_load) / 1e3,
+            'dc_crac_setpoint_delta': pump_speed_delta,
+            'dc_crac_setpoint': self.pump_speed,
             'dc_cpu_workload_fraction': self.cpu_load_frac,
-            'dc_int_temperature': np.mean(self.rackwise_outlet_temp),
+            'dc_int_temperature': return_temp_liq,
             'dc_exterior_ambient_temp': self.ambient_temp,
             'dc_power_lb_kW': self.power_lb_kW,
             'dc_power_ub_kW': self.power_ub_kW,
             'dc_CW_pump_power_kW': self.CW_pump_load,
             'dc_CT_pump_power_kW': self.CT_pump_load,
             'dc_water_usage': self.water_usage,
+            'dc_pump_power_kW': modelica_pump_power / 1e3,
+            'dc_heat_removed': self.coo_Q_flow/1e3,
+            'dc_coo_m_flow_nominal': coo_m_flow_nominal,
+            'dc_coo_mov_flow_actual': self.coo_mov_flow_actual,
+            'dc_supply_liquid_temp': inlet_temp_liq - 273.15,
+            'dc_average_pipe_temp': (pipe1_temp + pipe2_temp + pipe3_temp) / 3 - 273.15,
+            'dc_average_server_temp': (server1_temp + server2_temp + server3_temp) / 3 - 273.15,
+            'dc_current_servers_temps': np.average(server_temps),
+            'dc_previous_servers_temps': self.prev_server_temps,
         }
-        
+        self.prev_server_temps = np.average(server_temps)
 
         #Done and truncated are managed by the main class, implement individual function if needed
         truncated = False
         done = False 
         # return processed/unprocessed state to agent
         if self.scale_obs:
+            # # Update the min/max values based on the new observation
+            # self.update_observation_ranges(self.raw_next_state)
+            
+            # # Normalize the current observation
+            # normalized_observation = self.normalize_observations(self.raw_next_state)
+            # return normalized_observation, self.reward, done, truncated, self.info
+
             return self.normalize(self.raw_next_state), self.reward, done, truncated, self.info
+
 
     def NormalizeObservation(self,):
         """
@@ -296,37 +358,66 @@ class dc_gymenv(gym.Env):
         self.obs_max = np.array(self.obs_max)
         self.obs_delta = self.obs_max - self.obs_min
 
+    def update_observation_ranges(self, observations):
+        # Update the minimum and maximum values
+        # self.min_values = np.minimum(self.min_values, observations)
+        # self.max_values = np.maximum(self.max_values, observations)
+        for i, value in enumerate(observations):
+            if value < self.min_values[i]:
+                print(f"New minimum for {self.observation_variables[i]}: {value} (previous min: {self.min_values[i]})")
+                self.min_values[i] = value
+            
+            if value > self.max_values[i]:
+                print(f"New maximum for {self.observation_variables[i]}: {value} (previous max: {self.max_values[i]})")
+                self.max_values[i] = value
+
+
+    
+    def normalize_observations(self, observations):
+        # Ensure no division by zero by adding a small epsilon to the denominator
+        epsilon = 1e-8
+        return (observations - self.min_values) / (self.max_values - self.min_values + epsilon)
+
+
     def normalize(self,obs):
         """
         Normalizes the observation.
         """
-        return np.float32((obs-self.obs_min)/self.obs_delta)
+        return 2 * np.float32((obs-self.obs_min)/self.obs_delta) - 1
+
 
     def get_obs(self):
         """
         Returns the observation at the current time step.
+        
+        The observation is a list of the following variables:
+            'Site Outdoor Air Drybulb Temperature(Environment)',
+            'Actual Pump Speed',
+            'Temp at Mixer', # Temperature at the mixer, previous to the pump of the liquid cooling system
+            'Facility Total HVAC Electricity Demand Rate(Whole Building)',  # 'HVAC POWER'
+            'Facility Total Building Electricity Demand Rate(Whole Building)'  #  'IT POWER'
+    
 
         Returns:
             observation (List[float]): Current state of the environmment.
         """
-        zone_air_therm_cooling_stpt = self.min_temp  # in C, default for reset state
-        if self.raw_curr_stpt is not None:
-            zone_air_therm_cooling_stpt = self.raw_curr_stpt
+        pump_speed = self.coo_mov_flow_actual  # In l/s
         
-        zone_air_temp = self.obs_min[2]  # in C, default for reset state
-        if self.rackwise_outlet_temp:
-            zone_air_temp = sum(self.rackwise_outlet_temp)/len(self.rackwise_outlet_temp)
+        temp_at_mixer = self.liquid_guideline_temp  # C. Following the W27 ASHRAE Guidelines
+        if self.temp_at_mixer:
+            temp_at_mixer = self.temp_at_mixer - 273.15  # Convert to Celsius
 
         # 'Facility Total HVAC Electricity Demand Rate(Whole Building)'  ie 'HVAC POWER'
         hvac_power = self.HVAC_load #self.CT_Cooling_load + self.Compressor_load
 
         # 'Facility Total Building Electricity Demand Rate(Whole Building)' ie 'IT POWER'
         if self.rackwise_cpu_pwr:
-            it_power = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
+            it_power = (self.coo_Q_flow + sum(self.rackwise_cpu_pwr))/2
         else:
             it_power = self.ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][0]
 
-        return [self.ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power]
+        return [self.ambient_temp, pump_speed, temp_at_mixer, hvac_power, it_power]
+
 
     def set_shifted_wklds(self, cpu_load):
         """
@@ -336,16 +427,25 @@ class dc_gymenv(gym.Env):
             print('CPU load out of bounds')
         assert 0.0 <= cpu_load <= 1.0, 'CPU load out of bounds'
         self.cpu_load_frac = cpu_load
-    
+
+
     def set_ambient_temp(self, ambient_temp, wet_bulb):
         """
         Updates the external temperature.
         """
         self.ambient_temp = ambient_temp
         self.wet_bulb = wet_bulb
-        
+    
+    
     def set_bat_SoC(self, bat_SoC):
         """
         Updates the battery state of charge.
         """
         self.bat_SoC = bat_SoC
+
+
+    # def reset_fmu(self):
+    #     """
+    #     Reset the FMU.
+    #     """
+    #     self.fmu.reset()

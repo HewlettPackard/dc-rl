@@ -26,6 +26,15 @@ class BaseLoadShiftingAgent:
         """
         return self.do_nothing_action_value
     
+    def act(self):
+        """
+        Return the do nothing action regardless of the input parameters.
+
+        Returns:
+            action (int): The action (do nothing) to be taken.
+        """
+        return self.do_nothing_action()
+    
 class BaseHVACAgent:
     """
     Base class for HVAC agents.
@@ -57,6 +66,15 @@ class BaseHVACAgent:
         """
         return self.do_nothing_action_value
 
+    def act(self):
+        """
+        Return the do nothing action regardless of the input parameters.
+
+        Returns:
+            action (int): The action (do nothing) to be taken.
+        """
+        return self.do_nothing_action()
+    
 class BaseBatteryAgent:
     """
     Base class for battery agents.

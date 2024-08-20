@@ -105,33 +105,35 @@ def make_dc_pyeplus_env(month : int = 1,
     ############################################################################
     observation_variables += [
         'Site Outdoor Air Drybulb Temperature(Environment)',
-        'Zone Thermostat Cooling Setpoint Temperature(West Zone)',
-        'Zone Air Temperature(West Zone)',
+        'Pump Speed',
+        'Temp at Mixer', # Temperature at the mixer, previous to the pump of the liquid cooling system
         'Facility Total HVAC Electricity Demand Rate(Whole Building)',  # 'HVAC POWER'
-        # TODO: Will add sum of IT POWER  and HVAC Power Here if AGP wants it
         'Facility Total Building Electricity Demand Rate(Whole Building)'  #  'IT POWER'
     ]
     if add_cpu_usage:    
-        observation_space = spaces.Box(low=np.float32(0.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
-                                        high=np.float32(1.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
+        observation_space = spaces.Box(low=np.float32(-2.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
+                                        high=np.float32(2.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
                                         )
     else:
-        observation_space = spaces.Box(low=np.float32(0.0*np.ones(len(observation_variables)+num_sin_cos_vars+1)),  # p.o.
-                                        high=np.float32(1.0*np.ones(len(observation_variables)+num_sin_cos_vars+1)),  # p.o. here we add 1 to only include current CI
+        observation_space = spaces.Box(low=np.float32(-2.0*np.ones(len(observation_variables)+num_sin_cos_vars+2+4)),  # p.o.
+                                        high=np.float32(2.0*np.ones(len(observation_variables)+num_sin_cos_vars+2+4)),  # p.o. here we add 2 to only include current CI and next workload
                                         )
     
     ################################################################################
     ########################## Action Variables ####################################
     ################################################################################
     
-    action_variables = ['Cooling_Setpoint_RL']
-    action_definition = {'cooling setpoints': {'name': 'Cooling_Setpoint_RL', 'initial_value': 18}}
-    min_temp = 15.0
-    max_temp = 21.6
+    action_variables = ['Pump_speed']
+    action_definition = {'cooling setpoints': {'name': 'Pump_speed', 'initial_value': 0.3}}
+    max_pump_speed = 0.5   # l/s
+    min_pump_speed = 0.05  # l/s
+    
+    min_temp = 15.0  # C
+    max_temp = 21.6  # C
     action_mapping = {
-        0: (-1),
+        0: (-0.05),
         1: (0),
-        2: (1),
+        2: (0.05),
     }
     action_space = spaces.Discrete(len(action_mapping))
     
@@ -208,23 +210,27 @@ def make_dc_pyeplus_env(month : int = 1,
         'hour':[0.0, 23.0], #4
         'dayOTY':[1.0, 366.0], #5 
         
-        'Site Outdoor Air Drybulb Temperature(Environment)': [-10.0, 40.0], #6
-        'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [15.0, 30.0],  # reasonable range for setpoint; can be updated based on need #7
+        'Site Outdoor Air Drybulb Temperature(Environment)': [20.0, 40.0], #6
+        'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [0.05, 0.5],  # reasonable range for setpoint; can be updated based on need #7
         'Zone Air Temperature(West Zone)':[0.9*min(dc_ambient_temp_list), 1.1*max(dc_ambient_temp_list)],
-        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0.0, 1.1*ct_rated_load + 1.1*chiller_max_load],  # this is cooling tower power and chiller power
+        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [1.5e5, 1.5e6],  # this is cooling tower power and chiller power
         'Facility Total Electricity Demand Rate(Whole Building)': [0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr) +  1.1*ct_rated_load + 1.1*chiller_max_load],  # TODO: This is not a part of the observation variables right now
-        'Facility Total Building Electricity Demand Rate(Whole Building)':[0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr)],  # this is it power
+        'Facility Total Building Electricity Demand Rate(Whole Building)':[7e5, 2e6],  # this is it power
         
         'cpuUsage':[0.0, 1.0],
         'carbonIntensity':[0.0, 1000.0],
         'batterySoC': [0.0, max_bat_cap_Mw*1e6],
-        'max_battery_energy_Mwh' : max_dc_energy
+        'max_battery_energy_Mwh' : max_dc_energy,
+        
+        'Pump Speed': [min_pump_speed, max_pump_speed],  # This is the pump speed
+        'Temp at Mixer': [27, 65],  # This is the temperature at the mixer
     }
     
     ################################################################################
     ############################## Create the Environment ##########################
     ################################################################################
-        
+    
+    # Need to fix this, because the observation_variables should be others.
     dc_env = dc_gymenv(observation_variables=observation_variables,
                     observation_space=observation_space,
                     action_variables=action_variables,
@@ -232,8 +238,8 @@ def make_dc_pyeplus_env(month : int = 1,
                     action_mapping=action_mapping,
                     ranges=ranges,
                     add_cpu_usage=add_cpu_usage,
-                    min_temp=min_temp,
-                    max_temp=max_temp,
+                    min_temp=min_pump_speed,
+                    max_temp=max_pump_speed,
                     action_definition=action_definition,
                     DC_Config=dc_config,
                     episode_length_in_time=episode_length_in_time

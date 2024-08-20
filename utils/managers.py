@@ -161,7 +161,7 @@ class Time_Manager():
 
 # Class to manage CPU workload data
 class Workload_Manager():
-    def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.01, desired_std_dev=0.025, timezone_shift=0):
+    def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.005, desired_std_dev=0.01, timezone_shift=0):
         """Manager of the DC workload.
 
         Args:
@@ -203,6 +203,18 @@ class Workload_Manager():
                 
         # Initialize CoherentNoise process
         self.coherent_noise = CoherentNoise(base=self.original_data[0], weight=weight, desired_std_dev=desired_std_dev)
+
+    def smooth_workload(self, window_size=3):
+        """Apply moving average to smooth out workload changes.
+
+        Args:
+            window_size (int): The size of the moving window. Defaults to 3.
+
+        Returns:
+            np.array: Smoothed workload data.
+        """
+        return np.convolve(self.cpu_smooth, np.ones(window_size) / window_size, mode='same')
+
 
     # Function to return all workload data
     def get_total_wkl(self):
@@ -256,10 +268,13 @@ class Workload_Manager():
         baseline = np.random.random()*0.5 - 0.25
         
         # Add noise to the workload data using the CoherentNoise 
-        cpu_data = self.original_data * np.random.uniform(0.9, 1.1, len(self.original_data))
+        cpu_data = self.original_data * np.random.uniform(0.95, 1.05, len(self.original_data))
         cpu_smooth = cpu_data * 0.7 + self.coherent_noise.generate(len(cpu_data)) * 0.3 + baseline
         
         self.cpu_smooth = self.scale_array(cpu_smooth)
+        
+        # Apply smoothing method
+        self.cpu_smooth = self.smooth_workload(window_size=16)
         
         num_roll_weeks = np.random.randint(0, 52) # Random roll the workload because is independed on the month, so I am rolling across weeks (52 weeks in a year)
         self.cpu_smooth =  np.roll(self.cpu_smooth, num_roll_weeks*self.timestep_per_hour*24*7)
@@ -282,7 +297,14 @@ class Workload_Manager():
         # assert self.time_step < len(self.cpu_smooth), f'Episode length: {self.time_step} is longer than the provide cpu_smooth: {len(self.cpu_smooth)}'
         return self.cpu_smooth[max(self.time_step - 1,0)]  # to avoid logical error
     
-    def get_current_workload(self):        
+    def get_current_workload(self):
+        if self.time_step - 1 < 0:
+            return self.cpu_smooth[self.time_step]
+        return self.cpu_smooth[self.time_step - 1]
+
+    def get_next_workload(self):
+        if self.time_step + 1 >= len(self.cpu_smooth):
+            return self.cpu_smooth[self.time_step]
         return self.cpu_smooth[self.time_step]
     
     def set_current_workload(self, workload):         
@@ -569,5 +591,5 @@ class Weather_Manager():
         return (self.temperature_data[self.time_step - 1], self.norm_temp_data[self.time_step - 1],
                 self.wet_bulb_data[self.time_step - 1], self.norm_wet_bulb_data[self.time_step - 1])  # Added wet bulb temp
         
-    def get_current_weather(self):
+    def get_next_temperature(self):
         return self.temperature_data[self.time_step]

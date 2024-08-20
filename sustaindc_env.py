@@ -131,7 +131,7 @@ class SustainDC(gym.Env):
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
         n_vars_energy, n_vars_battery = 0, 0  # For partial observability (for p.o.)
-        n_vars_ci = 8
+        n_vars_ci = 2
         self.ls_env = make_ls_env(month=self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci, 
                                   n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, queue_max_len=1000)
         self.dc_env, _ = make_dc_pyeplus_env(month=self.month + 1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, 
@@ -248,8 +248,52 @@ class SustainDC(gym.Env):
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
         self.ls_state = np.float32(np.hstack((t_i, ls_s, ci_i_future)))  # For p.o.
         
-        # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]  # p.o.
-        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, ci_i_future[0])))  # p.o.
+        # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI, next_workload]  # p.o.
+        # self.dc_state = np.float32(np.hstack((t_i, self.dc_state, self.workload_m.get_next_workload())))  # For p.o.
+        # next_workload = self.workload_m.get_next_workload()
+        # is_high_workload = int(next_workload > 0.75)
+        # is_low_workload = int(next_workload < 0.25)
+        hour = random_init_hour
+        # is_workload_increasing = int(next_workload > workload * 1.1)
+        # is_workload_decreasing = int(next_workload < workload * 0.9)
+        # is_peak_workload = int(next_workload > 0.9)
+        # is_night_time =int( hour < 6 or hour > 18)
+        # # Update the shared variables
+        # # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]
+        # # self.dc_state = np.float32(np.hstack((t_i, self.dc_state, next_workload, is_high_workload)))  # For p.o.
+        # self.dc_state = np.float32(np.hstack((t_i,
+        #                                       self.dc_state,
+        #                                       next_workload,
+        #                                       is_high_workload,
+        #                                       is_low_workload,
+        #                                       is_workload_increasing,
+        #                                       is_workload_decreasing,
+        #                                       is_peak_workload,
+        #                                       is_night_time
+        #                                       )))
+        
+        next_workload = self.workload_m.get_next_workload()
+        next_out_temperature = self.weather_m.get_next_temperature()
+        is_high_workload = int(next_workload > 0.75)
+        is_low_workload = int(next_workload < 0.25)
+
+        is_workload_increasing = int(next_workload > workload * 1.1)
+        is_workload_decreasing = int(next_workload < workload * 0.9)
+        is_peak_workload = int(next_workload > 0.9)
+        is_night_time = int(hour < 6 or hour > 20)
+        is_midday = int(hour > 10 and hour < 18)
+        # Update the shared variables
+        # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]
+        # self.dc_state = np.float32(np.hstack((t_i, self.dc_state, next_workload, is_high_workload)))  # For p.o.
+        self.dc_state = np.float32(np.hstack((t_i,
+                                              self.dc_state,
+                                              next_workload,
+                                              next_out_temperature,
+                                              is_workload_increasing,
+                                              is_workload_decreasing,
+                                              is_night_time,
+                                              is_midday
+                                              )))
         
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
         self.bat_state = np.float32(np.hstack((t_i, bat_s, ci_i_future)))
@@ -357,9 +401,29 @@ class SustainDC(gym.Env):
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
         self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future)))  # For p.o.
         
+        next_workload = self.workload_m.get_next_workload()
+        next_out_temperature = self.weather_m.get_next_temperature()
+        is_high_workload = int(next_workload > 0.75)
+        is_low_workload = int(next_workload < 0.25)
+
+        is_workload_increasing = int(next_workload > workload * 1.1)
+        is_workload_decreasing = int(next_workload < workload * 0.9)
+        is_peak_workload = int(next_workload > 0.9)
+        is_night_time = int(hour < 6 or hour > 20)
+        is_midday = int(hour > 10 and hour < 18)
         # Update the shared variables
         # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]
-        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, ci_i_future[0])))  # For p.o.
+        # self.dc_state = np.float32(np.hstack((t_i, self.dc_state, next_workload, is_high_workload)))  # For p.o.
+        self.dc_state = np.float32(np.hstack((t_i,
+                                              self.dc_state,
+                                              next_workload,
+                                              next_out_temperature,
+                                              is_workload_increasing,
+                                              is_workload_decreasing,
+                                              is_night_time,
+                                              is_midday
+                                              )))
+
         
         # Update the state of the bat state
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
@@ -368,14 +432,14 @@ class SustainDC(gym.Env):
         # Params should be a dictionary with all of the info required plus other additional information like the external temperature, the hour, the day of the year, etc.
         # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
         info_dict = {**self.bat_info, **self.ls_info, **self.dc_info}
-        add_info = {"outside_temp": temp, "day": day, "hour": hour, "norm_CI": ci_i_future[0]}
+        add_info = {"outside_temp": temp, "day": day, "hour": hour, "norm_CI": ci_i_future[0], "forecast_CI": ci_i_future}
         reward_params = {**info_dict, **add_info}
         self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
         
         # If agent_ls is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_ls" in self.agents:
             obs['agent_ls'] = self.ls_state
-            rew["agent_ls"] = self.indv_reward * self.ls_reward + self.collab_reward * self.bat_reward + self.collab_reward * self.dc_reward
+            rew["agent_ls"] = self.ls_reward  #self.indv_reward * self.ls_reward + self.collab_reward * self.bat_reward + self.collab_reward * self.dc_reward
             terminateds["agent_ls"] = False
             truncateds["agent_ls"] = False
         info["agent_ls"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
@@ -383,7 +447,7 @@ class SustainDC(gym.Env):
         # If agent_dc is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_dc" in self.agents:
             obs["agent_dc"] = self.dc_state
-            rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_reward + self.collab_reward * self.bat_reward
+            rew["agent_dc"] = self.dc_reward # self.indv_reward * self.dc_reward + self.collab_reward * self.ls_reward + self.collab_reward * self.bat_reward
             terminateds["agent_dc"] = False
             truncateds["agent_dc"] = False
         info["agent_dc"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
@@ -391,7 +455,7 @@ class SustainDC(gym.Env):
          # If agent_bat is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_bat" in self.agents:
             obs["agent_bat"] = self.bat_state
-            rew["agent_bat"] = self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_reward
+            rew["agent_bat"] = self.bat_reward # self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_reward
             terminateds["agent_bat"] = False
             truncateds["agent_bat"] = False
         info["agent_bat"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
@@ -402,6 +466,9 @@ class SustainDC(gym.Env):
             truncateds["__all__"] = True
             for agent in self.agents:
                 truncateds[agent] = True
+            
+            # Terminate the FMU from the data center environment
+            # self.dc_env.reset_fmu()
         
         # Common information
         self.infos['__common__'] = {}
