@@ -115,8 +115,8 @@ def make_dc_pyeplus_env(month : int = 1,
                                         high=np.float32(2.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
                                         )
     else:
-        observation_space = spaces.Box(low=np.float32(-2.0*np.ones(len(observation_variables)+num_sin_cos_vars+2+4)),  # p.o.
-                                        high=np.float32(2.0*np.ones(len(observation_variables)+num_sin_cos_vars+2+4)),  # p.o. here we add 2 to only include current CI and next workload
+        observation_space = spaces.Box(low=np.float32(-2.0*np.ones(4)),  # p.o.
+                                        high=np.float32(2.0*np.ones(4)),  # p.o. here we add 2 to only include current CI and next workload
                                         )
     
     ################################################################################
@@ -128,6 +128,10 @@ def make_dc_pyeplus_env(month : int = 1,
     max_pump_speed = 0.5   # l/s
     min_pump_speed = 0.05  # l/s
     
+    max_setpoint = 45.0  # C
+    min_setpoint = 15.0  # C  
+    
+    
     min_temp = 15.0  # C
     max_temp = 21.6  # C
     action_mapping = {
@@ -136,6 +140,9 @@ def make_dc_pyeplus_env(month : int = 1,
         2: (0.05),
     }
     action_space = spaces.Discrete(len(action_mapping))
+    
+    # I want to use a continuous action space
+    action_space = spaces.Box(low=np.float32(0), high=np.float32(1), shape=(2,))
     
     
     ################################################################################
@@ -223,6 +230,8 @@ def make_dc_pyeplus_env(month : int = 1,
         'max_battery_energy_Mwh' : max_dc_energy,
         
         'Pump Speed': [min_pump_speed, max_pump_speed],  # This is the pump speed
+        'Setpoint': [min_setpoint, max_setpoint],  # This is the setpoint of the cooling system
+        
         'Temp at Mixer': [27, 65],  # This is the temperature at the mixer
     }
     
@@ -238,8 +247,10 @@ def make_dc_pyeplus_env(month : int = 1,
                     action_mapping=action_mapping,
                     ranges=ranges,
                     add_cpu_usage=add_cpu_usage,
-                    min_temp=min_pump_speed,
-                    max_temp=max_pump_speed,
+                    min_pump_speed=min_pump_speed,
+                    max_pump_speed=max_pump_speed,
+                    min_supply_temp=min_setpoint,
+                    max_supply_temp=max_setpoint,
                     action_definition=action_definition,
                     DC_Config=dc_config,
                     episode_length_in_time=episode_length_in_time

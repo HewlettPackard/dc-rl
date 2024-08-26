@@ -113,3 +113,26 @@ class BaseBatteryAgent:
             action (int): The action (do nothing) to be taken.
         """
         return self.do_nothing_action()
+
+class RBCLiquidAgent:
+    def __init__(self, min_pump_speed=0.05, max_pump_speed=0.5):
+        self.min_pump_speed = min_pump_speed
+        self.max_pump_speed = max_pump_speed
+
+    def act(self, workload):
+        """
+        Adjusts the pump speed based on the workload.
+        
+        Args:
+            workload (float): The current workload utilization, expected to be between 0 and 1.
+        
+        Returns:
+            action (float): The adjusted pump speed.
+        """
+        # Ensure workload is within bounds
+        workload = max(0, min(workload, 1))
+        
+        # Linear mapping from workload to pump speed
+        pump_speed = self.min_pump_speed + workload * (self.max_pump_speed - self.min_pump_speed)
+        
+        return pump_speed

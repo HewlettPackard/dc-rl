@@ -16,234 +16,227 @@ from harl.runners import RUNNER_REGISTRY
 from harl.utils.trans_tools import _t2n
 
 # sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'dc-rl')))
-from utils.base_agents import BaseLoadShiftingAgent, BaseHVACAgent, BaseBatteryAgent
+from utils.base_agents import BaseLoadShiftingAgent, BaseHVACAgent, BaseBatteryAgent, RBCLiquidAgent
 #%%
-MODEL_PATH = 'trained_models'
-SAVE_EVAL = "results"
-ENV = 'sustaindc'
-LOCATION = "az"
-AGENT_TYPE = "haa2c"
-RUN = "seed-00001-2024-06-04-20-41-56"
-ACTIVE_AGENTS = ['agent_ls', 'agent_dc', 'agent_bat']
-NUM_EVAL_EPISODES = 1
+# MODEL_PATH = 'trained_models'
+# ENV = 'sustaindc'
+# LOCATION = "az"
+# AGENT_TYPE = "haa2c"
+# RUN = "seed-00001-2024-06-04-20-41-56"
+# ACTIVE_AGENTS = ['agent_ls', 'agent_dc', 'agent_bat']
 
-# Define paths and configurations as usual
-path = '/lustre/guillant/sustaindc/results/sustaindc/az/happo/happo_liquid_dc_lr_001_16_09/seed-00001-2024-08-20-09-37-35'
-with open(path + '/config.json', encoding='utf-8') as file:
-    saved_config = json.load(file)
-
-algo_args, env_args, main_args = saved_config['algo_args'], saved_config['env_args'], saved_config['main_args']
-
-algo_args['train']['n_rollout_threads'] = 1
-algo_args['eval']['n_eval_rollout_threads'] = 1
-algo_args['train']['model_dir'] = path + '/models'
-algo_args["logger"]["log_dir"] = SAVE_EVAL
-algo_args["eval"]["eval_episodes"] = NUM_EVAL_EPISODES
-algo_args["eval"]["dump_eval_metrcs"] = True
-
-# Initialize the actors and environments with the chosen configurations
-expt_runner = RUNNER_REGISTRY[main_args["algo"]](main_args, algo_args, env_args)
 baseline_actors = {
     "agent_ls": BaseLoadShiftingAgent(), 
-    "agent_dc": BaseHVACAgent(), 
+    "agent_dc": RBCLiquidAgent(), 
     "agent_bat": BaseBatteryAgent()
 }
 
 # Function to evaluate and store metrics
-def run_evaluation(do_baseline=False):
-    metrics = {
-        'agent_1': [],
-        'agent_2': [],
-        'agent_3': []
-    }
+def run_evaluation(do_baseline=False, eval_episodes=1):
+    all_metrics = []
+    SAVE_EVAL = "results"
+    NUM_EVAL_EPISODES = 1
+
+    # Define paths and configurations as usual
+    # run = 'happo/happo_liquid_dc_64_16_4_2actions_4obs/seed-00001-2024-08-23-21-29-01'
+    # run = 'happo/happo_liquid_dc_8_8_8_2actions_3obs/seed-00001-2024-08-23-21-28-19'
+    # run = 'happo/happo_liquid_dc_64_64_64_2actions_4obs/seed-00001-2024-08-23-21-25-26' # Looks good, but bad performance -0.6%
+    run = 'happo/happo_liquid_dc_64_64_2actions_4obs/seed-00001-2024-08-23-18-53-06' # Looks good, 1.27% energy reduction
+    # run = 'happo/happo_liquid_dc_16_16_2actions_4obs/seed-00001-2024-08-23-18-52-40' # Looks good, 0.89% energy reduction
+    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs_water/seed-00001-2024-08-26-15-07-24'
+    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs/seed-00001-2024-08-26-13-13-12'
+    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs/seed-00001-2024-08-26-13-14-45'
+    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs_water/seed-00001-2024-08-26-15-07-24'
+    # run = 'happo/happo_liquid_dc_64_64_water_std/seed-00001-2024-08-26-16-51-09'
     
-    expt_runner.prep_rollout()
-    eval_episode = 0
-    eval_obs, eval_share_obs, eval_available_actions = expt_runner.eval_envs.reset()
-    
-    eval_rnn_states = np.zeros(
-        (
-            expt_runner.algo_args["eval"]["n_eval_rollout_threads"],
-            expt_runner.num_agents,
-            expt_runner.recurrent_n,
-            expt_runner.rnn_hidden_size,
-        ),
-        dtype=np.float32,
-    )
-    eval_masks = np.ones(
-        (expt_runner.algo_args["eval"]["n_eval_rollout_threads"], expt_runner.num_agents, 1),
-        dtype=np.float32,
-    )
+    path = f'/lustre/guillant/sustaindc/results/sustaindc/az/{run}'
+    with open(path + '/config.json', encoding='utf-8') as file:
+        saved_config = json.load(file)
 
-    while True:
-        eval_actions_collector = []
-        for agent_id in range(expt_runner.num_agents):
-            eval_actions, temp_rnn_state = expt_runner.actor[agent_id].act(
-                eval_obs[:, agent_id],
-                eval_rnn_states[:, agent_id],
-                eval_masks[:, agent_id],
-                eval_available_actions[:, agent_id]
-                if eval_available_actions[0] is not None
-                else None,
-                deterministic=True,
-            )
-            if do_baseline:
-                eval_actions = torch.tensor([[baseline_actors[ACTIVE_AGENTS[agent_id]].act()]])
-            eval_rnn_states[:, agent_id] = _t2n(temp_rnn_state)
-            eval_actions_collector.append(_t2n(eval_actions))
+    algo_args, env_args, main_args = saved_config['algo_args'], saved_config['env_args'], saved_config['main_args']
 
-        eval_actions = np.array(eval_actions_collector).transpose(1, 0, 2)
+    algo_args['train']['n_rollout_threads'] = 1
+    algo_args['eval']['n_eval_rollout_threads'] = 1
+    algo_args['train']['model_dir'] = path + '/models'
+    algo_args["logger"]["log_dir"] = SAVE_EVAL
+    algo_args["eval"]["eval_episodes"] = NUM_EVAL_EPISODES
+    algo_args["eval"]["dump_eval_metrcs"] = True
 
-        (
-            eval_obs,
-            eval_share_obs,
-            eval_rewards,
-            eval_dones,
-            eval_infos,
-            eval_available_actions,
-        ) = expt_runner.eval_envs.step(eval_actions)
+    # Initialize the actors and environments with the chosen configurations
+    expt_runner = RUNNER_REGISTRY[main_args["algo"]](main_args, algo_args, env_args)
+
+    # Get the active agents from the environment arguments
+    active_agents = expt_runner.env_args['agents']
+
+    for run_i in range(eval_episodes):
+        # Initialize metrics for only the active agents
+        metrics = {agent: [] for agent in baseline_actors}
         
-        if expt_runner.dump_info:
-            for i in range(expt_runner.algo_args["eval"]["n_eval_rollout_threads"]):
-                # Check for keys specific to each agent
-                if 'dc_ITE_total_power_kW' in eval_infos[i][0]:
-                    metrics['agent_2'].append({
-                        key: eval_infos[i][0].get(key, None) for key in [
-                            'dc_ITE_total_power_kW', 'dc_HVAC_total_power_kW', 'dc_total_power_kW', 'dc_power_lb_kW', 
-                            'dc_power_ub_kW', 'dc_crac_setpoint_delta', 'dc_crac_setpoint', 'dc_cpu_workload_fraction', 
-                            'dc_int_temperature', 'dc_CW_pump_power_kW', 'dc_CT_pump_power_kW', 'dc_water_usage', 'dc_exterior_ambient_temp',
-                            'outside_temp', 'day', 'hour', 'dc_average_server_temp', 'dc_average_pipe_temp', 'dc_heat_removed', 'dc_pump_power_kW', 
-                        ]
-                    })
-                if 'ls_original_workload' in eval_infos[i][0]:
-                    metrics['agent_1'].append({
-                        key: eval_infos[i][0].get(key, None) for key in [
-                            'ls_original_workload', 'ls_shifted_workload', 'ls_action', 'ls_norm_load_left',
-                            'ls_unasigned_day_load_left', 'ls_penalty_flag', 'ls_tasks_in_queue',
-                            'ls_tasks_dropped', 'ls_current_hour'
-                        ]
-                    })
-                if 'bat_action' in eval_infos[i][0]:
-                    metrics['agent_3'].append({
-                        key: eval_infos[i][0].get(key, None) for key in [
-                            'bat_action', 'bat_SOC', 'bat_CO2_footprint', 'bat_avg_CI', 'bat_total_energy_without_battery_KWh',
-                            'bat_total_energy_with_battery_KWh', 'bat_max_bat_cap',
-                            'bat_dcload_min', 'bat_dcload_max',
-                        ]
-                    })
-
-        eval_dones_env = np.all(eval_dones, axis=1)
-
-        eval_rnn_states[
-            eval_dones_env == True
-        ] = np.zeros(  # if env is done, then reset rnn_state to all zero
+        expt_runner.prep_rollout()
+        eval_episode = 0
+        # Set the seed for the environment
+        expt_runner.eval_envs.envs[0].env.env.seed(run_i)
+    
+        # Now reset the environment
+        eval_obs, eval_share_obs, eval_available_actions = expt_runner.eval_envs.reset()
+            
+        eval_rnn_states = np.zeros(
             (
-                (eval_dones_env == True).sum(),
+                expt_runner.algo_args["eval"]["n_eval_rollout_threads"],
                 expt_runner.num_agents,
                 expt_runner.recurrent_n,
                 expt_runner.rnn_hidden_size,
             ),
             dtype=np.float32,
         )
-
         eval_masks = np.ones(
             (expt_runner.algo_args["eval"]["n_eval_rollout_threads"], expt_runner.num_agents, 1),
             dtype=np.float32,
         )
-        eval_masks[eval_dones_env == True] = np.zeros(
-            ((eval_dones_env == True).sum(), expt_runner.num_agents, 1), dtype=np.float32
-        )
 
-        for eval_i in range(expt_runner.algo_args["eval"]["n_eval_rollout_threads"]):
-            if eval_dones_env[eval_i]:
-                eval_episode += 1
+        while True:
+            eval_actions_collector = []
+            for agent_id, agent_name in enumerate(active_agents):
+                eval_actions, temp_rnn_state = expt_runner.actor[agent_id].act(
+                    eval_obs[:, agent_id],
+                    eval_rnn_states[:, agent_id],
+                    eval_masks[:, agent_id],
+                    eval_available_actions[:, agent_id]
+                    if eval_available_actions[0] is not None
+                    else None,
+                    deterministic=True,
+                )
+                if do_baseline:
+                    # Extract the workload from the eval_infos is available
+                    if agent_name == 'agent_dc':
+                        workload = expt_runner.eval_envs.envs[0].env.env.workload_m.get_next_workload()
+                        eval_actions = torch.tensor([[baseline_actors[agent_name].act(workload)]]) #torch.tensor([[0.25]])
+                    else:
+                        eval_actions = torch.tensor([[baseline_actors[agent_name].act()]])
+                eval_rnn_states[:, agent_id] = _t2n(temp_rnn_state)
+                eval_actions_collector.append(_t2n(eval_actions))
 
-        if eval_episode >= expt_runner.algo_args["eval"]["eval_episodes"]:
-            break
+            eval_actions = np.array(eval_actions_collector).transpose(1, 0, 2)
 
-    return metrics
+            (
+                eval_obs,
+                eval_share_obs,
+                eval_rewards,
+                eval_dones,
+                eval_infos,
+                eval_available_actions,
+            ) = expt_runner.eval_envs.step(eval_actions)
+            
+            if expt_runner.dump_info:
+                for i in range(expt_runner.algo_args["eval"]["n_eval_rollout_threads"]):
+                    # Check for keys specific to each agent
+                    if 'dc_ITE_total_power_kW' in eval_infos[i][0]:
+                        metrics['agent_dc'].append({
+                            key: eval_infos[i][0].get(key, None) for key in [
+                                'dc_ITE_total_power_kW', 'dc_HVAC_total_power_kW', 'dc_total_power_kW', 'dc_power_lb_kW', 
+                                'dc_power_ub_kW', 'dc_crac_setpoint_delta', 'dc_crac_setpoint', 'dc_cpu_workload_fraction', 
+                                'dc_int_temperature', 'dc_CW_pump_power_kW', 'dc_CT_pump_power_kW', 'dc_water_usage', 'dc_exterior_ambient_temp',
+                                'outside_temp', 'day', 'hour', 'dc_average_server_temp', 'dc_average_pipe_temp', 'dc_heat_removed', 'dc_pump_power_kW', 
+                                'dc_coo_m_flow_nominal', 'dc_coo_mov_flow_actual', 'dc_supply_liquid_temp', 'dc_return_liquid_temp'
+                            ]
+                        })
+                    if 'ls_original_workload' in eval_infos[i][0]:
+                        metrics['agent_ls'].append({
+                            key: eval_infos[i][0].get(key, None) for key in [
+                                'ls_original_workload', 'ls_shifted_workload', 'ls_action', 'ls_norm_load_left',
+                                'ls_unasigned_day_load_left', 'ls_penalty_flag', 'ls_tasks_in_queue',
+                                'ls_tasks_dropped', 'ls_current_hour'
+                            ]
+                        })
+                    if 'bat_action' in eval_infos[i][0]:
+                        metrics['agent_bat'].append({
+                            key: eval_infos[i][0].get(key, None) for key in [
+                                'bat_action', 'bat_SOC', 'bat_CO2_footprint', 'bat_avg_CI', 'bat_total_energy_without_battery_KWh',
+                                'bat_total_energy_with_battery_KWh', 'bat_max_bat_cap',
+                                'bat_dcload_min', 'bat_dcload_max',
+                            ]
+                        })
+
+            eval_dones_env = np.all(eval_dones, axis=1)
+
+            eval_rnn_states[
+                eval_dones_env == True
+            ] = np.zeros(  # if env is done, then reset rnn_state to all zero
+                (
+                    (eval_dones_env == True).sum(),
+                    expt_runner.num_agents,
+                    expt_runner.recurrent_n,
+                    expt_runner.rnn_hidden_size,
+                ),
+                dtype=np.float32,
+            )
+
+            eval_masks = np.ones(
+                (expt_runner.algo_args["eval"]["n_eval_rollout_threads"], expt_runner.num_agents, 1),
+                dtype=np.float32,
+            )
+            eval_masks[eval_dones_env == True] = np.zeros(
+                ((eval_dones_env == True).sum(), expt_runner.num_agents, 1), dtype=np.float32
+            )
+
+            for eval_i in range(expt_runner.algo_args["eval"]["n_eval_rollout_threads"]):
+                if eval_dones_env[eval_i]:
+                    eval_episode += 1
+
+            if eval_episode >= expt_runner.algo_args["eval"]["eval_episodes"]:
+                break
+            
+        all_metrics.append(metrics)
+        
+    return all_metrics
 
 # Run baseline
-baseline_metrics = run_evaluation(do_baseline=True)
+num_runs = 3
+baseline_metrics_runs = run_evaluation(do_baseline=True, eval_episodes=num_runs)
 
 # Run trained algorithm
-trained_metrics = run_evaluation(do_baseline=False)
-#%
-# Calculate total ITE energy consumption
-trained_ite_energy = np.sum([metric['dc_ITE_total_power_kW'] for metric in trained_metrics['agent_2']])
-baseline_ite_energy = np.sum([metric['dc_ITE_total_power_kW'] for metric in baseline_metrics['agent_2']])
+trained_metrics_runs = run_evaluation(do_baseline=False, eval_episodes=num_runs)
 
-# Calculate total HVAC energy consumption
-trained_hvac_energy = np.sum([metric['dc_HVAC_total_power_kW'] for metric in trained_metrics['agent_2']])
-baseline_hvac_energy = np.sum([metric['dc_HVAC_total_power_kW'] for metric in baseline_metrics['agent_2']])
+#%% Calculate average and standard deviation
+def calculate_reduction_avg_std(trained_metrics_runs, baseline_metrics_runs, metric_name):
+    reductions = []
 
-# Calculate total carbon emissions
-trained_carbon_emissions = np.sum([metric['bat_CO2_footprint'] for metric in trained_metrics['agent_3']])
-baseline_carbon_emissions = np.sum([metric['bat_CO2_footprint'] for metric in baseline_metrics['agent_3']])
+    for trained_metrics, baseline_metrics in zip(trained_metrics_runs, baseline_metrics_runs):
+        if metric_name in trained_metrics['agent_dc'][0]:
+            trained_values = [metric[metric_name] for metric in trained_metrics['agent_dc']]
+            baseline_values = [metric[metric_name] for metric in baseline_metrics['agent_dc']]
+        elif metric_name in trained_metrics['agent_bat'][0]:
+            trained_values = [metric[metric_name] for metric in trained_metrics['agent_bat']]
+            baseline_values = [metric[metric_name] for metric in baseline_metrics['agent_bat']]
+        else:
+            trained_values = [metric[metric_name] for metric in trained_metrics['agent_ls']]
+            baseline_values = [metric[metric_name] for metric in baseline_metrics['agent_ls']]
 
-# Calculate total water usage
-trained_water_usage = np.sum([metric['dc_water_usage'] for metric in trained_metrics['agent_2']])
-baseline_water_usage = np.sum([metric['dc_water_usage'] for metric in baseline_metrics['agent_2']])
+        # Sum the values for the entire run
+        trained_total = sum(trained_values)
+        baseline_total = sum(baseline_values)
 
-print(f"Summary of Comparison:")
-print(f"ITE Energy Consumption: Trained: {trained_ite_energy/1e3:.3f} MWh, Baseline: {baseline_ite_energy/1e3:.3f} MWh, reduction (%): {100 * (baseline_ite_energy - trained_ite_energy) / baseline_ite_energy:.3f}")
-print(f"HVAC Energy Consumption: Trained: {trained_hvac_energy/1e3:.3f} MWh, Baseline: {baseline_hvac_energy/1e3:.3f} MWh, reduction (%): {100 * (baseline_hvac_energy - trained_hvac_energy) / baseline_hvac_energy:.3f}")
-print(f"Total Energy Consumption: Trained: {trained_ite_energy/1e3 + trained_hvac_energy/1e3:.3f} MWh, Baseline: {baseline_ite_energy/1e3 + baseline_hvac_energy/1e3:.3f} MWh, reduction (%): {100 * (baseline_ite_energy + baseline_hvac_energy - trained_ite_energy - trained_hvac_energy) / (baseline_ite_energy + baseline_hvac_energy):.3f}")
-print(f"Carbon Emissions: Trained: {trained_carbon_emissions / 1e3:.3f} kgCO2, Baseline: {baseline_carbon_emissions / 1e3:.3f} kgCO2, reduction (%): {100 * (baseline_carbon_emissions - trained_carbon_emissions) / baseline_carbon_emissions:.3f}")
-print(f"Water Usage: Trained: {trained_water_usage:.3f} liters, Baseline: {baseline_water_usage:.3f} liters, reduction (%): {100 * (baseline_water_usage - trained_water_usage) / baseline_water_usage:.3f}")
+        # Calculate reduction percentage for this run
+        reduction = 100 * (baseline_total - trained_total) / baseline_total
+        reductions.append(reduction)
 
+    # Calculate the mean and standard deviation of the reductions
+    return np.mean(reductions), np.std(reductions)
 
-#%% Now plot the pump speed vs carbon intensity
-# Assuming metrics['agent_2'] contains your data
-pump_speeds = [metric['dc_crac_setpoint'] for metric in trained_metrics['agent_2']]
-carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_3']]  # Replace with the correct key
+# Metrics comparison
+energy_reduction, energy_std = calculate_reduction_avg_std(trained_metrics_runs, baseline_metrics_runs, 'bat_total_energy_without_battery_KWh')
+co2_reduction, co2_std = calculate_reduction_avg_std(trained_metrics_runs, baseline_metrics_runs, 'bat_CO2_footprint')
+water_reduction, water_std = calculate_reduction_avg_std(trained_metrics_runs, baseline_metrics_runs, 'dc_water_usage')
 
-# Define the number of points to plot
-num_points = 96*10
-init_point = 225
-
-# Select the data to plot
-pump_speeds = pump_speeds[init_point:init_point + num_points]
-carbon_intensities = carbon_intensities[init_point:init_point + num_points]
-
-# Smooth the data using a rolling window
-window_size = 3  # Use a larger window size to smooth the data more
-smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
-smoothed_carbon_intensities = pd.Series(carbon_intensities).rolling(window=window_size).mean().dropna()
-
-# Create the plot
-fig, ax1 = plt.subplots(figsize=(5, 3))  # Adjust height as necessary
-
-# Plot smoothed carbon intensity
-ax1.set_xlabel('Time (15-min intervals)')
-ax1.set_ylabel('Carbon Intensity (gCO2/kWh)', color='tab:blue')
-ax1.plot(smoothed_carbon_intensities, color='tab:blue', linewidth=2)
-ax1.tick_params(axis='y', labelcolor='tab:blue')
-
-# Create a second y-axis for pump speed
-ax2 = ax1.twinx()
-ax2.set_ylabel('Pump Speed (l/s)', color='tab:red')
-ax2.plot(smoothed_pump_speeds, color='tab:red', linewidth=2, alpha=0.8)
-ax2.tick_params(axis='y', labelcolor='tab:red')
-# ax2.set_ylim(0.045, 0.25)  # Adjust the limits to match the scale of the data
-
-# Add grid and limits
-ax1.grid(linestyle='--')
-plt.xlim(0, len(smoothed_pump_speeds))
-
-# Customize the layout to ensure no parts are cut off
-plt.tight_layout()
-
-# Save the figure as a PDF without cutting off any parts
-# plt.savefig('media/pump_speed_vs_carbon_intensity.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
-
-# Show the plot
-plt.show()
+print(f"Total Energy Consumption: Reduction (%): {energy_reduction:.3f} ± {energy_std:.3f}")
+print(f"Carbon Emissions: Reduction (%): {co2_reduction:.3f} ± {co2_std:.3f}")
+print(f"Water Usage: Reduction (%): {water_reduction:.3f} ± {water_std:.3f}")
 
 #%% Pump speed vs workload utilization
-# Assuming metrics['agent_2'] contains your data
-pump_speeds = [metric['dc_crac_setpoint'] for metric in trained_metrics['agent_2']]
-workload_utilizations = [metric['dc_cpu_workload_fraction'] for metric in trained_metrics['agent_2']]  # Replace with the correct key
+# Assuming metrics['agent_dc'] contains your data
+trained_metrics = trained_metrics_runs[0]
+pump_speeds = [metric['dc_coo_mov_flow_actual'] for metric in trained_metrics['agent_dc']]
+workload_utilizations = [metric['dc_cpu_workload_fraction'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
 
 # Define the number of points to plot
 num_points = 96*10
@@ -254,7 +247,7 @@ pump_speeds = pump_speeds[init_point:init_point + num_points]
 workload_utilizations = workload_utilizations[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 3  # Use a larger window size to smooth the data more
+window_size = 1  # Use a larger window size to smooth the data more
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
 
@@ -287,10 +280,57 @@ plt.tight_layout()
 # Show the plot
 plt.show()
 
-#%% Pump speed vs workload utilization
-# Assuming metrics['agent_2'] contains your data
-pump_speeds = [metric['dc_crac_setpoint'] for metric in trained_metrics['agent_2']]
-outside_temps = [metric['outside_temp'] for metric in trained_metrics['agent_2']]  # Replace with the correct key
+#%% Supply temperature vs workload utilization
+# Assuming metrics['agent_dc'] contains your data
+supply_temperatures = [metric['dc_supply_liquid_temp'] for metric in trained_metrics['agent_dc']]
+workload_utilizations = [metric['dc_cpu_workload_fraction'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
+
+# Define the number of points to plot
+num_points = 96*10
+init_point = 225
+
+# Select the data to plot
+supply_temperatures = supply_temperatures[init_point:init_point + num_points]
+workload_utilizations = workload_utilizations[init_point:init_point + num_points]
+
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_supply_temperatures = pd.Series(supply_temperatures).rolling(window=window_size).mean().dropna()
+smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
+
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(5, 3))  # Adjust height as necessary
+
+# Plot smoothed workload utilization
+ax1.set_xlabel('Time (15-min intervals)')
+ax1.set_ylabel('Workload Utilization (%)', color='tab:blue')
+ax1.plot(smoothed_workload_utilizations * 100, color='tab:blue', linewidth=2)  # Convert to percentage
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+# Create a second y-axis for supply temperature
+ax2 = ax1.twinx()
+ax2.set_ylabel('Supply Temperature (°C)', color='tab:red')
+ax2.plot(smoothed_supply_temperatures, color='tab:red', linewidth=2, alpha=0.8)
+ax2.tick_params(axis='y', labelcolor='tab:red')
+# ax2.set_ylim(0.045, 0.25)  # Adjust the limits to match the scale of the data
+
+# Add grid and limits
+ax1.grid(linestyle='--')
+plt.xlim(0, len(smoothed_supply_temperatures))
+
+# Customize the layout to ensure no parts are cut off
+plt.tight_layout()
+
+# Save the figure as a PDF without cutting off any parts
+# plt.savefig('media/supply_temp_vs_workload_utilization.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+
+# Show the plot
+plt.show()
+
+#%% Pump speed vs outdoor temperature
+# Assuming metrics['agent_dc'] contains your data
+pump_speeds = [metric['dc_coo_mov_flow_actual'] for metric in trained_metrics['agent_dc']]
+outside_temps = [metric['outside_temp'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
 
 # Define the number of points to plot
 num_points = 96*10
@@ -301,14 +341,14 @@ pump_speeds = pump_speeds[init_point:init_point + num_points]
 outside_temps = outside_temps[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 3  # Use a larger window size to smooth the data more
+window_size = 1  # Use a larger window size to smooth the data more
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_outside_temps = pd.Series(outside_temps).rolling(window=window_size).mean().dropna()
 
 # Create the plot
 fig, ax1 = plt.subplots(figsize=(5, 3))  # Adjust height as necessary
 
-# Plot smoothed workload utilization
+# Plot smoothed outdoor temperature
 ax1.set_xlabel('Time (15-min intervals)')
 ax1.set_ylabel('Outside Temp (°C)', color='tab:blue')
 ax1.plot(smoothed_outside_temps, color='tab:blue', linewidth=2)  # Convert to percentage
@@ -334,9 +374,150 @@ plt.tight_layout()
 # Show the plot
 plt.show()
 
+#%% Now the Supply temperature vs outdoor temperature
+# Assuming metrics['agent_dc'] contains your data
+supply_liquid_temp = [metric['dc_supply_liquid_temp'] for metric in trained_metrics['agent_dc']]
+outside_temps = [metric['outside_temp'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
+
+# Define the number of points to plot
+num_points = 96*10
+init_point = 225
+
+# Select the data to plot
+supply_liquid_temp = supply_liquid_temp[init_point:init_point + num_points]
+outside_temps = outside_temps[init_point:init_point + num_points]
+
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_supply_liquid_temp = pd.Series(supply_liquid_temp).rolling(window=window_size).mean().dropna()
+smoothed_outside_temps = pd.Series(outside_temps).rolling(window=window_size).mean().dropna()
+
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(5, 3))  # Adjust height as necessary
+
+# Plot smoothed outdoor temperature
+ax1.set_xlabel('Time (15-min intervals)')
+ax1.set_ylabel('Outside Temp (°C)', color='tab:blue')
+ax1.plot(smoothed_outside_temps, color='tab:blue', linewidth=2)  # Convert to percentage
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+# Create a second y-axis for supply temperature
+ax2 = ax1.twinx()
+ax2.set_ylabel('Supply Temperature (°C)', color='tab:red')
+ax2.plot(smoothed_supply_liquid_temp, color='tab:red', linewidth=2, alpha=0.8)
+ax2.tick_params(axis='y', labelcolor='tab:red')
+
+# Add grid and limits
+ax1.grid(linestyle='--')
+plt.xlim(0, len(smoothed_supply_liquid_temp))
+
+# Customize the layout to ensure no parts are cut off
+plt.tight_layout()
+
+# Save the figure as a PDF without cutting off any parts
+# plt.savefig('media/supply_temp_vs_outside_temp.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+
+# Show the plot
+plt.show()
+
+
+#%% Now plot the pump speed vs carbon intensity
+# Assuming metrics['agent_dc'] contains your data
+pump_speeds = [metric['dc_coo_mov_flow_actual'] for metric in trained_metrics['agent_dc']]
+carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_bat']]  # Replace with the correct key
+
+# Define the number of points to plot
+num_points = 96*10
+init_point = 225
+
+# Select the data to plot
+pump_speeds = pump_speeds[init_point:init_point + num_points]
+carbon_intensities = carbon_intensities[init_point:init_point + num_points]
+
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
+smoothed_carbon_intensities = pd.Series(carbon_intensities).rolling(window=window_size).mean().dropna()
+
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(5, 3))  # Adjust height as necessary
+
+# Plot smoothed carbon intensity
+ax1.set_xlabel('Time (15-min intervals)')
+ax1.set_ylabel('Carbon Intensity (gCO2/kWh)', color='tab:blue')
+ax1.plot(smoothed_carbon_intensities, color='tab:blue', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+# Create a second y-axis for pump speed
+ax2 = ax1.twinx()
+ax2.set_ylabel('Pump Speed (l/s)', color='tab:red')
+ax2.plot(smoothed_pump_speeds, color='tab:red', linewidth=2, alpha=0.8)
+ax2.tick_params(axis='y', labelcolor='tab:red')
+# ax2.set_ylim(0.045, 0.25)  # Adjust the limits to match the scale of the data
+
+# Add grid and limits
+ax1.grid(linestyle='--')
+plt.xlim(0, len(smoothed_pump_speeds))
+
+# Customize the layout to ensure no parts are cut off
+plt.tight_layout()
+
+# Save the figure as a PDF without cutting off any parts
+# plt.savefig('media/pump_speed_vs_carbon_intensity.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+
+# Show the plot
+plt.show()
+
+#%% Now plot the supply temperature vs carbon intensity
+# Assuming metrics['agent_dc'] contains your data
+supply_liquid_temp = [metric['dc_supply_liquid_temp'] for metric in trained_metrics['agent_dc']]
+carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_bat']]  # Replace with the correct key
+
+# Define the number of points to plot
+num_points = 96*10
+init_point = 225
+
+# Select the data to plot
+supply_liquid_temp = supply_liquid_temp[init_point:init_point + num_points]
+carbon_intensities = carbon_intensities[init_point:init_point + num_points]
+
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_supply_liquid_temp = pd.Series(supply_liquid_temp).rolling(window=window_size).mean().dropna()
+smoothed_carbon_intensities = pd.Series(carbon_intensities).rolling(window=window_size).mean().dropna()
+
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(5, 3))  # Adjust height as necessary
+
+# Plot smoothed carbon intensity
+ax1.set_xlabel('Time (15-min intervals)')
+ax1.set_ylabel('Carbon Intensity (gCO2/kWh)', color='tab:blue')
+ax1.plot(smoothed_carbon_intensities, color='tab:blue', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+# Create a second y-axis for pump speed
+ax2 = ax1.twinx()
+ax2.set_ylabel('Supply Temperature (°C)', color='tab:red')
+ax2.plot(smoothed_supply_liquid_temp, color='tab:red', linewidth=2, alpha=0.8)
+ax2.tick_params(axis='y', labelcolor='tab:red')
+# ax2.set_ylim(0.045, 0.25)  # Adjust the limits to match the scale of the data
+
+# Add grid and limits
+ax1.grid(linestyle='--')
+plt.xlim(0, len(smoothed_supply_liquid_temp))
+
+# Customize the layout to ensure no parts are cut off
+plt.tight_layout()
+
+# Save the figure as a PDF without cutting off any parts
+# plt.savefig('media/pump_speed_vs_carbon_intensity.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+
+# Show the plot
+plt.show()
+
 #%% Now pump speed vs dc_water_usage
-pump_speeds = [metric['dc_crac_setpoint'] for metric in trained_metrics['agent_2']]
-water_usage = [metric['dc_water_usage'] for metric in trained_metrics['agent_2']]  # Replace with the correct key
+pump_speeds = [metric['dc_crac_setpoint'] for metric in trained_metrics['agent_dc']]
+water_usage = [metric['dc_water_usage'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
 
 # Define the number of points to plot
 num_points = 96*10
@@ -385,10 +566,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Assuming metrics['agent_2'] and metrics['agent_3'] contain your data
-outside_temps = [metric['outside_temp'] for metric in trained_metrics['agent_2']]
-workload_utilizations = [metric['dc_cpu_workload_fraction'] for metric in trained_metrics['agent_2']]  # Replace with the correct key
-carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_3']]  # Replace with the correct key
+# Assuming metrics['agent_dc'] and metrics['agent_bat'] contain your data
+outside_temps = [metric['outside_temp'] for metric in trained_metrics['agent_dc']]
+workload_utilizations = [metric['dc_cpu_workload_fraction'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
+carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_bat']]  # Replace with the correct key
 
 # Define the number of points to plot
 num_points = 96*10
@@ -441,13 +622,13 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Assuming metrics['agent_2'] contains your data
-pump_speeds = [metric['dc_crac_setpoint'] for metric in trained_metrics['agent_2']]
-average_server_temperatures = [metric['dc_average_server_temp'] for metric in trained_metrics['agent_2']]  # Convert from Kelvin to Celsius
-average_pipe_temperatures = [metric['dc_average_pipe_temp'] for metric in trained_metrics['agent_2']]  # Convert from Kelvin to Celsius
+# Assuming metrics['agent_dc'] contains your data
+pump_speeds = [metric['dc_crac_setpoint'] for metric in trained_metrics['agent_dc']]
+average_server_temperatures = [metric['dc_average_server_temp'] for metric in trained_metrics['agent_dc']]  # Convert from Kelvin to Celsius
+average_pipe_temperatures = [metric['dc_average_pipe_temp'] for metric in trained_metrics['agent_dc']]  # Convert from Kelvin to Celsius
 
 # Define the supply temperature (fixed at 27°C)
-supply_temperature = 27
+supply_temperature = [metric['dc_supply_liquid_temp'] for metric in trained_metrics['agent_dc']]  # Convert from Kelvin to Celsius
 
 # Define the number of points to plot
 num_points = 96*30
@@ -457,12 +638,14 @@ init_point = 225
 pump_speeds = pump_speeds[init_point:init_point + num_points]
 average_server_temperatures = average_server_temperatures[init_point:init_point + num_points]
 average_pipe_temperatures = average_pipe_temperatures[init_point:init_point + num_points]
+supply_temperature = supply_temperature[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
 window_size = 3
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_average_server_temperatures = pd.Series(average_server_temperatures).rolling(window=window_size).mean().dropna()
 smoothed_average_pipe_temperatures = pd.Series(average_pipe_temperatures).rolling(window=window_size).mean().dropna()
+smoothed_supply_temperature = pd.Series(supply_temperature).rolling(window=window_size).mean().dropna()
 
 # Create subplots
 fig, axs = plt.subplots(2, 1, figsize=(5, 5), sharex=True)  # 2 subplots, 1 column
@@ -476,7 +659,7 @@ axs[0].grid(linestyle='--')
 # Plot temperatures (States)
 axs[1].set_xlabel('Time (15-min intervals)')
 axs[1].set_ylabel('Temperature (°C)')
-axs[1].plot([supply_temperature] * len(smoothed_pump_speeds), color='tab:blue', linestyle='--', linewidth=2, label='Supply Temperature (27°C)')
+axs[1].plot(smoothed_supply_temperature, color='tab:blue', linestyle='--', linewidth=2, label='Supply Temperature (27°C)')
 axs[1].plot(smoothed_average_server_temperatures, color='tab:green', linewidth=2, label='Average Server Temp')
 axs[1].plot(smoothed_average_pipe_temperatures, color='tab:orange', linewidth=2, linestyle='-', label='Average Return Temp')
 axs[1].tick_params(axis='y')
@@ -501,10 +684,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Assuming metrics['agent_1'] and metrics['agent_2'] contain your data
-it_powers = [metric['dc_ITE_total_power_kW'] for metric in trained_metrics['agent_2']]
-cooling_powers = [metric['dc_HVAC_total_power_kW'] for metric in trained_metrics['agent_2']]
-carbon_footprints = [metric['bat_CO2_footprint'] for metric in trained_metrics['agent_3']]
+# Assuming metrics['agent_ls'] and metrics['agent_dc'] contain your data
+it_powers = [metric['dc_ITE_total_power_kW'] for metric in trained_metrics['agent_dc']]
+cooling_powers = [metric['dc_HVAC_total_power_kW'] for metric in trained_metrics['agent_dc']]
+carbon_footprints = [metric['bat_CO2_footprint'] for metric in trained_metrics['agent_bat']]
 
 # Define the number of points to plot
 num_points = 96*10
@@ -557,10 +740,10 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Assuming metrics['agent_1'] and metrics['agent_3'] contain your data
-original_workloads = [metric['ls_original_workload'] for metric in trained_metrics['agent_1']]
-shifted_workloads = [metric['ls_shifted_workload'] for metric in trained_metrics['agent_1']]
-battery_soc = [metric['bat_SOC'] for metric in trained_metrics['agent_3']]
+# Assuming metrics['agent_ls'] and metrics['agent_bat'] contain your data
+original_workloads = [metric['ls_original_workload'] for metric in trained_metrics['agent_ls']]
+shifted_workloads = [metric['ls_shifted_workload'] for metric in trained_metrics['agent_ls']]
+battery_soc = [metric['bat_SOC'] for metric in trained_metrics['agent_bat']]
 
 # Define the number of points to plot
 num_points = 96 * 3  # Example for 3 days
@@ -609,9 +792,9 @@ plt.show()
 
 
 #%%
-# Assuming metrics['agent_2'] contains your data
-pump_speeds = [metric['dc_crac_setpoint'] for metric in metrics['agent_2']]
-return_temperatures = [metric['dc_average_pipe_temp'] for metric in metrics['agent_2']]  # Convert from Kelvin to Celsius
+# Assuming metrics['agent_dc'] contains your data
+pump_speeds = [metric['dc_crac_setpoint'] for metric in metrics['agent_dc']]
+return_temperatures = [metric['dc_average_pipe_temp'] for metric in metrics['agent_dc']]  # Convert from Kelvin to Celsius
 supply_temperature = 27  # Constant supply temperature
 
 # Define the number of points to plot
@@ -665,10 +848,10 @@ plt.show()
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Assuming metrics['agent_2'] contains your data
-pump_speeds = [metric['dc_crac_setpoint'] for metric in metrics['agent_2']]
-return_temperatures = [metric['dc_int_temperature'] - 273.15 for metric in metrics['agent_2']]  # Convert from Kelvin to Celsius
-workload_utilizations = [metric['dc_cpu_workload_fraction'] * 100 for metric in metrics['agent_2']]  # Convert to percentage
+# Assuming metrics['agent_dc'] contains your data
+pump_speeds = [metric['dc_crac_setpoint'] for metric in metrics['agent_dc']]
+return_temperatures = [metric['dc_int_temperature'] - 273.15 for metric in metrics['agent_dc']]  # Convert from Kelvin to Celsius
+workload_utilizations = [metric['dc_cpu_workload_fraction'] * 100 for metric in metrics['agent_dc']]  # Convert to percentage
 
 # Define the number of points to plot
 num_points = 96*3
@@ -734,10 +917,10 @@ plt.show()
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Assuming metrics['agent_2'] contains your data
-pump_speeds = [metric['dc_crac_setpoint'] for metric in metrics['agent_2']]
-cooling_power = [metric['dc_HVAC_total_power_kW'] for metric in metrics['agent_2']]
-it_power = [metric['dc_ITE_total_power_kW'] for metric in metrics['agent_2']]
+# Assuming metrics['agent_dc'] contains your data
+pump_speeds = [metric['dc_crac_setpoint'] for metric in metrics['agent_dc']]
+cooling_power = [metric['dc_HVAC_total_power_kW'] for metric in metrics['agent_dc']]
+it_power = [metric['dc_ITE_total_power_kW'] for metric in metrics['agent_dc']]
 
 # Define the number of points to plot
 num_points = 96*3
@@ -802,11 +985,11 @@ plt.show()
 import matplotlib.pyplot as plt
 import pandas as pd
 
-# Assuming metrics['agent_2'] contains your data
-pump_speeds = [metric['dc_crac_setpoint'] for metric in metrics['agent_2']]
+# Assuming metrics['agent_dc'] contains your data
+pump_speeds = [metric['dc_crac_setpoint'] for metric in metrics['agent_dc']]
 supply_temperature = 27  # Constant supply temperature
-average_server_temperatures = [metric['dc_average_server_temp'] for metric in metrics['agent_2']]  # Convert from Kelvin to Celsius
-average_pipe_temperatures = [metric['dc_average_pipe_temp'] for metric in metrics['agent_2']]  # Convert from Kelvin to Celsius
+average_server_temperatures = [metric['dc_average_server_temp'] for metric in metrics['agent_dc']]  # Convert from Kelvin to Celsius
+average_pipe_temperatures = [metric['dc_average_pipe_temp'] for metric in metrics['agent_dc']]  # Convert from Kelvin to Celsius
 
 # Define the number of points to plot
 num_points = 96*3

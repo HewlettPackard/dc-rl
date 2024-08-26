@@ -4,6 +4,7 @@ __pycache__/
 *.out
 *.pyc
 *.txt
+*.pdf
 */__pycache__/
 *.ipynb
 /pydcm

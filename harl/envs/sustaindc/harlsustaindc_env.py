@@ -23,7 +23,7 @@ class HARLSustainDCEnv:
         # Pad action and observation spaces to have the same shape (To use MAPPO 
         # and the algorithms that require the same shape)
         # self.env = ss.pad_action_space_v0(ss.pad_observations_v0(self.env))
-        self.env = ss.pad_action_space_v0(ss.pad_observations_v0(self.env))
+        # self.env = ss.pad_action_space_v0(ss.pad_observations_v0(self.env))
 
         # self.env = ss.frame_stack_v1(self.env, 2)
 
@@ -34,7 +34,7 @@ class HARLSustainDCEnv:
         self.observation_space = self.unwrap(self.env.observation_spaces)
         self.action_space = self.unwrap(self.env.action_spaces)
 
-        self.discrete = True
+        self.discrete = False
 
     def reset(self):
         """
@@ -59,21 +59,21 @@ class HARLSustainDCEnv:
             # Common information
             time = infos['__common__']['time']
             ci = infos['__common__']['ci_future']
-            concat_states.extend(time)
-            concat_states.extend(ci)
+            # concat_states.extend(time)
+            # concat_states.extend(ci)
 
             # Info from ls_env
             envs_infos = infos['__common__']['states']
             ls_env_info = envs_infos['agent_ls']
-            concat_states.extend(ls_env_info[4:6])  # [Current workload and queue status]
+            # concat_states.extend(ls_env_info[4:6])  # [Current workload and queue status]
 
             # Info from dc_env
             dc_env_info = envs_infos['agent_dc']
-            concat_states.extend(dc_env_info[4:-1])  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
+            concat_states.extend(dc_env_info)  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
 
             # Info from bat_env
             bat_env_info = envs_infos['agent_bat']
-            concat_states.extend(bat_env_info[5].reshape(1,))  # battery_soc
+            # concat_states.extend(bat_env_info[5].reshape(1,))  # battery_soc
 
             states = np.array(concat_states, dtype=np.float16)
         else:
@@ -93,7 +93,7 @@ class HARLSustainDCEnv:
         Returns:
             tuple: Observation, shared observation, rewards, dones, info, and available actions.
         """
-        actions = self.wrap(actions.flatten())
+        actions = self.wrap(actions) #.flatten())
         obs, rew, term, trunc, info = self.env.step(actions)
 
         # Extract the keys from obs in the same order
@@ -108,21 +108,21 @@ class HARLSustainDCEnv:
             # Common information
             time = infos['__common__']['time']
             ci = infos['__common__']['ci_future']
-            concat_states.extend(time)
-            concat_states.extend(ci)
+            # concat_states.extend(time)
+            # concat_states.extend(ci)
 
             # Info from ls_env
             envs_infos = infos['__common__']['states']
             ls_env_info = envs_infos['agent_ls']
-            concat_states.extend(ls_env_info[4:6])  # [Current workload and queue status]
+            # concat_states.extend(ls_env_info[4:6])  # [Current workload and queue status]
 
             # Info from dc_env
             dc_env_info = envs_infos['agent_dc']
-            concat_states.extend(dc_env_info[4:-1])  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
+            concat_states.extend(dc_env_info)  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
 
             # Info from bat_env
             bat_env_info = envs_infos['agent_bat']
-            concat_states.extend(bat_env_info[5].reshape(1,))  # battery_soc
+            # concat_states.extend(bat_env_info[5].reshape(1,))  # battery_soc
 
             states = np.array(concat_states, dtype=np.float16)
         else:
@@ -154,17 +154,35 @@ class HARLSustainDCEnv:
         """Close the environment."""
         pass
 
+    # def wrap(self, l):
+    #     """
+    #     Convert a list to a dictionary with agent names from the base environment.
+
+    #     Args:
+    #         l (list): List to be converted.
+
+    #     Returns:
+    #         dict: Dictionary with agent names as keys.
+    #     """
+    #     return {agent: l[i] for i, agent in enumerate(self.agents)}
+    
     def wrap(self, l):
         """
         Convert a list to a dictionary with agent names from the base environment.
-
+        
         Args:
             l (list): List to be converted.
 
         Returns:
             dict: Dictionary with agent names as keys.
         """
-        return {agent: l[i] for i, agent in enumerate(self.agents)}
+        wrapped_dict = {}
+        for i, agent in enumerate(self.agents):
+            if isinstance(l[i], np.ndarray):  # Check if the action is an array (e.g., multiple continuous actions)
+                wrapped_dict[agent] = l[i].tolist()  # Convert to list for easier handling
+            else:
+                wrapped_dict[agent] = l[i]
+        return wrapped_dict
 
     def unwrap(self, d):
         """

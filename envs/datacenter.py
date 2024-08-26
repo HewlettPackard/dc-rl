@@ -254,7 +254,7 @@ class DataCenter_ITModel():
 
         Args:
             ITE_load_pct_list (List[float]): CPU load for each rack
-            CRAC_setpoint (float): CRAC setpoint
+            CRAC_setpoint (float): CRAC setpoint. C.
             server_temps (List[float], optional): Server internal temperatures. K. Defaults to None.
 
         Returns:

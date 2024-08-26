@@ -87,9 +87,11 @@ def make_eval_env(env_name, seed, n_threads, env_args):
                     env_args['month'] = env_args['month']
                 elif rank < 12:
                     env_args['month'] = rank % 12
+                    print(f'Simulating month {env_args["month"]} because rank is {rank}')
                 else:
                     # 33% June (5), 33% July (6), 33% August (7)
                     env_args['month'] = rank % 3 + 5
+                    print(f'Simulating month {env_args["month"]} because rank is {rank}')
                 env = HARLSustainDCEnv(env_args)
             else:
                 print("Can not support the " + env_name + "environment.")

@@ -592,4 +592,4 @@ class Weather_Manager():
                 self.wet_bulb_data[self.time_step - 1], self.norm_wet_bulb_data[self.time_step - 1])  # Added wet bulb temp
         
     def get_next_temperature(self):
-        return self.temperature_data[self.time_step]
+        return self.norm_temp_data[self.time_step]

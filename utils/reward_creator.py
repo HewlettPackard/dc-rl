@@ -57,13 +57,16 @@ def default_ls_reward(params: dict) -> float:
     return reward
 
 # Initialize these values with extreme values
-min_load = 950 #  float('inf')
-max_load = 3400 #  float('-inf')
+min_load = 1000 #  float('inf')
+max_load = 2200 #  float('-inf')
 
 # Initialize running mean and standard deviation
-mean_load = 1500.0
-std_load = 300.0
+mean_load = 1900.0  # 1500.0
+std_load = 550.0 #  300.0
 load_count = 0
+
+# load_stats = []
+water_stats = []
 
 # def update_mean_std(total_load):
 #     global mean_load, std_load, load_count
@@ -79,6 +82,10 @@ load_count = 0
     
 #     print(f"New mean: {mean_load}, New std: {np.sqrt(std_load / load_count)}")
 
+target_load = 1440.0  # Set target load here
+
+def normalize_reward_target_based(total_load):
+    return -(total_load - target_load) / target_load
 
 def normalize_reward_mean_std(total_load):
     # Update the running statistics
@@ -89,7 +96,7 @@ def normalize_reward_mean_std(total_load):
     
     # Z-score normalization
     # z_score = (total_load - mean_load) / np.sqrt(std_load / load_count)
-    z_score = -1 * (total_load - mean_load) / std_load
+    z_score = -1 * ((total_load - mean_load) / std_load)
     
     # Optionally scale to a desired range, such as [-1, 1]
     # normalized_reward = np.tanh(-z_score)  # Apply negative to align with minimizing load
@@ -110,13 +117,14 @@ def normalize_reward(total_load):
     if max_load == min_load:
         # Avoid division by zero; this would happen if the load hasn't varied at all
         return 0.0
-    
-    # Normalize total_load to the range [-1, 1] and negate it to encourage reduction
-    normalized_reward = -1 * (2 * (total_load - min_load) / (max_load - min_load) - 1)
+    # load_stats.append(total_load)
+    # Normalize total_load to the range [-1, 0] and negate it to encourage reduction
+    normalized_reward = -1 * ((total_load - min_load) / (max_load - min_load))
     return normalized_reward
 
 def dynamic_normalized_dc_reward(total_load):
     # update_load_bounds(total_load)
+    # load_stats.append(total_load)
     return normalize_reward(total_load)
 
 def default_dc_reward(params: dict) -> float:
@@ -145,7 +153,15 @@ def default_dc_reward(params: dict) -> float:
         
     # reward = dynamic_normalized_dc_reward(total_load)
     reward = normalize_reward_mean_std(total_load)
-
+    # reward = normalize_reward_target_based(total_load)
+    # Penalize water consumption
+    water_penalty = 0
+    if 'dc_water_usage' in params:
+        # water_stats.append(params['dc_water_usage'])
+        # water_penalty = -1.0 * params['dc_water_usage'] / 1000  # Penalty for each liter of water used
+        water_penalty = -1 * ((params['dc_water_usage'] - 985) / 550)
+    
+    reward += water_penalty
     return reward
 
 

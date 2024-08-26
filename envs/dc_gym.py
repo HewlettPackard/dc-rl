@@ -19,8 +19,10 @@ class dc_gymenv(gym.Env):
                        action_mapping: dict,
                        ranges : dict,  # this data frame should be time indexed for the code to work
                        add_cpu_usage : bool,
-                       min_temp : float,
-                       max_temp : float,
+                       min_pump_speed : float,
+                       max_pump_speed : float,
+                       min_supply_temp : float,
+                       max_supply_temp : float,
                        action_definition : dict,
                        DC_Config : dict,
                        seed : int = 123,
@@ -39,8 +41,8 @@ class dc_gymenv(gym.Env):
             action_mapping (dict): A mapping from agent discrete action choice to actual delta change in setpoint. The mapping is defined in
                                     utils.make_pyeplus_env.py
             ranges (dict[str,list]): The upper and lower bounds on the observation_variables
-            max_temp (float): The maximum temperature allowed for the CRAC setpoint
-            min_temp (float): The minimum temperature allowed for the CRAC setpoint
+            max_pump_speed (float): The maximum temperature allowed for the CRAC setpoint
+            min_pump_speed (float): The minimum temperature allowed for the CRAC setpoint
             action_definition (dict): A mapping of the action name to the default or initialized value. Specified in utils.make_pyeplus_env.py
             episode_length_in_time (pd.Timedelta, optional): The maximum length after which the done flag should be True. Defaults to None. 
                                                             Setting none causes done to be True after data set is exausted.
@@ -74,7 +76,7 @@ class dc_gymenv(gym.Env):
             print(f"Error loading FMU file: {e}")
 
         self.step_size = 15*60 # 15 Minutes
-        self.liquid_guideline_temp = 27  # ASHRAE W27 Guidelines
+        self.liquid_guideline_temp = 32  # ASHRAE W32 Guidelines
         
         # similar to reset
         self.dc = DataCenter.DataCenter_ITModel(num_racks=self.DC_Config.NUM_RACKS,
@@ -93,8 +95,11 @@ class dc_gymenv(gym.Env):
         self.raw_curr_state = None
         self.raw_next_state = None
         self.raw_curr_stpt = action_definition['cooling setpoints']['initial_value']
-        self.max_temp = max_temp
-        self.min_temp = min_temp
+        self.max_pump_speed = max_pump_speed
+        self.min_pump_speed = min_pump_speed
+        
+        self.max_supply_temp = max_supply_temp
+        self.min_supply_temp = min_supply_temp
         
         self.consecutive_actions = 0
         self.last_action = None
@@ -134,10 +139,11 @@ class dc_gymenv(gym.Env):
         self.fmu.setup_experiment(start_time=0, stop_time=60*60*30)
         self.fmu.initialize()
         self.current_time = 0
-        self.pump_speed = (np.random.random()*(self.max_temp-self.min_temp)) + self.min_temp
+        self.pump_speed = (np.random.random()*(self.max_pump_speed-self.min_pump_speed)) + self.min_pump_speed
         self.temp_at_mixer = None
         self.coo_mov_flow_actual = 0.5
-        self.prev_server_temps = 27  # ASHRAE W27 Guidelines
+        self.coo_m_flow_nominal = 0.5
+        self.prev_server_temps = 32  # ASHRAE W32 Guidelines
         
         self.CRAC_Fan_load, self.CRAC_cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = None, None, None, None, None
         self.HVAC_load = self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]
@@ -164,11 +170,30 @@ class dc_gymenv(gym.Env):
             info (dict): A dictionary that containing additional information about the environment state
         """
         
-        pump_speed_delta = self.action_mapping[action]
+        # pump_speed_delta = self.action_mapping[action]
         
-        self.pump_speed += pump_speed_delta
-        self.pump_speed = max(min(self.pump_speed, self.max_temp), self.min_temp)
-    
+        # self.pump_speed += pump_speed_delta
+        # self.pump_speed = max(min(self.pump_speed, self.max_pump_speed), self.min_pump_speed)
+        
+        # action = max(min(action, self.max_pump_speed), self.min_pump_speed)
+        # alpha = 0.75
+        # if self.pump_speed is None:
+        #     self.pump_speed = action  # Initialize on first use with the current action
+        # else:
+        #     self.pump_speed = alpha * action + (1 - alpha) * self.pump_speed
+            
+        # Now the action is continuous
+        if len(action) == 1:
+            self.pump_speed = max(min(action[0], self.max_pump_speed), self.min_pump_speed)
+            supply_liquid_temp = self.liquid_guideline_temp + 273.15 #  Kelvins. Following the ASHRAE Guidelines
+        else:
+            # Scale the action to the correct range 
+            action[0] = action[0] * (self.max_pump_speed - self.min_pump_speed) + self.min_pump_speed
+            action[1] = action[1] * (self.max_supply_temp - self.min_supply_temp) + self.min_supply_temp
+            
+            self.pump_speed = max(min(action[0], self.max_pump_speed), self.min_pump_speed)
+            supply_liquid_temp = max(min(action[1], self.max_supply_temp), self.min_supply_temp) + 273.15 #  Kelvins.
+        pump_speed_delta = self.pump_speed # max(min(action, self.max_pump_speed), self.min_pump_speed)
         ITE_load_pct_list = [self.cpu_load_frac*100 for _ in range(self.DC_Config.NUM_RACKS)] 
         
     
@@ -184,7 +209,6 @@ class dc_gymenv(gym.Env):
                            ]
         
         cpu_util = self.cpu_load_frac*100 #  % Percentage
-        supply_liquid_temp = self.liquid_guideline_temp + 273.15 #  Kelvins. Following the W27 ASHRAE Guidelines
         input_ts_list = [cpu_util, supply_liquid_temp, self.pump_speed]
         
         self.fmu.set(input_var_names, input_ts_list)
@@ -252,7 +276,7 @@ class dc_gymenv(gym.Env):
         modelica_pump_power = self.fmu.get('mov.P')[0] * 15000 * 3 # W. To Simulate 3 Pumps
         inlet_temp_liq = self.fmu.get('tempout.T')[0]   # Kelvins
         return_temp_liq = self.fmu.get('tempin.T')[0]   # Kelvins
-        coo_m_flow_nominal = np.abs(self.fmu.get('coo.m_flow_nominal'))[0]  #Kg/s
+        self.coo_m_flow_nominal = np.abs(self.fmu.get('coo.m_flow_nominal'))[0]  #Kg/s
         self.coo_mov_flow_actual = np.abs(self.fmu.get('mov.m_flow_actual'))[0]  #Kg/s
         self.coo_Q_flow = np.abs(self.fmu.get('coo.Q_flow'))[0] * 350 #  To simulate a datacenter with 350 cabinets and a total power of 1MW
         self.temp_at_mixer = self.fmu.get('tempatmixer.T')[0]  # Kelvins
@@ -267,14 +291,14 @@ class dc_gymenv(gym.Env):
         
         server_temps = [server1_temp, server2_temp, server3_temp]
         self.rackwise_cpu_pwr, _, _ = \
-            self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=self.liquid_guideline_temp, server_temps=server_temps)
+            self.dc.compute_datacenter_IT_load_outlet_temp(ITE_load_pct_list=ITE_load_pct_list, CRAC_setpoint=inlet_temp_liq-273.15, server_temps=server_temps)
 
         data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr)
         data_center_total_ITE_Load = (self.coo_Q_flow + data_center_total_ITE_Load)/2
 
         # print(f'Q_flow: {coo_Q_flow} W, ITE Load: {data_center_total_ITE_Load} W, average of those metrics: {(coo_Q_flow + data_center_total_ITE_Load)/2} W')
         
-        self.CT_Fan_pwr, self.CRAC_cooling_load, self.chiller_power, self.power_water_pump_CT  = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.liquid_guideline_temp,
+        self.CT_Fan_pwr, self.CRAC_cooling_load, self.chiller_power, self.power_water_pump_CT  = DataCenter.calculate_HVAC_power(CRAC_setpoint=inlet_temp_liq-273.15,
                                                                                                                                  chiller_heat_removed=data_center_total_ITE_Load*0.2,
                                                                                                                                  ambient_temp=self.ambient_temp,
                                                                                                                                  DC_Config=self.DC_Config)
@@ -283,7 +307,7 @@ class dc_gymenv(gym.Env):
         
         # Set the additional attributes for the cooling tower water usage calculation
         self.dc.hot_water_temp = return_temp_liq - 273.15 # °C
-        self.dc.cold_water_temp = self.liquid_guideline_temp  # °C
+        self.dc.cold_water_temp = inlet_temp_liq - 273.15  # °C
         self.dc.wet_bulb_temp = self.wet_bulb  # °C from weather data
 
         # Calculate the cooling tower water usage
@@ -320,9 +344,10 @@ class dc_gymenv(gym.Env):
             'dc_water_usage': self.water_usage,
             'dc_pump_power_kW': modelica_pump_power / 1e3,
             'dc_heat_removed': self.coo_Q_flow/1e3,
-            'dc_coo_m_flow_nominal': coo_m_flow_nominal,
+            'dc_coo_m_flow_nominal': self.coo_m_flow_nominal,
             'dc_coo_mov_flow_actual': self.coo_mov_flow_actual,
             'dc_supply_liquid_temp': inlet_temp_liq - 273.15,
+            'dc_return_liquid_temp': return_temp_liq - 273.15,
             'dc_average_pipe_temp': (pipe1_temp + pipe2_temp + pipe3_temp) / 3 - 273.15,
             'dc_average_server_temp': (server1_temp + server2_temp + server3_temp) / 3 - 273.15,
             'dc_current_servers_temps': np.average(server_temps),
@@ -401,9 +426,10 @@ class dc_gymenv(gym.Env):
         Returns:
             observation (List[float]): Current state of the environmment.
         """
-        pump_speed = self.coo_mov_flow_actual  # In l/s
+        actual_pump_speed = self.coo_mov_flow_actual  # In l/s
+        nominal_pump_speed = self.coo_m_flow_nominal  # In l/s
         
-        temp_at_mixer = self.liquid_guideline_temp  # C. Following the W27 ASHRAE Guidelines
+        temp_at_mixer = self.liquid_guideline_temp  # C. Following the ASHRAE Guidelines
         if self.temp_at_mixer:
             temp_at_mixer = self.temp_at_mixer - 273.15  # Convert to Celsius
 
@@ -416,7 +442,8 @@ class dc_gymenv(gym.Env):
         else:
             it_power = self.ranges['Facility Total Building Electricity Demand Rate(Whole Building)'][0]
 
-        return [self.ambient_temp, pump_speed, temp_at_mixer, hvac_power, it_power]
+        return [self.ambient_temp, actual_pump_speed, temp_at_mixer, hvac_power, it_power]
+        # return [actual_pump_speed, temp_at_mixer, hvac_power+it_power]
 
 
     def set_shifted_wklds(self, cpu_load):

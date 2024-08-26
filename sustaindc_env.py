@@ -199,10 +199,27 @@ class SustainDC(gym.Env):
             seed (int, optional): Random seed.
         """
         if seed is None:
-            np.random.seed(1)
-        else:
-            np.random.seed(seed)
-    
+            seed = 1
+        
+        # Set seed for numpy
+        np.random.seed(seed)
+        
+        # Set seed for Python's random module
+        random.seed(seed)
+        
+        # Set seed for torch (if using PyTorch)
+        if torch is not None:
+            torch.manual_seed(seed)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed_all(seed)
+        
+        # Seed the environment
+        if hasattr(self, 'action_space') and hasattr(self.action_space, 'seed'):
+            self.action_space.seed(seed)
+        if hasattr(self, 'observation_space') and hasattr(self.observation_space, 'seed'):
+            self.observation_space.seed(seed)
+        
+        
     def reset(self):
         """
         Reset the environment.
@@ -247,7 +264,8 @@ class SustainDC(gym.Env):
         
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
         self.ls_state = np.float32(np.hstack((t_i, ls_s, ci_i_future)))  # For p.o.
-        
+
+
         # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI, next_workload]  # p.o.
         # self.dc_state = np.float32(np.hstack((t_i, self.dc_state, self.workload_m.get_next_workload())))  # For p.o.
         # next_workload = self.workload_m.get_next_workload()
@@ -285,18 +303,32 @@ class SustainDC(gym.Env):
         # Update the shared variables
         # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]
         # self.dc_state = np.float32(np.hstack((t_i, self.dc_state, next_workload, is_high_workload)))  # For p.o.
-        self.dc_state = np.float32(np.hstack((t_i,
-                                              self.dc_state,
-                                              next_workload,
+        # self.dc_state = np.float32(np.hstack((t_i,
+        #                                       self.dc_state,
+        #                                       next_workload,
+        #                                       next_out_temperature,
+        #                                       is_workload_increasing,
+        #                                       is_workload_decreasing,
+        #                                       is_night_time,
+        #                                       is_midday
+        #                                       )))
+        
+        self.ls_state = np.float32(np.hstack((next_workload,
+                                              next_out_temperature)))  # For p.o.
+                
+        pump_speed = (self.dc_info.get('dc_coo_mov_flow_actual', 0.05) - 0.05) / (0.5-0.05)
+        supply_temp = (self.dc_info.get('dc_supply_liquid_temp', 27) - 15) / (45-15)
+
+        self.dc_state = np.float32(np.hstack((next_workload,
                                               next_out_temperature,
-                                              is_workload_increasing,
-                                              is_workload_decreasing,
-                                              is_night_time,
-                                              is_midday
+                                              pump_speed,
+                                              supply_temp
                                               )))
         
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
-        self.bat_state = np.float32(np.hstack((t_i, bat_s, ci_i_future)))
+        # self.bat_state = np.float32(np.hstack((t_i, bat_s, ci_i_future)))
+        self.bat_state = np.float32(np.hstack((next_workload,
+                                              next_out_temperature)))
 
         # States should be a dictionary with agent names as keys and their observations as values
         states = {}
@@ -399,8 +431,8 @@ class SustainDC(gym.Env):
         self.bat_state, _, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
         
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
-        self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future)))  # For p.o.
-        
+        # self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future)))  # For p.o.
+                
         next_workload = self.workload_m.get_next_workload()
         next_out_temperature = self.weather_m.get_next_temperature()
         is_high_workload = int(next_workload > 0.75)
@@ -414,21 +446,31 @@ class SustainDC(gym.Env):
         # Update the shared variables
         # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]
         # self.dc_state = np.float32(np.hstack((t_i, self.dc_state, next_workload, is_high_workload)))  # For p.o.
-        self.dc_state = np.float32(np.hstack((t_i,
-                                              self.dc_state,
-                                              next_workload,
-                                              next_out_temperature,
-                                              is_workload_increasing,
-                                              is_workload_decreasing,
-                                              is_night_time,
-                                              is_midday
-                                              )))
-
+        # self.dc_state = np.float32(np.hstack((t_i,
+        #                                       self.dc_state,
+        #                                       next_workload,
+        #                                       next_out_temperature,
+        #                                       is_workload_increasing,
+        #                                       is_workload_decreasing,
+        #                                       is_night_time,
+        #                                       is_midday
+        #                                       )))
         
+        self.ls_state = np.float32(np.hstack((next_workload,
+                                              next_out_temperature)))  # For p.o.
+            
+        pump_speed = (np.round(self.dc_info['dc_coo_mov_flow_actual'], 6) - 0.05) / (0.5-0.05)
+        supply_temp = (np.round(self.dc_info['dc_supply_liquid_temp'], 6) - 15) / (45-15)
+        self.dc_state = np.float32(np.hstack((next_workload,
+                                              next_out_temperature,
+                                              pump_speed,
+                                              supply_temp
+                                              )))
         # Update the state of the bat state
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
-        self.bat_state = np.float32(np.hstack((t_i, self.bat_state, ci_i_future)))
-
+        # self.bat_state = np.float32(np.hstack((t_i, self.bat_state, ci_i_future)))
+        self.bat_state = np.float32(np.hstack((next_workload,
+                                              next_out_temperature)))
         # Params should be a dictionary with all of the info required plus other additional information like the external temperature, the hour, the day of the year, etc.
         # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
         info_dict = {**self.bat_info, **self.ls_info, **self.dc_info}

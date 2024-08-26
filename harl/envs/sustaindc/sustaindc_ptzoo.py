@@ -13,7 +13,7 @@ class SustainDCPettingZooEnv(ParallelEnv):
         super().__init__()
         if env_config['partial_obs']:
             if env_config['month'] == 1:
-                print("\n using partially observable states \n")
+                print(f"\n using partially observable states and month: {env_config['month']}\n")
             from sustaindc_env import SustainDC  # pylint: disable=import-error,import-outside-toplevel
         else:
             raise NotImplementedError("Fully observable states are no longer supported. Please set 'partial_obs' to True.")
@@ -28,7 +28,7 @@ class SustainDCPettingZooEnv(ParallelEnv):
         
         if env_config['nonoverlapping_shared_obs_space']:
             # ls_state[0:10]->10 variables; dc_state[4:9]->5 variables & bat_state[5]->1 variable
-            self.share_observation_space = {agent: spaces.Box(low=-2.0, high=2.0, shape=(19,), dtype=np.float32) for agent in self.possible_agents}
+            self.share_observation_space = {agent: spaces.Box(low=-2.0, high=2.0, shape=(4,), dtype=np.float32) for agent in self.possible_agents}
         else:
             # Find the maximum dimension of observation space
             max_obs_dim = max(space.shape[0] for space in self.observation_spaces.values())

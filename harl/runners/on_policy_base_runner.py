@@ -48,7 +48,7 @@ class OnPolicyBaseRunner:
         self.share_param = algo_args["algo"]["share_param"]
         self.fixed_order = algo_args["algo"]["fixed_order"]
         
-        self.current_best_avg_eval_episode_reward = -np.Inf
+        self.current_best_avg_eval_episode_reward = -10e10
         self.update_chkpoints = False
         
         self.dump_info = algo_args["eval"].get('dump_eval_metrcs', False)
