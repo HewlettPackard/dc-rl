@@ -13,21 +13,21 @@ device:
   torch_threads: 4
 train:
   # number of parallel environments for training data collection
-  n_rollout_threads: 10
+  n_rollout_threads: 24
   # number of total steps
-  num_env_steps: 10000000
+  num_env_steps: 2000000000
   # number of warmup steps
-  warmup_steps: 10000
+  warmup_steps: 100000
   # number of steps per train
-  train_interval: 50
+  train_interval: 1024
   # ratio of training iterations to train_interval
   update_per_train: 1
   # logging interval (currently unused)
   log_interval: ~
   # evaluation interval
-  eval_interval: 10000
+  eval_interval: 25
   # whether to use linear learning rate decay
-  use_linear_lr_decay: False
+  use_linear_lr_decay: True
   # whether to consider the case of truncation when an episode is done
   use_proper_time_limits: True
   # if set, load models from this directory; otherwise, randomly initialise the models
@@ -36,9 +36,9 @@ eval:
   # whether to use evaluation
   use_eval: True
   # number of parallel environments for evaluation
-  n_eval_rollout_threads: 20
+  n_eval_rollout_threads: 24
   # number of episodes per evaluation
-  eval_episodes: 40
+  eval_episodes: 5
 render:
   # whether to use render
   use_render: False
@@ -47,11 +47,11 @@ render:
 model:
   # network parameters
   # hidden sizes for mlp module in the network
-  hidden_sizes: [128, 128]
+  hidden_sizes: [64, 64]
   # activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
-  activation_func: relu
+  activation_func: tanh
   # final activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
-  final_activation_func: tanh
+  final_activation_func: sigmoid
   # optimizer parameters
   # actor learning rate
   lr: 0.0005

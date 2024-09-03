@@ -131,7 +131,6 @@ def make_dc_pyeplus_env(month : int = 1,
     max_setpoint = 45.0  # C
     min_setpoint = 15.0  # C  
     
-    
     min_temp = 15.0  # C
     max_temp = 21.6  # C
     action_mapping = {
@@ -142,7 +141,7 @@ def make_dc_pyeplus_env(month : int = 1,
     action_space = spaces.Discrete(len(action_mapping))
     
     # I want to use a continuous action space
-    action_space = spaces.Box(low=np.float32(0), high=np.float32(1), shape=(2,))
+    action_space = spaces.Box(low=np.float32(0), high=np.float32(1), shape=(1,))
     
     
     ################################################################################
@@ -170,6 +169,9 @@ def make_dc_pyeplus_env(month : int = 1,
         max_amb_temperature = 40.0
         
     ctafr, ct_rated_load = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint=min_temp, max_CRAC_setpoint=max_temp, max_ambient_temp=max_amb_temperature)
+    # print(f'WARNING, bypassing chiller sizing for now...')
+    # ctafr = 20
+    # ct_rated_load = 1e6
     dc_config.CT_REFRENCE_AIR_FLOW_RATE = ctafr
     dc_config.CT_FAN_REF_P = ct_rated_load
     
@@ -233,6 +235,7 @@ def make_dc_pyeplus_env(month : int = 1,
         'Setpoint': [min_setpoint, max_setpoint],  # This is the setpoint of the cooling system
         
         'Temp at Mixer': [27, 65],  # This is the temperature at the mixer
+        'wetbulb': [0, 40]
     }
     
     ################################################################################

@@ -6,26 +6,26 @@ seed:
   seed: 1
 device:
   # whether to use CUDA
-  cuda: False
+  cuda: True
   # whether to set CUDA deterministic
   cuda_deterministic: True
   # arg to torch.set_num_threads
   torch_threads: 4
 train:
   # number of parallel environments for training data collection
-  n_rollout_threads: 12
+  n_rollout_threads: 24
   # number of total steps
-  num_env_steps: 500000000
+  num_env_steps: 2000000000
   # number of warmup steps
-  warmup_steps: 10000
+  warmup_steps: 100000
   # number of steps per train
-  train_interval: 2048
+  train_interval: 1024
   # ratio of training iterations to train_interval
   update_per_train: 1
   # logging interval (currently unused)
   log_interval: ~
   # evaluation interval
-  eval_interval: 10000
+  eval_interval: 25
   # whether to use ValueNorm
   use_valuenorm: True
   # whether to use linear learning rate decay
@@ -40,7 +40,7 @@ eval:
   # whether to use evaluation
   use_eval: True
   # number of parallel environments for evaluation
-  n_eval_rollout_threads: 12
+  n_eval_rollout_threads: 24
   # number of episodes per evaluation
   eval_episodes: 5
 render:
@@ -51,13 +51,13 @@ render:
 model:
   # network parameters
   # hidden sizes for mlp module in the network
-  hidden_sizes: [16,16,16]
+  hidden_sizes: [64, 64]
   # activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
-  activation_func: relu
+  activation_func: tanh
   # whether to use feature normalization
   use_feature_normalization: True
   # final activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
-  final_activation_func: tanh
+  final_activation_func: sigmoid
   # initialization method for network parameters, choose from xavier_uniform_, orthogonal_, ...
   initialization_method: orthogonal_
   # gain of the output layer of the network.

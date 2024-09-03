@@ -36,7 +36,7 @@ eval:
   # whether to use evaluation
   use_eval: True
   # number of parallel environments for evaluation
-  n_eval_rollout_threads: 24
+  n_eval_rollout_threads: 12
   # number of episodes per evaluation
   eval_episodes: 5
   # If dump the evaluation metrics in a csv file
@@ -50,7 +50,7 @@ render:
 model:
   # network parameters
   # hidden sizes for mlp module in the network
-  hidden_sizes: [64, 64]
+  hidden_sizes: [256, 256]
   # activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
   activation_func: tanh
   # whether to use feature normalization

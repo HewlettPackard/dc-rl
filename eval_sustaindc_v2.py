@@ -6,6 +6,7 @@ import warnings
 import json
 import numpy as np
 warnings.filterwarnings('ignore')
+from tabulate import tabulate
 
 import pandas as pd
 
@@ -32,23 +33,31 @@ baseline_actors = {
 }
 
 # Function to evaluate and store metrics
-def run_evaluation(do_baseline=False, eval_episodes=1):
+def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     all_metrics = []
     SAVE_EVAL = "results"
-    NUM_EVAL_EPISODES = 1
+    NUM_EVAL_EPISODES = 5
 
     # Define paths and configurations as usual
     # run = 'happo/happo_liquid_dc_64_16_4_2actions_4obs/seed-00001-2024-08-23-21-29-01'
     # run = 'happo/happo_liquid_dc_8_8_8_2actions_3obs/seed-00001-2024-08-23-21-28-19'
     # run = 'happo/happo_liquid_dc_64_64_64_2actions_4obs/seed-00001-2024-08-23-21-25-26' # Looks good, but bad performance -0.6%
-    run = 'happo/happo_liquid_dc_64_64_2actions_4obs/seed-00001-2024-08-23-18-53-06' # Looks good, 1.27% energy reduction
+    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs/seed-00001-2024-08-23-18-53-06' # Looks good, 1.27% energy reduction
     # run = 'happo/happo_liquid_dc_16_16_2actions_4obs/seed-00001-2024-08-23-18-52-40' # Looks good, 0.89% energy reduction
     # run = 'happo/happo_liquid_dc_64_64_2actions_4obs_water/seed-00001-2024-08-26-15-07-24'
     # run = 'happo/happo_liquid_dc_64_64_2actions_4obs/seed-00001-2024-08-26-13-13-12'
     # run = 'happo/happo_liquid_dc_64_64_2actions_4obs/seed-00001-2024-08-26-13-14-45'
     # run = 'happo/happo_liquid_dc_64_64_2actions_4obs_water/seed-00001-2024-08-26-15-07-24'
     # run = 'happo/happo_liquid_dc_64_64_water_std/seed-00001-2024-08-26-16-51-09'
-    
+    # run = 'hatrpo/hatrpo_liquid_dc_256_256_2actions_4obs_000001/seed-00001-2024-08-26-21-13-20'
+    run = 'happo/happo_liquid_dc_256_256_2actions_4obs/seed-00004-2024-08-26-21-25-18' # Looks good, 1.51% energy reduction
+    # run = 'happo/happo_liquid_dc_256_256_2actions_4obs/seed-00002-2024-08-26-21-24-52' # 1.19%
+    # run = "happo/happo_liquid_dc_256_256_2actions_4obs/seed-00003-2024-08-26-21-25-05" # 0.95%
+    # run = "happo/happo_liquid_dc_256_256_2actions_4obs/seed-00005-2024-08-26-21-25-32"
+    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs_2stk/seed-00002-2024-08-27-15-28-04' # 1.25$
+    # run = 'happo/happo_liquid_dc_256_256_2actions_5obs_range_t_i_sigmoid_nonormalization_default_values/seed-00002-2024-08-30-04-32-21'
+    # run = 'happo/happo_liquid_dc_recovering_old_data/seed-00002-2024-09-02-23-33-17'
+
     path = f'/lustre/guillant/sustaindc/results/sustaindc/az/{run}'
     with open(path + '/config.json', encoding='utf-8') as file:
         saved_config = json.load(file)
@@ -71,6 +80,7 @@ def run_evaluation(do_baseline=False, eval_episodes=1):
     for run_i in range(eval_episodes):
         # Initialize metrics for only the active agents
         metrics = {agent: [] for agent in baseline_actors}
+        metrics['global'] = []
         
         expt_runner.prep_rollout()
         eval_episode = 0
@@ -109,8 +119,17 @@ def run_evaluation(do_baseline=False, eval_episodes=1):
                 if do_baseline:
                     # Extract the workload from the eval_infos is available
                     if agent_name == 'agent_dc':
-                        workload = expt_runner.eval_envs.envs[0].env.env.workload_m.get_next_workload()
-                        eval_actions = torch.tensor([[baseline_actors[agent_name].act(workload)]]) #torch.tensor([[0.25]])
+                        if eval_type == 'random':
+                            pump_speed = np.random.uniform(0, 1)
+                            supply_temp = np.random.uniform(0, 1)
+                            eval_actions = torch.tensor([[pump_speed, supply_temp]])
+                        elif eval_type == 'fixed':
+                            pump_speed = 0.444  # 0.25 l/s
+                            supply_temp = 0.567 # 32°C (W32 ASHRAE GUIDELINES)
+                            eval_actions = torch.tensor([[pump_speed, supply_temp]])
+                        elif eval_type == 'following_workload':
+                            workload = expt_runner.eval_envs.envs[0].env.env.workload_m.get_next_workload()
+                            eval_actions = torch.tensor([[baseline_actors[agent_name].act(workload)]]) #torch.tensor([[0.25]])
                     else:
                         eval_actions = torch.tensor([[baseline_actors[agent_name].act()]])
                 eval_rnn_states[:, agent_id] = _t2n(temp_rnn_state)
@@ -156,6 +175,7 @@ def run_evaluation(do_baseline=False, eval_episodes=1):
                                 'bat_dcload_min', 'bat_dcload_max',
                             ]
                         })
+                    metrics['global'].append({'reward': eval_rewards[0][0][0]})
 
             eval_dones_env = np.all(eval_dones, axis=1)
 
@@ -191,14 +211,21 @@ def run_evaluation(do_baseline=False, eval_episodes=1):
     return all_metrics
 
 # Run baseline
-num_runs = 3
-baseline_metrics_runs = run_evaluation(do_baseline=True, eval_episodes=num_runs)
+num_runs = 5
+baseline_random_metrics_runs = run_evaluation(do_baseline=True, eval_type='random', eval_episodes=num_runs)
+baseline_fixed_metrics_runs = run_evaluation(do_baseline=True, eval_type='fixed', eval_episodes=num_runs)
+baseline_metrics_runs = run_evaluation(do_baseline=True, eval_type='following_workload', eval_episodes=num_runs)
 
 # Run trained algorithm
 trained_metrics_runs = run_evaluation(do_baseline=False, eval_episodes=num_runs)
 
-#%% Calculate average and standard deviation
-def calculate_reduction_avg_std(trained_metrics_runs, baseline_metrics_runs, metric_name):
+#%% 
+
+#% Calculate average and standard deviation
+# Calculate absolute values and reduction for each run
+def calculate_values_and_reduction(trained_metrics_runs, baseline_metrics_runs, metric_name):
+    trained_totals = []
+    baseline_totals = []
     reductions = []
 
     for trained_metrics, baseline_metrics in zip(trained_metrics_runs, baseline_metrics_runs):
@@ -213,24 +240,140 @@ def calculate_reduction_avg_std(trained_metrics_runs, baseline_metrics_runs, met
             baseline_values = [metric[metric_name] for metric in baseline_metrics['agent_ls']]
 
         # Sum the values for the entire run
-        trained_total = sum(trained_values)
-        baseline_total = sum(baseline_values)
+        trained_total = sum(trained_values)/1e6
+        baseline_total = sum(baseline_values)/1e6
 
         # Calculate reduction percentage for this run
         reduction = 100 * (baseline_total - trained_total) / baseline_total
         reductions.append(reduction)
+        trained_totals.append(trained_total)
+        baseline_totals.append(baseline_total)
 
     # Calculate the mean and standard deviation of the reductions
-    return np.mean(reductions), np.std(reductions)
+    return {
+        'trained_avg': np.mean(trained_totals),
+        'trained_std': np.std(trained_totals),
+        'baseline_avg': np.mean(baseline_totals),
+        'baseline_std': np.std(baseline_totals),
+        'reduction_avg': np.mean(reductions),
+        'reduction_std': np.std(reductions)
+    }
 
-# Metrics comparison
-energy_reduction, energy_std = calculate_reduction_avg_std(trained_metrics_runs, baseline_metrics_runs, 'bat_total_energy_without_battery_KWh')
-co2_reduction, co2_std = calculate_reduction_avg_std(trained_metrics_runs, baseline_metrics_runs, 'bat_CO2_footprint')
-water_reduction, water_std = calculate_reduction_avg_std(trained_metrics_runs, baseline_metrics_runs, 'dc_water_usage')
+# Example usage:
+# Comparing trained vs random baseline for energy and carbon emissions
+energy_results_random = calculate_values_and_reduction(trained_metrics_runs, baseline_random_metrics_runs, 'bat_total_energy_without_battery_KWh')
+co2_results_random = calculate_values_and_reduction(trained_metrics_runs, baseline_random_metrics_runs, 'bat_CO2_footprint')
+water_results_random = calculate_values_and_reduction(trained_metrics_runs, baseline_random_metrics_runs, 'dc_water_usage')
 
-print(f"Total Energy Consumption: Reduction (%): {energy_reduction:.3f} ± {energy_std:.3f}")
-print(f"Carbon Emissions: Reduction (%): {co2_reduction:.3f} ± {co2_std:.3f}")
-print(f"Water Usage: Reduction (%): {water_reduction:.3f} ± {water_std:.3f}")
+print(f"Random Baseline - Total Energy: {energy_results_random['baseline_avg']:.3f} ± {energy_results_random['baseline_std']:.3f}")
+print(f"Trained - Total Energy: {energy_results_random['trained_avg']:.3f} ± {energy_results_random['trained_std']:.3f}")
+print(f"Reduction (%): {energy_results_random['reduction_avg']:.3f} ± {energy_results_random['reduction_std']:.3f}")
+
+print(f"Random Baseline - Carbon Emissions: {co2_results_random['baseline_avg']:.3f} ± {co2_results_random['baseline_std']:.3f}")
+print(f"Trained - Carbon Emissions: {co2_results_random['trained_avg']:.3f} ± {co2_results_random['trained_std']:.3f}")
+print(f"Reduction (%): {co2_results_random['reduction_avg']:.3f} ± {co2_results_random['reduction_std']:.3f}")
+
+# Now compare the trained vs fixed baseline for energy and carbon emissions
+energy_results_fixed = calculate_values_and_reduction(trained_metrics_runs, baseline_fixed_metrics_runs, 'bat_total_energy_without_battery_KWh')
+co2_results_fixed = calculate_values_and_reduction(trained_metrics_runs, baseline_fixed_metrics_runs, 'bat_CO2_footprint')
+water_results_fixed = calculate_values_and_reduction(trained_metrics_runs, baseline_fixed_metrics_runs, 'dc_water_usage')
+
+print(f"Fixed Baseline - Total Energy: {energy_results_fixed['baseline_avg']:.3f} ± {energy_results_fixed['baseline_std']:.3f}")
+print(f"Trained - Total Energy: {energy_results_fixed['trained_avg']:.3f} ± {energy_results_fixed['trained_std']:.3f}")
+print(f"Reduction (%): {energy_results_fixed['reduction_avg']:.3f} ± {energy_results_fixed['reduction_std']:.3f}")
+
+print(f"Fixed Baseline - Carbon Emissions: {co2_results_fixed['baseline_avg']:.3f} ± {co2_results_fixed['baseline_std']:.3f}")
+print(f"Trained - Carbon Emissions: {co2_results_fixed['trained_avg']:.3f} ± {co2_results_fixed['trained_std']:.3f}")
+print(f"Reduction (%): {co2_results_fixed['reduction_avg']:.3f} ± {co2_results_fixed['reduction_std']:.3f}")
+
+# Now compare the trained vs following workload baseline for energy and carbon emissions
+energy_results_workload = calculate_values_and_reduction(trained_metrics_runs, baseline_metrics_runs, 'bat_total_energy_without_battery_KWh')
+co2_results_workload = calculate_values_and_reduction(trained_metrics_runs, baseline_metrics_runs, 'bat_CO2_footprint')
+water_results_workload = calculate_values_and_reduction(trained_metrics_runs, baseline_metrics_runs, 'dc_water_usage')
+
+print(f"Following Workload Baseline - Total Energy: {energy_results_workload['baseline_avg']:.3f} ± {energy_results_workload['baseline_std']:.3f}")
+print(f"Trained - Total Energy: {energy_results_workload['trained_avg']:.3f} ± {energy_results_workload['trained_std']:.3f}")
+print(f"Reduction (%): {energy_results_workload['reduction_avg']:.3f} ± {energy_results_workload['reduction_std']:.3f}")
+
+print(f"Following Workload Baseline - Carbon Emissions: {co2_results_workload['baseline_avg']:.3f} ± {co2_results_workload['baseline_std']:.3f}")
+print(f"Trained - Carbon Emissions: {co2_results_workload['trained_avg']:.3f} ± {co2_results_workload['trained_std']:.3f}")
+print(f"Reduction (%): {co2_results_workload['reduction_avg']:.3f} ± {co2_results_workload['reduction_std']:.3f}")
+
+print(f"Following Workload Baseline - Water Usage: {water_results_workload['baseline_avg']:.3f} ± {water_results_workload['baseline_std']:.3f}")
+print(f"Trained - Water Usage: {water_results_workload['trained_avg']:.3f} ± {water_results_workload['trained_std']:.3f}")
+print(f"Reduction (%): {water_results_workload['reduction_avg']:.3f} ± {water_results_workload['reduction_std']:.3f}")
+
+# print(f"Total Energy Consumption: Reduction (%): {energy_reduction:.3f} ± {energy_std:.3f}")
+# print(f"Carbon Emissions: Reduction (%): {co2_reduction:.3f} ± {co2_std:.3f}")
+# print(f"Water Usage: Reduction (%): {water_reduction:.3f} ± {water_std:.3f}")
+
+#%%
+def print_results_table(results, baseline_name):
+    table_data = [
+        ["Metric", f"{baseline_name} Baseline (Avg ± Std)", "Trained (Avg ± Std)", "Reduction (%) (Avg ± Std)"],
+        ["Total Energy (MWh)",
+         f"{results['energy']['baseline_avg']:.3f} ± {results['energy']['baseline_std']:.3f}",
+         f"{results['energy']['trained_avg']:.3f} ± {results['energy']['trained_std']:.3f}",
+         f"{results['energy']['reduction_avg']:.3f} ± {results['energy']['reduction_std']:.3f}"],
+        ["Carbon Emissions (Tonnes CO2)",
+         f"{results['co2']['baseline_avg']:.3f} ± {results['co2']['baseline_std']:.3f}",
+         f"{results['co2']['trained_avg']:.3f} ± {results['co2']['trained_std']:.3f}",
+         f"{results['co2']['reduction_avg']:.3f} ± {results['co2']['reduction_std']:.3f}"]
+    ]
+    
+    # If water usage results are present, add them to the table
+    if 'water' in results:
+        table_data.append([
+            "Water Usage (liters)",
+            f"{results['water']['baseline_avg']:.3f} ± {results['water']['baseline_std']:.3f}",
+            f"{results['water']['trained_avg']:.3f} ± {results['water']['trained_std']:.3f}",
+            f"{results['water']['reduction_avg']:.3f} ± {results['water']['reduction_std']:.3f}"
+        ])
+    
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
+# Example usage:
+# Define results dictionaries for random, fixed, and workload baselines
+
+# Simulating results dictionaries with keys 'energy', 'co2', 'water'
+results_random = {
+    'energy': energy_results_random,
+    'co2': co2_results_random,
+    'water': water_results_random
+}
+
+results_fixed = {
+    'energy': energy_results_fixed,
+    'co2': co2_results_fixed,
+    'water': water_results_fixed
+}
+
+results_workload = {
+    'energy': energy_results_workload,
+    'co2': co2_results_workload,
+    'water': water_results_workload
+}
+
+# Print results for each baseline
+print_results_table(results_random, "Random")
+print_results_table(results_fixed, "Fixed")
+print_results_table(results_workload, "Following Workload")
+#%%
+rewards_baseline_random = []
+rewards_baseline_fixed = []
+rewards_baseline = []
+rewards_trained = []
+# Obtain the average and std reward of the baselines:
+for run in range(num_runs):
+    rewards_baseline_random.append(np.sum([metric['reward'] for metric in baseline_random_metrics_runs[run]['global']]))
+    rewards_baseline_fixed.append(np.sum([metric['reward'] for metric in baseline_fixed_metrics_runs[run]['global']]))
+    rewards_baseline.append(np.sum([metric['reward'] for metric in baseline_metrics_runs[run]['global']]))
+    rewards_trained.append(np.sum([metric['reward'] for metric in trained_metrics_runs[run]['global']]))
+
+print(np.mean(rewards_baseline_random))
+print(np.mean(rewards_baseline_fixed))
+print(np.mean(rewards_baseline))
+print(np.mean(rewards_trained))
 
 #%% Pump speed vs workload utilization
 # Assuming metrics['agent_dc'] contains your data
@@ -239,8 +382,8 @@ pump_speeds = [metric['dc_coo_mov_flow_actual'] for metric in trained_metrics['a
 workload_utilizations = [metric['dc_cpu_workload_fraction'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
 
 # Define the number of points to plot
-num_points = 96*10
-init_point = 225
+num_points = 96*7
+init_point = 1300
 
 # Select the data to plot
 pump_speeds = pump_speeds[init_point:init_point + num_points]
@@ -251,31 +394,44 @@ window_size = 1  # Use a larger window size to smooth the data more
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
 
+import matplotlib.dates as mdates
+# Assuming num_points corresponds to 96*7 which represents a week's worth of 15-min intervals
+time_intervals = pd.date_range(start="2024-08-01", periods=len(smoothed_pump_speeds), freq="15T")
+
 # Create the plot
-fig, ax1 = plt.subplots(figsize=(5, 3))  # Adjust height as necessary
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
 
 # Plot smoothed workload utilization
-ax1.set_xlabel('Time (15-min intervals)')
+ax1.set_xlabel('Time (Days)')
 ax1.set_ylabel('Workload Utilization (%)', color='tab:blue')
-ax1.plot(smoothed_workload_utilizations * 100, color='tab:blue', linewidth=2)  # Convert to percentage
+ax1.plot(time_intervals, smoothed_workload_utilizations * 100, color='tab:blue', linewidth=2)  # Convert to percentage
 ax1.tick_params(axis='y', labelcolor='tab:blue')
 
 # Create a second y-axis for pump speed
 ax2 = ax1.twinx()
 ax2.set_ylabel('Pump Speed (l/s)', color='tab:red')
-ax2.plot(smoothed_pump_speeds, color='tab:red', linewidth=2, alpha=0.8)
+ax2.plot(time_intervals, smoothed_pump_speeds, color='tab:red', linewidth=2, alpha=0.8)
 ax2.tick_params(axis='y', labelcolor='tab:red')
 # ax2.set_ylim(0.045, 0.25)  # Adjust the limits to match the scale of the data
 
+# Format the x-axis to show days
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))  # Show every 2 days
+
+# Rotate the date labels for better readability
+plt.xticks(rotation=45, ha='right')
+# Rotate the date labels for better readability
+plt.xticks(rotation=45)
+
 # Add grid and limits
 ax1.grid(linestyle='--')
-plt.xlim(0, len(smoothed_pump_speeds))
+plt.xlim(time_intervals[0], time_intervals[-1])
 
 # Customize the layout to ensure no parts are cut off
 plt.tight_layout()
 
 # Save the figure as a PDF without cutting off any parts
-# plt.savefig('media/pump_speed_vs_workload_utilization.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+# plt.savefig('media/pump_speed_vs_workload_utilization_xl.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
 
 # Show the plot
 plt.show()
@@ -286,8 +442,8 @@ supply_temperatures = [metric['dc_supply_liquid_temp'] for metric in trained_met
 workload_utilizations = [metric['dc_cpu_workload_fraction'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
 
 # Define the number of points to plot
-num_points = 96*10
-init_point = 225
+# num_points = 96*10
+# init_point = 200
 
 # Select the data to plot
 supply_temperatures = supply_temperatures[init_point:init_point + num_points]
@@ -299,30 +455,39 @@ smoothed_supply_temperatures = pd.Series(supply_temperatures).rolling(window=win
 smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
 
 # Create the plot
-fig, ax1 = plt.subplots(figsize=(5, 3))  # Adjust height as necessary
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
 
 # Plot smoothed workload utilization
-ax1.set_xlabel('Time (15-min intervals)')
+ax1.set_xlabel('Time (Days)')
 ax1.set_ylabel('Workload Utilization (%)', color='tab:blue')
-ax1.plot(smoothed_workload_utilizations * 100, color='tab:blue', linewidth=2)  # Convert to percentage
+ax1.plot(time_intervals, smoothed_workload_utilizations * 100, color='tab:blue', linewidth=2)  # Convert to percentage
 ax1.tick_params(axis='y', labelcolor='tab:blue')
 
 # Create a second y-axis for supply temperature
 ax2 = ax1.twinx()
 ax2.set_ylabel('Supply Temperature (°C)', color='tab:red')
-ax2.plot(smoothed_supply_temperatures, color='tab:red', linewidth=2, alpha=0.8)
+ax2.plot(time_intervals, smoothed_supply_temperatures, color='tab:red', linewidth=2, alpha=0.8)
 ax2.tick_params(axis='y', labelcolor='tab:red')
 # ax2.set_ylim(0.045, 0.25)  # Adjust the limits to match the scale of the data
 
+# Format the x-axis to show days
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))  # Show every 2 days
+
+# Rotate the date labels for better readability
+plt.xticks(rotation=45, ha='right')
+# Rotate the date labels for better readability
+plt.xticks(rotation=45)
+
 # Add grid and limits
 ax1.grid(linestyle='--')
-plt.xlim(0, len(smoothed_supply_temperatures))
+plt.xlim(time_intervals[0], time_intervals[-1])
 
 # Customize the layout to ensure no parts are cut off
 plt.tight_layout()
 
 # Save the figure as a PDF without cutting off any parts
-# plt.savefig('media/supply_temp_vs_workload_utilization.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+# plt.savefig('media/supply_temp_vs_workload_utilization_xl.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
 
 # Show the plot
 plt.show()
@@ -333,8 +498,8 @@ pump_speeds = [metric['dc_coo_mov_flow_actual'] for metric in trained_metrics['a
 outside_temps = [metric['outside_temp'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
 
 # Define the number of points to plot
-num_points = 96*10
-init_point = 225
+# num_points = 96*10
+# init_point = 225
 
 # Select the data to plot
 pump_speeds = pump_speeds[init_point:init_point + num_points]
@@ -346,30 +511,40 @@ smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean()
 smoothed_outside_temps = pd.Series(outside_temps).rolling(window=window_size).mean().dropna()
 
 # Create the plot
-fig, ax1 = plt.subplots(figsize=(5, 3))  # Adjust height as necessary
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
 
 # Plot smoothed outdoor temperature
-ax1.set_xlabel('Time (15-min intervals)')
+ax1.set_xlabel('Time (Days)')
 ax1.set_ylabel('Outside Temp (°C)', color='tab:blue')
-ax1.plot(smoothed_outside_temps, color='tab:blue', linewidth=2)  # Convert to percentage
+ax1.plot(time_intervals, smoothed_outside_temps, color='tab:blue', linewidth=2)  # Convert to percentage
 ax1.tick_params(axis='y', labelcolor='tab:blue')
 
 # Create a second y-axis for pump speed
 ax2 = ax1.twinx()
 ax2.set_ylabel('Pump Speed (l/s)', color='tab:red')
-ax2.plot(smoothed_pump_speeds, color='tab:red', linewidth=2, alpha=0.8)
+ax2.plot(time_intervals, smoothed_pump_speeds, color='tab:red', linewidth=2, alpha=0.8)
 ax2.tick_params(axis='y', labelcolor='tab:red')
 # ax2.set_ylim(0.045, 0.25)  # Adjust the limits to match the scale of the data
 
+# Format the x-axis to show days
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))  # Show every 2 days
+
+# Rotate the date labels for better readability
+plt.xticks(rotation=45, ha='right')
+# Rotate the date labels for better readability
+plt.xticks(rotation=45)
+
 # Add grid and limits
 ax1.grid(linestyle='--')
-plt.xlim(0, len(smoothed_pump_speeds))
+plt.xlim(time_intervals[0], time_intervals[-1])
 
 # Customize the layout to ensure no parts are cut off
 plt.tight_layout()
 
+
 # Save the figure as a PDF without cutting off any parts
-# plt.savefig('media/pump_speed_vs_workload_utilization.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+# plt.savefig('media/pump_speed_vs_outside_temp_xl.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
 
 # Show the plot
 plt.show()
@@ -380,8 +555,8 @@ supply_liquid_temp = [metric['dc_supply_liquid_temp'] for metric in trained_metr
 outside_temps = [metric['outside_temp'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
 
 # Define the number of points to plot
-num_points = 96*10
-init_point = 225
+# num_points = 96*10
+# init_point = 225
 
 # Select the data to plot
 supply_liquid_temp = supply_liquid_temp[init_point:init_point + num_points]
@@ -393,29 +568,39 @@ smoothed_supply_liquid_temp = pd.Series(supply_liquid_temp).rolling(window=windo
 smoothed_outside_temps = pd.Series(outside_temps).rolling(window=window_size).mean().dropna()
 
 # Create the plot
-fig, ax1 = plt.subplots(figsize=(5, 3))  # Adjust height as necessary
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
 
 # Plot smoothed outdoor temperature
-ax1.set_xlabel('Time (15-min intervals)')
+ax1.set_xlabel('Time (Days)')
 ax1.set_ylabel('Outside Temp (°C)', color='tab:blue')
-ax1.plot(smoothed_outside_temps, color='tab:blue', linewidth=2)  # Convert to percentage
+ax1.plot(time_intervals, smoothed_outside_temps, color='tab:blue', linewidth=2)  # Convert to percentage
 ax1.tick_params(axis='y', labelcolor='tab:blue')
 
 # Create a second y-axis for supply temperature
 ax2 = ax1.twinx()
 ax2.set_ylabel('Supply Temperature (°C)', color='tab:red')
-ax2.plot(smoothed_supply_liquid_temp, color='tab:red', linewidth=2, alpha=0.8)
+ax2.plot(time_intervals, smoothed_supply_liquid_temp, color='tab:red', linewidth=2, alpha=0.8)
 ax2.tick_params(axis='y', labelcolor='tab:red')
+
+# Format the x-axis to show days
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))  # Show every 2 days
+
+# Rotate the date labels for better readability
+plt.xticks(rotation=45, ha='right')
+# Rotate the date labels for better readability
+plt.xticks(rotation=45)
 
 # Add grid and limits
 ax1.grid(linestyle='--')
-plt.xlim(0, len(smoothed_supply_liquid_temp))
+plt.xlim(time_intervals[0], time_intervals[-1])
 
 # Customize the layout to ensure no parts are cut off
 plt.tight_layout()
 
+
 # Save the figure as a PDF without cutting off any parts
-# plt.savefig('media/supply_temp_vs_outside_temp.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+# plt.savefig('media/supply_temp_vs_outside_temp_xl.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
 
 # Show the plot
 plt.show()
@@ -626,13 +811,14 @@ import pandas as pd
 pump_speeds = [metric['dc_crac_setpoint'] for metric in trained_metrics['agent_dc']]
 average_server_temperatures = [metric['dc_average_server_temp'] for metric in trained_metrics['agent_dc']]  # Convert from Kelvin to Celsius
 average_pipe_temperatures = [metric['dc_average_pipe_temp'] for metric in trained_metrics['agent_dc']]  # Convert from Kelvin to Celsius
+outside_temps = [metric['outside_temp'] for metric in trained_metrics['agent_dc']]  # Convert from Kelvin to Celsius
 
-# Define the supply temperature (fixed at 27°C)
+# Supply temperature
 supply_temperature = [metric['dc_supply_liquid_temp'] for metric in trained_metrics['agent_dc']]  # Convert from Kelvin to Celsius
 
 # Define the number of points to plot
-num_points = 96*30
-init_point = 225
+num_points = 96*3
+init_point = 250
 
 # Select the data to plot
 pump_speeds = pump_speeds[init_point:init_point + num_points]
@@ -640,8 +826,10 @@ average_server_temperatures = average_server_temperatures[init_point:init_point 
 average_pipe_temperatures = average_pipe_temperatures[init_point:init_point + num_points]
 supply_temperature = supply_temperature[init_point:init_point + num_points]
 
+time_intervals = pd.date_range(start="2024-08-01", periods=len(supply_temperature), freq="15T")
+
 # Smooth the data using a rolling window
-window_size = 3
+window_size = 1
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_average_server_temperatures = pd.Series(average_server_temperatures).rolling(window=window_size).mean().dropna()
 smoothed_average_pipe_temperatures = pd.Series(average_pipe_temperatures).rolling(window=window_size).mean().dropna()
@@ -659,21 +847,22 @@ axs[0].grid(linestyle='--')
 # Plot temperatures (States)
 axs[1].set_xlabel('Time (15-min intervals)')
 axs[1].set_ylabel('Temperature (°C)')
-axs[1].plot(smoothed_supply_temperature, color='tab:blue', linestyle='--', linewidth=2, label='Supply Temperature (27°C)')
-axs[1].plot(smoothed_average_server_temperatures, color='tab:green', linewidth=2, label='Average Server Temp')
-axs[1].plot(smoothed_average_pipe_temperatures, color='tab:orange', linewidth=2, linestyle='-', label='Average Return Temp')
+axs[1].plot(smoothed_supply_temperature, color='tab:blue', linestyle='-', linewidth=2, label='Supply Temp')
+axs[1].plot(smoothed_average_server_temperatures, color='tab:orange', linewidth=2, label='Average Server Temp')
+axs[1].plot(smoothed_average_pipe_temperatures, color='tab:green', linewidth=2, linestyle='-', label='Average Return Temp')
+# axs[1].plot(time_intervals, outside_temps[init_point:init_point + num_points], color='tab:red', linewidth=2, linestyle='-', label='Outside Temp')
 axs[1].tick_params(axis='y')
 axs[1].grid(linestyle='--')
+# axs[1].set_xlim(time_intervals[0], time_intervals[-1])
 
 # Add legends
-axs[1].legend(loc='upper center', bbox_to_anchor=(0.43, 1.35),
-           ncol=2, fancybox=False, shadow=False)
+axs[1].legend(loc='upper center', bbox_to_anchor=(0.49, 1.3), ncol=2, fancybox=False, shadow=False)
 
 # Customize the layout to ensure no parts are cut off
 plt.tight_layout()
 
 # Save the figure as a PDF without cutting off any parts
-# plt.savefig('media/pump_speed_vs_temperatures.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+plt.savefig('media/pump_speed_vs_temperatures_IAAI_3days.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
 
 # Show the plot
 plt.show()
@@ -690,7 +879,7 @@ cooling_powers = [metric['dc_HVAC_total_power_kW'] for metric in trained_metrics
 carbon_footprints = [metric['bat_CO2_footprint'] for metric in trained_metrics['agent_bat']]
 
 # Define the number of points to plot
-num_points = 96*10
+num_points = 96*
 init_point = 225
 
 # Select the data to plot
@@ -1046,13 +1235,263 @@ plt.tight_layout()
 plt.show()
 
 
-#%%
-if expt_runner.dump_info:
-    # Convert collected data to DataFrame and save as CSV
-    expt_runner.dump_metrics_to_csv(metrics, eval_episode)
-    print("Data saved to evaluation_data.csv.")
-
-expt_runner.close()
 
 
+
+
+
+
+#%% Plot the baselines
+import matplotlib.dates as mdates
+baseline_random = baseline_random_metrics_runs[0]
+baseline_fixed = baseline_fixed_metrics_runs[0]
+baseline_following = baseline_metrics_runs[0]
+trained_metrics = trained_metrics_runs[0]
+
+pump_speeds_random = [metric['dc_crac_setpoint'] for metric in baseline_random['agent_dc']]
+pump_speeds_fixed = [metric['dc_crac_setpoint'] for metric in baseline_fixed['agent_dc']]
+pump_speeds_following = [metric['dc_crac_setpoint'] for metric in baseline_following['agent_dc']]
+workload_utilizations = [metric['dc_cpu_workload_fraction'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
+
+# Define the number of points to plot
+num_points = 96*7
+init_point = 1300
+
+# Select the data to plot
+pump_speeds_random = pump_speeds_random[init_point:init_point + num_points]
+pump_speeds_fixed = pump_speeds_fixed[init_point:init_point + num_points]
+pump_speeds_following = pump_speeds_following[init_point:init_point + num_points]
+workload_utilizations = workload_utilizations[init_point:init_point + num_points]
+
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_pump_speeds_random = pd.Series(pump_speeds_random).rolling(window=window_size).mean().dropna()
+smoothed_pump_speeds_fixed = pd.Series(pump_speeds_fixed).rolling(window=window_size).mean().dropna()
+smoothed_pump_speeds_following = pd.Series(pump_speeds_following).rolling(window=window_size).mean().dropna()
+smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
+
+# Assuming num_points corresponds to 96*7 which represents a week's worth of 15-min intervals
+time_intervals = pd.date_range(start="2024-08-01", periods=len(smoothed_pump_speeds_random), freq="15T")
+
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
+
+# Plot smoothed workload utilization
+ax1.set_xlabel('Time (Days)')
+ax1.set_ylabel('Workload Utilization (%)', color='tab:blue')
+ax1.plot(time_intervals, smoothed_workload_utilizations * 100, color='tab:blue', linewidth=2)  # Convert to percentage
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+# Create a second y-axis for pump speed
+ax2 = ax1.twinx()
+ax2.set_ylabel('Pump Speed (l/s)', color='k')
+ax2.plot(time_intervals, smoothed_pump_speeds_random, color='tab:orange', linewidth=2, alpha=0.3, label='Random')
+ax2.plot(time_intervals, smoothed_pump_speeds_fixed, color='tab:green', linewidth=2, alpha=0.7, label='ASHRAE W32')
+ax2.plot(time_intervals, smoothed_pump_speeds_following, color='tab:red', linewidth=2, alpha=0.9, label='RBC', linestyle='--')
+ax2.tick_params(axis='y', labelcolor='k')
+# ax2.set_ylim(0.045, 0.25)  # Adjust the limits to match the scale of the data
+
+# Add the legend of ax2 with title 'Baseline'
+ax2.legend(loc='best', title='Baseline')
+# Format the x-axis to show days
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))  # Show every 2 days
+
+# Rotate the date labels for better readability
+plt.xticks(rotation=45, ha='right')
+# Rotate the date labels for better readability
+plt.xticks(rotation=45)
+
+# Add grid and limits
+ax1.grid(linestyle='--')
+plt.xlim(time_intervals[0], time_intervals[-1])
+
+# Customize the layout to ensure no parts are cut off
+plt.tight_layout()
+
+# Save the figure as a PDF without cutting off any parts
+# plt.savefig('media/baselines_pump_speed_vs_workload_utilization_XL.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+
+# Show the plot
+plt.show()
+
+# %% Now baselines of supply temperature vs workload utilization
+pump_speeds_random = [metric['dc_supply_liquid_temp'] for metric in baseline_random['agent_dc']]
+pump_speeds_fixed = [metric['dc_supply_liquid_temp'] for metric in baseline_fixed['agent_dc']]
+pump_speeds_following = [metric['dc_supply_liquid_temp'] for metric in baseline_following['agent_dc']]
+workload_utilizations = [metric['dc_cpu_workload_fraction'] for metric in trained_metrics['agent_dc']]
+
+# Select the data to plot
+pump_speeds_random = pump_speeds_random[init_point:init_point + num_points]
+pump_speeds_fixed = pump_speeds_fixed[init_point:init_point + num_points]
+pump_speeds_following = pump_speeds_following[init_point:init_point + num_points]
+workload_utilizations = workload_utilizations[init_point:init_point + num_points]
+
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_pump_speeds_random = pd.Series(pump_speeds_random).rolling(window=window_size).mean().dropna()
+smoothed_pump_speeds_fixed = pd.Series(pump_speeds_fixed).rolling(window=window_size).mean().dropna()
+smoothed_pump_speeds_following = pd.Series(pump_speeds_following).rolling(window=window_size).mean().dropna()
+smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
+
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
+
+# Plot smoothed workload utilization
+ax1.set_xlabel('Time (Days)')
+ax1.set_ylabel('Workload Utilization (%)', color='tab:blue')
+ax1.plot(time_intervals, smoothed_workload_utilizations * 100, color='tab:blue', linewidth=2)  # Convert to percentage
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+# Create a second y-axis for pump speed
+ax2 = ax1.twinx()
+ax2.set_ylabel('Supply Temperature (°C)', color='k')
+ax2.plot(time_intervals, smoothed_pump_speeds_random, color='tab:orange', linewidth=2, alpha=0.3, label='Random')
+ax2.plot(time_intervals, smoothed_pump_speeds_fixed, color='tab:green', linewidth=2, alpha=0.7, label='ASHRAE W32')
+ax2.plot(time_intervals, smoothed_pump_speeds_following, color='tab:red', linewidth=2, alpha=0.9, label='RBC', linestyle='--')
+ax2.tick_params(axis='y', labelcolor='k')
+# ax2.set_ylim(0.045, 0.25)  # Adjust the limits to match the scale of the data
+
+# Add the legend of ax2 with title 'Baseline'
+ax2.legend(loc='best', title='Baseline')
+# Format the x-axis to show days
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))  # Show every 2 days
+
+# Rotate the date labels for better readability
+plt.xticks(rotation=45, ha='right')
+# Rotate the date labels for better readability
+plt.xticks(rotation=45)
+
+# Add grid and limits
+ax1.grid(linestyle='--')
+plt.xlim(time_intervals[0], time_intervals[-1])
+
+# Customize the layout to ensure no parts are cut off
+plt.tight_layout()
+
+# Save the figure as a PDF without cutting off any parts
+# plt.savefig('media/baselines_supply_temp_vs_workload_utilization_XL.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+
+# Show the plot
+plt.show()
+# %% Now Baselines of external temperature vs pump speed
+pump_speeds_random = [metric['dc_crac_setpoint'] for metric in baseline_random['agent_dc']]
+pump_speeds_fixed = [metric['dc_crac_setpoint'] for metric in baseline_fixed['agent_dc']]
+pump_speeds_following = [metric['dc_crac_setpoint'] for metric in baseline_following['agent_dc']]
+outside_temps = [metric['outside_temp'] for metric in trained_metrics['agent_dc']]
+
+# Select the data to plot
+pump_speeds_random = pump_speeds_random[init_point:init_point + num_points]
+pump_speeds_fixed = pump_speeds_fixed[init_point:init_point + num_points]
+pump_speeds_following = pump_speeds_following[init_point:init_point + num_points]
+outside_temps = outside_temps[init_point:init_point + num_points]
+
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_pump_speeds_random = pd.Series(pump_speeds_random).rolling(window=window_size).mean().dropna()
+smoothed_pump_speeds_fixed = pd.Series(pump_speeds_fixed).rolling(window=window_size).mean().dropna()
+smoothed_pump_speeds_following = pd.Series(pump_speeds_following).rolling(window=window_size).mean().dropna()
+
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
+
+# Plot smoothed outside temperature
+ax1.set_xlabel('Time (Days)')
+ax1.set_ylabel('Outside Temp (°C)', color='tab:blue')
+ax1.plot(time_intervals, outside_temps, color='tab:blue', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+# Create a second y-axis for pump speed
+ax2 = ax1.twinx()
+ax2.set_ylabel('Pump Speed (l/s)', color='k')
+ax2.plot(time_intervals, smoothed_pump_speeds_random, color='tab:orange', linewidth=2, alpha=0.3, label='Random')
+ax2.plot(time_intervals, smoothed_pump_speeds_fixed, color='tab:green', linewidth=2, alpha=0.7, label='ASHRAE W32')
+ax2.plot(time_intervals, smoothed_pump_speeds_following, color='tab:red', linewidth=2, alpha=0.9, label='ASHRAE W32', linestyle='--')
+ax2.tick_params(axis='y', labelcolor='k')
+
+# Add the legend of ax2 with title 'Baseline'
+ax2.legend(loc='best', title='Baseline')
+
+# Format the x-axis to show days
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))  # Show every 2 days
+
+# Rotate the date labels for better readability
+plt.xticks(rotation=45, ha='right')
+# Rotate the date labels for better readability
+plt.xticks(rotation=45)
+
+# Add grid and limits
+ax1.grid(linestyle='--')
+plt.xlim(time_intervals[0], time_intervals[-1])
+
+# Customize the layout to ensure no parts are cut off
+plt.tight_layout()
+
+# Save the figure as a PDF without cutting off any parts
+# plt.savefig('media/baselines_outside_temp_vs_pump_speed_XL.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+
+# Show the plot
+plt.show()
+
+
+# %% Now Baselines of external temperature vs supply temperature
+pump_speeds_random = [metric['dc_supply_liquid_temp'] for metric in baseline_random['agent_dc']]
+pump_speeds_fixed = [metric['dc_supply_liquid_temp'] for metric in baseline_fixed['agent_dc']]
+pump_speeds_following = [metric['dc_supply_liquid_temp'] for metric in baseline_following['agent_dc']]
+outside_temps = [metric['outside_temp'] for metric in trained_metrics['agent_dc']]
+# Select the data to plot
+pump_speeds_random = pump_speeds_random[init_point:init_point + num_points]
+pump_speeds_fixed = pump_speeds_fixed[init_point:init_point + num_points]
+pump_speeds_following = pump_speeds_following[init_point:init_point + num_points]
+outside_temps = outside_temps[init_point:init_point + num_points]
+
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_pump_speeds_random = pd.Series(pump_speeds_random).rolling(window=window_size).mean().dropna()
+smoothed_pump_speeds_fixed = pd.Series(pump_speeds_fixed).rolling(window=window_size).mean().dropna()
+smoothed_pump_speeds_following = pd.Series(pump_speeds_following).rolling(window=window_size).mean().dropna()
+
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
+
+# Plot smoothed outside temperature
+ax1.set_xlabel('Time (Days)')
+ax1.set_ylabel('Outside Temp (°C)', color='tab:blue')
+ax1.plot(time_intervals, outside_temps, color='tab:blue', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+# Create a second y-axis for pump speed
+ax2 = ax1.twinx()
+ax2.set_ylabel('Supply Temperature (°C)', color='k')
+ax2.plot(time_intervals, smoothed_pump_speeds_random, color='tab:orange', linewidth=2, alpha=0.3, label='Random')
+ax2.plot(time_intervals, smoothed_pump_speeds_fixed, color='tab:green', linewidth=2, alpha=0.7, label='ASHRAE W32')
+ax2.plot(time_intervals, smoothed_pump_speeds_following, color='tab:red', linewidth=2, alpha=0.9, label='RBC', linestyle='--')
+ax2.tick_params(axis='y', labelcolor='k')
+
+# Add the legend of ax2 with title 'Baseline'
+ax2.legend(loc='best', title='Baseline')
+
+# Format the x-axis to show days
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))  # Show every 2 days
+
+# Rotate the date labels for better readability
+plt.xticks(rotation=45, ha='right')
+# Rotate the date labels for better readability
+plt.xticks(rotation=45)
+
+# Add grid and limits
+ax1.grid(linestyle='--')
+plt.xlim(time_intervals[0], time_intervals[-1])
+
+# Customize the layout to ensure no parts are cut off
+plt.tight_layout()
+
+# Save the figure as a PDF without cutting off any parts
+# plt.savefig('media/baselines_outside_temp_vs_supply_temp_XL.pdf', format='pdf', bbox_inches='tight', pad_inches=0)
+
+# Show the plot
+plt.show()
 # %%

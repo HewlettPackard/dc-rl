@@ -292,6 +292,8 @@ class SustainDC(gym.Env):
         
         next_workload = self.workload_m.get_next_workload()
         next_out_temperature = self.weather_m.get_next_temperature()
+        next_wet_bulb = self.weather_m.get_next_wetbulb()
+
         is_high_workload = int(next_workload > 0.75)
         is_low_workload = int(next_workload < 0.25)
 
@@ -316,13 +318,15 @@ class SustainDC(gym.Env):
         self.ls_state = np.float32(np.hstack((next_workload,
                                               next_out_temperature)))  # For p.o.
                 
-        pump_speed = (self.dc_info.get('dc_coo_mov_flow_actual', 0.05) - 0.05) / (0.5-0.05)
-        supply_temp = (self.dc_info.get('dc_supply_liquid_temp', 27) - 15) / (45-15)
+        pump_speed = (self.dc_info.get('dc_coo_mov_flow_actual', 0.05) - self.dc_env.min_pump_speed) / (self.dc_env.max_pump_speed-self.dc_env.min_pump_speed)
+        supply_temp = (self.dc_info.get('dc_supply_liquid_temp', 27) - self.dc_env.min_supply_temp) / (self.dc_env.max_supply_temp-self.dc_env.min_supply_temp)
 
-        self.dc_state = np.float32(np.hstack((next_workload,
+        self.dc_state = np.float32(np.hstack((
+                                              next_workload,
                                               next_out_temperature,
                                               pump_speed,
                                               supply_temp
+                                              
                                               )))
         
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
@@ -435,6 +439,7 @@ class SustainDC(gym.Env):
                 
         next_workload = self.workload_m.get_next_workload()
         next_out_temperature = self.weather_m.get_next_temperature()
+        next_wet_bulb = self.weather_m.get_next_wetbulb()
         is_high_workload = int(next_workload > 0.75)
         is_low_workload = int(next_workload < 0.25)
 
@@ -458,13 +463,19 @@ class SustainDC(gym.Env):
         
         self.ls_state = np.float32(np.hstack((next_workload,
                                               next_out_temperature)))  # For p.o.
-            
-        pump_speed = (np.round(self.dc_info['dc_coo_mov_flow_actual'], 6) - 0.05) / (0.5-0.05)
-        supply_temp = (np.round(self.dc_info['dc_supply_liquid_temp'], 6) - 15) / (45-15)
-        self.dc_state = np.float32(np.hstack((next_workload,
+        
+        pump_speed = np.round((self.dc_info.get('dc_coo_mov_flow_actual', 0.05) - self.dc_env.min_pump_speed) / (self.dc_env.max_pump_speed-self.dc_env.min_pump_speed), 6)
+        supply_temp = np.round((self.dc_info.get('dc_supply_liquid_temp', 27) - self.dc_env.min_supply_temp) / (self.dc_env.max_supply_temp-self.dc_env.min_supply_temp), 6)
+
+
+        # pump_speed = (np.round(self.dc_info['dc_coo_mov_flow_actual'], 6) - 0.05) / (0.5-0.05)
+        # supply_temp = (np.round(self.dc_info['dc_supply_liquid_temp'], 6) - 15) / (45-15)
+        self.dc_state = np.float32(np.hstack((
+                                              next_workload,
                                               next_out_temperature,
                                               pump_speed,
                                               supply_temp
+                                              
                                               )))
         # Update the state of the bat state
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]

@@ -6,14 +6,14 @@ seed:
   seed: 1
 device:
   # whether to use CUDA
-  cuda: False
+  cuda: True
   # whether to set CUDA deterministic
   cuda_deterministic: True
   # arg to torch.set_num_threads
   torch_threads: 4
 train:
   # number of parallel environments for training data collection
-  n_rollout_threads: 12
+  n_rollout_threads: 24
   # number of total steps
   num_env_steps: 2000000000
   # number of steps per environment per training data collection
@@ -25,7 +25,7 @@ train:
   # whether to use ValueNorm
   use_valuenorm: True
   # whether to use linear learning rate decay
-  use_linear_lr_decay: False
+  use_linear_lr_decay: True
   # whether to consider the case of truncation when an episode is done
   use_proper_time_limits: True
   # if set, load models from this directory; otherwise, randomly initialise the models
@@ -34,7 +34,7 @@ eval:
   # whether to use evaluation
   use_eval: True
   # number of parallel environments for evaluation
-  n_eval_rollout_threads: 12
+  n_eval_rollout_threads: 24
   # number of episodes per evaluation
   eval_episodes: 5
 render:
@@ -45,9 +45,9 @@ render:
 model:
   # network parameters
   # hidden sizes for mlp module in the network
-  hidden_sizes: [16,16,16]
+  hidden_sizes: [64, 64]
   # activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
-  activation_func: relu
+  activation_func: tanh
   # whether to use feature normalization
   use_feature_normalization: True
   # initialization method for network parameters, choose from xavier_uniform_, orthogonal_, ...
@@ -65,9 +65,9 @@ model:
   data_chunk_length: 10
   # optimizer parameters
   # actor learning rate
-  lr: 0.0005
+  lr: 0.001
   # critic learning rate
-  critic_lr: 0.0005
+  critic_lr: 0.001
   # eps in Adam
   opti_eps: 0.00001
   # weight_decay in Adam

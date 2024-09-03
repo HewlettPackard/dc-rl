@@ -238,7 +238,7 @@ class SustainDCLogger(BaseLogger):
 
         # Optionally, log to the console or to a file
         if self.is_off_policy:
-            self.episode = (int(self.total_num_steps)//self.algo_args["train"]["episode_length"]//self.algo_args["train"]["n_rollout_threads"])
+            self.episode = (int(self.total_num_steps)//self.algo_args["train"].get("episode_length", 1024)//self.algo_args["train"]["n_rollout_threads"])
         print(f"Episode {self.episode}: Avg Net Energy={average_net_energy:.3f}, Avg CO2={average_CO2_footprint:.3f}, Water Usage={total_water_usage:.3f}")
         print(f"Tasks in Queue={total_tasks_in_queue:.3f}, Tasks Dropped={total_tasks_dropped:.3f}")
 

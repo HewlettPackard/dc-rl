@@ -593,3 +593,6 @@ class Weather_Manager():
         
     def get_next_temperature(self):
         return self.norm_temp_data[self.time_step]
+    
+    def get_next_wetbulb(self):
+        return self.norm_wet_bulb_data[self.time_step]

@@ -183,9 +183,19 @@ class dc_gymenv(gym.Env):
         #     self.pump_speed = alpha * action + (1 - alpha) * self.pump_speed
             
         # Now the action is continuous
+        # Apply a sigmoid function to the action to scale it between 0 and 1
+        # action = 1 / (1 + np.exp(-np.array(action)))
+        
         if len(action) == 1:
+            # Only pump speed
+            action[0] = action[0] * (self.max_pump_speed - self.min_pump_speed) + self.min_pump_speed
             self.pump_speed = max(min(action[0], self.max_pump_speed), self.min_pump_speed)
             supply_liquid_temp = self.liquid_guideline_temp + 273.15 #  Kelvins. Following the ASHRAE Guidelines
+            
+            # Only Supply temp
+            # action[0] = action[0] * (self.max_supply_temp - self.min_supply_temp) + self.min_supply_temp
+            # self.pump_speed = 0.25
+            # supply_liquid_temp = max(min(action[0], self.max_supply_temp), self.min_supply_temp) + 273.15 #  Kelvins.
         else:
             # Scale the action to the correct range 
             action[0] = action[0] * (self.max_pump_speed - self.min_pump_speed) + self.min_pump_speed
@@ -302,7 +312,7 @@ class dc_gymenv(gym.Env):
                                                                                                                                  chiller_heat_removed=data_center_total_ITE_Load*0.2,
                                                                                                                                  ambient_temp=self.ambient_temp,
                                                                                                                                  DC_Config=self.DC_Config)
-        self.HVAC_load = self.CT_Fan_pwr + self.CRAC_cooling_load + self.power_water_pump_CT + modelica_pump_power
+        self.HVAC_load = self.CT_Fan_pwr + self.CRAC_cooling_load + self.power_water_pump_CT + modelica_pump_power# + self.chiller_power
 
         
         # Set the additional attributes for the cooling tower water usage calculation
@@ -312,6 +322,7 @@ class dc_gymenv(gym.Env):
 
         # Calculate the cooling tower water usage
         self.water_usage = self.dc.calculate_cooling_tower_water_usage()  # liters per 15 minutes
+        # self.water_usage = self.dc.calculate_cooling_tower_water_usage_v2(Q_IT=data_center_total_ITE_Load*0.2, T_hot=self.dc.hot_water_temp, T_cold=self.dc.cold_water_temp, T_wb=self.dc.wet_bulb_temp)
         # water_usage_meth2 = DataCenter.calculate_water_consumption_15min(self.CRAC_Cooling_load,  self.dc.hot_water_temp, self.dc.cold_water_temp)
         # print(f"Estimated cooling tower water usage method1 (liters per 15 min): {water_usage}")
         # print(f"Estimated cooling tower water usage method2 (liters per 15 min): {water_usage_meth2}")
