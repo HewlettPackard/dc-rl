@@ -587,7 +587,7 @@ class OnPolicyBaseRunner:
                             metrics[f'agent_{j+1}'].append({
                                 key: eval_infos[i][j].get(key, None) for key in [
                                     'ls_original_workload', 'ls_shifted_workload', 'ls_action', 'ls_norm_load_left',
-                                    'ls_unasigned_day_load_left', 'ls_penalty_flag', 'ls_tasks_in_queue',
+                                    'ls_unasigned_day_load_left', 'ls_penalty_flag', 'ls_tasks_in_queue', 'ls_norm_tasks_in_queue',
                                     'ls_tasks_dropped', 'ls_current_hour'
                                 ]
                             })

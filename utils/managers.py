@@ -44,8 +44,8 @@ class CoherentNoise:
         """
         steps = np.random.normal(loc=0, scale=self.scale, size=n_steps)
         random_walk = np.cumsum(self.weight * steps)
-        random_walk_scaled = self.base + (random_walk / np.std(random_walk)) * self.desired_std_dev
-        return random_walk_scaled
+        normalized_noise = (random_walk / np.std(random_walk)) * self.desired_std_dev
+        return self.base + normalized_noise
 
 
 # Function to normalize a value v given a minimum and a maximum
@@ -61,17 +61,6 @@ def normalize(v, min_v, max_v):
         float: Normalized value
     """
     return (v - min_v)/(max_v - min_v)
-
-def standarize(v):
-    """Function to standarize a list of values
-
-    Args:
-        v (float): Values to be normalized
-
-    Returns:
-        float: Normalized values
-    """
-    return (v - np.mean(v))/np.std(v)
 
 # Function to generate cosine and sine values for a given hour and day
 def sc_obs(current_hour, current_day):
@@ -279,7 +268,9 @@ class Workload_Manager():
         num_roll_weeks = np.random.randint(0, 52) # Random roll the workload because is independed on the month, so I am rolling across weeks (52 weeks in a year)
         self.cpu_smooth =  np.roll(self.cpu_smooth, num_roll_weeks*self.timestep_per_hour*24*7)
 
-        return self.cpu_smooth[self.time_step]
+        self._current_workload = self.cpu_smooth[self.time_step]
+        self._next_workload = self.cpu_smooth[self.time_step + 1]
+        return self._current_workload
         
     # Function to advance the time step and return the workload at the new time step
     def step(self):
@@ -292,23 +283,26 @@ class Workload_Manager():
         self.time_step += 1
         
         # If it tries to read further, restart from the inital day
-        if self.time_step - 1 >= len(self.cpu_smooth):
+        if self.time_step >= len(self.cpu_smooth):
             self.time_step = self.init_time_step
+        
+        self._current_workload = self.cpu_smooth[self.time_step]
+        self._next_workload = self.cpu_smooth[self.time_step + 1]
+        
         # assert self.time_step < len(self.cpu_smooth), f'Episode length: {self.time_step} is longer than the provide cpu_smooth: {len(self.cpu_smooth)}'
-        return self.cpu_smooth[max(self.time_step - 1,0)]  # to avoid logical error
+        return self._current_workload  # to avoid logical error
     
     def get_current_workload(self):
-        if self.time_step - 1 < 0:
-            return self.cpu_smooth[self.time_step]
-        return self.cpu_smooth[self.time_step - 1]
+        return self._current_workload
 
     def get_next_workload(self):
-        if self.time_step + 1 >= len(self.cpu_smooth):
-            return self.cpu_smooth[self.time_step]
-        return self.cpu_smooth[self.time_step]
+        return self._next_workload
     
     def set_current_workload(self, workload):         
         self.cpu_smooth[self.time_step] = workload
+        
+    def get_n_next_workloads(self, n):
+        return self.cpu_smooth[self.time_step+1:self.time_step+1+n]
 
 
 # Class to manage carbon intensity data
@@ -412,8 +406,15 @@ class CI_Manager():
         self.norm_carbon = normalize(self.carbon_smooth, self.min_ci, self.max_ci)
         # self.norm_carbon = standarize(self.carbon_smooth)
         # self.norm_carbon = (np.clip(self.norm_carbon, -1, 1) + 1) * 0.5
+        
+        self._current_carbon_smooth = self.carbon_smooth[self.time_step]
+        self._next_carbon_smooth = self.carbon_smooth[self.time_step + 1]
+        
+        self._current_norm_carbon = self.norm_carbon[self.time_step]
+        self._next_norm_carbon = self.norm_carbon[self.time_step + 1]
+        self._forecast_norm_carbon = self.norm_carbon[(self.time_step+1):(self.time_step+1)+self.future_steps]
 
-        return self.carbon_smooth[self.time_step], self.norm_carbon[self.time_step:self.time_step+self.future_steps]
+        return self._current_norm_carbon, self._forecast_norm_carbon
     
     # Function to advance the time step and return the carbon intensity at the new time step
     def step(self):
@@ -426,26 +427,20 @@ class CI_Manager():
         self.time_step +=1
         
         # If it tries to read further, restart from the initial index
-        if self.time_step - 1 >= len(self.carbon_smooth):
+        if self.time_step >= len(self.carbon_smooth):
             self.time_step = self.init_day*self.time_steps_day
-            
-        # assert self.time_step < len(self.carbon_smooth), 'Eposide length is longer than the provide CI_data'
-        if self.time_step - 1 + self.future_steps > len(self.carbon_smooth):
-            data = self.norm_carbon[self.time_step-1]*np.ones(shape=(self.future_steps))
-        else:
-            data = self.norm_carbon[(self.time_step-1):self.time_step-1+self.future_steps]
 
-        return self.carbon_smooth[self.time_step-1], data
+        self._current_norm_carbon = self.norm_carbon[self.time_step]
+        self._next_norm_carbon = self.norm_carbon[self.time_step + 1]
+        self._forecast_norm_carbon = self.norm_carbon[(self.time_step+1):(self.time_step+1)+self.future_steps]
+
+        return self._current_norm_carbon, self._forecast_norm_carbon
     
     def get_current_ci(self):
-        return self.carbon_smooth[self.time_step]
+        return self._current_norm_carbon
     
-    def get_forecast_ci(self, steps=4):
-        if self.time_step + steps > len(self.carbon_smooth):
-            data = self.norm_carbon[self.time_step]*np.ones(shape=(steps))
-        else:
-            data = self.norm_carbon[self.time_step:self.time_step+steps]
-        return data
+    def get_forecast_ci(self):
+        return self._forecast_norm_carbon
 
 # Class to manage weather data
 # Where to obtain other weather files:
@@ -566,10 +561,16 @@ class Weather_Manager():
         
         self.wet_bulb_data = np.clip(self.wet_bulb_data, self.min_wb_temp, self.max_wb_temp)
         self.norm_wet_bulb_data = normalize(self.wet_bulb_data, self.min_wb_temp, self.max_wb_temp)
+        
+        self._current_temp = self.temperature_data[self.time_step]
+        self._next_temp = self.temperature_data[self.time_step + 1]
+        self._current_norm_temp = self.norm_temp_data[self.time_step]
+        self._next_norm_temp = self.norm_temp_data[self.time_step + 1]
+        self._current_wet_bulb = self.wet_bulb_data[self.time_step]
+        self._current_norm_wet_bulb = self.norm_wet_bulb_data[self.time_step]
+        
+        return self._current_temp, self._current_norm_temp, self._current_wet_bulb, self._current_norm_wet_bulb
 
-        # return self.temperature_data[self.time_step], self.norm_temp_data[self.time_step]
-        return (self.temperature_data[self.time_step], self.norm_temp_data[self.time_step],
-                self.wet_bulb_data[self.time_step], self.norm_wet_bulb_data[self.time_step])  # Added wet bulb temp
     
     
     # Function to advance the time step and return the weather at the new time step
@@ -580,19 +581,27 @@ class Weather_Manager():
             float: Temperature a current step
             float: Normalized temperature a current step
         """
+                
         self.time_step += 1
         
         # If it tries to read further, restart from the initial index
-        if self.time_step - 1 >= len(self.temperature_data):
+        if self.time_step >= len(self.temperature_data):
             self.time_step = self.init_day*self.time_steps_day
             
-        # assert self.time_step < len(self.temperature_data), 'Episode length is longer than the provide Temperature_data'
-        # return self.temperature_data[self.time_step], self.norm_temp_data[self.time_step]
-        return (self.temperature_data[self.time_step - 1], self.norm_temp_data[self.time_step - 1],
-                self.wet_bulb_data[self.time_step - 1], self.norm_wet_bulb_data[self.time_step - 1])  # Added wet bulb temp
-        
-    def get_next_temperature(self):
-        return self.norm_temp_data[self.time_step]
+        self._current_temp = self.temperature_data[self.time_step]
+        self._next_temp = self.temperature_data[self.time_step + 1]
+        self._current_norm_temp = self.norm_temp_data[self.time_step]
+        self._next_norm_temp = self.norm_temp_data[self.time_step + 1]
+        self._current_wet_bulb = self.wet_bulb_data[self.time_step]
+        self._current_norm_wet_bulb = self.norm_wet_bulb_data[self.time_step]
+            
+        return self._current_temp, self._current_norm_temp, self._current_wet_bulb, self._current_norm_wet_bulb
     
-    def get_next_wetbulb(self):
-        return self.norm_wet_bulb_data[self.time_step]
+    def get_current_temperature(self):
+        return self._current_norm_temp
+    
+    def get_next_temperature(self):
+        return self._next_norm_temp
+    
+    def get_current_wet_bulb(self):
+        return self._current_wet_bulb

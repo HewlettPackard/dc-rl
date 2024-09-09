@@ -21,6 +21,7 @@ def make_ls_env(month,
                 n_vars_energy : int = 4,
                 n_vars_battery : int = 1,
                 queue_max_len: int = 500,
+                flexible_workload_ratio: float = 0.2,
                 test_mode = False):
     """Method to build the Load shifting environment
 
@@ -38,7 +39,8 @@ def make_ls_env(month,
                          n_vars_energy=n_vars_energy,
                          n_vars_battery=n_vars_battery,
                          queue_max_len=queue_max_len,
-                         test_mode=test_mode)
+                         test_mode=test_mode,
+                         flexible_workload_ratio=flexible_workload_ratio)
     
     
 
@@ -115,8 +117,8 @@ def make_dc_pyeplus_env(month : int = 1,
                                         high=np.float32(2.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
                                         )
     else:
-        observation_space = spaces.Box(low=np.float32(-2.0*np.ones(4)),  # p.o.
-                                        high=np.float32(2.0*np.ones(4)),  # p.o. here we add 2 to only include current CI and next workload
+        observation_space = spaces.Box(low=np.float32(-2.0*np.ones(6)),  # p.o.
+                                        high=np.float32(2.0*np.ones(6)),  # p.o. here we add 2 to only include current CI and next workload
                                         )
     
     ################################################################################
@@ -141,7 +143,7 @@ def make_dc_pyeplus_env(month : int = 1,
     action_space = spaces.Discrete(len(action_mapping))
     
     # I want to use a continuous action space
-    action_space = spaces.Box(low=np.float32(0), high=np.float32(1), shape=(1,))
+    action_space = spaces.Box(low=np.float32(0), high=np.float32(1), shape=(2,))
     
     
     ################################################################################

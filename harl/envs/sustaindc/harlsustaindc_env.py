@@ -65,11 +65,11 @@ class HARLSustainDCEnv:
             # Info from ls_env
             envs_infos = infos['__common__']['states']
             ls_env_info = envs_infos['agent_ls']
-            # concat_states.extend(ls_env_info[4:6])  # [Current workload and queue status]
+            concat_states.extend(ls_env_info)  # [Current workload and queue status]
 
             # Info from dc_env
             dc_env_info = envs_infos['agent_dc']
-            concat_states.extend(dc_env_info)  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
+            # concat_states.extend(dc_env_info)  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
 
             # Info from bat_env
             bat_env_info = envs_infos['agent_bat']
@@ -113,12 +113,13 @@ class HARLSustainDCEnv:
 
             # Info from ls_env
             envs_infos = infos['__common__']['states']
+            # CHECK why envs_infos['agent_ls'] is not the same as returned in the step method of sustainddc_env.py
             ls_env_info = envs_infos['agent_ls']
-            # concat_states.extend(ls_env_info[4:6])  # [Current workload and queue status]
+            concat_states.extend(ls_env_info)  # [Current workload and queue status]
 
             # Info from dc_env
             dc_env_info = envs_infos['agent_dc']
-            concat_states.extend(dc_env_info)  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
+            # concat_states.extend(dc_env_info)  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
 
             # Info from bat_env
             bat_env_info = envs_infos['agent_bat']
@@ -153,18 +154,6 @@ class HARLSustainDCEnv:
     def close(self):
         """Close the environment."""
         pass
-
-    # def wrap(self, l):
-    #     """
-    #     Convert a list to a dictionary with agent names from the base environment.
-
-    #     Args:
-    #         l (list): List to be converted.
-
-    #     Returns:
-    #         dict: Dictionary with agent names as keys.
-    #     """
-    #     return {agent: l[i] for i, agent in enumerate(self.agents)}
     
     def wrap(self, l):
         """

@@ -7,6 +7,7 @@ import json
 import numpy as np
 warnings.filterwarnings('ignore')
 from tabulate import tabulate
+import matplotlib.dates as mdates
 
 import pandas as pd
 
@@ -18,6 +19,7 @@ from harl.utils.trans_tools import _t2n
 
 # sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'dc-rl')))
 from utils.base_agents import BaseLoadShiftingAgent, BaseHVACAgent, BaseBatteryAgent, RBCLiquidAgent
+
 #%%
 # MODEL_PATH = 'trained_models'
 # ENV = 'sustaindc'
@@ -50,13 +52,14 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     # run = 'happo/happo_liquid_dc_64_64_2actions_4obs_water/seed-00001-2024-08-26-15-07-24'
     # run = 'happo/happo_liquid_dc_64_64_water_std/seed-00001-2024-08-26-16-51-09'
     # run = 'hatrpo/hatrpo_liquid_dc_256_256_2actions_4obs_000001/seed-00001-2024-08-26-21-13-20'
-    run = 'happo/happo_liquid_dc_256_256_2actions_4obs/seed-00004-2024-08-26-21-25-18' # Looks good, 1.51% energy reduction
+    # run = 'happo/happo_liquid_dc_256_256_2actions_4obs/seed-00004-2024-08-26-21-25-18' # Looks good, 1.51% energy reduction
     # run = 'happo/happo_liquid_dc_256_256_2actions_4obs/seed-00002-2024-08-26-21-24-52' # 1.19%
     # run = "happo/happo_liquid_dc_256_256_2actions_4obs/seed-00003-2024-08-26-21-25-05" # 0.95%
     # run = "happo/happo_liquid_dc_256_256_2actions_4obs/seed-00005-2024-08-26-21-25-32"
     # run = 'happo/happo_liquid_dc_64_64_2actions_4obs_2stk/seed-00002-2024-08-27-15-28-04' # 1.25$
     # run = 'happo/happo_liquid_dc_256_256_2actions_5obs_range_t_i_sigmoid_nonormalization_default_values/seed-00002-2024-08-30-04-32-21'
     # run = 'happo/happo_liquid_dc_recovering_old_data/seed-00002-2024-09-02-23-33-17'
+    run = 'happo/debug_ls_16/seed-00100-2024-09-09-21-51-40'
 
     path = f'/lustre/guillant/sustaindc/results/sustaindc/az/{run}'
     with open(path + '/config.json', encoding='utf-8') as file:
@@ -70,6 +73,7 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     algo_args["logger"]["log_dir"] = SAVE_EVAL
     algo_args["eval"]["eval_episodes"] = NUM_EVAL_EPISODES
     algo_args["eval"]["dump_eval_metrcs"] = True
+    env_args['days_per_episode'] = 7
 
     # Initialize the actors and environments with the chosen configurations
     expt_runner = RUNNER_REGISTRY[main_args["algo"]](main_args, algo_args, env_args)
@@ -118,15 +122,14 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
                 )
                 if do_baseline:
                     # Extract the workload from the eval_infos is available
-                    if agent_name == 'agent_dc':
+                    if agent_name == 'agent_ls':
                         if eval_type == 'random':
                             pump_speed = np.random.uniform(0, 1)
                             supply_temp = np.random.uniform(0, 1)
                             eval_actions = torch.tensor([[pump_speed, supply_temp]])
                         elif eval_type == 'fixed':
-                            pump_speed = 0.444  # 0.25 l/s
-                            supply_temp = 0.567 # 32°C (W32 ASHRAE GUIDELINES)
-                            eval_actions = torch.tensor([[pump_speed, supply_temp]])
+                            supply_temp = 0
+                            eval_actions = torch.tensor([[supply_temp]])
                         elif eval_type == 'following_workload':
                             workload = expt_runner.eval_envs.envs[0].env.env.workload_m.get_next_workload()
                             eval_actions = torch.tensor([[baseline_actors[agent_name].act(workload)]]) #torch.tensor([[0.25]])
@@ -211,10 +214,10 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     return all_metrics
 
 # Run baseline
-num_runs = 5
-baseline_random_metrics_runs = run_evaluation(do_baseline=True, eval_type='random', eval_episodes=num_runs)
+num_runs = 1
+# baseline_random_metrics_runs = run_evaluation(do_baseline=True, eval_type='random', eval_episodes=num_runs)
 baseline_fixed_metrics_runs = run_evaluation(do_baseline=True, eval_type='fixed', eval_episodes=num_runs)
-baseline_metrics_runs = run_evaluation(do_baseline=True, eval_type='following_workload', eval_episodes=num_runs)
+# baseline_metrics_runs = run_evaluation(do_baseline=True, eval_type='following_workload', eval_episodes=num_runs)
 
 # Run trained algorithm
 trained_metrics_runs = run_evaluation(do_baseline=False, eval_episodes=num_runs)
@@ -259,21 +262,7 @@ def calculate_values_and_reduction(trained_metrics_runs, baseline_metrics_runs, 
         'reduction_std': np.std(reductions)
     }
 
-# Example usage:
-# Comparing trained vs random baseline for energy and carbon emissions
-energy_results_random = calculate_values_and_reduction(trained_metrics_runs, baseline_random_metrics_runs, 'bat_total_energy_without_battery_KWh')
-co2_results_random = calculate_values_and_reduction(trained_metrics_runs, baseline_random_metrics_runs, 'bat_CO2_footprint')
-water_results_random = calculate_values_and_reduction(trained_metrics_runs, baseline_random_metrics_runs, 'dc_water_usage')
-
-print(f"Random Baseline - Total Energy: {energy_results_random['baseline_avg']:.3f} ± {energy_results_random['baseline_std']:.3f}")
-print(f"Trained - Total Energy: {energy_results_random['trained_avg']:.3f} ± {energy_results_random['trained_std']:.3f}")
-print(f"Reduction (%): {energy_results_random['reduction_avg']:.3f} ± {energy_results_random['reduction_std']:.3f}")
-
-print(f"Random Baseline - Carbon Emissions: {co2_results_random['baseline_avg']:.3f} ± {co2_results_random['baseline_std']:.3f}")
-print(f"Trained - Carbon Emissions: {co2_results_random['trained_avg']:.3f} ± {co2_results_random['trained_std']:.3f}")
-print(f"Reduction (%): {co2_results_random['reduction_avg']:.3f} ± {co2_results_random['reduction_std']:.3f}")
-
-# Now compare the trained vs fixed baseline for energy and carbon emissions
+# compare the trained vs fixed baseline for energy and carbon emissions
 energy_results_fixed = calculate_values_and_reduction(trained_metrics_runs, baseline_fixed_metrics_runs, 'bat_total_energy_without_battery_KWh')
 co2_results_fixed = calculate_values_and_reduction(trained_metrics_runs, baseline_fixed_metrics_runs, 'bat_CO2_footprint')
 water_results_fixed = calculate_values_and_reduction(trained_metrics_runs, baseline_fixed_metrics_runs, 'dc_water_usage')
@@ -286,98 +275,91 @@ print(f"Fixed Baseline - Carbon Emissions: {co2_results_fixed['baseline_avg']:.3
 print(f"Trained - Carbon Emissions: {co2_results_fixed['trained_avg']:.3f} ± {co2_results_fixed['trained_std']:.3f}")
 print(f"Reduction (%): {co2_results_fixed['reduction_avg']:.3f} ± {co2_results_fixed['reduction_std']:.3f}")
 
-# Now compare the trained vs following workload baseline for energy and carbon emissions
-energy_results_workload = calculate_values_and_reduction(trained_metrics_runs, baseline_metrics_runs, 'bat_total_energy_without_battery_KWh')
-co2_results_workload = calculate_values_and_reduction(trained_metrics_runs, baseline_metrics_runs, 'bat_CO2_footprint')
-water_results_workload = calculate_values_and_reduction(trained_metrics_runs, baseline_metrics_runs, 'dc_water_usage')
-
-print(f"Following Workload Baseline - Total Energy: {energy_results_workload['baseline_avg']:.3f} ± {energy_results_workload['baseline_std']:.3f}")
-print(f"Trained - Total Energy: {energy_results_workload['trained_avg']:.3f} ± {energy_results_workload['trained_std']:.3f}")
-print(f"Reduction (%): {energy_results_workload['reduction_avg']:.3f} ± {energy_results_workload['reduction_std']:.3f}")
-
-print(f"Following Workload Baseline - Carbon Emissions: {co2_results_workload['baseline_avg']:.3f} ± {co2_results_workload['baseline_std']:.3f}")
-print(f"Trained - Carbon Emissions: {co2_results_workload['trained_avg']:.3f} ± {co2_results_workload['trained_std']:.3f}")
-print(f"Reduction (%): {co2_results_workload['reduction_avg']:.3f} ± {co2_results_workload['reduction_std']:.3f}")
-
-print(f"Following Workload Baseline - Water Usage: {water_results_workload['baseline_avg']:.3f} ± {water_results_workload['baseline_std']:.3f}")
-print(f"Trained - Water Usage: {water_results_workload['trained_avg']:.3f} ± {water_results_workload['trained_std']:.3f}")
-print(f"Reduction (%): {water_results_workload['reduction_avg']:.3f} ± {water_results_workload['reduction_std']:.3f}")
 
 # print(f"Total Energy Consumption: Reduction (%): {energy_reduction:.3f} ± {energy_std:.3f}")
 # print(f"Carbon Emissions: Reduction (%): {co2_reduction:.3f} ± {co2_std:.3f}")
 # print(f"Water Usage: Reduction (%): {water_reduction:.3f} ± {water_std:.3f}")
 
-#%%
-def print_results_table(results, baseline_name):
-    table_data = [
-        ["Metric", f"{baseline_name} Baseline (Avg ± Std)", "Trained (Avg ± Std)", "Reduction (%) (Avg ± Std)"],
-        ["Total Energy (MWh)",
-         f"{results['energy']['baseline_avg']:.3f} ± {results['energy']['baseline_std']:.3f}",
-         f"{results['energy']['trained_avg']:.3f} ± {results['energy']['trained_std']:.3f}",
-         f"{results['energy']['reduction_avg']:.3f} ± {results['energy']['reduction_std']:.3f}"],
-        ["Carbon Emissions (Tonnes CO2)",
-         f"{results['co2']['baseline_avg']:.3f} ± {results['co2']['baseline_std']:.3f}",
-         f"{results['co2']['trained_avg']:.3f} ± {results['co2']['trained_std']:.3f}",
-         f"{results['co2']['reduction_avg']:.3f} ± {results['co2']['reduction_std']:.3f}"]
-    ]
-    
-    # If water usage results are present, add them to the table
-    if 'water' in results:
-        table_data.append([
-            "Water Usage (liters)",
-            f"{results['water']['baseline_avg']:.3f} ± {results['water']['baseline_std']:.3f}",
-            f"{results['water']['trained_avg']:.3f} ± {results['water']['trained_std']:.3f}",
-            f"{results['water']['reduction_avg']:.3f} ± {results['water']['reduction_std']:.3f}"
-        ])
-    
-    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+#%% Now Plot the original workload (ls_original_workload) vs the shifted workload (ls_shifted_workload) in one y-axis, and in the other y-axis the carbon intensity
+trained_metrics = trained_metrics_runs[0]
+original_workloads = [metric['ls_original_workload'] for metric in trained_metrics['agent_ls']]
+shifted_workloads = [metric['ls_shifted_workload'] for metric in trained_metrics['agent_ls']]
+carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_bat']]
 
-# Example usage:
-# Define results dictionaries for random, fixed, and workload baselines
+# Define the number of points to plot
+num_points = 96*7
+init_point = 0
 
-# Simulating results dictionaries with keys 'energy', 'co2', 'water'
-results_random = {
-    'energy': energy_results_random,
-    'co2': co2_results_random,
-    'water': water_results_random
-}
+# Select the data to plot
+original_workloads = original_workloads[init_point:init_point + num_points]
+shifted_workloads = shifted_workloads[init_point:init_point + num_points]
+carbon_intensities = carbon_intensities[init_point:init_point + num_points]
 
-results_fixed = {
-    'energy': energy_results_fixed,
-    'co2': co2_results_fixed,
-    'water': water_results_fixed
-}
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_original_workloads = pd.Series(original_workloads).rolling(window=window_size).mean().dropna()
+smoothed_shifted_workloads = pd.Series(shifted_workloads).rolling(window=window_size).mean().dropna()
+smoothed_carbon_intensities = pd.Series(carbon_intensities).rolling(window=window_size).mean().dropna()
 
-results_workload = {
-    'energy': energy_results_workload,
-    'co2': co2_results_workload,
-    'water': water_results_workload
-}
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
 
-# Print results for each baseline
-print_results_table(results_random, "Random")
-print_results_table(results_fixed, "Fixed")
-print_results_table(results_workload, "Following Workload")
-#%%
-rewards_baseline_random = []
-rewards_baseline_fixed = []
-rewards_baseline = []
-rewards_trained = []
-# Obtain the average and std reward of the baselines:
-for run in range(num_runs):
-    rewards_baseline_random.append(np.sum([metric['reward'] for metric in baseline_random_metrics_runs[run]['global']]))
-    rewards_baseline_fixed.append(np.sum([metric['reward'] for metric in baseline_fixed_metrics_runs[run]['global']]))
-    rewards_baseline.append(np.sum([metric['reward'] for metric in baseline_metrics_runs[run]['global']]))
-    rewards_trained.append(np.sum([metric['reward'] for metric in trained_metrics_runs[run]['global']]))
+# Plot smoothed original workload
+ax1.set_xlabel('Time (Days)')
+ax1.set_ylabel('Workload (%)', color='tab:blue')
+ax1.plot(smoothed_original_workloads*100, color='tab:blue', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:blue')
 
-print(np.mean(rewards_baseline_random))
-print(np.mean(rewards_baseline_fixed))
-print(np.mean(rewards_baseline))
-print(np.mean(rewards_trained))
+# Plot smoothed shifted workload in the same plot
+ax1.plot(smoothed_shifted_workloads*100, color='tab:red', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:red')
+
+# Plot the carbon intensity in a second y-axis
+ax2 = ax1.twinx()
+ax2.set_ylabel('Carbon Intensity (gCO2/kWh)', color='tab:green')
+ax2.plot(smoothed_carbon_intensities, color='tab:green', linewidth=2)
+ax2.tick_params(axis='y', labelcolor='tab:green')
+
+
+#%% Now plot the tasks in queue vs the shifted workload in two differents y axis
+tasks_in_queue = [metric['ls_tasks_in_queue'] for metric in trained_metrics['agent_ls']]
+shifted_workloads = [metric['ls_shifted_workload'] for metric in trained_metrics['agent_ls']]
+# Define the number of points to plot
+num_points = 96*7
+init_point = 0
+
+# Select the data to plot
+tasks_in_queue = tasks_in_queue[init_point:init_point + num_points]
+shifted_workloads = shifted_workloads[init_point:init_point + num_points]
+
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_tasks_in_queue = pd.Series(tasks_in_queue).rolling(window=window_size).mean().dropna()
+smoothed_shifted_workloads = pd.Series(shifted_workloads).rolling(window=window_size).mean().dropna()
+
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
+
+# Plot smoothed tasks in queue
+ax1.set_xlabel('Time (Days)')
+ax1.set_ylabel('Tasks in Queue', color='tab:blue')
+ax1.plot(smoothed_tasks_in_queue, color='tab:blue', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+# Create a second y-axis for shifted workload
+ax2 = ax1.twinx()
+ax2.set_ylabel('Workload (%)', color='tab:red')
+ax2.plot(smoothed_shifted_workloads*100, color='tab:red', linewidth=2)
+ax2.tick_params(axis='y', labelcolor='tab:red')
+
+# Customize the layout to ensure no parts are cut off
+plt.tight_layout()
+
+
+
 
 #%% Pump speed vs workload utilization
 # Assuming metrics['agent_dc'] contains your data
-trained_metrics = trained_metrics_runs[0]
 pump_speeds = [metric['dc_coo_mov_flow_actual'] for metric in trained_metrics['agent_dc']]
 workload_utilizations = [metric['dc_cpu_workload_fraction'] for metric in trained_metrics['agent_dc']]  # Replace with the correct key
 
@@ -394,7 +376,6 @@ window_size = 1  # Use a larger window size to smooth the data more
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
 
-import matplotlib.dates as mdates
 # Assuming num_points corresponds to 96*7 which represents a week's worth of 15-min intervals
 time_intervals = pd.date_range(start="2024-08-01", periods=len(smoothed_pump_speeds), freq="15T")
 

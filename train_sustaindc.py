@@ -52,7 +52,7 @@ def main():
     parser.add_argument(
         "--exp_name",
         type=str,
-        default="installtest",
+        default="DEBUG_RUN",
         help="Experiment name."
     )
     parser.add_argument(

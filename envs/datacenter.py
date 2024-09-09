@@ -504,7 +504,7 @@ def calculate_HVAC_power(CRAC_setpoint, chiller_heat_removed, ambient_temp, DC_C
     if ctafr is None: 
         ctafr = DC_Config.CT_REFRENCE_AIR_FLOW_RATE
     
-    ctaft_list.append(v_air)
+    # ctaft_list.append(v_air)
     CT_Fan_pwr = DC_Config.CT_FAN_REF_P * (min(v_air / ctafr, 1))**3
     
     # ToDo: exploring the new chiller_power method

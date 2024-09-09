@@ -1,60 +1,112 @@
 # File where the rewards are defined
 import numpy as np
 
+bat_footprint = []
+
 def default_ls_reward(params: dict) -> float:
     """
-    Calculates a reward value based on normalized load shifting.
+    Calculates a reward value based on normalized load shifting, task processing, and carbon intensity.
 
     Args:
         params (dict): Dictionary containing parameters:
-            norm_load_left (float): Normalized load left.
-            out_of_time (bool): Indicator (alarm) whether the agent is in the last hour of the day.
-            penalty (float): Penalty value.
+            tasks_processed (int): Number of tasks processed in the current step.
+            tasks_in_queue (int): Number of tasks remaining in the queue.
+            tasks_dropped (int): Number of tasks dropped.
+            norm_CI (float): Normalized carbon intensity of the energy used.
+            bat_CO2_footprint (float): Total carbon footprint for the current timestep.
+            ls_current_hour (float): Current hour in the day (used for penalizing queue overflow at the end of the day).
 
     Returns:
         float: Reward value.
     """
-    # Energy part of the reward
-    total_energy_with_battery = params['bat_total_energy_with_battery_KWh']
-    norm_CI = params['norm_CI']
-    dcload_min = params['bat_dcload_min']
-    dcload_max = params['bat_dcload_max']
-        
-    # Calculate the reward associted to the energy consumption
-    norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
-    footprint = -1.0 * norm_CI * norm_net_dc_load
+    # Calculate the footprint reward based on the carbon footprint
+    total_footprint = params['bat_CO2_footprint']
+    footprint_reward = -1.0 * (total_footprint - 253) / 75  # Mean and std reward. Negate to maximize reward and minimize footprint
 
-    # Penalize the agent for each task that was dropped due to queue limit
-    penalty_per_dropped_task = -10  # Define the penalty value per dropped task
-    tasks_dropped = params['ls_tasks_dropped']
-    penalty_dropped_tasks = tasks_dropped * penalty_per_dropped_task
+    # Penalize the agent if any tasks are dropped
+    if params['ls_tasks_dropped'] > 0:
+        return -1.0 * params['ls_tasks_dropped']  # Penalize for each task dropped
     
-    tasks_in_queue = params['ls_tasks_in_queue']
-    current_step = params['ls_current_hour']
-    penalty_tasks_queue = 0
-    if current_step % (24*4) >= (23*4):   # Penalty for queued tasks at the end of the day
-        factor_hour = (current_step % (24*4)) / 96 # min = 0.95833, max = 0.98953
-        factor_hour = (factor_hour - 0.95833) / (0.98935 - 0.95833)
-        penalty_tasks_queue = -1.0 * factor_hour * tasks_in_queue/10  # Penalty for each task left in the queue
+    if params['ls_enforced'] > 0:
+        return -1.0
     
-    if current_step % (24*4) == 0:   # Penalty for queued tasks at the end of the day
-        penalty_tasks_queue = -1.0 * tasks_in_queue/10 # Penalty for each task left in the queue
+    # # Penalize the agent if any tasks remain in the queue at the end of the day
+    # current_step = params['ls_current_hour']
+    # tasks_in_queue = params['ls_tasks_in_queue']
+    # if current_step % 24 == 0 and tasks_in_queue > 0:
+    #     return -1.0
+
+    # # Use normalized carbon intensity (Norm_CI) to incentivize processing during low carbon intensity periods
+    # norm_CI = params['norm_CI']
     
-    current_CI = params['norm_CI']
-    forecast_CI = np.mean(params['forecast_CI'])
-    ls_action = params['ls_action'] #  Actions: 0 - Postpone (decrease utilization), 1 - Do Nothing, 2 - execute (Increase utilization)
-    # Time-based incentive using tasks_in_queue
-    postpone_bonus = 0
-    if current_CI > forecast_CI and ls_action == 0: # Encourage postponing tasks when CI is high and perform action is to postpone
-        postpone_bonus = 0.1  # Reward for postponing tasks during high CI periods
+    # # Invert norm_CI: lower carbon intensity (closer to 0) is rewarded more
+    # CI_reward_multiplier = 1 - norm_CI  # If norm_CI is low, multiplier will be high (closer to 1)
+
+    # # Reward based on the number of tasks processed, scaled by the carbon intensity multiplier
+    # tasks_processed = params['ls_tasks_processed']
+    # task_processing_reward = tasks_processed * CI_reward_multiplier / 100  # Normalize and scale the reward for task processing
+
+    # Total reward combines the footprint reward and task processing reward
+    total_reward = footprint_reward# + task_processing_reward
+
+    return total_reward
+
+
+
+
+# def default_ls_reward(params: dict) -> float:
+#     """
+#     Calculates a reward value based on normalized load shifting.
+
+#     Args:
+#         params (dict): Dictionary containing parameters:
+#             norm_load_left (float): Normalized load left.
+#             out_of_time (bool): Indicator (alarm) whether the agent is in the last hour of the day.
+#             penalty (float): Penalty value.
+
+#     Returns:
+#         float: Reward value.
+#     """
+#     # Energy part of the reward
+#     # total_energy_with_battery = params['bat_total_energy_with_battery_KWh']
+#     # norm_CI = params['norm_CI']
+#     # dcload_min = params['bat_dcload_min']
+#     # dcload_max = params['bat_dcload_max']
+        
+#     # Calculate the reward associted to the energy consumption
+#     # norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
+#     # footprint_reward = -1.0 * norm_CI * norm_net_dc_load
+#     total_footprint = params['bat_CO2_footprint']
+#     # bat_footprint.append(params['bat_CO2_footprint'])
+#     footprint_reward = -1.0 * (total_footprint - 253) / 75  # Mean and std reward. Negate to maximize reward and minimize footprint
+
+#     # Penalize the agent for each task that was dropped due to queue limit
+#     penalty_per_dropped_task = -10  # Define the penalty value per dropped task
+#     tasks_dropped = params['ls_tasks_dropped']
+#     if tasks_dropped > 0:
+#         return -1.0
+#     penalty_dropped_tasks = tasks_dropped * penalty_per_dropped_task
     
-    # Encourage executing tasks when CI is low
-    execute_bonus = 0
-    if current_CI < forecast_CI and ls_action == 2: # Encourage executing tasks when CI is low and perform action is to execute
-        execute_bonus = 0.1  # Reward for executing tasks during low CI periods
+#     tasks_in_queue = params['ls_tasks_in_queue']
+#     current_step = params['ls_current_hour']
+#     penalty_tasks_queue = 0
+#     tasks_at_end_of_day = 0
+#     if current_step % 24 >= 23 and tasks_in_queue > 0:   # Penalty for queued tasks at the end of the day
+#         factor_hour = (current_step % 24) / 24 # min = 0.95833, max = 0.98953
+#         factor_hour = (factor_hour - 0.95833) / (0.98935 - 0.95833)
+#         penalty_tasks_queue = -1.0 * factor_hour * tasks_in_queue/10  # Penalty for each task left in the queue
     
-    reward = footprint + penalty_dropped_tasks + penalty_tasks_queue + postpone_bonus + execute_bonus
-    return reward
+#     if current_step % 24 == 0  and tasks_in_queue > 0:   # Penalty for queued tasks at the end of the day
+#         penalty_tasks_queue = -1.0 * tasks_in_queue/10 # Penalty for each task left in the queue
+#         tasks_at_end_of_day = tasks_in_queue
+    
+#     # if there is any task left in the queue at the end of the day, penalize the agent only computing that penalty as reward
+#     if tasks_at_end_of_day == 0:
+#         return footprint_reward + penalty_dropped_tasks
+#     else:
+#         return -1.0 # If there is tasks in the queue at the end of the day, return only a negative penalty for the tasks in the queue
+#     # reward = footprint_reward + penalty_dropped_tasks + penalty_tasks_queue
+#     # return reward
 
 # Initialize these values with extreme values
 min_load = 1000 #  float('inf')
