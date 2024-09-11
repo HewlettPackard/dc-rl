@@ -108,20 +108,21 @@ class Time_Manager():
         self.timestep_per_hour = 4
         self.days_per_episode = days_per_episode
         self.timezone_shift = timezone_shift
+        
+        # Calculate the total timesteps for the episode based on init_day
+        self.simulated_total_timesteps = (self.days_per_episode * 24 * self.timestep_per_hour)
+        self.current_timestep = 0
 
     def reset(self, init_day=None, init_hour=None):
-        """Reset time manager to a specific initial day and hour.
-
-        Args:
-            init_day (int, optional): Day to start from. If None, defaults to the initial day set during initialization.
-            init_hour (int, optional): Hour to start from. If None, defaults to the timezone shift set during initialization.
-
-        Returns:
-            List[float]: Sine and cosine of the current hour and day.
-        """
+        """Reset the time manager to a specific initial day and hour."""
         self.day = init_day if init_day is not None else self.init_day
         self.hour = init_hour if init_hour is not None else self.timezone_shift
+
+        # Recalculate the current timestep based on day/hour
+        self.current_timestep = int(self.day * 24 * self.timestep_per_hour + self.hour * self.timestep_per_hour)
+        self.total_timesteps = self.current_timestep + self.simulated_total_timesteps
         return sc_obs(self.hour, self.day)
+
         
     def step(self):
         """Step function for the time maneger
@@ -130,10 +131,11 @@ class Time_Manager():
             List[float]: Current hour and day in sine and cosine form.
             bool: Signal if the episode has reach the end.
         """
+        self.current_timestep += 1
+        self.hour += 1 / self.timestep_per_hour
         if self.hour >= 24:
             self.hour = 0
             self.day += 1
-        self.hour += 1/self.timestep_per_hour
         return self.day, self.hour, sc_obs(self.hour, self.day), self.isterminal()
     
     def isterminal(self):
@@ -142,10 +144,8 @@ class Time_Manager():
         Returns:
             bool: Signals if a state is terminal or not
         """
-        done = False
-        if self.day > self.init_day+self.days_per_episode - 1:
-            done = True
-        return done
+        return self.current_timestep >= self.total_timesteps
+
 
 
 # Class to manage CPU workload data
@@ -441,6 +441,9 @@ class CI_Manager():
     
     def get_forecast_ci(self):
         return self._forecast_norm_carbon
+    
+    def get_n_past_ci(self, n):
+        return self.norm_carbon[self.time_step-n:self.time_step]
 
 # Class to manage weather data
 # Where to obtain other weather files:

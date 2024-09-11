@@ -21,7 +21,8 @@ class StochasticPolicy(nn.Module):
             device: (torch.device) specifies the device to run on (cpu/gpu).
         """
         super(StochasticPolicy, self).__init__()
-        self.hidden_sizes = args["hidden_sizes"]
+        self.hidden_sizes = args.get("hidden_size_policy", args["hidden_sizes"])
+        self.action_squash_method = args.get("action_squash_method", None)  # Default to None to squash actions between [-1, 1]
         self.args = args
         self.gain = args["gain"]
         self.initialization_method = args["initialization_method"]
@@ -33,7 +34,7 @@ class StochasticPolicy(nn.Module):
 
         obs_shape = get_shape_from_obs_space(obs_space)
         base = CNNBase if len(obs_shape) == 3 else MLPBase
-        self.base = base(args, obs_shape)
+        self.base = base(args, obs_shape, type='policy')
 
         if self.use_naive_recurrent_policy or self.use_recurrent_policy:
             self.rnn = RNNLayer(
@@ -84,6 +85,12 @@ class StochasticPolicy(nn.Module):
         actions, action_log_probs = self.act(
             actor_features, available_actions, deterministic
         )
+
+        # Apply the selected action squashing method
+        if self.action_squash_method == 'tanh':
+            actions = torch.tanh(actions)
+        elif self.action_squash_method == 'clip':
+            actions = torch.clamp(actions, -1, 1)
 
         return actions, action_log_probs, rnn_states
 

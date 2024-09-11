@@ -44,13 +44,19 @@ class MLPLayer(nn.Module):
 class MLPBase(nn.Module):
     """A MLP base module."""
 
-    def __init__(self, args, obs_shape):
+    def __init__(self, args, obs_shape, type='policy'):
         super(MLPBase, self).__init__()
 
         self.use_feature_normalization = args["use_feature_normalization"]
         self.initialization_method = args["initialization_method"]
         self.activation_func = args["activation_func"]
-        self.hidden_sizes = args["hidden_sizes"]
+        if type == 'policy':
+            self.hidden_sizes = args.get("hidden_size_policy", args["hidden_sizes"])
+        elif type == 'value':
+            self.hidden_sizes = args.get("hidden_size_value", args["hidden_sizes"])
+        else:
+            raise ValueError("Invalid type for MLPBase")
+        # self.hidden_sizes = args["hidden_sizes"]
 
         obs_dim = obs_shape[0]
 

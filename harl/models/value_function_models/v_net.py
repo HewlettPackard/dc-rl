@@ -18,7 +18,8 @@ class VNet(nn.Module):
             device: (torch.device) specifies the device to run on (cpu/gpu).
         """
         super(VNet, self).__init__()
-        self.hidden_sizes = args["hidden_sizes"]
+        # if args['hidden_size_value'] is defined, use that, if not, use args['hidden_sizes']
+        self.hidden_sizes = args.get("hidden_size_value", args["hidden_sizes"])
         self.initialization_method = args["initialization_method"]
         self.use_naive_recurrent_policy = args["use_naive_recurrent_policy"]
         self.use_recurrent_policy = args["use_recurrent_policy"]
@@ -28,7 +29,7 @@ class VNet(nn.Module):
 
         cent_obs_shape = get_shape_from_obs_space(cent_obs_space)
         base = CNNBase if len(cent_obs_shape) == 3 else MLPBase
-        self.base = base(args, cent_obs_shape)
+        self.base = base(args, cent_obs_shape, type='value')
 
         if self.use_naive_recurrent_policy or self.use_recurrent_policy:
             self.rnn = RNNLayer(

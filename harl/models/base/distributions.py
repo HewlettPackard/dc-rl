@@ -79,11 +79,20 @@ class DiagGaussian(nn.Module):
         else:
             self.std_x_coef = 1.0
             self.std_y_coef = 0.5
+
+        # Initialize the mean layer
         self.fc_mean = init_(nn.Linear(num_inputs, num_outputs))
+        
+        # Initialize the log_std with the initial offset
         log_std = torch.ones(num_outputs) * self.std_x_coef
         self.log_std = torch.nn.Parameter(log_std)
 
     def forward(self, x, available_actions=None):
+        # Compute the mean of the action
         action_mean = self.fc_mean(x)
+
+        # Compute the standard deviation using sigmoid, scaled by the coefficients
         action_std = torch.sigmoid(self.log_std / self.std_x_coef) * self.std_y_coef
+
+        # Return a normal distribution with the computed mean and std
         return FixedNormal(action_mean, action_std)

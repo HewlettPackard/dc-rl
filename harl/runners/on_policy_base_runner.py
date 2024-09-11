@@ -862,6 +862,7 @@ class OnPolicyBaseRunner:
 
     def restore(self):
         """Restore model parameters."""
+        print(f'restoring model from {self.algo_args["train"]["model_dir"]}')
         for agent_id in range(self.num_agents):
             policy_actor_state_dict = torch.load(
                 str(self.algo_args["train"]["model_dir"])
@@ -870,11 +871,13 @@ class OnPolicyBaseRunner:
                 + ".pt"
             )
             self.actor[agent_id].actor.load_state_dict(policy_actor_state_dict)
+            print(f'loaded actor_agent{agent_id}.pt')
         if not self.algo_args["render"]["use_render"]:
             policy_critic_state_dict = torch.load(
                 str(self.algo_args["train"]["model_dir"]) + "/critic_agent" + ".pt"
             )
             self.critic.critic.load_state_dict(policy_critic_state_dict)
+            print(f'loaded critic_agent.pt')
             if self.value_normalizer is not None:
                 value_normalizer_state_dict = torch.load(
                     str(self.algo_args["train"]["model_dir"])
@@ -882,6 +885,7 @@ class OnPolicyBaseRunner:
                     + ".pt"
                 )
                 self.value_normalizer.load_state_dict(value_normalizer_state_dict)
+                print(f'loaded value_normalizer.pt')
 
     def close(self):
         """Close environment, writter, and logger."""

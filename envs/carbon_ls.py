@@ -41,12 +41,7 @@ class CarbonLoadEnv(gym.Env):
         
         # State: [Sin(h), Cos(h), Sin(day_of_year), Cos(day_of_year), self.ls_state, ci_i_future (n_vars_ci), var_to_LS_energy (n_vars_energy), batSoC (n_vars_battery)], 
         # self.ls_state = [current_workload, queue status]
-        self.observation_space = spaces.Box(
-            low=-2,
-            high=2,
-            shape=(9,),
-            dtype=np.float32,
-        )
+        self.observation_space = spaces.Box(low=-2.0, high=2.0, shape=(20,), dtype=np.float32)
 
 
         self.global_total_steps = 0
@@ -71,9 +66,9 @@ class CarbonLoadEnv(gym.Env):
             info (dict): A dictionary that containing additional information about the environment state
         """
         self.global_total_steps = 0
-        self.tasks_queue = deque(maxlen=self.queue_max_len)
-        self.current_hour = 0.0
-        self.day = 0
+        self.tasks_queue.clear()
+        # self.current_hour = 0.0
+        # self.day = 0
         
         # Queue status - length of the task queue
         current_workload = self.workload
@@ -134,11 +129,11 @@ class CarbonLoadEnv(gym.Env):
             info (dict): A dictionary containing additional information about the environment state.
         """
         
-        self.current_hour += 0.25
+        # self.current_hour += 0.25
         enforced = 0
         # If no computational room, enforce to compute all tasks from the DTQ
         if not self.has_computational_room(workload_rest_day):
-            action = [1.0]  # Process all tasks in the queue
+            # action = [1.0]  # Process all tasks in the queue
             enforced = 1
 
         non_shiftable_tasks = int(math.ceil(self.workload * self.non_shiftable_tasks_percentage * 100))
@@ -168,9 +163,13 @@ class CarbonLoadEnv(gym.Env):
                 tasks_to_process = int(available_capacity * process_ratio)  # Fill available capacity
                 actual_tasks_to_process = min(len(self.tasks_queue), tasks_to_process)  # Limit by queue length
 
-                # Vectorized: Pop multiple tasks at once
-                for _ in range(actual_tasks_to_process):
-                    self.tasks_queue.popleft()
+                # if we can process all of the tasks in the queue, make it faster with clear() instead of with a for loop
+                if actual_tasks_to_process == len(self.tasks_queue):
+                    self.tasks_queue.clear()
+                else:
+                    # Vectorized: Pop multiple tasks at once
+                    for _ in range(actual_tasks_to_process):
+                        self.tasks_queue.popleft()
 
                 # Update utilization to include processed DTQ tasks
                 self.current_utilization = (non_shiftable_tasks + shiftable_tasks + actual_tasks_to_process) / 100
@@ -188,12 +187,12 @@ class CarbonLoadEnv(gym.Env):
         tasks_in_queue = len(self.tasks_queue)
         if self.current_hour % 24 == 0:   # Penalty for queued tasks at the end of the day
             tasks_dropped += len(self.tasks_queue)
-            self.tasks_queue = deque(maxlen=self.queue_max_len)
+            self.tasks_queue.clear()
             # print(f'Checked that the tasks_queue is cleaned every 24 hours at {self.current_hour}, dropped {tasks_dropped} tasks')
         
         
-        if self.current_hour >= 24:
-            self.current_hour = 0
+        # if self.current_hour >= 24:
+            # self.current_hour = 0
             
         reward = 0 
              
@@ -235,3 +234,12 @@ class CarbonLoadEnv(gym.Env):
             # Raise an error if the workload is out of bounds
             raise ValueError("The workload should be between 0 and 1")
         self.workload = workload
+    
+    def update_current_hour(self, current_hour):
+        """
+        Update the current hour in the environment.
+
+        Args:
+            current_hour (float): Current hour in the environment.
+        """
+        self.current_hour = current_hour

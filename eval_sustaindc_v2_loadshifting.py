@@ -59,7 +59,8 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     # run = 'happo/happo_liquid_dc_64_64_2actions_4obs_2stk/seed-00002-2024-08-27-15-28-04' # 1.25$
     # run = 'happo/happo_liquid_dc_256_256_2actions_5obs_range_t_i_sigmoid_nonormalization_default_values/seed-00002-2024-08-30-04-32-21'
     # run = 'happo/happo_liquid_dc_recovering_old_data/seed-00002-2024-09-02-23-33-17'
-    run = 'happo/debug_ls_16/seed-00100-2024-09-09-21-51-40'
+    # run = 'happo/debug_ls_64_64/seed-00100-2024-09-09-23-19-56' # 0.663%
+    run = 'happo/debug_ls_2_pol_128_128_val_128_128_8hours_gradclip2_none_threads16_epsleng256_numminibatch2_droppedx10_entropy05_stateb_rewardCFPx10/seed-08109-2024-09-11-14-11-54'  #  1.786%
 
     path = f'/lustre/guillant/sustaindc/results/sustaindc/az/{run}'
     with open(path + '/config.json', encoding='utf-8') as file:
@@ -74,6 +75,8 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     algo_args["eval"]["eval_episodes"] = NUM_EVAL_EPISODES
     algo_args["eval"]["dump_eval_metrcs"] = True
     env_args['days_per_episode'] = 7
+    algo_args['seed']['seed_specify'] = True
+    algo_args['seed']['seed'] = 0
 
     # Initialize the actors and environments with the chosen configurations
     expt_runner = RUNNER_REGISTRY[main_args["algo"]](main_args, algo_args, env_args)
@@ -356,6 +359,40 @@ ax2.tick_params(axis='y', labelcolor='tab:red')
 plt.tight_layout()
 
 
+#%% Now Plot the ls_action vs the carbon intensity
+trained_metrics = trained_metrics_runs[0]
+ls_actions = [metric['ls_action'][0] for metric in trained_metrics['agent_ls']]
+carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_bat']]
+# Define the number of points to plot
+num_points = 96*7
+init_point = 0
+
+# Select the data to plot
+ls_actions = ls_actions[init_point:init_point + num_points]
+carbon_intensities = carbon_intensities[init_point:init_point + num_points]
+
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_ls_actions = pd.Series(ls_actions).rolling(window=window_size).mean().dropna()
+smoothed_carbon_intensities = pd.Series(carbon_intensities).rolling(window=window_size).mean().dropna()
+
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
+
+# Plot smoothed ls_action
+ax1.set_xlabel('Time (Days)')
+ax1.set_ylabel('Load Shifting Action', color='tab:blue')
+ax1.plot(smoothed_ls_actions, color='tab:blue', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+# Create a second y-axis for carbon intensity
+ax2 = ax1.twinx()
+ax2.set_ylabel('Carbon Intensity (gCO2/kWh)', color='tab:red')
+ax2.plot(smoothed_carbon_intensities, color='tab:red', linewidth=2)
+ax2.tick_params(axis='y', labelcolor='tab:red')
+
+# Customize the layout to ensure no parts are cut off
+plt.tight_layout()
 
 
 #%% Pump speed vs workload utilization

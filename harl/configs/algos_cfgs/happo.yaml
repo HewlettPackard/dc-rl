@@ -1,19 +1,19 @@
 # This is the configuration file for the HAPPO algorithm.
 seed:
   # whether to use the specified seed
-  seed_specify: True
+  seed_specify: False
   # seed
-  seed: 100
+  seed: 0
 device:
   # whether to use CUDA
-  cuda: True
+  cuda: False
   # whether to set CUDA deterministic
-  cuda_deterministic: False
+  cuda_deterministic: True
   # arg to torch.set_num_threads
   torch_threads: 4
 train:
   # number of parallel environments for training data collection
-  n_rollout_threads: 64
+  n_rollout_threads: 16
   # number of total training steps
   num_env_steps: 2000000000
   # number of steps per environment per training data collection
@@ -36,9 +36,9 @@ eval:
   # whether to use evaluation
   use_eval: True
   # number of parallel environments for evaluation
-  n_eval_rollout_threads: 12
+  n_eval_rollout_threads: 16
   # number of episodes per evaluation
-  eval_episodes: 5
+  eval_episodes: 10
   # If dump the evaluation metrics in a csv file
   dump_eval_metrcs: False
 
@@ -50,65 +50,71 @@ render:
 model:
   # network parameters
   # hidden sizes for mlp module in the network
-  hidden_sizes: [16]
+  hidden_sizes: [64, 64]
+  # hidden sizes for the MLP module of the policy network
+  hidden_size_policy: [64, 64]  # Layer sizes for policy network
+  # hidden sizes for the MLP module of the value network
+  hidden_size_value: [64, 64] # Layer sizes for value network
   # activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
   activation_func: tanh
+  # whether the tanh squashing function is used to scale the action output between -1 and 1 
+  action_squash_method: 'none'  # Options: 'tanh' or 'clip' or 'none'
   # whether to use feature normalization
   use_feature_normalization: True
   # initialization method for network parameters, choose from xavier_uniform_, orthogonal_, ...
-  initialization_method: xavier_uniform_
+  initialization_method: orthogonal_
   # gain of the output layer of the network.
-  gain: 0.01
+  gain: 0.001
   # recurrent parameters
   # whether to use rnn policy (data is not chunked for training)
   use_naive_recurrent_policy: False
   # whether to use rnn policy (data is chunked for training)
   use_recurrent_policy: False
   # number of recurrent layers
-  recurrent_n: 1
+  recurrent_n: 2
   # length of data chunk; only useful when use_recurrent_policy is True; episode_length has to be a multiple of data_chunk_length
-  data_chunk_length: 10
+  data_chunk_length: 16
   # optimizer parameters
   # actor learning rate
-  lr: 0.0003
+  lr: 0.0001
   # critic learning rate
-  critic_lr: 0.0003
+  critic_lr: 0.0001
   # eps in Adam
-  opti_eps: 0.01
+  opti_eps: 0.0003
   # weight_decay in Adam
   weight_decay: 0
   # parameters of diagonal Gaussian distribution
-  std_x_coef: 1
+  std_x_coef: 1.0
   # parameters of diagonal Gaussian distribution
-  std_y_coef: 0.5
+  std_y_coef: 1.0
 algo:
   # ppo parameters
   # number of epochs for actor update
-  ppo_epoch: 5
+  ppo_epoch: 10
   # number of epochs for critic update
-  critic_epoch: 5
+  critic_epoch: 10
   # whether to use clipped value loss
   use_clipped_value_loss: True
   # clip parameter
-  clip_param: 0.25
+  clip_param: 0.3
   # number of mini-batches per epoch for actor update
-  actor_num_mini_batch: 4
+  actor_num_mini_batch: 2
   # number of mini-batches per epoch for critic update
-  critic_num_mini_batch: 4
+  critic_num_mini_batch: 2
   # coefficient for entropy term in actor loss
-  entropy_coef: 0.005
+  entropy_coef: 0.05
   # coefficient for value loss
   value_loss_coef: 0.5
   # whether to clip gradient norm
   use_max_grad_norm: True
   # max gradient norm
-  max_grad_norm: 1.0
+  max_grad_norm: 2.0
   # whether to use Generalized Advantage Estimation (GAE)
   use_gae: True
   # discount factor
-  gamma: 0.995
+  gamma: 0.99
   # GAE lambda
-  gae_lambda: 0.95
+  gae_lambda: 0.85
   # whether to use huber loss
   use_huber_loss: False
   # whether to use policy active masks

@@ -130,7 +130,7 @@ class SustainDC(gym.Env):
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
         n_vars_energy, n_vars_battery = 0, 0  # For partial observability (for p.o.)
-        n_vars_ci = 16  # Number of future_steps of CI retrieve for the load shifting environment
+        n_vars_ci = 32  # Number of future_steps of CI retrieve for the load shifting environment
         self.ls_env = make_ls_env(month=self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci, flexible_workload_ratio=self.flexible_load,
                                   n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, queue_max_len=1000)
         self.dc_env, _ = make_dc_pyeplus_env(month=self.month + 1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, 
@@ -207,7 +207,7 @@ class SustainDC(gym.Env):
         if hasattr(self, 'observation_space') and hasattr(self.observation_space, 'seed'):
             self.observation_space.seed(self.seed)
         
-    def _create_ls_state(self, t_i, current_workload, queue_status, current_ci, ci_future):
+    def _create_ls_state(self, t_i, current_workload, queue_status, current_ci, ci_future, ci_past, next_workload, current_out_temperature, next_out_temperature):
         """
         Create the state of the load shifting environment.
 
@@ -218,17 +218,13 @@ class SustainDC(gym.Env):
         
         # Obtain only one hour-step of CI (every 4 timesteps)
         ci_future = ci_future[::4]
+        ci_past = ci_past[::4]
         
         # Make it relative to the current CI to indicate the trend
         ci_future = ci_future - current_ci
+        ci_past = ci_past - current_ci
         
-        ls_state = np.float32(np.hstack((
-                                            hour_sin_cos,
-                                            current_workload,
-                                            queue_status, 
-                                            current_ci,
-                                            ci_future
-                                        )))
+        # State version b
         # ls_state = np.float32(np.hstack((
         #                                     hour_sin_cos,
         #                                     current_workload,
@@ -236,6 +232,41 @@ class SustainDC(gym.Env):
         #                                     current_ci,
         #                                     ci_future
         #                                 )))
+        
+        ls_state = np.float32(np.hstack((
+                                            hour_sin_cos,
+                                            current_workload,
+                                            queue_status, 
+                                            ci_future,
+                                            current_ci,
+                                            ci_past,
+                                            next_workload,
+                                            current_out_temperature,
+                                            next_out_temperature
+                                        )))
+        
+        # Instead of the sin and cosine of the hour, we will use 4 boolean to represent the hour (0-6, 6-12, 12-18, 18-24). Extract this from self.current_hour
+        # hour_boolean = np.zeros(4)
+        # try:
+        #     hour_boolean[int(self.current_hour%24 // 6)] = 1
+        # except:
+        #     print(f'Error: {self.current_hour}')
+        
+        # # Also, instead of using the CI values, I will use a boolean to represent if the CI will increase or decrease in the future with respect to the current CI
+        # # Consider the full range of ci_future
+        # # ci_future = ci_future - current_ci
+        # ci_future = ci_future[::4]
+        # ci_future = np.where(ci_future > current_ci, 1, 0)
+        
+        # # State version c
+        # ls_state = np.float32(np.hstack((
+        #                                     hour_boolean,
+        #                                     current_workload,
+        #                                     queue_status, 
+        #                                     ci_future,
+        #                                     current_out_temperature,
+        #                                 )))
+                
         return ls_state
     
     def _create_dc_state(self, current_workload, next_workload, current_out_temperature, next_out_temperature):
@@ -308,21 +339,23 @@ class SustainDC(gym.Env):
         
         # Update the workload of the load shifting environment
         self.ls_env.update_workload(workload)
+        self.ls_env.update_current_hour(random_init_hour)
         
         # Reset all the environments
         ls_s, self.ls_info = self.ls_env.reset()
         self.dc_state, self.dc_info = self.dc_env.reset()
         bat_s, self.bat_info = self.bat_env.reset()
         
-        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
-        queue_status = self.ls_info['ls_norm_tasks_in_queue']
-        self.ls_state = self._create_ls_state(t_i, workload, queue_status, ci_i, ci_i_future)
-
         current_workload = self.workload_m.get_current_workload()
         next_workload = self.workload_m.get_next_workload()
         
         current_out_temperature = self.weather_m.get_current_temperature()
         next_out_temperature = self.weather_m.get_next_temperature()
+        
+        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
+        queue_status = self.ls_info['ls_norm_tasks_in_queue']
+        ci_i_past = self.ci_m.get_n_past_ci(n=16)
+        self.ls_state = self._create_ls_state(t_i, workload, queue_status, ci_i, ci_i_future, ci_i_past, next_workload, current_out_temperature, next_out_temperature)
         
         self.dc_state = self._create_dc_state(current_workload, next_workload, current_out_temperature, next_out_temperature)
         
@@ -397,22 +430,23 @@ class SustainDC(gym.Env):
         self.current_hour = hour
 
         # Update environment states with new values from managers
-        self._update_environments(workload, temp, wet_bulb, ci_i, ci_i_future)
+        self._update_environments(workload, temp, wet_bulb, ci_i, ci_i_future, hour)
 
         # Create observations for the next step based on updated environment states
         next_workload = self.workload_m.get_next_workload()
         next_out_temperature = self.weather_m.get_next_temperature()
 
         queue_status = self.ls_info['ls_norm_tasks_in_queue']
-        self.ls_state = self._create_ls_state(t_i, workload, queue_status, ci_i, ci_i_future)
-        self.dc_state = self._create_dc_state(workload, next_workload, temp, next_out_temperature)
+        ci_i_past = self.ci_m.get_n_past_ci(n=16)
+        self.ls_state = self._create_ls_state(t_i, workload, queue_status, ci_i, ci_i_future, ci_i_past, next_workload, norm_temp, next_out_temperature)
+        self.dc_state = self._create_dc_state(workload, next_workload, norm_temp, next_out_temperature)
         self.bat_state = self._create_bat_state(workload, next_workload, ci_i, norm_temp)
 
         # Populate observation dictionary based on updated states
         obs = self._populate_observation_dict()
 
         # Calculate rewards for all agents based on the updated state
-        reward_params = self._calculate_reward_params(workload, temp, ci_i, ci_i_future, day, hour)
+        reward_params = self._calculate_reward_params(workload, temp, ci_i, ci_i_future, day, hour, terminal)
         self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
 
         # Update rewards, terminations, and truncations for each agent
@@ -477,9 +511,10 @@ class SustainDC(gym.Env):
         self.bat_state, _, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
 
 
-    def _update_environments(self, workload, temp, wet_bulb, ci_i, ci_i_future):
+    def _update_environments(self, workload, temp, wet_bulb, ci_i, ci_i_future, current_hour):
         """Update the environment states based on the manager's outputs."""
         self.ls_env.update_workload(workload)
+        self.ls_env.update_current_hour(current_hour)
         self.dc_env.set_ambient_temp(temp, wet_bulb)
         self.bat_env.update_ci(ci_i, ci_i_future[0])
 
@@ -496,12 +531,13 @@ class SustainDC(gym.Env):
         return obs
 
 
-    def _calculate_reward_params(self, workload, temp, ci_i, ci_i_future, day, hour):
+    def _calculate_reward_params(self, workload, temp, ci_i, ci_i_future, day, hour, terminal):
         """Create the parameters needed to calculate rewards."""
         return {
             **self.bat_info, **self.ls_info, **self.dc_info,
             "outside_temp": temp, "day": day, "hour": hour,
-            "norm_CI": ci_i_future[0], "forecast_CI": ci_i_future
+            "norm_CI": ci_i_future[0], "forecast_CI": ci_i_future,
+            "isterminal": terminal
         }
 
 
