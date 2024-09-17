@@ -150,7 +150,7 @@ class Time_Manager():
 
 # Class to manage CPU workload data
 class Workload_Manager():
-    def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.005, desired_std_dev=0.01, timezone_shift=0):
+    def __init__(self, workload_filename='', init_day=0, future_steps=4, weight=0.005, desired_std_dev=0.01, timezone_shift=0, debug=False):
         """Manager of the DC workload.
 
         Args:
@@ -191,7 +191,10 @@ class Workload_Manager():
         self.original_data = self.cpu_smooth.copy()
                 
         # Initialize CoherentNoise process
-        self.coherent_noise = CoherentNoise(base=self.original_data[0], weight=weight, desired_std_dev=desired_std_dev)
+        self.coherent_noise = CoherentNoise(base=0, weight=weight, desired_std_dev=desired_std_dev)
+        
+        # Debug mode
+        self.debug = debug
 
     def smooth_workload(self, window_size=3):
         """Apply moving average to smooth out workload changes.
@@ -256,17 +259,23 @@ class Workload_Manager():
         
         baseline = np.random.random()*0.5 - 0.25
         
+        # if not self.debug:
         # Add noise to the workload data using the CoherentNoise 
-        cpu_data = self.original_data * np.random.uniform(0.95, 1.05, len(self.original_data))
-        cpu_smooth = cpu_data * 0.7 + self.coherent_noise.generate(len(cpu_data)) * 0.3 + baseline
+        cpu_data = self.original_data# * np.random.uniform(0.95, 1.05, len(self.original_data))
+        # print(f'Check the original cpu data: {self.original_data} and the coherent noise: {self.coherent_noise.generate(len(cpu_data))}')
+        cpu_smooth = cpu_data# * 0.7 + self.coherent_noise.generate(len(cpu_data)) * 0.3 + baseline
         
         self.cpu_smooth = self.scale_array(cpu_smooth)
         
         # Apply smoothing method
         self.cpu_smooth = self.smooth_workload(window_size=16)
         
-        num_roll_weeks = np.random.randint(0, 52) # Random roll the workload because is independed on the month, so I am rolling across weeks (52 weeks in a year)
-        self.cpu_smooth =  np.roll(self.cpu_smooth, num_roll_weeks*self.timestep_per_hour*24*7)
+        # num_roll_weeks = np.random.randint(0, 52) # Random roll the workload because is independed on the month, so I am rolling across weeks (52 weeks in a year)
+        # self.cpu_smooth =  np.roll(self.cpu_smooth, num_roll_weeks*self.timestep_per_hour*24*7)
+        
+        # else:
+            # Fixed utilization for debugging using 60% of the CPU
+            # self.cpu_smooth = np.ones_like(self.cpu_smooth) * 0.6
 
         self._current_workload = self.cpu_smooth[self.time_step]
         self._next_workload = self.cpu_smooth[self.time_step + 1]
@@ -318,7 +327,7 @@ class CI_Manager():
         desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 5.
         timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
     """
-    def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5, timezone_shift=0):
+    def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5, timezone_shift=0, debug=False):
         """Initialize the CI_Manager class.
 
         Args:
@@ -338,7 +347,7 @@ class CI_Manager():
             carbon_data_list = pd.read_csv(PATH+f"/data/CarbonIntensity/{filename}")['avg_CI'].values[:8760]
 
         assert len(carbon_data_list) == 8760, "The number of data points in the carbon intensity data is not one year data=24*365=8760."
-        
+        self.debug = debug
         carbon_data_list = carbon_data_list.astype(float)
         self.init_day = init_day
         self.timezone_shift = timezone_shift
@@ -351,6 +360,13 @@ class CI_Manager():
             avg_value = np.nanmean(carbon_data_list)
             carbon_data_list = np.nan_to_num(carbon_data_list, nan=avg_value)
         
+        # If self.debug is True, replace the carbon intensity data with a sine wave for testing of 24 timesteps of period but with the same length of the carbon intensity data
+        # if self.debug:
+            # Create a sine wave with 24 timesteps of period (one day cycle) and the same length as carbon_data_list
+            # t = np.arange(len(carbon_data_list)*4)  # Create an array of timesteps equal to the length of the carbon data
+            # carbon_data_list = np.sin(2 * np.pi * t / self.time_steps_day) * 0.5 + 0.5  # Create sine wave with period of 24 timesteps (one day)
+    
+            
         x = range(0, len(carbon_data_list))
         xcarbon_new = np.linspace(0, len(carbon_data_list), len(carbon_data_list)*self.timestep_per_hour)
         
@@ -366,9 +382,11 @@ class CI_Manager():
         self.time_step = 0
 
         # Initialize CoherentNoise process
-        self.coherent_noise = CoherentNoise(base=self.original_data[0], weight=weight, desired_std_dev=desired_std_dev)
+        self.coherent_noise = CoherentNoise(base=0, weight=weight, desired_std_dev=desired_std_dev)
         
         self.future_steps = future_steps
+        
+        
         
 
     # Function to return all carbon intensity data
@@ -394,18 +412,32 @@ class CI_Manager():
         self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0)
 
         # Add noise to the carbon data using the CoherentNoise
-        self.carbon_smooth = self.original_data + self.coherent_noise.generate(len(self.original_data))
+        self.carbon_smooth = self.original_data# + self.coherent_noise.generate(len(self.original_data))
         
         self.carbon_smooth = np.clip(self.carbon_smooth, 0, None)
         
-        num_roll_days = np.random.randint(0, 14) # Random roll the workload some days. I can roll the carbon intensity up to 14 days.
-        self.carbon_smooth =  np.roll(self.carbon_smooth, num_roll_days*self.timestep_per_hour*24)
+        # num_roll_days = np.random.randint(0, 14) # Random roll the workload some days. I can roll the carbon intensity up to 14 days.
+        # self.carbon_smooth =  np.roll(self.carbon_smooth, num_roll_days*self.timestep_per_hour*24)
 
+        # if self.debug:
+            # Expand the range of the carbon intensity data x10
+            # self.carbon_smooth = (self.carbon_smooth - min(self.carbon_smooth)*0.3) * 10
         self.min_ci = min(self.carbon_smooth)
         self.max_ci = max(self.carbon_smooth)
-        self.norm_carbon = normalize(self.carbon_smooth, self.min_ci, self.max_ci)
-        # self.norm_carbon = standarize(self.carbon_smooth)
+        # self.norm_carbon = normalize(self.carbon_smooth, self.min_ci, self.max_ci)
+        # self.norm_carbon = (self.carbon_smooth - np.mean(self.carbon_smooth)) / np.std(self.carbon_smooth)
+        
+        # Normalize the carbon intensity data using the next 30 days of data
+        # mean_30_days = np.mean(self.carbon_smooth[self.time_step:30*self.time_steps_day + self.time_step])
+        # std_30_days = np.std(self.carbon_smooth[self.time_step:30*self.time_steps_day + self.time_step])
+        # self.norm_carbon = (self.carbon_smooth - mean_30_days) / std_30_days
+        # Scale the carbon intensity data using the min max calues of the next 30 days
+        max_30_days = np.max(self.carbon_smooth[self.time_step:30*self.time_steps_day + self.time_step])
+        min_30_days = np.min(self.carbon_smooth[self.time_step:30*self.time_steps_day + self.time_step])
+        self.norm_carbon = (self.carbon_smooth - min_30_days) / (max_30_days - min_30_days)
         # self.norm_carbon = (np.clip(self.norm_carbon, -1, 1) + 1) * 0.5
+        # if self.debug:
+            # self.norm_carbon = self.carbon_smooth
         
         self._current_carbon_smooth = self.carbon_smooth[self.time_step]
         self._next_carbon_smooth = self.carbon_smooth[self.time_step + 1]
@@ -414,7 +446,7 @@ class CI_Manager():
         self._next_norm_carbon = self.norm_carbon[self.time_step + 1]
         self._forecast_norm_carbon = self.norm_carbon[(self.time_step+1):(self.time_step+1)+self.future_steps]
 
-        return self._current_norm_carbon, self._forecast_norm_carbon
+        return self._current_norm_carbon, self._forecast_norm_carbon, self._current_carbon_smooth
     
     # Function to advance the time step and return the carbon intensity at the new time step
     def step(self):
@@ -429,12 +461,17 @@ class CI_Manager():
         # If it tries to read further, restart from the initial index
         if self.time_step >= len(self.carbon_smooth):
             self.time_step = self.init_day*self.time_steps_day
+            
+        # Renormalize every 24 hours (self.time_steps_day)
+        # if self.time_step % self.time_steps_day == 0:
+        #     self.renormalize_current_day()
 
+        self._current_carbon_smooth = self.carbon_smooth[self.time_step]
         self._current_norm_carbon = self.norm_carbon[self.time_step]
         self._next_norm_carbon = self.norm_carbon[self.time_step + 1]
         self._forecast_norm_carbon = self.norm_carbon[(self.time_step+1):(self.time_step+1)+self.future_steps]
 
-        return self._current_norm_carbon, self._forecast_norm_carbon
+        return self._current_norm_carbon, self._forecast_norm_carbon, self._current_carbon_smooth
     
     def get_current_ci(self):
         return self._current_norm_carbon
@@ -464,7 +501,7 @@ class Weather_Manager():
         pres_column (int, optional): Column that contains the pressure data. Defaults to 9.
         timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
     """
-    def __init__(self, filename='', location='NY', init_day=0, weight=0.02, desired_std_dev=0.75, temp_column=6, rh_column=8, pres_column=9, timezone_shift=0):
+    def __init__(self, filename='', location='NY', init_day=0, weight=0.02, desired_std_dev=0.75, temp_column=6, rh_column=8, pres_column=9, timezone_shift=0, debug=False):
         """Initialize the Weather_Manager class.
 
         Args:
@@ -527,6 +564,8 @@ class Weather_Manager():
         self.coherent_noise = CoherentNoise(base=0, weight=weight, desired_std_dev=desired_std_dev)
                 
         self.time_steps_day = self.timestep_per_hour*24
+        
+        self.debug = debug
 
     # Function to return all weather data
     def get_total_weather(self):
@@ -550,21 +589,28 @@ class Weather_Manager():
         """
         self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0)
         
-        # Add noise to the temperature data using the CoherentNoise
-        coh_noise = self.coherent_noise.generate(len(self.original_temp_data))
-        self.temperature_data = self.original_temp_data + coh_noise
-        self.wet_bulb_data = self.original_wb_data + coh_noise
-        
-        num_roll_days = np.random.randint(0, 14) # Random roll the workload some days. I can roll the carbon intensity up to 14 days.
-        self.temperature_data =  np.roll(self.temperature_data, num_roll_days*self.timestep_per_hour*24)
-        self.wet_bulb_data =  np.roll(self.wet_bulb_data, num_roll_days*self.timestep_per_hour*24)
+        if not self.debug:
+            # Add noise to the temperature data using the CoherentNoise
+            coh_noise = self.coherent_noise.generate(len(self.original_temp_data))
+            print(f'TODO: check the generated coherent noise: {coh_noise[:3]} and the original temperature data: {self.original_temp_data[:3]} and the wet bulb data: {self.original_wb_data[:3]}' )
+            self.temperature_data = self.original_temp_data + coh_noise
+            self.wet_bulb_data = self.original_wb_data + coh_noise
+            
+            num_roll_days = np.random.randint(0, 14) # Random roll the workload some days. I can roll the carbon intensity up to 14 days.
+            self.temperature_data =  np.roll(self.temperature_data, num_roll_days*self.timestep_per_hour*24)
+            self.wet_bulb_data =  np.roll(self.wet_bulb_data, num_roll_days*self.timestep_per_hour*24)
 
-        self.temperature_data = np.clip(self.temperature_data, self.min_temp, self.max_temp)
-        self.norm_temp_data = normalize(self.temperature_data, self.min_temp, self.max_temp)
-        
-        self.wet_bulb_data = np.clip(self.wet_bulb_data, self.min_wb_temp, self.max_wb_temp)
-        self.norm_wet_bulb_data = normalize(self.wet_bulb_data, self.min_wb_temp, self.max_wb_temp)
-        
+            self.temperature_data = np.clip(self.temperature_data, self.min_temp, self.max_temp)
+            self.norm_temp_data = normalize(self.temperature_data, self.min_temp, self.max_temp)
+            
+            self.wet_bulb_data = np.clip(self.wet_bulb_data, self.min_wb_temp, self.max_wb_temp)
+            self.norm_wet_bulb_data = normalize(self.wet_bulb_data, self.min_wb_temp, self.max_wb_temp)
+        else:
+            # Use a fixed temperature for debugging and wet bulb temperature
+            self.temperature_data = np.ones_like(self.temperature_data) * 30
+            self.norm_temp_data = np.ones_like(self.norm_temp_data) * 0.5
+            self.wet_bulb_data = np.ones_like(self.wet_bulb_data) * 25
+            
         self._current_temp = self.temperature_data[self.time_step]
         self._next_temp = self.temperature_data[self.time_step + 1]
         self._current_norm_temp = self.norm_temp_data[self.time_step]

@@ -276,7 +276,7 @@ class OnPolicyBaseRunner:
                     self.update_chkpoints = False
 
                 # Save the latest checkpoint after every episode
-                self.save(latest=True)
+                # self.save(latest=True)
         
             self.after_update()
 
@@ -517,6 +517,10 @@ class OnPolicyBaseRunner:
         eval_episode = 0
 
         update_chkpoints = False
+        overdue_tasks_threshold = 100  # Define the threshold for overdue tasks
+        num_evaluations_per_check = 10  # Number of evaluations before checking to save the checkpoint
+        eval_counter = 0  # Initialize evaluation counter
+
         # Dictionary to store metrics for each agent across all episodes
         metrics = {
             'agent_1': [],
@@ -539,6 +543,8 @@ class OnPolicyBaseRunner:
             (self.algo_args["eval"]["n_eval_rollout_threads"], self.num_agents, 1),
             dtype=np.float32,
         )
+
+        overdue_tasks_list = []  # Keep track of overdue tasks during evaluation
 
         while True:
             eval_actions_collector = []
@@ -611,11 +617,16 @@ class OnPolicyBaseRunner:
                         else:
                             print(f'There is an error while saving the evaluation metrics')
 
+            # Collect overdue tasks data for each evaluation
+            for eval_i in range(self.algo_args["eval"]["n_eval_rollout_threads"]):
+                for agent_id in range(self.num_agents):
+                    if "ls_overdue_penalty" in eval_infos[eval_i][agent_id]:
+                        overdue_tasks_list.append(eval_infos[eval_i][agent_id]["ls_overdue_penalty"])
+
+
             eval_dones_env = np.all(eval_dones, axis=1)
 
-            eval_rnn_states[
-                eval_dones_env == True
-            ] = np.zeros(  # if env is done, then reset rnn_state to all zero
+            eval_rnn_states[eval_dones_env == True] = np.zeros(
                 (
                     (eval_dones_env == True).sum(),
                     self.num_agents,
@@ -641,12 +652,15 @@ class OnPolicyBaseRunner:
                     )  # logger callback when an episode is done
 
             if eval_episode >= self.algo_args["eval"]["eval_episodes"]:
-                self.logger.eval_log(
-                    eval_episode
-                )  # logger callback at the end of evaluation
-                if self.logger.avg_eval_episode_reward >= self.current_best_avg_eval_episode_reward:
+                self.logger.eval_log(eval_episode)  # logger callback at the end of evaluation
+                # if self.logger.avg_eval_episode_reward >= self.current_best_avg_eval_episode_reward:
+                    # self.current_best_avg_eval_episode_reward = self.logger.avg_eval_episode_reward
+                total_overdue_tasks = np.sum(overdue_tasks_list)
+                if total_overdue_tasks < overdue_tasks_threshold and self.logger.avg_eval_episode_reward >= self.current_best_avg_eval_episode_reward:
                     self.current_best_avg_eval_episode_reward = self.logger.avg_eval_episode_reward
                     update_chkpoints = True
+                    print(f"New best average evaluation episode reward: {self.current_best_avg_eval_episode_reward:.2f}, with total overdue tasks: {total_overdue_tasks}")
+                overdue_tasks_list = []  # Reset the overdue tasks list
                 break
             
         # Calculate and print evaluation summary statistics

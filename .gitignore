@@ -1,6 +1,7 @@
 Eplus-env-datacenter-mixed-continuous*/
 results/
 .history/
+generated_configs/
 __pycache__/
 *.out
 *.pyc

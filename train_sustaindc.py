@@ -10,6 +10,7 @@ import sys
 import warnings
 import argparse
 import json
+import yaml
 
 warnings.filterwarnings('ignore')
 # sys.path.insert(0, os.getcwd())
@@ -83,12 +84,17 @@ def main():
     # Load configuration
     if args["load_config"] != "":
         # Load config from existing config file
-        with open(args["load_config"], encoding="utf-8") as file:
-            all_config = json.load(file)
-        args["algo"] = all_config["main_args"]["algo"]
-        args["env"] = all_config["main_args"]["env"]
-        algo_args = all_config["algo_args"]
-        env_args = all_config["env_args"]
+        # if the file of load_config starts with "generated_configs/", then load using yaml
+        algo_args, env_args = get_defaults_yaml_args(args["algo"], args["env"])
+        
+        if args["load_config"].startswith("generated_configs/"):
+            with open(args["load_config"], "r") as file:
+                all_config = yaml.safe_load(file)
+        else:
+            with open(args["load_config"], encoding="utf-8") as file:
+                all_config = json.load(file)
+        algo_args = all_config
+        # env_args = all_config["env_args"]
     else:
         # Load config from corresponding yaml file
         algo_args, env_args = get_defaults_yaml_args(args["algo"], args["env"])

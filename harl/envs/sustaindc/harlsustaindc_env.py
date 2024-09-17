@@ -34,7 +34,7 @@ class HARLSustainDCEnv:
         self.observation_space = self.unwrap(self.env.observation_spaces)
         self.action_space = self.unwrap(self.env.action_spaces)
 
-        self.discrete = False
+        self.discrete = True
 
     def reset(self):
         """

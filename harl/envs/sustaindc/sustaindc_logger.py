@@ -29,6 +29,8 @@ class SustainDCLogger(BaseLogger):
             "load_left": 0,
             "ls_tasks_in_queue": 0,
             "ls_tasks_dropped": 0,
+            "ls_tasks_overdue": 0,
+            "ls_computed_tasks": 0,  # New metric added
             "instantaneous_net_energy": [],
             'hvac_power_on_used': [],
             'PUE': 0,
@@ -50,6 +52,8 @@ class SustainDCLogger(BaseLogger):
             "load_left": 0,
             "ls_tasks_in_queue": 0,
             "ls_tasks_dropped": 0,
+            "ls_tasks_overdue": 0,
+            "ls_computed_tasks": 0,  # New metric added
             "instantaneous_net_energy": [],
             'hvac_power_on_used': [],
             'PUE': 0,
@@ -71,6 +75,8 @@ class SustainDCLogger(BaseLogger):
             "load_left": 0,
             "ls_tasks_in_queue": 0,
             "ls_tasks_dropped": 0,
+            "ls_tasks_overdue": 0,
+            "ls_computed_tasks": 0,  # New metric added
             "instantaneous_net_energy": [],
             'hvac_power_on_used': [],
             'PUE': 0,
@@ -90,16 +96,18 @@ class SustainDCLogger(BaseLogger):
             self.metrics["load_left"] += infos[i][0].get("ls_unasigned_day_load_left", 0)
             self.metrics["ls_tasks_in_queue"] += infos[i][0].get("ls_tasks_in_queue", 0)
             self.metrics["ls_tasks_dropped"] += infos[i][0].get("ls_tasks_dropped", 0)
+            self.metrics["ls_tasks_overdue"] += infos[i][0].get("ls_overdue_penalty", 0)
             self.metrics["ite_power_sum"] += infos[i][0].get("dc_ITE_total_power_kW", 0)
-            self.metrics['ct_power_sum'] += infos[i][0].get("dc_CT_total_power_kW", 0)  # Added
-            self.metrics['chiller_power_sum'] += infos[i][0].get("dc_Compressor_total_power_kW", 0)  # Added
+            self.metrics['ct_power_sum'] += infos[i][0].get("dc_CT_total_power_kW", 0)
+            self.metrics['chiller_power_sum'] += infos[i][0].get("dc_Compressor_total_power_kW", 0)
             self.metrics["hvac_power_sum"] += infos[i][0].get("dc_HVAC_total_power_kW", 0)
-            
-            if infos[i][0].get("dc_HVAC_total_power_kW", 0)> 0:
+            self.metrics["ls_computed_tasks"] += infos[i][0].get("ls_computed_tasks", 0)  # Update new metric
+
+            if infos[i][0].get("dc_HVAC_total_power_kW", 0) > 0:
                 self.metrics["hvac_power_on_used"].append(infos[i][0].get("dc_HVAC_total_power_kW", 0))
 
             self.metrics["step_count"] += 1
-
+            
     def eval_per_step(self, eval_data):
         """Capture and update metrics per step during evaluation."""
         super().eval_per_step(eval_data)
@@ -112,66 +120,75 @@ class SustainDCLogger(BaseLogger):
             self.eval_metrics["load_left"] += eval_infos[i][0].get("ls_unasigned_day_load_left", 0)
             self.eval_metrics["ls_tasks_in_queue"] += eval_infos[i][0].get("ls_tasks_in_queue", 0)
             self.eval_metrics["ls_tasks_dropped"] += eval_infos[i][0].get("ls_tasks_dropped", 0)
+            self.eval_metrics["ls_tasks_overdue"] += eval_infos[i][0].get("ls_overdue_penalty", 0)
             self.eval_metrics["ite_power_sum"] += eval_infos[i][0].get("dc_ITE_total_power_kW", 0)
-            self.eval_metrics["ct_power_sum"] += eval_infos[i][0].get("dc_CT_total_power_kW", 0)  # Added
-            self.eval_metrics["chiller_power_sum"] += eval_infos[i][0].get("dc_Compressor_total_power_kW", 0)  # Added
+            self.eval_metrics["ct_power_sum"] += eval_infos[i][0].get("dc_CT_total_power_kW", 0)
+            self.eval_metrics["chiller_power_sum"] += eval_infos[i][0].get("dc_Compressor_total_power_kW", 0)
             self.eval_metrics["hvac_power_sum"] += eval_infos[i][0].get("dc_HVAC_total_power_kW", 0)
+            self.eval_metrics["ls_computed_tasks"] += eval_infos[i][0].get("ls_computed_tasks", 0)  # Update new metric
 
-            if eval_infos[i][0].get("dc_HVAC_total_power_kW", 0)> 0:
+            if eval_infos[i][0].get("dc_HVAC_total_power_kW", 0) > 0:
                 self.eval_metrics["hvac_power_on_used"].append(eval_infos[i][0].get("dc_HVAC_total_power_kW", 0))
-            
+
             self.eval_metrics["step_count"] += 1
 
 
     def episode_log(self, actor_train_infos, critic_train_info, actor_buffer, critic_buffer):
         """Calculate and log metrics at the end of the episode."""
         super().episode_log(actor_train_infos, critic_train_info, actor_buffer, critic_buffer)
-        
+
         if self.metrics["step_count"] > 0:
             average_net_energy = self.metrics["net_energy_sum"] / self.metrics["step_count"]
             average_ite_power = self.metrics["ite_power_sum"] / self.metrics["step_count"]
-            average_ct_power = self.metrics["ct_power_sum"] / self.metrics["step_count"]  # Added
-            average_chiller_power = self.metrics["chiller_power_sum"] / self.metrics["step_count"]  # Added
+            average_ct_power = self.metrics["ct_power_sum"] / self.metrics["step_count"]
+            average_chiller_power = self.metrics["chiller_power_sum"] / self.metrics["step_count"]
             average_hvac_power = self.metrics["hvac_power_sum"] / self.metrics["step_count"]
-
             average_CO2_footprint = self.metrics["CO2_footprint_sum"] / self.metrics["step_count"]
             total_water_usage = self.metrics["water_usage"]
             total_load_left = self.metrics["load_left"]
             total_tasks_in_queue = self.metrics["ls_tasks_in_queue"]
             total_tasks_dropped = self.metrics["ls_tasks_dropped"]
+            total_tasks_overdue = self.metrics["ls_tasks_overdue"]
+            total_computed_tasks = self.metrics["ls_computed_tasks"]  # New metric
         else:
             average_net_energy = 0
             average_ite_power = 0
+            average_ct_power = 0
+            average_chiller_power = 0
             average_hvac_power = 0
             average_CO2_footprint = 0
             total_water_usage = 0
             total_load_left = 0
             total_tasks_in_queue = 0
             total_tasks_dropped = 0
-        
+            total_tasks_overdue = 0
+            total_computed_tasks = 0  # New metric
+
         if len(self.metrics["hvac_power_on_used"]) > 0:
             self.writter.add_scalar("metrics/Average HVAC Power on use", np.mean(self.metrics["hvac_power_on_used"]), self.total_num_steps)
             self.writter.add_scalar("metrics/Max HVAC Power on use", np.max(self.metrics["hvac_power_on_used"]), self.total_num_steps)
             self.writter.add_scalar("metrics/Percentile 90% HVAC Power on use", np.percentile(self.metrics["hvac_power_on_used"], 90), self.total_num_steps)
-            
+
         # Log the calculated metrics to TensorBoard or similar
         self.writter.add_scalar("metrics/Average Net Energy", average_net_energy, self.total_num_steps)
         self.writter.add_scalar("metrics/Average ITE Power", average_ite_power, self.total_num_steps)
-        self.writter.add_scalar("metrics/Average CT Power", average_ct_power, self.total_num_steps)  # Added
-        self.writter.add_scalar("metrics/Average Chiller Power", average_chiller_power, self.total_num_steps)  # Added
+        self.writter.add_scalar("metrics/Average CT Power", average_ct_power, self.total_num_steps)
+        self.writter.add_scalar("metrics/Average Chiller Power", average_chiller_power, self.total_num_steps)
         self.writter.add_scalar("metrics/Average HVAC Power", average_hvac_power, self.total_num_steps)
+        self.writter.add_scalar("metrics/Total Computed Tasks", total_computed_tasks, self.total_num_steps)  # Log new metric
 
-        PUE = 1 + average_hvac_power/average_ite_power
+        PUE = 1 + average_hvac_power / average_ite_power if average_ite_power != 0 else float('inf')
         self.writter.add_scalar("metrics/Average PUE", PUE, self.total_num_steps)
 
         self.writter.add_scalar("metrics/Average CO2 Footprint", average_CO2_footprint, self.total_num_steps)
         self.writter.add_scalar("metrics/Total Water Usage", total_water_usage, self.total_num_steps)
         self.writter.add_scalar("metrics/Total Tasks in Queue", total_tasks_in_queue, self.total_num_steps)
         self.writter.add_scalar("metrics/Total Tasks Dropped", total_tasks_dropped, self.total_num_steps)
+        self.writter.add_scalar("metrics/Total Tasks Overdue", total_tasks_overdue, self.total_num_steps)
 
         # Optionally, log to the console or to a file
         print(f"Episode {self.episode}: Avg Net Energy={average_net_energy:.3f}, Avg CO2={average_CO2_footprint:.3f}, Water Usage={total_water_usage:.3f}")
-        print(f"Tasks in Queue={total_tasks_in_queue:.3f}, Tasks Dropped={total_tasks_dropped:.3f}")
+        print(f"Tasks in Queue={total_tasks_in_queue:.0f}, Tasks Dropped={total_tasks_dropped:.0f}, Tasks Overdue={total_tasks_overdue:.0f}, Computed Tasks={total_computed_tasks:.0f}")
 
         # Reset metrics for the next episode
         self.metrics = {
@@ -186,6 +203,8 @@ class SustainDCLogger(BaseLogger):
             "load_left": 0,
             "ls_tasks_in_queue": 0,
             "ls_tasks_dropped": 0,
+            "ls_tasks_overdue": 0,
+            "ls_computed_tasks": 0,  # Reset new metric
             "instantaneous_net_energy": [],
             'hvac_power_on_used': []
         }
@@ -193,29 +212,34 @@ class SustainDCLogger(BaseLogger):
     def eval_log(self, eval_episode):
         """Log evaluation information at the end of an evaluation session."""
         super().eval_log(eval_episode)
-        
+
         if self.eval_metrics["step_count"] > 0:
             average_net_energy = self.eval_metrics["net_energy_sum"] / self.eval_metrics["step_count"]
             average_ite_power = self.eval_metrics["ite_power_sum"] / self.eval_metrics["step_count"]
-            average_ct_power = self.eval_metrics["ct_power_sum"] / self.eval_metrics["step_count"]  # Added
-            average_chiller_power = self.eval_metrics["chiller_power_sum"] / self.eval_metrics["step_count"]  # Added
+            average_ct_power = self.eval_metrics["ct_power_sum"] / self.eval_metrics["step_count"]
+            average_chiller_power = self.eval_metrics["chiller_power_sum"] / self.eval_metrics["step_count"]
             average_hvac_power = self.eval_metrics["hvac_power_sum"] / self.eval_metrics["step_count"]
-
             average_CO2_footprint = self.eval_metrics["CO2_footprint_sum"] / self.eval_metrics["step_count"]
             total_water_usage = self.eval_metrics["water_usage"]
             total_load_left = self.eval_metrics["load_left"]
             total_tasks_in_queue = self.eval_metrics["ls_tasks_in_queue"]
             total_tasks_dropped = self.eval_metrics["ls_tasks_dropped"]
+            total_tasks_overdue = self.eval_metrics["ls_tasks_overdue"]
+            total_computed_tasks = self.eval_metrics["ls_computed_tasks"]  # New metric
         else:
             average_net_energy = 0
             average_ite_power = 0
+            average_ct_power = 0
+            average_chiller_power = 0
             average_hvac_power = 0
             average_CO2_footprint = 0
             total_water_usage = 0
             total_load_left = 0
             total_tasks_in_queue = 0
             total_tasks_dropped = 0
-        
+            total_tasks_overdue = 0
+            total_computed_tasks = 0  # New metric
+
         if len(self.eval_metrics["hvac_power_on_used"]) > 0:
             self.writter.add_scalar("eval_metrics/Average HVAC Power on use", np.mean(self.eval_metrics["hvac_power_on_used"]), self.total_num_steps)
             self.writter.add_scalar("eval_metrics/Max HVAC Power on use", np.max(self.eval_metrics["hvac_power_on_used"]), self.total_num_steps)
@@ -224,25 +248,27 @@ class SustainDCLogger(BaseLogger):
         # Log the calculated eval_metrics to TensorBoard or similar
         self.writter.add_scalar("eval_metrics/Average Net Energy", average_net_energy, self.total_num_steps)
         self.writter.add_scalar("eval_metrics/Average ITE Power", average_ite_power, self.total_num_steps)
-        self.writter.add_scalar("eval_metrics/Average CT Power", average_ct_power, self.total_num_steps)  # Added
-        self.writter.add_scalar("eval_metrics/Average Chiller Power", average_chiller_power, self.total_num_steps)  # Added
+        self.writter.add_scalar("eval_metrics/Average CT Power", average_ct_power, self.total_num_steps)
+        self.writter.add_scalar("eval_metrics/Average Chiller Power", average_chiller_power, self.total_num_steps)
         self.writter.add_scalar("eval_metrics/Average HVAC Power", average_hvac_power, self.total_num_steps)
-        
-        PUE = 1 + average_hvac_power/average_ite_power
+        self.writter.add_scalar("eval_metrics/Total Computed Tasks", total_computed_tasks, self.total_num_steps)  # Log new metric
+
+        PUE = 1 + average_hvac_power / average_ite_power if average_ite_power != 0 else float('inf')
         self.writter.add_scalar("eval_metrics/Average PUE", PUE, self.total_num_steps)
-        
+
         self.writter.add_scalar("eval_metrics/Average CO2 Footprint", average_CO2_footprint, self.total_num_steps)
         self.writter.add_scalar("eval_metrics/Total Water Usage", total_water_usage, self.total_num_steps)
         self.writter.add_scalar("eval_metrics/Total Tasks in Queue", total_tasks_in_queue, self.total_num_steps)
         self.writter.add_scalar("eval_metrics/Total Tasks Dropped", total_tasks_dropped, self.total_num_steps)
+        self.writter.add_scalar("eval_metrics/Total Tasks Overdue", total_tasks_overdue, self.total_num_steps)
 
         # Optionally, log to the console or to a file
         if self.is_off_policy:
-            self.episode = (int(self.total_num_steps)//self.algo_args["train"].get("episode_length", 1024)//self.algo_args["train"]["n_rollout_threads"])
+            self.episode = (int(self.total_num_steps) // self.algo_args["train"].get("episode_length", 1024) // self.algo_args["train"]["n_rollout_threads"])
         print(f"Episode {self.episode}: Avg Net Energy={average_net_energy:.3f}, Avg CO2={average_CO2_footprint:.3f}, Water Usage={total_water_usage:.3f}")
-        print(f"Tasks in Queue={total_tasks_in_queue:.3f}, Tasks Dropped={total_tasks_dropped:.3f}")
+        print(f"Tasks in Queue={total_tasks_in_queue:.0f}, Tasks Dropped={total_tasks_dropped:.0f}, Tasks Overdue={total_tasks_overdue:.0f}, Computed Tasks={total_computed_tasks:.0f}")
 
-        # Reset metrics for the next episode
+        # Reset metrics for the next evaluation
         self.eval_metrics = {
             "net_energy_sum": 0,
             "ite_power_sum": 0,
@@ -255,6 +281,8 @@ class SustainDCLogger(BaseLogger):
             "load_left": 0,
             "ls_tasks_in_queue": 0,
             "ls_tasks_dropped": 0,
+            "ls_tasks_overdue": 0,
+            "ls_computed_tasks": 0,  # Reset new metric
             "instantaneous_net_energy": [],
             'hvac_power_on_used': []
         }

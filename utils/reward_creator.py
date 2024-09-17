@@ -21,20 +21,38 @@ def default_ls_reward(params: dict) -> float:
         float: Reward value.
     """
     # Calculate the footprint reward based on the carbon footprint
-    total_footprint = params['bat_CO2_footprint']
+    # total_footprint = params['bat_CO2_footprint']
     # bat_footprint.append(params['bat_CO2_footprint'])
-    footprint_reward = -10.0 * (total_footprint - 284) / 100  # Mean and std reward. Negate to maximize reward and minimize footprint
+    # footprint_reward = -1.0 * (total_footprint - 71923) / 40399  # Mean and std reward. Negate to maximize reward and minimize footprint
+    # Normalize the total_footprint using the percentile 90 and 10
+    # percentile_90 = 129522
+    # percentile_10 = 27589
+    # footprint_reward = -1.0 * (total_footprint - percentile_10) / (percentile_90 - percentile_10)  # Mean and std reward. Negate to maximize reward and minimize footprint
+    
+    
     
     total_energy = params['bat_total_energy_with_battery_KWh']
+    norm_total_energy = (total_energy - 400) / 120
+    
+    norm_ci = params['norm_CI']
+    
+    footprint_reward = -1.0 * norm_ci * norm_total_energy
     # bat_energy.append(total_energy)
-    energy_reward = -1.0 * (total_energy - 400) / 120  # Mean and std reward. Negate to maximize reward and minimize energy consumption
+    # energy_reward = -1.0 * (total_energy - 400) / 120  # Mean and std reward. Negate to maximize reward and minimize energy consumption
 
     # Penalize the agent if any tasks are dropped
-    if params['ls_tasks_dropped'] > 0:
-        return -1.0 * params['ls_tasks_dropped'] * 10.0  # Penalize for each task dropped
+    tasks_dropped_penalty = 0
+    # if params['ls_tasks_dropped'] > 0:
+        # tasks_dropped_penalty = -10.0 #* params['ls_tasks_dropped']  # Penalize for each task dropped
+        # return -1.0
     
-    if params['ls_enforced'] > 0:
-        return -10.0
+    tasks_overdue_penalty = 0
+    if params['ls_overdue_penalty'] > 0:
+        tasks_overdue_penalty = -1.0 # * params['ls_overdue_penalty']  # Penalize for each task that is overdue
+        # return -1.0
+        
+    # if params['ls_enforced'] > 0:
+        # return -10.0
     
     # if params['isterminal']:
         # return -1.0 * params['ls_tasks_in_queue']
@@ -56,7 +74,7 @@ def default_ls_reward(params: dict) -> float:
     # task_processing_reward = tasks_processed * CI_reward_multiplier / 100  # Normalize and scale the reward for task processing
 
     # Total reward combines the footprint reward and task processing reward
-    total_reward = footprint_reward# + energy_reward# + task_processing_reward
+    total_reward = footprint_reward + tasks_dropped_penalty + tasks_overdue_penalty
 
     return total_reward
 

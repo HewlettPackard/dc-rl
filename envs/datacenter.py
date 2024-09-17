@@ -289,8 +289,8 @@ class DataCenter_ITModel():
             rack_cpu_power, rack_itfan_power = rack.compute_instantaneous_pwr_vecd(rack_inlet_temp, ITE_load_pct)
             
             # Apply the exponential adjustment factor based on the average server temperature
-            rack_cpu_power *= adjustment_factor
-            rack_itfan_power *= adjustment_factor
+            # rack_cpu_power *= adjustment_factor
+            # rack_itfan_power *= adjustment_factor
         
             # Max IT Power : 83000
             # Min IT Power : 28000
