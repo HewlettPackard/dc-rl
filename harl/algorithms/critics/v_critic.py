@@ -6,6 +6,7 @@ from harl.utils.models_tools import (
     huber_loss,
     mse_loss,
     update_linear_schedule,
+    update_custom_cosine_schedule,
 )
 from harl.utils.envs_tools import check
 from harl.models.value_function_models.v_net import VNet
@@ -37,6 +38,7 @@ class VCritic:
         self.use_policy_active_masks = args["use_policy_active_masks"]
 
         self.critic_lr = args["critic_lr"]
+        self.use_cosine_lr_decay = args.get("use_cosine_lr_decay", False)
         self.opti_eps = args["opti_eps"]
         self.weight_decay = args["weight_decay"]
 
@@ -57,7 +59,10 @@ class VCritic:
             episode: (int) current training episode.
             episodes: (int) total number of training episodes.
         """
-        update_linear_schedule(self.critic_optimizer, episode, episodes, self.critic_lr)
+        if self.use_cosine_lr_decay:
+            update_custom_cosine_schedule(self.critic_optimizer, episode, episodes, self.critic_lr)
+        else:
+            update_linear_schedule(self.critic_optimizer, episode, episodes, self.critic_lr)
 
     def get_values(self, cent_obs, rnn_states_critic, masks):
         """Get value function predictions.

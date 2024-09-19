@@ -7,8 +7,8 @@ import numpy as np
 import pandas as pd
 
 from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
-# from envs.carbon_ls_discrete import CarbonLoadEnv
-from envs.carbon_ls_continuous import CarbonLoadEnv
+from envs.carbon_ls_discrete import CarbonLoadEnv
+# from envs.carbon_ls_continuous import CarbonLoadEnv
 from envs.dc_gym import dc_gymenv
 from utils.utils_cf import get_init_day
 

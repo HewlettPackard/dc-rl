@@ -254,7 +254,7 @@ class Workload_Manager():
         Returns:
             float: CPU workload at current time step.
         """
-        self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0)
+        self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0) * self.timestep_per_hour
         self.init_time_step = self.time_step
         
         baseline = np.random.random()*0.5 - 0.25
@@ -409,7 +409,7 @@ class CI_Manager():
             float: Carbon intensity at current time step.
             float: Normalized carbon intensity at current time step and its forecast.
         """
-        self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0)
+        self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0) * self.timestep_per_hour
 
         # Add noise to the carbon data using the CoherentNoise
         self.carbon_smooth = self.original_data# + self.coherent_noise.generate(len(self.original_data))
@@ -522,6 +522,7 @@ class Weather_Manager():
         else:
             weather_data = pd.read_csv(PATH+f'/data/Weather/{filename}', skiprows=8, header=None).values
         
+        # The weather data has a granularity of 1 hour, so we need to interpolate it to have a granularity of 15 minutes
         temperature_data = weather_data[:,temp_column].astype(float)
         relative_humidity_data = weather_data[:,rh_column].astype(float)  # Added for relative humidity
         pressure_data = weather_data[:,pres_column].astype(float)  # Added for atmospheric pressure
@@ -587,7 +588,8 @@ class Weather_Manager():
         Returns:
             tuple: Temperature at current step, normalized temperature at current step, wet bulb temperature at current step, normalized wet bulb temperature at current step.
         """
-        self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0)
+
+        self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0) * self.timestep_per_hour
         
         if not self.debug:
             # Add noise to the temperature data using the CoherentNoise

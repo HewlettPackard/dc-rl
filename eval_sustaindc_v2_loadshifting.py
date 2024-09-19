@@ -67,7 +67,8 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     # run = 'happo/debug_ls_4_onlyhour_newreward/seed-05735-2024-09-16-21-52-16' # 8.47% Reduction
     # run = 'happo/debug_ls_5_new_obs_expanded_randomhour/seed-05415-2024-09-16-22-48-16' # 6.693% ± 0.028 Reduction
     # run = 'happo/debug_ls_9_new_reward_5timessqrtplus1_8threads_128eplen_8numminibatch_taskhistogram_weatherinfo_0000001actorentr/seed-02195-2024-09-18-23-28-55' # 
-    run = 'happo/debug_ls_12_continuous_new_reward_5timessqrtplus1_8threads_128eplen_8numminibatch_taskhistogram_weatherinfo_0actorentr/seed-02581-2024-09-19-00-46-08'
+    run = 'happo/debug_ls_new_reward_5timessqrtplus1_8threads_128eplen_8numminibatch_taskhistogram_weatherinfo_001actorentr/seed-01321-2024-09-18-23-25-57' # Reduction (%): 8.840 ± 0.337
+    
     path = f'/lustre/guillant/sustaindc/results/sustaindc/ca/{run}'
     with open(path + '/config.json', encoding='utf-8') as file:
         saved_config = json.load(file)
@@ -192,7 +193,8 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
                             key: eval_infos[i][0].get(key, None) for key in [
                                 'ls_original_workload', 'ls_shifted_workload', 'ls_action', 'ls_norm_load_left',
                                 'ls_unasigned_day_load_left', 'ls_penalty_flag', 'ls_tasks_in_queue', 'ls_norm_tasks_in_queue',
-                                'ls_tasks_dropped', 'ls_current_hour', 'ls_overdue_penalty', 'ls_computed_tasks'  # Added this line
+                                'ls_tasks_dropped', 'ls_current_hour', 'ls_overdue_penalty', 'ls_computed_tasks',
+                                'ls_oldest_task_age', 'ls_average_task_age',
                             ]
                         })
                     if 'bat_action' in eval_infos[i][0]:
@@ -328,7 +330,7 @@ print(f"Reduction (%): {co2_results_fixed['reduction_avg']:.3f} ± {co2_results_
 #%% Now Plot the original workload (ls_original_workload) vs the shifted workload (ls_shifted_workload) in one y-axis, and in the other y-axis the carbon intensity
 trained_metrics = trained_metrics_runs[0]
 original_workloads = [metric['ls_original_workload'] for metric in trained_metrics['agent_ls']]
-shifted_workloads = [metric['ls_shifted_workload'] for metric in trained_metrics['agent_ls']]
+shifted_workloads = [metric['ls_shifted_workload']  + metric['ls_original_workload']*0.4 for metric in trained_metrics['agent_ls']]
 carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_bat']]
 
 # Extract also the day and the hour to plot the data
@@ -464,8 +466,8 @@ plt.tight_layout()
 
 #%% Now Plot the ls_action vs the carbon intensity
 trained_metrics = trained_metrics_runs[0]
-ls_actions = [metric['ls_action'][0] for metric in trained_metrics['agent_ls']]
-ls_actions = np.clip(ls_actions, -1, 1)
+ls_actions = [metric['ls_action'] for metric in trained_metrics['agent_ls']]
+# ls_actions = np.clip(ls_actions, -1, 1)
 carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_bat']]
 # Define the number of points to plot
 # num_points = 96*7
@@ -501,7 +503,51 @@ ax1.grid(linestyle='--')
 # Customize the layout to ensure no parts are cut off
 plt.tight_layout()
 
+# %% Now plot the number of overdue tasks, the average tasks age and the maximum task age
+overdue_tasks = [metric['ls_overdue_penalty'] for metric in trained_metrics['agent_ls']]
+average_task_age = [metric['ls_average_task_age'] for metric in trained_metrics['agent_ls']]
+oldest_task_age = [metric['ls_oldest_task_age'] for metric in trained_metrics['agent_ls']]
 
+# Define the number of points to plot
+# num_points = 96*7
+# init_point = 0
+
+# Select the data to plot
+overdue_tasks = overdue_tasks[init_point:init_point + num_points]
+average_task_age = average_task_age[init_point:init_point + num_points]
+oldest_task_age = oldest_task_age[init_point:init_point + num_points]
+
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_overdue_tasks = pd.Series(overdue_tasks).rolling(window=window_size).mean().dropna()
+smoothed_average_task_age = pd.Series(average_task_age).rolling(window=window_size).mean().dropna()
+smoothed_oldest_task_age = pd.Series(oldest_task_age).rolling(window=window_size).mean().dropna()
+
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
+
+# Plot smoothed overdue tasks
+ax1.set_xlabel('Time (Days)')
+ax1.set_ylabel('Overdue Tasks', color='tab:blue')
+ax1.plot(time_intervals, smoothed_overdue_tasks, color='tab:blue', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+# Only show the x-axis labels for every 2 days
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+
+ax2 = ax1.twinx()
+ax2.set_ylabel('Average Task Age (Days)', color='tab:red')
+ax2.plot(time_intervals, smoothed_average_task_age, color='tab:red', linewidth=2)
+ax2.tick_params(axis='y', labelcolor='tab:red')
+
+ax3 = ax1.twinx()
+ax3.spines['right'].set_position(('outward', 60))
+ax3.set_ylabel('Oldest Task Age (Days)', color='tab:green')
+ax3.plot(time_intervals, smoothed_oldest_task_age, color='tab:green', linewidth=2)
+ax3.tick_params(axis='y', labelcolor='tab:green')
+
+# Show the grid
+ax1.grid(linestyle='--')
 #%% Pump speed vs workload utilization
 # Assuming metrics['agent_dc'] contains your data
 pump_speeds = [metric['dc_coo_mov_flow_actual'] for metric in trained_metrics['agent_dc']]

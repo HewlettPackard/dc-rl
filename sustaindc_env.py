@@ -379,7 +379,8 @@ class SustainDC(gym.Env):
                                         temperature_features,
                                         ls_task_age_histogram
                                     )))
-                
+        if len(ls_state) != 26:
+            print(f'Error: {len(ls_state)}')
         return ls_state
     
     def _create_dc_state(self, current_workload, next_workload, current_out_temperature, next_out_temperature):

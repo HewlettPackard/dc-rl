@@ -125,7 +125,7 @@ class OnPolicyBaseRunner:
             self.actor = []
             for agent_id in range(self.num_agents):
                 agent = ALGO_REGISTRY[args["algo"]](
-                    {**algo_args["model"], **algo_args["algo"]},
+                    {**algo_args["model"], **algo_args["algo"], **algo_args["train"]},
                     self.envs.observation_space[agent_id],
                     self.envs.action_space[agent_id],
                     device=self.device,
@@ -144,7 +144,7 @@ class OnPolicyBaseRunner:
 
             share_observation_space = self.envs.share_observation_space[0]
             self.critic = VCritic(
-                {**algo_args["model"], **algo_args["algo"]},
+                {**algo_args["model"], **algo_args["algo"], **algo_args["train"]},
                 share_observation_space,
                 device=self.device,
             )

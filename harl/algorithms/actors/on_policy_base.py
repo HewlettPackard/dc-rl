@@ -2,7 +2,7 @@
 
 import torch
 from harl.models.policy_models.stochastic_policy import StochasticPolicy
-from harl.utils.models_tools import update_linear_schedule
+from harl.utils.models_tools import update_linear_schedule, update_custom_cosine_schedule
 
 
 class OnPolicyBase:
@@ -27,6 +27,8 @@ class OnPolicyBase:
         self.action_aggregation = args["action_aggregation"]
 
         self.lr = args["lr"]
+        self.use_cosine_lr_decay = args.get("use_cosine_lr_decay", False)
+        
         self.opti_eps = args["opti_eps"]
         self.weight_decay = args["weight_decay"]
         # save observation and action spaces
@@ -49,7 +51,10 @@ class OnPolicyBase:
             episode: (int) current training episode.
             episodes: (int) total number of training episodes.
         """
-        update_linear_schedule(self.actor_optimizer, episode, episodes, self.lr)
+        if self.use_cosine_lr_decay:
+            update_custom_cosine_schedule(self.actor_optimizer, episode, episodes, self.lr)
+        else:
+            update_linear_schedule(self.actor_optimizer, episode, episodes, self.lr)
 
     def get_actions(
         self, obs, rnn_states_actor, masks, available_actions=None, deterministic=False

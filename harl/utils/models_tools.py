@@ -3,6 +3,7 @@ import copy
 import math
 import torch
 import torch.nn as nn
+import numpy as np
 
 
 def init_device(args):
@@ -73,6 +74,32 @@ def mse_loss(e):
     """MSE loss."""
     return e**2 / 2
 
+def update_custom_cosine_schedule(optimizer, epoch, total_num_epochs, initial_lr, base_lr=1e-9):
+    """
+    Updates the learning rate according to the custom schedule.
+
+    Args:
+        optimizer: (torch.optim.Optimizer) The optimizer for which to adjust the learning rate.
+        epoch: (int) Current epoch.
+        total_num_epochs: (int) Total number of epochs (b in the equation).
+        initial_lr: (float) Initial learning rate (a in the equation).
+        base_lr: (float) Base (minimum) learning rate (c in the equation).
+    """
+    a = initial_lr
+    b = total_num_epochs
+    c = base_lr
+    x = epoch
+
+    # Calculate the numerator and denominator of the fraction
+    numerator = 1 + np.cos(10 * np.pi * x / b)
+    denominator = 2 + (7 * x) / b
+
+    # Compute the updated learning rate
+    learning_rate = a * (numerator / denominator) + c
+
+    # Update the optimizer's learning rate
+    for param_group in optimizer.param_groups:
+        param_group["lr"] = learning_rate
 
 def update_linear_schedule(optimizer, epoch, total_num_epochs, initial_lr):
     """Decreases the learning rate linearly

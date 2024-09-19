@@ -23,6 +23,7 @@ class StochasticPolicy(nn.Module):
         super(StochasticPolicy, self).__init__()
         self.hidden_sizes = args.get("hidden_size_policy", args["hidden_sizes"])
         self.action_squash_method = args.get("action_squash_method", None)  # Default to None to squash actions between [-1, 1]
+        self.discrete = action_space.__class__.__name__ == "Discrete"
         self.args = args
         self.gain = args["gain"]
         self.initialization_method = args["initialization_method"]
@@ -86,11 +87,13 @@ class StochasticPolicy(nn.Module):
             actor_features, available_actions, deterministic
         )
 
-        # Apply the selected action squashing method
-        if self.action_squash_method == 'tanh':
-            actions = torch.tanh(actions)
-        elif self.action_squash_method == 'clip':
-            actions = torch.clamp(actions, -1, 1)
+        # Only apply the squashing method if the action is continuous
+        if not self.discrete:
+            # Apply the selected action squashing method
+            if self.action_squash_method == 'tanh':
+                actions = torch.tanh(actions)
+            elif self.action_squash_method == 'clip':
+                actions = torch.clamp(actions, -1, 1)
 
         return actions, action_log_probs, rnn_states
 

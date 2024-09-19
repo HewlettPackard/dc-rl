@@ -25,7 +25,10 @@ train:
   # whether to use ValueNorm
   use_valuenorm: True
   # whether to use linear learning rate decay
-  use_linear_lr_decay: False
+  use_linear_lr_decay: True
+  # whether to use cosine learning rate decay (If true, the linear learning rate decay will be ignored)
+  use_cosine_lr_decay: True
+
   # whether to consider the case of truncation when an episode is done
   use_proper_time_limits: True
 
@@ -58,7 +61,7 @@ model:
   # activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
   activation_func: tanh
   # whether the tanh squashing function is used to scale the action output between -1 and 1 
-  action_squash_method: 'tanh'  # Options: 'tanh' or 'clip' or 'none'
+  action_squash_method: 'none'  # Options: 'tanh' or 'clip' or 'none'
   # whether to use feature normalization
   use_feature_normalization: False
   # initialization method for network parameters, choose from xavier_uniform_, orthogonal_, ...
@@ -76,9 +79,9 @@ model:
   data_chunk_length: 16
   # optimizer parameters
   # actor learning rate
-  lr: 0.0005
+  lr: 0.0003
   # critic learning rate
-  critic_lr: 0.0005
+  critic_lr: 0.001
   # eps in Adam
   opti_eps: 0.00001
   # weight_decay in Adam
@@ -102,7 +105,7 @@ algo:
   # number of mini-batches per epoch for critic update
   critic_num_mini_batch: 8
   # coefficient for entropy term in actor loss
-  entropy_coef: 0.0000001
+  entropy_coef: 0.00001
   # coefficient for value loss
   value_loss_coef: 1.0
   # whether to clip gradient norm
