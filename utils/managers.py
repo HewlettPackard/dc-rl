@@ -592,19 +592,24 @@ class Weather_Manager():
         if not self.debug:
             # Add noise to the temperature data using the CoherentNoise
             coh_noise = self.coherent_noise.generate(len(self.original_temp_data))
-            print(f'TODO: check the generated coherent noise: {coh_noise[:3]} and the original temperature data: {self.original_temp_data[:3]} and the wet bulb data: {self.original_wb_data[:3]}' )
+            # print(f'TODO: check the generated coherent noise: {coh_noise[:3]} and the original temperature data: {self.original_temp_data[:3]} and the wet bulb data: {self.original_wb_data[:3]}' )
             self.temperature_data = self.original_temp_data + coh_noise
             self.wet_bulb_data = self.original_wb_data + coh_noise
             
-            num_roll_days = np.random.randint(0, 14) # Random roll the workload some days. I can roll the carbon intensity up to 14 days.
+            num_roll_days = np.random.randint(0, 14) # Random roll the temperature some days.
             self.temperature_data =  np.roll(self.temperature_data, num_roll_days*self.timestep_per_hour*24)
             self.wet_bulb_data =  np.roll(self.wet_bulb_data, num_roll_days*self.timestep_per_hour*24)
 
             self.temperature_data = np.clip(self.temperature_data, self.min_temp, self.max_temp)
-            self.norm_temp_data = normalize(self.temperature_data, self.min_temp, self.max_temp)
+            max_30_days = np.max(self.temperature_data[self.time_step:30*self.time_steps_day + self.time_step])
+            min_30_days = np.min(self.temperature_data[self.time_step:30*self.time_steps_day + self.time_step])
+            self.norm_temp_data = (self.temperature_data - min_30_days) / (max_30_days - min_30_days)
             
             self.wet_bulb_data = np.clip(self.wet_bulb_data, self.min_wb_temp, self.max_wb_temp)
-            self.norm_wet_bulb_data = normalize(self.wet_bulb_data, self.min_wb_temp, self.max_wb_temp)
+            max_30_days = np.max(self.wet_bulb_data[self.time_step:30*self.time_steps_day + self.time_step])
+            min_30_days = np.min(self.wet_bulb_data[self.time_step:30*self.time_steps_day + self.time_step])
+            self.norm_wet_bulb_data = (self.wet_bulb_data - min_30_days) / (max_30_days - min_30_days)
+            
         else:
             # Use a fixed temperature for debugging and wet bulb temperature
             self.temperature_data = np.ones_like(self.temperature_data) * 30
@@ -651,6 +656,9 @@ class Weather_Manager():
     
     def get_next_temperature(self):
         return self._next_norm_temp
+    
+    def get_n_next_temperature(self, n):
+        return self.norm_temp_data[self.time_step+1:self.time_step+1+n]
     
     def get_current_wet_bulb(self):
         return self._current_wet_bulb

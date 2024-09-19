@@ -65,9 +65,9 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     # run = 'happo/random_run_0_20240915_175950_discrete_nopenalty/seed-06721-2024-09-15-17-59-51' # 24.04%
     # run = 'happo/debug_ls_7_debugmode_discrete_32_16_only_shiftable_1threads/seed-07572-2024-09-15-17-57-04' # 22.98%
     # run = 'happo/debug_ls_4_onlyhour_newreward/seed-05735-2024-09-16-21-52-16' # 8.47% Reduction
-    # run = 'happo/debug_ls_5_new_obs_expanded_randomhour/seed-05415-2024-09-16-22-48-16' # 6.693% ± 0.028 Reduction6.693 ± 0.028
-    run = 'happo/debug_ls_1_new_obs_expanded/seed-09429-2024-09-16-22-46-33' # 
-    
+    # run = 'happo/debug_ls_5_new_obs_expanded_randomhour/seed-05415-2024-09-16-22-48-16' # 6.693% ± 0.028 Reduction
+    # run = 'happo/debug_ls_9_new_reward_5timessqrtplus1_8threads_128eplen_8numminibatch_taskhistogram_weatherinfo_0000001actorentr/seed-02195-2024-09-18-23-28-55' # 
+    run = 'happo/debug_ls_12_continuous_new_reward_5timessqrtplus1_8threads_128eplen_8numminibatch_taskhistogram_weatherinfo_0actorentr/seed-02581-2024-09-19-00-46-08'
     path = f'/lustre/guillant/sustaindc/results/sustaindc/ca/{run}'
     with open(path + '/config.json', encoding='utf-8') as file:
         saved_config = json.load(file)
@@ -82,6 +82,7 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     algo_args["eval"]["dump_eval_metrcs"] = True
     env_args['days_per_episode'] = 7
     env_args['location'] = 'ca'
+    env_args['initialize_queue_at_reset'] = True
     algo_args['seed']['seed_specify'] = True
     algo_args['seed']['seed'] = 0
 
@@ -238,7 +239,7 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     return all_metrics
 
 # Run baseline
-num_runs = 3
+num_runs = 1
 # baseline_random_metrics_runs = run_evaluation(do_baseline=True, eval_type='random', eval_episodes=num_runs)
 baseline_fixed_metrics_runs = run_evaluation(do_baseline=True, eval_type='fixed', eval_episodes=num_runs)
 # baseline_metrics_runs = run_evaluation(do_baseline=True, eval_type='following_ci', eval_episodes=num_runs)
@@ -327,7 +328,7 @@ print(f"Reduction (%): {co2_results_fixed['reduction_avg']:.3f} ± {co2_results_
 #%% Now Plot the original workload (ls_original_workload) vs the shifted workload (ls_shifted_workload) in one y-axis, and in the other y-axis the carbon intensity
 trained_metrics = trained_metrics_runs[0]
 original_workloads = [metric['ls_original_workload'] for metric in trained_metrics['agent_ls']]
-shifted_workloads = [metric['ls_shifted_workload'] + metric['ls_original_workload']*0.4 for metric in trained_metrics['agent_ls']]
+shifted_workloads = [metric['ls_shifted_workload'] for metric in trained_metrics['agent_ls']]
 carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_bat']]
 
 # Extract also the day and the hour to plot the data
@@ -383,12 +384,48 @@ ax1.grid(linestyle='--')
 
 ax1.set_ylim(0, 100)
 
+#%% Now Plot the original workload (ls_original_workload) vs the shifted workload (ls_shifted_workload) in one y-axis, and in the other y-axis the ambient temperature
+original_workloads = [metric['ls_original_workload'] for metric in trained_metrics['agent_ls']]
+shifted_workloads = [metric['ls_shifted_workload'] + metric['ls_original_workload']*0.4 for metric in trained_metrics['agent_ls']]
+ambient_temperatures = [metric['dc_exterior_ambient_temp'] for metric in trained_metrics['agent_dc']]
+
+# Select the data to plot
+original_workloads = original_workloads[init_point:init_point + num_points]
+shifted_workloads = shifted_workloads[init_point:init_point + num_points]
+ambient_temperatures = ambient_temperatures[init_point:init_point + num_points]
+time_intervals = time_intervals[init_point:init_point + num_points]
+# Smooth the data using a rolling window
+window_size = 1  # Use a larger window size to smooth the data more
+smoothed_original_workloads = pd.Series(original_workloads).rolling(window=window_size).mean().dropna()
+smoothed_shifted_workloads = pd.Series(shifted_workloads).rolling(window=window_size).mean().dropna()
+smoothed_ambient_temperatures = pd.Series(ambient_temperatures).rolling(window=window_size).mean().dropna()
+# Create the plot
+fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
+# Plot smoothed original workload
+ax1.set_xlabel('Time (Days)')
+ax1.set_ylabel('Workload (%)', color='tab:blue')
+ax1.plot(time_intervals, smoothed_original_workloads*100, color='tab:blue', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+# Plot smoothed shifted workload in the same plot
+ax1.plot(time_intervals, smoothed_shifted_workloads*100, color='tab:red', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:red')
+# Plot the ambient temperature in a second y-axis
+ax2 = ax1.twinx()
+ax2.set_ylabel('Ambient Temperature (°C)', color='tab:green')
+ax2.plot(time_intervals, smoothed_ambient_temperatures, color='tab:green', linewidth=2)
+ax2.tick_params(axis='y', labelcolor='tab:green')
+# Only show the x-axis labels for every 2 days
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+# Show the grid
+ax1.grid(linestyle='--')
+ax1.set_ylim
+
 #%% Now plot the tasks in queue vs the shifted workload in two differents y axis
 tasks_in_queue = [metric['ls_tasks_in_queue'] for metric in trained_metrics['agent_ls']]
-shifted_workloads = [metric['ls_shifted_workload'] for metric in trained_metrics['agent_ls']]
+shifted_workloads = [metric['ls_shifted_workload'] + metric['ls_original_workload']*0.4  for metric in trained_metrics['agent_ls']]
 # Define the number of points to plot
-num_points = 96*7
-init_point = 0
+# num_points = 96*7
+# init_point = 0
 
 # Select the data to plot
 tasks_in_queue = tasks_in_queue[init_point:init_point + num_points]
@@ -405,14 +442,21 @@ fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
 # Plot smoothed tasks in queue
 ax1.set_xlabel('Time (Days)')
 ax1.set_ylabel('Tasks in Queue', color='tab:blue')
-ax1.plot(smoothed_tasks_in_queue, color='tab:blue', linewidth=2)
+ax1.plot(time_intervals, smoothed_tasks_in_queue, color='tab:blue', linewidth=2)
 ax1.tick_params(axis='y', labelcolor='tab:blue')
 
 # Create a second y-axis for shifted workload
 ax2 = ax1.twinx()
 ax2.set_ylabel('Workload (%)', color='tab:red')
-ax2.plot(smoothed_shifted_workloads*100, color='tab:red', linewidth=2, alpha=0.8)
+ax2.plot(time_intervals, smoothed_shifted_workloads*100, color='tab:red', linewidth=2, alpha=0.8)
 ax2.tick_params(axis='y', labelcolor='tab:red')
+ax2.set_ylim(0, 100)  # Adjust the limits to match the scale of the data
+# Only show the x-axis labels for every 2 days
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+
+# Show the grid
+ax1.grid(linestyle='--')
+
 
 # Customize the layout to ensure no parts are cut off
 plt.tight_layout()
@@ -420,11 +464,12 @@ plt.tight_layout()
 
 #%% Now Plot the ls_action vs the carbon intensity
 trained_metrics = trained_metrics_runs[0]
-ls_actions = [metric['ls_action'] for metric in trained_metrics['agent_ls']]
+ls_actions = [metric['ls_action'][0] for metric in trained_metrics['agent_ls']]
+ls_actions = np.clip(ls_actions, -1, 1)
 carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_bat']]
 # Define the number of points to plot
-num_points = 96*7
-init_point = 0
+# num_points = 96*7
+# init_point = 0
 
 # Select the data to plot
 ls_actions = ls_actions[init_point:init_point + num_points]
@@ -441,14 +486,17 @@ fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
 # Plot smoothed ls_action
 ax1.set_xlabel('Time (Days)')
 ax1.set_ylabel('Load Shifting Action', color='tab:blue')
-ax1.plot(smoothed_ls_actions, color='tab:blue', linewidth=2)
+ax1.plot(time_intervals, smoothed_ls_actions, color='tab:blue', linewidth=2)
 ax1.tick_params(axis='y', labelcolor='tab:blue')
 
 # Create a second y-axis for carbon intensity
 ax2 = ax1.twinx()
 ax2.set_ylabel('Carbon Intensity (gCO2/kWh)', color='tab:red')
-ax2.plot(smoothed_carbon_intensities, color='tab:red', linewidth=2)
+ax2.plot(time_intervals, smoothed_carbon_intensities, color='tab:red', linewidth=2)
 ax2.tick_params(axis='y', labelcolor='tab:red')
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+# Show the grid
+ax1.grid(linestyle='--')
 
 # Customize the layout to ensure no parts are cut off
 plt.tight_layout()

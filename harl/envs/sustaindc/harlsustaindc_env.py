@@ -34,7 +34,8 @@ class HARLSustainDCEnv:
         self.observation_space = self.unwrap(self.env.observation_spaces)
         self.action_space = self.unwrap(self.env.action_spaces)
 
-        self.discrete = True
+        # Obtain if the action space is discrete or continuous using self.action_space
+        self.discrete = all([isinstance(action_space, gymnasium.spaces.Discrete) for action_space in self.action_space])
 
     def reset(self):
         """

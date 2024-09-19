@@ -16,6 +16,7 @@ class CarbonLoadEnv(gym.Env):
         n_vars_battery=1,
         test_mode=False,
         queue_max_len=500,
+        initialize_queue_at_reset=False
         ):
         """Creates load shifting envrionemnt
 
@@ -41,7 +42,7 @@ class CarbonLoadEnv(gym.Env):
         
         # State: [Sin(h), Cos(h), Sin(day_of_year), Cos(day_of_year), self.ls_state, ci_i_future (n_vars_ci), var_to_LS_energy (n_vars_energy), batSoC (n_vars_battery)], 
         # self.ls_state = [current_workload, queue status]
-        self.observation_space = spaces.Box(low=-10.0, high=10.0, shape=(20,), dtype=np.float32)
+        self.observation_space = spaces.Box(low=-2.0, high=2.0, shape=(26,), dtype=np.float32)
 
 
         self.global_total_steps = 0
@@ -56,6 +57,21 @@ class CarbonLoadEnv(gym.Env):
 
         self.queue_max_len = queue_max_len
         self.tasks_queue = deque(maxlen=self.queue_max_len)
+        self.initialize_queue_at_reset = initialize_queue_at_reset
+
+    # Calculate task age histogram
+    def get_task_age_histogram(self, tasks_queue, current_day, current_hour):
+        age_bins = [0, 6, 12, 18, 24, np.inf]  # Age bins in hours
+        task_ages = [
+            (current_day - task['day']) * 24 + (current_hour - task['hour'])
+            for task in self.tasks_queue
+        ]
+        histogram, _ = np.histogram(task_ages, bins=age_bins)
+        normalized_histogram = histogram / max(len(self.tasks_queue), 1)  # Avoid division by zero
+        
+        normalized_histogram[-1] = 1 if normalized_histogram[-1] > 0 else 0
+        return normalized_histogram  # Returns an array of proportions
+
 
     def reset(self, *, seed=None, options=None):
         """
@@ -68,22 +84,71 @@ class CarbonLoadEnv(gym.Env):
         self.global_total_steps = 0
         self.tasks_queue.clear()
         
-        # Initialize the current day and hour
-        self.current_day = 0
-        self.current_hour = 0
-        
-        # Queue status - length of the task queue
-        current_workload = self.workload
-        queue_length = 0
-        
-        # Initial task ages will be zero at reset
-        oldest_task_age = 0.0
-        average_task_age = 0.0
-        
+        if self.initialize_queue_at_reset:
+            # Initialize the task queue with tasks of varying ages
+            initial_queue_length = np.random.randint(1, self.queue_max_len // 4)
+
+            # Generate random task ages between 0 and 24 hours
+            max_task_age = 24  # Maximum age in hours
+            task_ages = np.random.random_integers(0, max_task_age*4, initial_queue_length)/4
+            
+            # Generate task ages using an exponential distribution
+            max_task_age = 24  # Maximum age in hours
+            # Set the rate parameter (lambda) for the exponential distribution
+            lambda_param = 1.0 / 4.0  # Mean age of 6 hours (adjust as needed)
+            task_ages = np.round(np.random.exponential(scale=1.0 / lambda_param, size=initial_queue_length) * 4)/4
+
+            # Cap the task ages at max_task_age
+            task_ages = np.clip(task_ages, 0, max_task_age)
+
+            
+            # Sort the task ages in descending order
+            task_ages = np.sort(task_ages)[::-1]
+
+            for age in task_ages:
+                # Compute the day and hour when the task was added
+                task_day = self.current_day
+                task_hour = self.current_hour - age
+
+                # Adjust day and hour if task_hour is negative
+                while task_hour < 0:
+                    task_hour += 24
+                    task_day -= 1  # Task was added on a previous day
+
+                # Ensure task_day is non-negative
+                if task_day < 0:
+                    task_day = 0
+                    task_hour = 0  # Reset to the earliest possible time
+
+                # Create the task with its timestamp
+                task = {'day': task_day, 'hour': task_hour, 'utilization': 1}
+                self.tasks_queue.append(task)
+        else:
+            # Start with an empty task queue
+            pass
+
+        # Calculate queue_length, oldest_task_age, average_task_age
+        tasks_in_queue = len(self.tasks_queue)
+        if tasks_in_queue > 0:
+            task_ages = [
+                (self.current_day - task['day']) * 24 + (self.current_hour - task['hour'])
+                for task in self.tasks_queue
+            ]
+            oldest_task_age = max(task_ages)
+            average_task_age = sum(task_ages) / len(task_ages)
+        else:
+            oldest_task_age = 0.0
+            average_task_age = 0.0
+
+        task_age_histogram = self.get_task_age_histogram(self.tasks_queue, self.current_day, self.current_hour)
+    
+        # Compute state
+        current_workload = self.workload  # Ensure self.workload is set appropriately
         state = np.asarray(np.hstack(([current_workload,
-                                       queue_length/self.queue_max_len,
-                                       oldest_task_age,
-                                       average_task_age])), dtype=np.float32)
+                                tasks_in_queue/self.queue_max_len,
+                                oldest_task_age/24,
+                                average_task_age/24,
+                                task_age_histogram])), dtype=np.float32)
         
     
         info = {"load": self.workload,
@@ -97,33 +162,11 @@ class CarbonLoadEnv(gym.Env):
                 'ls_enforced': False,
                 'ls_oldest_task_age': oldest_task_age,
                 'ls_average_task_age': average_task_age,
-                'ls_overdue_penalty': 0}
+                'ls_overdue_penalty': 0,
+                'ls_task_age_histogram': task_age_histogram,}
         
         return state, info
 
-
-    def has_computational_room(self, workload_rest_day=0):
-        """
-        Check if there is enough computational room to process the tasks in the queue considering future workloads.
-
-        Returns:
-            bool: True if there is enough room to process the tasks in the queue, False otherwise.
-        """
-        
-        # Initialize the available capacity at the current timestep
-        total_available_capacity = 1.0 - self.workload
-        
-        # Add the available capacity for the future timesteps in the day
-        total_available_capacity += np.sum(1.0 - workload_rest_day)
-        
-        # Estimate total tasks that need to be processed in the queue
-        tasks_in_queue = len(self.tasks_queue)
-
-        # Check if there is enough room to process the queued tasks
-        if tasks_in_queue <= total_available_capacity * 100:  # Convert capacity to task space
-            return True
-        else:
-            return False
 
     def step(self, action, workload_rest_day=0):
         """
@@ -145,6 +188,8 @@ class CarbonLoadEnv(gym.Env):
         # self.current_hour += 0.25
         enforced = 0
 
+        # One task is equivalent to 1% of the workload
+        # Workload is a float between 0 and 1
         non_shiftable_tasks = int(math.ceil(self.workload * self.non_shiftable_tasks_percentage * 100))
         shiftable_tasks     = int(math.floor(self.workload * self.shiftable_tasks_percentage * 100))
         tasks_dropped = 0  # Track the number of dropped tasks
@@ -235,7 +280,9 @@ class CarbonLoadEnv(gym.Env):
         else:
             oldest_task_age = 0.0
             average_task_age = 0.0
-            
+        
+        task_age_histogram = self.get_task_age_histogram(self.tasks_queue, self.current_day, self.current_hour)
+
         info = {"ls_original_workload": original_workload,
                 "ls_shifted_workload": self.current_utilization, 
                 "ls_action": action, 
@@ -252,7 +299,8 @@ class CarbonLoadEnv(gym.Env):
                 'ls_oldest_task_age': oldest_task_age/24,
                 'ls_average_task_age': average_task_age/24,
                 'ls_overdue_penalty': overdue_penalty,
-                'ls_computed_tasks': int(self.current_utilization*100)}
+                'ls_computed_tasks': int(self.current_utilization*100),
+                'ls_task_age_histogram': task_age_histogram,}
 
 
 
@@ -262,7 +310,11 @@ class CarbonLoadEnv(gym.Env):
         
         if self.current_utilization > 1 or self.current_utilization < 0:
             print('WARNING, the utilization is out of bounds')
-        state = np.asarray(np.hstack(([self.current_utilization, tasks_in_queue/self.queue_max_len, oldest_task_age/24, average_task_age/24])), dtype=np.float32)
+        state = np.asarray(np.hstack(([self.current_utilization,
+                                       tasks_in_queue/self.queue_max_len,
+                                       oldest_task_age/24,
+                                       average_task_age/24,
+                                       task_age_histogram])), dtype=np.float32)
         
         return state, reward, done, truncated, info 
         

@@ -64,7 +64,9 @@ class EnvConfig(dict):
         # Set this to True if an agent (like MADDPG) returns continuous actions,
         "actions_are_logits": False,
         
-        'debug': True,
+        'debug': False,
+        
+        'initialize_queue_at_reset': False,
     }
 
     def __init__(self, raw_config):
@@ -117,6 +119,7 @@ class SustainDC(gym.Env):
             self.month = env_config.get('month')
 
         self.evaluation_mode = env_config['evaluation']
+        self.initialize_queue_at_reset = env_config['initialize_queue_at_reset']
 
         self._agent_ids = set(self.agents)
 
@@ -135,7 +138,7 @@ class SustainDC(gym.Env):
         n_vars_energy, n_vars_battery = 0, 0  # For partial observability (for p.o.)
         n_vars_ci = 32  # Number of future_steps of CI retrieve for the load shifting environment
         self.ls_env = make_ls_env(month=self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci, flexible_workload_ratio=self.flexible_load,
-                                  n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, queue_max_len=10000)
+                                  n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, queue_max_len=10000, initialize_queue_at_reset=self.initialize_queue_at_reset)
         self.dc_env, _ = make_dc_pyeplus_env(month=self.month + 1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, 
                                              datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file, add_cpu_usage=False)
         self.bat_env = make_bat_fwd_env(month=self.month, max_bat_cap_Mwh=self.dc_env.ranges['max_battery_energy_Mwh'], 
@@ -223,12 +226,12 @@ class SustainDC(gym.Env):
         ci_variance = ci_std ** 2
 
         # Calculate gradients
-        ci_gradient = np.gradient(ci_values)
-        ci_second_derivative = np.gradient(ci_gradient)
+        ci_gradient = np.gradient(np.hstack((current_ci, ci_values)))
+        # ci_second_derivative = np.gradient(ci_gradient)
 
         # Normalize gradients
-        ci_gradient_norm = ci_gradient / (np.max(np.abs(ci_gradient)) + 1e-8)
-        ci_second_derivative_norm = ci_second_derivative / (np.max(np.abs(ci_second_derivative)) + 1e-8)
+        # ci_gradient_norm = ci_gradient / (np.max(np.abs(ci_gradient)) + 1e-8)
+        # ci_second_derivative_norm = ci_second_derivative / (np.max(np.abs(ci_second_derivative)) + 1e-8)
 
         # Identify peaks and valleys
         peaks = np.where((ci_gradient[:-1] > 0) & (ci_gradient[1:] <= 0))[0]
@@ -243,17 +246,16 @@ class SustainDC(gym.Env):
 
         # Assemble features
         ci_features = np.array([
-            ci_mean,
-            ci_std,
-            ci_variance,
-            ci_percentile,
-            time_to_next_peak,
-            time_to_next_valley,
-        ])
+                                ci_mean,
+                                ci_std,
+                                ci_percentile,
+                                time_to_next_peak/len(ci_values),
+                                time_to_next_valley/len(ci_values),
+                            ])
 
         return ci_features
 
-    def _create_ls_state(self, t_i, current_workload, queue_status, current_ci, ci_future, ci_past, next_workload, current_out_temperature, next_out_temperature, oldest_task_age, average_task_age):
+    def _create_ls_state(self, t_i, current_workload, queue_status, current_ci, ci_future, ci_past, next_workload, current_out_temperature, next_out_temperature, next_n_out_temperature, oldest_task_age, average_task_age, ls_task_age_histogram):
         """
         Create the state of the load shifting environment.
 
@@ -334,20 +336,36 @@ class SustainDC(gym.Env):
         # ci_future_norm = normalize_ci(ci_future)
         # ci_past_norm = normalize_ci(ci_past)
 
-        # Trend analysis
-        ci_future_slope = np.polyfit(range(len(ci_future)), ci_future, 1)[0]
-        ci_past_slope = np.polyfit(range(len(ci_past)), ci_past, 1)[0]
+        # CI Trend analysis
+        trend_smoothing_window = 4
+        smoothed_ci_future = np.convolve(np.hstack((current_ci, ci_future[:16])), np.ones(trend_smoothing_window), 'valid') / trend_smoothing_window
+        smoothed_ci_past = np.convolve(np.hstack((ci_past, current_ci)), np.ones(trend_smoothing_window), 'valid') / trend_smoothing_window
+        
+        # Slope the next 4 hours of CI and the previous 1 hour of CI
+        ci_future_slope = np.polyfit(range(len(smoothed_ci_future)), smoothed_ci_future, 1)[0]
+        ci_past_slope = np.polyfit(range(len(smoothed_ci_past)), smoothed_ci_past, 1)[0]
 
         # Extract features for future and past CI
         ci_future_features = self.extract_ci_features(ci_future, current_ci)
-        ci_past_features = self.extract_ci_features(ci_past, current_ci)
+        # ci_past_features = self.extract_ci_features(ci_past, current_ci)
 
         # Assemble CI features
         ci_features = np.hstack([
-            ci_future_slope, ci_past_slope,
-            ci_future_features, ci_past_features
-        ])
+                        ci_future_slope, ci_past_slope,
+                        ci_future_features
+                    ])
 
+        # Weather trend analysis
+        temperature_slope = np.polyfit(range(len(next_n_out_temperature) + 1), np.hstack([current_out_temperature, next_n_out_temperature]), 1)[0]
+        
+        # Extract features for the future temperature
+        temperature_features = self.extract_ci_features(next_n_out_temperature, current_out_temperature)
+        
+        # Assemble temperature features
+        temperature_features = np.hstack([
+                                        temperature_slope, temperature_features
+                                    ])
+        
         # Combine all features into the state
         ls_state = np.float32(np.hstack((
                                         hour_sin_cos,
@@ -356,7 +374,10 @@ class SustainDC(gym.Env):
                                         oldest_task_age,
                                         average_task_age,
                                         queue_status,
-                                        current_workload
+                                        current_workload,
+                                        current_out_temperature,
+                                        temperature_features,
+                                        ls_task_age_histogram
                                     )))
                 
         return ls_state
@@ -418,7 +439,7 @@ class SustainDC(gym.Env):
 
         # Reset the managers
         random_init_day =  random.randint(max(0, self.ranges_day[0]), min(364, self.ranges_day[1])) # self.init_day 
-        random_init_hour = 0#random.randint(0, 23)
+        random_init_hour = random.randint(0, 23)
         self.current_hour = random_init_hour
         
         t_i = self.t_m.reset(init_day=random_init_day, init_hour=random_init_hour)
@@ -437,21 +458,21 @@ class SustainDC(gym.Env):
         ls_s, self.ls_info = self.ls_env.reset()
         self.dc_state, self.dc_info = self.dc_env.reset()
         bat_s, self.bat_info = self.bat_env.reset()
-        
-        self.ls_env.update_current_date(random_init_day, random_init_hour)
-        
+                
         current_workload = self.workload_m.get_current_workload()
         next_workload = self.workload_m.get_next_workload()
         
         current_out_temperature = self.weather_m.get_current_temperature()
         next_out_temperature = self.weather_m.get_next_temperature()
+        next_n_out_temperature = self.weather_m.get_n_next_temperature(n=16)
         
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
         queue_status = self.ls_info['ls_norm_tasks_in_queue']
         ci_i_past = self.ci_m.get_n_past_ci(n=16)
         oldest_task_age = self.ls_info['ls_oldest_task_age']
         average_task_age = self.ls_info['ls_average_task_age']
-        self.ls_state = self._create_ls_state(t_i, workload, queue_status, ci_i, ci_i_future, ci_i_past, next_workload, current_out_temperature, next_out_temperature, oldest_task_age, average_task_age)
+        ls_task_age_histogram = self.ls_info['ls_task_age_histogram']
+        self.ls_state = self._create_ls_state(t_i, workload, queue_status, ci_i, ci_i_future, ci_i_past, next_workload, current_out_temperature, next_out_temperature, next_n_out_temperature, oldest_task_age, average_task_age, ls_task_age_histogram)
         
         self.dc_state = self._create_dc_state(current_workload, next_workload, current_out_temperature, next_out_temperature)
         
@@ -536,8 +557,12 @@ class SustainDC(gym.Env):
         ci_i_past = self.ci_m.get_n_past_ci(n=16)
         oldest_task_age = self.ls_info['ls_oldest_task_age']
         average_task_age = self.ls_info['ls_average_task_age']
+        ls_task_age_histogram = self.ls_info['ls_task_age_histogram']
         
-        self.ls_state = self._create_ls_state(t_i, workload, queue_status, ci_i, ci_i_future, ci_i_past, next_workload, norm_temp, next_out_temperature, oldest_task_age, average_task_age)
+        next_n_out_temperature = self.weather_m.get_n_next_temperature(n=16)
+
+        
+        self.ls_state = self._create_ls_state(t_i, workload, queue_status, ci_i, ci_i_future, ci_i_past, next_workload, norm_temp, next_out_temperature, next_n_out_temperature, oldest_task_age, average_task_age, ls_task_age_histogram)
         self.dc_state = self._create_dc_state(workload, next_workload, norm_temp, next_out_temperature)
         self.bat_state = self._create_bat_state(workload, next_workload, ci_i, norm_temp)
 

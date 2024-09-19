@@ -7,7 +7,8 @@ import numpy as np
 import pandas as pd
 
 from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
-from envs.carbon_ls_discrete import CarbonLoadEnv
+# from envs.carbon_ls_discrete import CarbonLoadEnv
+from envs.carbon_ls_continuous import CarbonLoadEnv
 from envs.dc_gym import dc_gymenv
 from utils.utils_cf import get_init_day
 
@@ -22,7 +23,8 @@ def make_ls_env(month,
                 n_vars_battery : int = 1,
                 queue_max_len: int = 500,
                 flexible_workload_ratio: float = 0.2,
-                test_mode = False):
+                test_mode = False,
+                initialize_queue_at_reset = False):
     """Method to build the Load shifting environment
 
     Args:
@@ -40,7 +42,8 @@ def make_ls_env(month,
                          n_vars_battery=n_vars_battery,
                          queue_max_len=queue_max_len,
                          test_mode=test_mode,
-                         flexible_workload_ratio=flexible_workload_ratio)
+                         flexible_workload_ratio=flexible_workload_ratio,
+                         initialize_queue_at_reset=initialize_queue_at_reset)
     
     
 

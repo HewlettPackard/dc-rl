@@ -13,15 +13,15 @@ device:
   torch_threads: 4
 train:
   # number of parallel environments for training data collection
-  n_rollout_threads: 4
+  n_rollout_threads: 8
   # number of total training steps
   num_env_steps: 200000000
   # number of steps per environment per training data collection
-  episode_length: 512
+  episode_length: 128
   # logging interval
   log_interval: 5
   # evaluation interval
-  eval_interval: 20
+  eval_interval: 100
   # whether to use ValueNorm
   use_valuenorm: True
   # whether to use linear learning rate decay
@@ -52,13 +52,13 @@ model:
   # hidden sizes for mlp module in the network
   hidden_sizes: [128, 128]
   # hidden sizes for the MLP module of the policy network
-  hidden_size_policy: [16, 16]  # Layer sizes for policy network
+  hidden_size_policy: [64, 64]  # Layer sizes for policy network
   # hidden sizes for the MLP module of the value network
-  hidden_size_value: [16, 16] # Layer sizes for value network
+  hidden_size_value: [64, 64] # Layer sizes for value network
   # activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
   activation_func: tanh
   # whether the tanh squashing function is used to scale the action output between -1 and 1 
-  action_squash_method: 'none'  # Options: 'tanh' or 'clip' or 'none'
+  action_squash_method: 'tanh'  # Options: 'tanh' or 'clip' or 'none'
   # whether to use feature normalization
   use_feature_normalization: False
   # initialization method for network parameters, choose from xavier_uniform_, orthogonal_, ...
@@ -98,11 +98,11 @@ algo:
   # clip parameter
   clip_param: 0.2
   # number of mini-batches per epoch for actor update
-  actor_num_mini_batch: 1
+  actor_num_mini_batch: 8
   # number of mini-batches per epoch for critic update
-  critic_num_mini_batch: 1
+  critic_num_mini_batch: 8
   # coefficient for entropy term in actor loss
-  entropy_coef: 0.01
+  entropy_coef: 0.0000001
   # coefficient for value loss
   value_loss_coef: 1.0
   # whether to clip gradient norm
