@@ -35,11 +35,11 @@ class CarbonLoadEnv(gym.Env):
         self.shiftable_tasks_percentage = self.flexible_workload_ratio
         self.non_shiftable_tasks_percentage = 1 - self.flexible_workload_ratio
         
-        # Define a single continuous action space: [-1, 1]
-        # -1: Defer all shiftable tasks
-        # 0: Do nothing
-        # 1: Process all DTQ tasks
-        self.action_space = spaces.Box(low=-1.0, high=1.0, shape=(1,), dtype=np.float32)
+        # Define the action space as a MultiDiscrete space
+        # 3 actions and 11 max_utilization levels (0 to 10)
+        # 0: Defer all shiftable tasks, 1: Do nothing, 2: Process all deferred tasks in the first position of the action
+        # The max_utilization levels are from 50% to 100%
+        self.action_space = spaces.MultiDiscrete([3, 6])
         
         
         # State: [Sin(h), Cos(h), Sin(day_of_year), Cos(day_of_year), self.ls_state, ci_i_future (n_vars_ci), var_to_LS_energy (n_vars_energy), batSoC (n_vars_battery)], 
@@ -73,7 +73,8 @@ class CarbonLoadEnv(gym.Env):
         
         normalized_histogram[-1] = 1 if normalized_histogram[-1] > 0 else 0
         return normalized_histogram  # Returns an array of proportions
-    
+
+
     def reset(self, *, seed=None, options=None):
         """
         Reset `CarbonLoadEnv` to initial state.
@@ -166,7 +167,6 @@ class CarbonLoadEnv(gym.Env):
                 'ls_overdue_penalty': 0,
                 'ls_task_age_histogram': task_age_histogram,}
         
-        
         return state, info
 
 
@@ -187,89 +187,124 @@ class CarbonLoadEnv(gym.Env):
             info (dict): A dictionary containing additional information about the environment state.
         """
         
-        enforced = False
+        # self.current_hour += 0.25
+        enforced = 0
+        action_value = int(action[0])  # Discrete action: 0, 1, or 2
+        max_utilization_level = int(action[1])  # Discrete levels of utilization from 0 to 5 (50%-100%)
+        
+        # Map max_utilization_level to a value between 0.0 and 1.0
+        max_utilization = max_utilization_level / 5.0  # Converts levels 0-5 to 0.0-1.0
 
+        # Convert max_utilization to a percentage for calculations
+        max_utilization_percentage = int(50 + max_utilization * 50)
+        
+        # One task is equivalent to 1% of the workload
+        # Workload is a float between 0 and 1
         non_shiftable_tasks = int(math.ceil(self.workload * self.non_shiftable_tasks_percentage * 100))
         shiftable_tasks     = int(math.floor(self.workload * self.shiftable_tasks_percentage * 100))
         tasks_dropped = 0  # Track the number of dropped tasks
-        actual_tasks_processed = 0  # Track the number of processed tasks
-        action_value = np.clip(action[0], -1.0, 1.0)  # Clip the action to [-1, 1]  # Single continuous action
-        
-        # Handle overdue tasks
+        actual_tasks_to_process = 0  # Track the number of processed tasks
+        # action_value = -1.0 
+        # print(f'Action value: {action_value}')
+        # Step 1: Identify tasks older than 24 hours
+        # overdue_tasks = []
+        # for task in self.tasks_queue:
+        #     # Calculate task age based on both day and hour
+        #     task_age = (self.current_day - task['day']) * 24 + (self.current_hour - task['hour'])
+        #     if task_age > 24:
+        #         overdue_tasks.append(task)
+        # Retrieve overdue tasks
         overdue_tasks = [task for task in self.tasks_queue if (self.current_day - task['day']) * 24 + (self.current_hour - task['hour']) > 24]
         overdue_penalty = len(overdue_tasks)
 
-        # Calculate initial available capacity
-        available_capacity = 90 - (non_shiftable_tasks + shiftable_tasks)  # Limit to 90% capacity
+        # Calculate the minimum required utilization
+        min_required_utilization = non_shiftable_tasks + shiftable_tasks  # In task units (percent)
+        
+        # Ensure that max_utilization_percentage is at least equal to min_required_utilization
+        if max_utilization_percentage < min_required_utilization:
+            max_utilization_percentage = min_required_utilization
+            # Optionally, set a flag indicating that the agent's choice was overridden
+            enforced = True
+        else:
+            enforced = False
+        
+        # Calculate initial available capacity (before accounting for overdue tasks)
+        available_capacity = max_utilization_percentage - (non_shiftable_tasks + shiftable_tasks)
+        available_capacity = max(available_capacity, 0)  # Ensure non-negative
 
-        # Process overdue tasks if there's capacity
+        # Step 2: If there is available capacity, add overdue tasks to non-shiftable tasks
         overdue_tasks_to_process = 0
+        overdue_task_count = 0
         if available_capacity > 0 and len(overdue_tasks) > 0:
             overdue_task_count = len(overdue_tasks)
             tasks_that_can_be_processed = min(overdue_task_count, available_capacity)
+            # non_shiftable_tasks += tasks_that_can_be_processed
+            overdue_task_count = tasks_that_can_be_processed
+            # print(f'Overdue tasks: {overdue_task_count}, tasks that can be processed: {tasks_that_can_be_processed}, available capacity: {available_capacity}, non_shiftable_tasks: {non_shiftable_tasks}')
+            # Remove those overdue tasks that can be processed
             overdue_tasks_to_process = tasks_that_can_be_processed
-
             for task in overdue_tasks[:tasks_that_can_be_processed]:
                 self.tasks_queue.remove(task)
-
         
-        # Update available capacity after processing overdue tasks
-        available_capacity = 90 - (non_shiftable_tasks + shiftable_tasks + overdue_tasks_to_process)
-
+                
+        # Calculate the minimum required utilization
+        min_required_utilization = non_shiftable_tasks + shiftable_tasks + overdue_tasks_to_process  # In task units (percent)
         
-        if action_value < 0:  # Defer a fraction of shiftable tasks
-            fraction_to_defer = abs(action_value)  # Convert to positive fraction between 0 and 1
-            tasks_to_defer = int(shiftable_tasks * fraction_to_defer)
+        # Ensure that max_utilization_percentage is at least equal to min_required_utilization
+        if max_utilization_percentage < min_required_utilization:
+            max_utilization_percentage = min_required_utilization
+            # Optionally, set a flag indicating that the agent's choice was overridden
+            enforced = True
+        else:
+            enforced = False
+            
+        # Update available capacity after adding overdue tasks
+        available_capacity = max_utilization_percentage - (non_shiftable_tasks + shiftable_tasks + overdue_tasks_to_process) # Limit the available capacity to max_utilization_percentage% to avoid overloading the system
+
+        if action_value == 0:  # Defer tasks
+            tasks_to_defer = shiftable_tasks
 
             # Attempt to queue deferred tasks
-            available_queue_space = self.queue_max_len - len(self.tasks_queue)
-            tasks_to_add = min(tasks_to_defer, available_queue_space)
+            tasks_to_add = min(tasks_to_defer, self.queue_max_len - len(self.tasks_queue))
             tasks_dropped += tasks_to_defer - tasks_to_add
 
-            # Add deferred tasks to the queue
-            self.tasks_queue.extend(
-                [{'day': self.current_day, 'hour': self.current_hour, 'utilization': 1}] * tasks_to_add
-            )
+            # Vectorized: Add multiple tasks at once
+            self.tasks_queue.extend([{'day': self.current_day, 'hour': self.current_hour, 'utilization': 1}] * tasks_to_add)
 
             # Update utilization
-            self.current_utilization = ((shiftable_tasks - tasks_to_add) + overdue_tasks_to_process) / 100
-
+            self.current_utilization = (overdue_tasks_to_process + (shiftable_tasks - tasks_to_add)) / 100
         
-        elif action_value > 0:  # Process a fraction of tasks from the queue
-            fraction_to_process = action_value  # Fraction between 0 and 1
-            if available_capacity > 0:
-                max_tasks_can_process = min(len(self.tasks_queue), available_capacity)
-                tasks_to_process = int(max_tasks_can_process * fraction_to_process)
+        elif action_value == 2:  # Process tasks from the queue
+            # available_capacity = 100 - (non_shiftable_tasks + shiftable_tasks)  # Remaining capacity
+            if available_capacity >= 1:  # At least 1 task can be processed
+                tasks_to_process = available_capacity
+                actual_tasks_to_process = min(len(self.tasks_queue), tasks_to_process)  # Limit by queue length
 
                 # if we can process all of the tasks in the queue, make it faster with clear() instead of with a for loop
-                if tasks_to_process == len(self.tasks_queue):
+                if actual_tasks_to_process == len(self.tasks_queue):
                     self.tasks_queue.clear()
                 else:
                     # Vectorized: Pop multiple tasks at once
-                    for _ in range(tasks_to_process):
+                    for _ in range(actual_tasks_to_process):
                         self.tasks_queue.popleft()
 
-                # # Process tasks from the queue
-                # for _ in range(tasks_to_process):
-                #     self.tasks_queue.popleft()
-                actual_tasks_processed = tasks_to_process
-
-                # Update utilization
-                self.current_utilization = (shiftable_tasks + overdue_tasks_to_process + actual_tasks_processed) / 100
+                # Update utilization to include processed DTQ tasks
+                self.current_utilization = (shiftable_tasks + actual_tasks_to_process + overdue_tasks_to_process) / 100
+                
             else:
                 self.current_utilization = (shiftable_tasks + overdue_tasks_to_process) / 100
 
-        else:  # action_value == 0, Do nothing
+        else:  # action == 1, Do nothing
+            # self.current_utilization = (non_shiftable_tasks + shiftable_tasks) / 100
             self.current_utilization = (shiftable_tasks + overdue_tasks_to_process) / 100
 
-        if not self.initialize_queue_at_reset: # That means that we are on eval mode
-            self.current_utilization += non_shiftable_tasks / 100
-            
         self.global_total_steps += 1
         
         original_workload = self.workload
         tasks_in_queue = len(self.tasks_queue)
 
+        if not self.initialize_queue_at_reset: # That means that we are on eval mode
+            self.current_utilization += non_shiftable_tasks / 100
             
         reward = 0 
         
@@ -295,13 +330,14 @@ class CarbonLoadEnv(gym.Env):
                 'ls_norm_tasks_in_queue': tasks_in_queue/self.queue_max_len,
                 'ls_tasks_dropped': tasks_dropped,
                 'ls_current_hour': self.current_hour,
-                'ls_tasks_processed': actual_tasks_processed,
+                'ls_tasks_processed': actual_tasks_to_process,
                 'ls_enforced': enforced,
                 'ls_oldest_task_age': oldest_task_age/24,
                 'ls_average_task_age': average_task_age/24,
                 'ls_overdue_penalty': overdue_penalty,
                 'ls_computed_tasks': int(self.current_utilization*100),
                 'ls_task_age_histogram': task_age_histogram,}
+
 
 
         #Done and truncated are managed by the main class, implement individual function if needed

@@ -31,8 +31,8 @@ def default_ls_reward(params: dict) -> float:
     # footprint_reward = -1.0 * (total_footprint - percentile_10) / (percentile_90 - percentile_10)  # Mean and std reward. Negate to maximize reward and minimize footprint
 
     total_energy = params['bat_total_energy_with_battery_KWh']
-    norm_total_energy = (total_energy - 266) / 80
-    
+    # norm_total_energy = (total_energy - 266) / 80 # Normalization values used when no exponential efficiency is used for the cpus
+    norm_total_energy = (total_energy - 320) / 120 # Normalization values used when exponential efficiency is used for the cpus
     norm_ci = params['norm_CI']
     
     footprint_reward = -1.0 * (norm_ci * norm_total_energy / 0.50)  # Mean and std reward. Negate to maximize reward and minimize energy consumption

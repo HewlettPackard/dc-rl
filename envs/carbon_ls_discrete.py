@@ -269,6 +269,8 @@ class CarbonLoadEnv(gym.Env):
         original_workload = self.workload
         tasks_in_queue = len(self.tasks_queue)
 
+        if not self.initialize_queue_at_reset: # That means that we are on eval mode
+            self.current_utilization += non_shiftable_tasks / 100
             
         reward = 0 
         

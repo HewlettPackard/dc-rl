@@ -23,7 +23,7 @@ class StochasticPolicy(nn.Module):
         super(StochasticPolicy, self).__init__()
         self.hidden_sizes = args.get("hidden_size_policy", args["hidden_sizes"])
         self.action_squash_method = args.get("action_squash_method", None)  # Default to None to squash actions between [-1, 1]
-        self.discrete = action_space.__class__.__name__ == "Discrete"
+        self.discrete = action_space.__class__.__name__ == "Discrete" or action_space.__class__.__name__ == "MultiDiscrete"
         self.args = args
         self.gain = args["gain"]
         self.initialization_method = args["initialization_method"]

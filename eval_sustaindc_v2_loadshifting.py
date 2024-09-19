@@ -67,7 +67,8 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     # run = 'happo/debug_ls_4_onlyhour_newreward/seed-05735-2024-09-16-21-52-16' # 8.47% Reduction
     # run = 'happo/debug_ls_5_new_obs_expanded_randomhour/seed-05415-2024-09-16-22-48-16' # 6.693% ± 0.028 Reduction
     # run = 'happo/debug_ls_9_new_reward_5timessqrtplus1_8threads_128eplen_8numminibatch_taskhistogram_weatherinfo_0000001actorentr/seed-02195-2024-09-18-23-28-55' # 
-    run = 'happo/debug_ls_new_reward_5timessqrtplus1_8threads_128eplen_8numminibatch_taskhistogram_weatherinfo_001actorentr/seed-01321-2024-09-18-23-25-57' # Reduction (%): 8.840 ± 0.337
+    # run = 'happo/debug_ls_new_reward_5timessqrtplus1_8threads_128eplen_8numminibatch_taskhistogram_weatherinfo_001actorentr/seed-01321-2024-09-18-23-25-57' # Reduction (%): 8.840 ± 0.337
+    run = 'happo/debug_ls_4_multidiscrete/seed-02189-2024-09-19-18-35-54'
     
     path = f'/lustre/guillant/sustaindc/results/sustaindc/ca/{run}'
     with open(path + '/config.json', encoding='utf-8') as file:
@@ -140,7 +141,7 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
                             eval_actions = torch.tensor([[supply_temp]])
                         elif eval_type == 'fixed':
                             supply_temp = 1
-                            eval_actions = torch.tensor([[supply_temp]])
+                            eval_actions = torch.tensor([[supply_temp, 5]])
                         elif eval_type == 'following_ci':
                             workload = expt_runner.eval_envs.envs[0].env.env.workload_m.get_next_workload()
                             # For the RBC I need this: current_ci, ci_forecast, tasks_in_queue, oldest_task_age, queue_max_len
@@ -330,7 +331,7 @@ print(f"Reduction (%): {co2_results_fixed['reduction_avg']:.3f} ± {co2_results_
 #%% Now Plot the original workload (ls_original_workload) vs the shifted workload (ls_shifted_workload) in one y-axis, and in the other y-axis the carbon intensity
 trained_metrics = trained_metrics_runs[0]
 original_workloads = [metric['ls_original_workload'] for metric in trained_metrics['agent_ls']]
-shifted_workloads = [metric['ls_shifted_workload']  + metric['ls_original_workload']*0.4 for metric in trained_metrics['agent_ls']]
+shifted_workloads = [metric['ls_shifted_workload'] for metric in trained_metrics['agent_ls']]
 carbon_intensities = [metric['bat_avg_CI'] for metric in trained_metrics['agent_bat']]
 
 # Extract also the day and the hour to plot the data
@@ -354,10 +355,11 @@ carbon_intensities = carbon_intensities[init_point:init_point + num_points]
 time_intervals = time_intervals[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 1  # Use a larger window size to smooth the data more
+window_size = 4  # Use a larger window size to smooth the data more
 smoothed_original_workloads = pd.Series(original_workloads).rolling(window=window_size).mean().dropna()
 smoothed_shifted_workloads = pd.Series(shifted_workloads).rolling(window=window_size).mean().dropna()
 smoothed_carbon_intensities = pd.Series(carbon_intensities).rolling(window=window_size).mean().dropna()
+time_intervals = time_intervals[window_size-1:]
 
 # Create the plot
 fig, ax1 = plt.subplots(figsize=(6, 3))  # Adjust height as necessary
@@ -384,7 +386,7 @@ ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
 # Show the grid
 ax1.grid(linestyle='--')
 
-ax1.set_ylim(0, 100)
+ax1.set_ylim(0, 105)
 
 #%% Now Plot the original workload (ls_original_workload) vs the shifted workload (ls_shifted_workload) in one y-axis, and in the other y-axis the ambient temperature
 original_workloads = [metric['ls_original_workload'] for metric in trained_metrics['agent_ls']]
