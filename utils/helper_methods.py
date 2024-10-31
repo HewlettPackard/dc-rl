@@ -20,7 +20,7 @@ def f2c(t: float) -> float:
     Returns:
         float: Temperature in Celsius.
     """
-    return 5*(t-23)/9
+    return 5*(t-32)/9
 
 
 class pyeplus_callback(DefaultCallbacks):
