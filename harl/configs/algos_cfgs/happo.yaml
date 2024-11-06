@@ -44,9 +44,9 @@ eval:
 
 render:
   # whether to use render
-  use_render: False
+  use_render: True
   # number of episodes to render
-  render_episodes: 10
+  render_episodes: 1
 model:
   # network parameters
   # hidden sizes for mlp module in the network

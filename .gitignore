@@ -4,6 +4,7 @@ __pycache__/
 *.out
 *.pyc
 *.txt
+*.pdf
 */__pycache__/
 *.ipynb
 /pydcm
@@ -24,3 +25,8 @@ radarchart.png
 seed-00001-2024-04-22-20-59-21
 seed-00001-2024-05-01-21-50-12
 launch.json
+icons/
+plots/
+evaluation_render/
+.history/
+checkpoint_new_model/
