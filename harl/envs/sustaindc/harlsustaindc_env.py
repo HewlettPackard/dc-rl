@@ -43,7 +43,7 @@ class HARLSustainDCEnv:
         """
         self._seed += 1
         self.cur_step = 0
-        obs = self.env.reset(seed=self._seed)
+        obs, infos_env = self.env.reset(seed=self._seed)
 
         # Extract the keys from obs in the same order
         agents = list(obs.keys())
@@ -211,3 +211,10 @@ class HARLSustainDCEnv:
             list: List of available actions.
         """
         return [1] * self.action_space[agent_id].n
+    
+    def render(self):
+        """
+        Render the environment.
+        """
+        self.env.render()
+        pass

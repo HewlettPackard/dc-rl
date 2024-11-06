@@ -1,4 +1,5 @@
 import os
+import sys
 import random
 from typing import Optional, Tuple, Union
 
@@ -17,6 +18,13 @@ from utils.managers import (CI_Manager, Time_Manager, Weather_Manager,
                             Workload_Manager)
 from utils.utils_cf import get_energy_variables, get_init_day, obtain_paths
 
+import matplotlib
+matplotlib.use('Agg')  # Use a non-interactive backend suitable for servers without display
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg  # For reading images
+from matplotlib.offsetbox import OffsetImage, AnnotationBbox
+
+from collections import deque
 
 class EnvConfig(dict):
 
@@ -190,6 +198,35 @@ class SustainDC(gym.Env):
 
         # This actions_are_logits is True only for MADDPG if continuous actions is used on the algorithm.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
+        
+        # Plots for the rendering
+        # Load and scale icons for the visualization using Matplotlib
+        self.datacenter_icon = mpimg.imread('/lustre/guillant/dc-rl/icons/data_center_icon2.png')
+        self.temperature_icon = mpimg.imread('/lustre/guillant/dc-rl/icons/thermostat_icon.png')
+        self.battery_icon = mpimg.imread('/lustre/guillant/dc-rl/icons/battery_icon.png')
+        self.background_image = mpimg.imread('/lustre/guillant/dc-rl/icons/background_v2.png')
+
+        # Resize images if necessary
+        from PIL import Image
+        self.datacenter_icon = self.resize_image(self.datacenter_icon, (1024, 1024))
+        self.temperature_icon = self.resize_image(self.temperature_icon, (50, 50))
+        self.battery_icon = self.resize_image(self.battery_icon, (50, 50))
+        self.background_image = self.resize_image(self.background_image, (1600, 900))  # Adjust the size as needed
+
+        self.BG_COLOR = (1.0, 1.0, 1.0)  # White background in normalized RGB
+        self.BAR_COLOR = (105/255, 179/255, 162/255)  # Normalize RGB values to [0,1]
+        self.FONT_COLOR = 'black'
+        self.fontsize = 20  # Default font size
+        
+        self.carbon_intensity_history = deque(maxlen=96+1)  # Store the carbon intensity history for plotting
+        self.external_temperature_history = deque(maxlen=96+1)  # Store the carbon intensity history for plotting
+
+
+    def resize_image(self, image, size):
+        from PIL import Image
+        img = Image.fromarray((image * 255).astype('uint8'))  # Convert to PIL Image
+        img = img.resize(size, Image.LANCZOS)
+        return np.array(img) / 255.0  # Convert back to numpy array
 
     def seed(self, seed=None):
         """
@@ -284,7 +321,7 @@ class SustainDC(gym.Env):
         
         available_actions = None
         
-        return states
+        return states, self.infos
 
     def step(self, action_dict):
         """
@@ -417,6 +454,16 @@ class SustainDC(gym.Env):
         self.infos['__common__']['states']['agent_dc'] = self.dc_state
         self.infos['__common__']['states']['agent_bat'] = self.bat_state
         
+        # Update self.infos with the agents information
+        self.infos["agent_ls"] = info["agent_ls"]
+        self.infos["agent_dc"] = info["agent_dc"]
+        self.infos["agent_bat"] = info["agent_bat"]
+        
+        
+        # Append values for the render method
+        self.carbon_intensity_history.append(ci_i)
+        self.external_temperature_history.append(temp)
+        
         return obs, rew, terminateds, truncateds, info
 
     def calculate_reward(self, params):
@@ -437,12 +484,50 @@ class SustainDC(gym.Env):
         bat_reward = self.bat_reward_method(params)
         return ls_reward, dc_reward, bat_reward
 
-    def render(self):
-        """
-        Render the environment.
-        """
-        pass
+    # def render(self, mode='human'):
+    #     """
+    #     Render the environment.
+    #     """
+    #     if mode == 'pygame':
+    #         self.render_pygame()
+        
+    #     elif mode == 'plots':
+    #         # Plot HVAC and other loads as a bar chart
+    #         self.ax[0, 0].clear()
+    #         self.ax[0, 0].bar(['Fan Load', 'Compressor Load'], 
+    #                         [self.dc_env.CRAC_Fan_load, self.dc_env.Compressor_load])
+    #         self.ax[0, 0].set_title("HVAC System Loads")
 
+    #         # Plot CPU Power across racks as a line graph
+    #         self.ax[0, 1].clear()
+    #         self.ax[0, 1].plot(np.sum(self.dc_env.rackwise_cpu_pwr)/1e6, label="CPU Power (MW)")
+    #         self.ax[0, 1].set_title("Rack-wise CPU Power")
+    #         self.ax[0, 1].legend()
+
+    #         # Plot Battery State of Charge and HVAC Load
+    #         self.ax[1, 0].clear()
+    #         self.ax[1, 0].plot(self.bat_env.info['bat_SOC']*100, label="Battery SoC (%)")
+    #         self.ax[1, 0].plot(self.dc_env.HVAC_load/1e6, label="HVAC Power (MW)")
+    #         self.ax[1, 0].set_title("Battery & HVAC Power")
+    #         self.ax[1, 0].legend()
+
+    #         # Update temperature plot
+    #         self.ax[1, 1].clear()
+    #         self.ax[1, 1].plot(np.sum(self.dc_env.rackwise_outlet_temp), label="Outlet Temp (C)")
+    #         self.ax[1, 1].set_title("Rack-wise Outlet Temperature (C)")
+    #         self.ax[1, 1].legend()
+
+    #         # Redraw and pause briefly to simulate live updating
+    #         plt.pause(0.05)
+    #         plt.draw()
+
+    #     elif mode == 'animation':
+    #         print('Rendering the environment is not supported.')
+    #         raise NotImplementedError
+    #     else:
+    #         raise NotImplementedError
+        
+        
     def close(self):
         """
         Close the environment.
@@ -491,3 +576,197 @@ class SustainDC(gym.Env):
             for agent in self.possible_agents  # pylint: disable=no-member
         )
         return np.concatenate(states, axis=None)
+    
+    def get_soc_color(self, value):
+        """
+        Compute the color for the battery SoC bar, interpolating from red to green.
+        
+        Args:
+            value (float): Battery SoC percentage (0 to 100).
+        
+        Returns:
+            tuple: RGB color tuple.
+        """
+        # Normalize the value to [0, 1]
+        normalized_value = value / 100.0
+        red = 1 - normalized_value    # Red decreases as SoC increases
+        green = normalized_value      # Green increases as SoC increases
+        blue = 0                      # Blue remains constant
+        return (red, green, blue)
+
+    def draw_bar(self, ax, label, value, position, max_value=100, color=None):
+        bar_width = 1.5  # Matplotlib uses relative widths for bars
+        filled_width = (value / max_value)
+        
+        # Draw the empty bar to indicate the complete range
+        ax.barh(position, 1, height=bar_width, color='lightgray', edgecolor='black', align='center')
+        
+        # Use the provided color or the default bar color
+        if color is None:
+            color = self.BAR_COLOR  # Default color
+        
+        # Draw the filled portion of the bar to indicate the value
+        ax.barh(position, filled_width, height=bar_width, color=color, edgecolor='black', align='center')
+        ax.set_xlim(0, 1)
+        ax.set_ylim(-0.5, 1.5)
+        ax.axis('off')  # Hide axes
+        
+        # Add label and value
+        ax.text(-0.1, position, f"{label}:", fontsize=14, va='center', ha='right', color=self.FONT_COLOR, weight='bold')
+        ax.text(1.1, position, f"{value:.1f}%", fontsize=14, va='center', ha='left', color=self.FONT_COLOR, weight='bold')
+
+
+    def render(self, mode='human'):
+        """
+        Render the environment using Matplotlib, incorporating logos.
+        """
+        # Prepare data for plotting
+        agent_ls_info = self.infos.get('agent_ls', {})
+        agent_bat_info = self.infos.get('agent_bat', {})
+        agent_dc_info = self.infos.get('agent_dc', {})
+        common_info = self.infos.get('__common__', {})
+
+        # Extract necessary data
+        original_workload = agent_ls_info.get('ls_original_workload', 0) * 100  # Convert to percentage
+        shifted_workload = agent_ls_info.get('ls_shifted_workload', 0) * 100
+        temp = common_info.get('weather', 0)
+        bat_soc = agent_bat_info.get('bat_SOC', 0) * 100  # Convert to percentage
+        cooling_setpoint = agent_dc_info.get('dc_crac_setpoint', 0)
+        energy_consumption = agent_bat_info.get('dc_total_power_kW', 0)
+        carbon_footprint = agent_bat_info.get('bat_CO2_footprint', 0)
+        water_usage = agent_bat_info.get('dc_water_usage', 0)
+        carbon_intensity = agent_bat_info.get('bat_avg_CI', 320)  # Example default value
+        
+        day = agent_ls_info.get('day', 0)
+        hour = agent_ls_info.get('hour', 0)
+
+        # Create a figure and axes
+        fig = plt.figure(figsize=(16, 9))
+        ax = fig.add_axes([0, 0, 1, 1])
+        ax.axis('off')
+
+        # Display the background image
+        ax.imshow(self.background_image, extent=[0, 1, 0, 1], aspect='auto')
+
+        # Draw workload bars with improved positioning
+        ax_workload = fig.add_axes([0.40, 0.85, 0.2, 0.05])
+        self.draw_bar(ax_workload, 'Original Workload', original_workload, 0)
+        ax_computed_workload = fig.add_axes([0.40, 0.80, 0.2, 0.05])
+        self.draw_bar(ax_computed_workload, 'Computed Workload', shifted_workload, 0)
+        
+        # Draw a bar for the battery SoC
+        ax_battery = fig.add_axes([0.40, 0.17, 0.2, 0.05])
+
+        # Compute the color based on the battery SoC
+        color = self.get_soc_color(bat_soc)
+
+        # Draw the bar with the computed color
+        self.draw_bar(ax_battery, 'Battery SoC', bat_soc, 0, color=color)
+
+
+        # Overlay the dynamic text at appropriate positions
+        # Adjust the positions (x, y) based on your background layout
+        
+        ax.text(0.675, 0.641, f'External Temp (°C)', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        ax.text(0.66, 0.55, f'{temp:.1f}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+
+        ax.text(0.59, 0.415,  f'Cooling Setpoint (°C)', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        ax.text(0.582, 0.346, f'{cooling_setpoint:.1f}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        
+        ax.text(0.280, 0.637, f'Energy Grid Carbon Intensity', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        ax.text(0.295, 0.500, f'{carbon_intensity/1000:.1f} gCO2/Wh', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+
+        # ax.text(0.35, 0.327, f'Battery SoC', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.35, 0.265, f'{bat_soc:.1f} (%)', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        
+        # Prin the day and hour at the top right corner
+        ax.text(0.95, 0.95, f'Day: {day}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        ax.text(0.95, 0.90, f'Hour: {hour}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+
+        # Display final metrics at the bottom
+        metrics_text = (
+            f'Energy Consumption: {energy_consumption:.2f} MWh\n'
+            f'Carbon Footprint: {carbon_footprint:.2f} KgCO2\n'
+            f'Water Usage: {water_usage:.2f} L'
+        )
+        
+        ax.text(0.176, 0.085, f'Energy Consumption:', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        ax.text(0.176, 0.055, f'{energy_consumption/1000:.2f} MWh', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        
+        ax.text(0.5, 0.085, f'Carbon Footprint:', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        ax.text(0.5, 0.055, f'{carbon_footprint/1000:.2f} KgCO2', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        
+        ax.text(0.824, 0.085, f'Water Usage:', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        ax.text(0.824, 0.055, f'{water_usage:.2f} L', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)        
+
+        
+        # Add a small plot for carbon intensity history
+        N = len(self.carbon_intensity_history)  # Total number of timesteps
+        timestep_duration_minutes  = 15  # Duration of each timestep in minutes
+        timestep_duration_hours = timestep_duration_minutes / 60  # Convert to hours
+
+        # max_minutes_ago = (N - 1) * timestep_duration  # Total time span in minutes
+        
+        # Generate 5 equally spaced indices
+        indices = np.linspace(0, N - 1, num=5).astype(int)
+
+        # Ensure indices are within valid range
+        indices = np.clip(indices, 0, N - 1)
+        
+        # Time steps in minutes ago (from oldest to most recent)
+        time_steps_minutes_ago = [(N - i - 1) * timestep_duration_hours  for i in range(N)]  # e.g., [60, 45, 30, 15, 0]
+
+        # Select time steps for x-ticks
+        xticks_to_show = [time_steps_minutes_ago[i] for i in indices]
+
+        xlabels = [str(int(t)) if t != 0 else 'Now' for t in xticks_to_show]
+
+        # Create the plot
+        ax_history = fig.add_axes([0.1, 0.20, 0.15, 0.125])  # Adjust position and size
+        ax_history.plot(time_steps_minutes_ago, np.array(self.carbon_intensity_history)/1000, color='tab:blue')
+
+        # Select x-ticks every 4 timesteps
+        ax_history.set_xticks(xticks_to_show)
+        ax_history.set_xticklabels(xlabels, fontsize=8)
+
+        # Invert x-axis so 'Now' is at the right
+        ax_history.invert_xaxis()
+
+        # Set labels and title
+        ax_history.set_title('Carbon Intensity History', fontsize=10)
+        ax_history.set_xlabel('Hours Ago', fontsize=8)
+        ax_history.set_ylabel('CI (gCO₂/Wh)', fontsize=8)
+        ax_history.tick_params(axis='both', which='major', labelsize=8)
+        ax_history.grid(True)
+        ax_history.set_facecolor((0.95, 0.95, 0.95, 0.5))  # Semi-transparent background
+        
+        # Add a small plot for the external weather history
+        # Create the plot
+        ax_weather = fig.add_axes([0.75, 0.4, 0.15, 0.125])
+        ax_weather.plot(time_steps_minutes_ago, self.external_temperature_history, color='tab:red')
+        
+        # Select x-ticks every 4 timesteps
+        ax_weather.set_xticks(xticks_to_show)
+        ax_weather.set_xticklabels(xlabels, fontsize=8)
+
+        # Invert x-axis so 'Now' is at the right
+        ax_weather.invert_xaxis()
+        
+        # Set labels and title
+        ax_weather.set_title('External Temp History', fontsize=10)
+        ax_weather.set_xlabel('Hours Ago', fontsize=8)
+        ax_weather.set_ylabel('Temp (°C)', fontsize=8)
+        ax_weather.tick_params(axis='both', which='major', labelsize=8)
+        ax_weather.grid(True)
+        ax_weather.set_facecolor((0.95, 0.95, 0.95, 0.5))
+            
+        # Save the figure to a file
+        if not hasattr(self, 'render_step'):
+            self.render_step = 0
+        else:
+            self.render_step += 1
+
+        filename = f'evaluation_render/render_{self.render_step:04d}.png'
+        plt.savefig(filename, dpi=100, bbox_inches='tight', pad_inches=0)
+        plt.close(fig)
+

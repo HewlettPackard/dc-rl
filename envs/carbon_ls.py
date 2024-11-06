@@ -86,7 +86,8 @@ class CarbonLoadEnv(gym.Env):
         
         state = np.asarray(np.hstack(([current_workload, queue_length/self.queue_max_len])), dtype=np.float32)
         
-        info = {"load": self.workload,
+        info = {"ls_original_workload": self.workload,
+                "ls_shifted_workload": self.workload,
                 "action": -1,
                 "info_load_left": 0,
                 "ls_tasks_dropped": 0,

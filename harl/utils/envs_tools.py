@@ -110,8 +110,24 @@ def make_render_env(env_name, seed, env_args):
     manual_delay = True  # manually delay the rendering by time.sleep()
     env_num = 1  # number of parallel envs
     
-    print("Can not support the " + env_name + "environment.")
-    raise NotImplementedError
+    if env_name == 'sustaindc':
+        from harl.envs.sustaindc.harlsustaindc_env import HARLSustainDCEnv
+        if 'month' in env_args:
+            env_args['month'] = env_args['month']
+        elif rank < 12:
+            env_args['month'] = rank % 12
+        else:
+            # 33% June (5), 33% July (6), 33% August (7)
+            env_args['month'] = rank % 3 + 5
+            
+        print("Rendering the environment with month: ", env_args['month'])
+        env = HARLSustainDCEnv(env_args)
+        env.seed(seed * 60000)
+    
+    else:
+        print("Can not support the " + env_name + "environment.")
+        raise NotImplementedError
+    
     return env, manual_render, manual_expand_dims, manual_delay, env_num
 
 

@@ -59,8 +59,8 @@ class SustainDCPettingZooEnv(ParallelEnv):
             np.random.seed(seed)  # Example of setting seed, adjust based on your environment's requirements
         
         # initial_observation should be a dictionary with agent names as keys and their observations as values
-        initial_observations_with_info = self.env.reset()
-        return initial_observations_with_info
+        initial_observations_with_info, infos = self.env.reset()
+        return initial_observations_with_info, []
 
     def step(self, actions):
         """
@@ -92,7 +92,7 @@ class SustainDCPettingZooEnv(ParallelEnv):
         Returns:
             Rendered output.
         """
-        return self.env.render(mode=mode)
+        return self.env.render(mode='pygame')
 
     def close(self):
         """

@@ -23,6 +23,7 @@ from harl.utils.envs_tools import (
 from harl.utils.models_tools import init_device
 from harl.utils.configs_tools import init_dir, save_config
 from harl.envs import LOGGER_REGISTRY
+import time
 
 
 class OnPolicyBaseRunner:
@@ -714,6 +715,8 @@ class OnPolicyBaseRunner:
     def render(self):
         """Render the model."""
         print("start rendering")
+        last_render_time = time.time()
+
         if self.manual_expand_dims:
             # this env needs manual expansion of the num_of_parallel_envs dimension
             for _ in range(self.algo_args["render"]["render_episodes"]):
@@ -768,7 +771,13 @@ class OnPolicyBaseRunner:
                         else None
                     )
                     if self.manual_render:
-                        self.envs.render()
+                        # self.envs.render()
+                        # Render every 1 second
+                        print("Rendering...")
+                        current_time = time.time()
+                        if current_time - last_render_time >= 1.0:
+                            self.envs.render()  # Render the environment plot
+                            last_render_time = current_time
                     if self.manual_delay:
                         time.sleep(0.1)
                     if eval_dones[0]:
@@ -777,6 +786,7 @@ class OnPolicyBaseRunner:
         else:
             # this env does not need manual expansion of the num_of_parallel_envs dimension
             # such as dexhands, which instantiates a parallel env of 64 pair of hands
+            last_render_time = time.time()
             for _ in range(self.algo_args["render"]["render_episodes"]):
                 eval_obs, _, eval_available_actions = self.envs.reset()
                 eval_rnn_states = np.zeros(
@@ -817,7 +827,13 @@ class OnPolicyBaseRunner:
                     ) = self.envs.step(eval_actions)
                     rewards += eval_rewards[0][0][0]
                     if self.manual_render:
-                        self.envs.render()
+                        # self.envs.render()
+                        # Render every 1 second
+                        print("Rendering...")
+                        current_time = time.time()
+                        if current_time - last_render_time >= 1.0:
+                            self.envs.render()  # Render the environment plot
+                            last_render_time = current_time
                     if self.manual_delay:
                         time.sleep(0.1)
                     if eval_dones[0][0]:
