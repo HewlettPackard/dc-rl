@@ -8,8 +8,8 @@ import pandas as pd
 
 from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
 # from envs.carbon_ls_discrete import CarbonLoadEnv
-from envs.carbon_ls_multidiscrete import CarbonLoadEnv
-# from envs.carbon_ls_continuous import CarbonLoadEnv
+# from envs.carbon_ls_multidiscrete import CarbonLoadEnv
+from envs.carbon_ls_continuous import CarbonLoadEnv
 from envs.dc_gym import dc_gymenv
 from utils.utils_cf import get_init_day
 
@@ -121,8 +121,8 @@ def make_dc_pyeplus_env(month : int = 1,
                                         high=np.float32(2.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
                                         )
     else:
-        observation_space = spaces.Box(low=np.float32(-2.0*np.ones(6)),  # p.o.
-                                        high=np.float32(2.0*np.ones(6)),  # p.o. here we add 2 to only include current CI and next workload
+        observation_space = spaces.Box(low=np.float32(-2.0*np.ones(4)),  # p.o.
+                                        high=np.float32(2.0*np.ones(4)),  # p.o. here we add 2 to only include current CI and next workload
                                         )
     
     ################################################################################
@@ -144,10 +144,10 @@ def make_dc_pyeplus_env(month : int = 1,
         1: (0),
         2: (0.05),
     }
-    action_space = spaces.Discrete(len(action_mapping))
+    # action_space = spaces.Discrete(len(action_mapping))
     
     # I want to use a continuous action space
-    action_space = spaces.Box(low=np.float32(0), high=np.float32(1), shape=(2,))
+    action_space = spaces.Box(low=np.float32(-1), high=np.float32(1), shape=(2,))
     
     
     ################################################################################

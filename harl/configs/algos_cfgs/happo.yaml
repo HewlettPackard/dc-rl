@@ -17,7 +17,7 @@ train:
   # number of total training steps
   num_env_steps: 200000000
   # number of steps per environment per training data collection
-  episode_length: 128
+  episode_length: 256
   # logging interval
   log_interval: 5
   # evaluation interval
@@ -55,9 +55,9 @@ model:
   # hidden sizes for mlp module in the network
   hidden_sizes: [128, 128]
   # hidden sizes for the MLP module of the policy network
-  hidden_size_policy: [64, 64]  # Layer sizes for policy network
+  hidden_size_policy: [16, 16]  # Layer sizes for policy network
   # hidden sizes for the MLP module of the value network
-  hidden_size_value: [64, 64] # Layer sizes for value network
+  hidden_size_value: [16, 16] # Layer sizes for value network
   # activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
   activation_func: tanh
   # whether the tanh squashing function is used to scale the action output between -1 and 1 
@@ -101,11 +101,11 @@ algo:
   # clip parameter
   clip_param: 0.2
   # number of mini-batches per epoch for actor update
-  actor_num_mini_batch: 8
+  actor_num_mini_batch: 16
   # number of mini-batches per epoch for critic update
-  critic_num_mini_batch: 8
+  critic_num_mini_batch: 16
   # coefficient for entropy term in actor loss
-  entropy_coef: 0.00001
+  entropy_coef: 0.01
   # coefficient for value loss
   value_loss_coef: 1.0
   # whether to clip gradient norm

@@ -398,8 +398,8 @@ class SustainDC(gym.Env):
                                             next_workload,
                                             current_out_temperature,
                                             next_out_temperature,
-                                            pump_speed,
-                                            supply_temp
+                                            # pump_speed,
+                                            # supply_temp
                                         )))
         
         return dc_state

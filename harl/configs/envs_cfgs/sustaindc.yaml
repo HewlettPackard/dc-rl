@@ -1,5 +1,5 @@
 agents:
-  - agent_ls
+  - agent_dc
 location: ca
 workload_file: 'Alibaba_CPU_Data_Hourly_1.csv'
 max_bat_cap_Mw: 1.0
@@ -13,4 +13,4 @@ month: 6
 days_per_episode: 30
 partial_obs: True
 nonoverlapping_shared_obs_space: True
-initialize_queue_at_reset: True
+initialize_queue_at_reset: False

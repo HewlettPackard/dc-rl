@@ -17,7 +17,8 @@ from harl.runners import RUNNER_REGISTRY
 from harl.utils.trans_tools import _t2n
 
 # sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), os.pardir, 'dc-rl')))
-from utils.base_agents import BaseLoadShiftingAgent, BaseHVACAgent, BaseBatteryAgent, RBCLiquidAgent
+from utils.base_agents import BaseLoadShiftingAgent, BaseHVACAgent, BaseBatteryAgent
+from utils.rbc_agents import RBCLiquidAgent
 #%%
 # MODEL_PATH = 'trained_models'
 # ENV = 'sustaindc'
@@ -36,29 +37,11 @@ baseline_actors = {
 def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     all_metrics = []
     SAVE_EVAL = "results"
-    NUM_EVAL_EPISODES = 5
+    NUM_EVAL_EPISODES = eval_episodes
 
-    # Define paths and configurations as usual
-    # run = 'happo/happo_liquid_dc_64_16_4_2actions_4obs/seed-00001-2024-08-23-21-29-01'
-    # run = 'happo/happo_liquid_dc_8_8_8_2actions_3obs/seed-00001-2024-08-23-21-28-19'
-    # run = 'happo/happo_liquid_dc_64_64_64_2actions_4obs/seed-00001-2024-08-23-21-25-26' # Looks good, but bad performance -0.6%
-    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs/seed-00001-2024-08-23-18-53-06' # Looks good, 1.27% energy reduction
-    # run = 'happo/happo_liquid_dc_16_16_2actions_4obs/seed-00001-2024-08-23-18-52-40' # Looks good, 0.89% energy reduction
-    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs_water/seed-00001-2024-08-26-15-07-24'
-    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs/seed-00001-2024-08-26-13-13-12'
-    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs/seed-00001-2024-08-26-13-14-45'
-    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs_water/seed-00001-2024-08-26-15-07-24'
-    # run = 'happo/happo_liquid_dc_64_64_water_std/seed-00001-2024-08-26-16-51-09'
-    # run = 'hatrpo/hatrpo_liquid_dc_256_256_2actions_4obs_000001/seed-00001-2024-08-26-21-13-20'
-    run = 'happo/happo_liquid_dc_256_256_2actions_4obs/seed-00004-2024-08-26-21-25-18' # Looks good, 1.51% energy reduction
-    # run = 'happo/happo_liquid_dc_256_256_2actions_4obs/seed-00002-2024-08-26-21-24-52' # 1.19%
-    # run = "happo/happo_liquid_dc_256_256_2actions_4obs/seed-00003-2024-08-26-21-25-05" # 0.95%
-    # run = "happo/happo_liquid_dc_256_256_2actions_4obs/seed-00005-2024-08-26-21-25-32"
-    # run = 'happo/happo_liquid_dc_64_64_2actions_4obs_2stk/seed-00002-2024-08-27-15-28-04' # 1.25$
-    # run = 'happo/happo_liquid_dc_256_256_2actions_5obs_range_t_i_sigmoid_nonormalization_default_values/seed-00002-2024-08-30-04-32-21'
-    # run = 'happo/happo_liquid_dc_recovering_old_data/seed-00002-2024-09-02-23-33-17'
+    run = 'happo/liquid_2_agents_noactivation/seed-07797-2024-11-07-18-55-50'
 
-    path = f'/lustre/guillant/sustaindc/results/sustaindc/az/{run}'
+    path = f'/lustre/guillant/dc-rl/results/sustaindc/ca/{run}'
     with open(path + '/config.json', encoding='utf-8') as file:
         saved_config = json.load(file)
 
@@ -211,10 +194,10 @@ def run_evaluation(do_baseline=False, eval_episodes=1, eval_type='random'):
     return all_metrics
 
 # Run baseline
-num_runs = 5
-baseline_random_metrics_runs = run_evaluation(do_baseline=True, eval_type='random', eval_episodes=num_runs)
-baseline_fixed_metrics_runs = run_evaluation(do_baseline=True, eval_type='fixed', eval_episodes=num_runs)
-baseline_metrics_runs = run_evaluation(do_baseline=True, eval_type='following_workload', eval_episodes=num_runs)
+num_runs = 1
+# baseline_random_metrics_runs = run_evaluation(do_baseline=True, eval_type='random', eval_episodes=num_runs)
+# baseline_fixed_metrics_runs = run_evaluation(do_baseline=True, eval_type='fixed', eval_episodes=num_runs)
+# baseline_metrics_runs = run_evaluation(do_baseline=True, eval_type='following_workload', eval_episodes=num_runs)
 
 # Run trained algorithm
 trained_metrics_runs = run_evaluation(do_baseline=False, eval_episodes=num_runs)
@@ -390,7 +373,7 @@ pump_speeds = pump_speeds[init_point:init_point + num_points]
 workload_utilizations = workload_utilizations[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 1  # Use a larger window size to smooth the data more
+window_size = 10  # Use a larger window size to smooth the data more
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
 
@@ -450,7 +433,6 @@ supply_temperatures = supply_temperatures[init_point:init_point + num_points]
 workload_utilizations = workload_utilizations[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 1  # Use a larger window size to smooth the data more
 smoothed_supply_temperatures = pd.Series(supply_temperatures).rolling(window=window_size).mean().dropna()
 smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
 
@@ -506,7 +488,6 @@ pump_speeds = pump_speeds[init_point:init_point + num_points]
 outside_temps = outside_temps[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 1  # Use a larger window size to smooth the data more
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_outside_temps = pd.Series(outside_temps).rolling(window=window_size).mean().dropna()
 
@@ -563,7 +544,6 @@ supply_liquid_temp = supply_liquid_temp[init_point:init_point + num_points]
 outside_temps = outside_temps[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 1  # Use a larger window size to smooth the data more
 smoothed_supply_liquid_temp = pd.Series(supply_liquid_temp).rolling(window=window_size).mean().dropna()
 smoothed_outside_temps = pd.Series(outside_temps).rolling(window=window_size).mean().dropna()
 
@@ -620,7 +600,6 @@ pump_speeds = pump_speeds[init_point:init_point + num_points]
 carbon_intensities = carbon_intensities[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 1  # Use a larger window size to smooth the data more
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_carbon_intensities = pd.Series(carbon_intensities).rolling(window=window_size).mean().dropna()
 
@@ -667,7 +646,6 @@ supply_liquid_temp = supply_liquid_temp[init_point:init_point + num_points]
 carbon_intensities = carbon_intensities[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 1  # Use a larger window size to smooth the data more
 smoothed_supply_liquid_temp = pd.Series(supply_liquid_temp).rolling(window=window_size).mean().dropna()
 smoothed_carbon_intensities = pd.Series(carbon_intensities).rolling(window=window_size).mean().dropna()
 
@@ -766,7 +744,6 @@ workload_utilizations = workload_utilizations[init_point:init_point + num_points
 carbon_intensities = carbon_intensities[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 3
 smoothed_outside_temps = pd.Series(outside_temps).rolling(window=window_size).mean().dropna()
 smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
 smoothed_carbon_intensities = pd.Series(carbon_intensities).rolling(window=window_size).mean().dropna()
@@ -829,7 +806,6 @@ supply_temperature = supply_temperature[init_point:init_point + num_points]
 time_intervals = pd.date_range(start="2024-08-01", periods=len(supply_temperature), freq="15T")
 
 # Smooth the data using a rolling window
-window_size = 1
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_average_server_temperatures = pd.Series(average_server_temperatures).rolling(window=window_size).mean().dropna()
 smoothed_average_pipe_temperatures = pd.Series(average_pipe_temperatures).rolling(window=window_size).mean().dropna()
@@ -879,7 +855,7 @@ cooling_powers = [metric['dc_HVAC_total_power_kW'] for metric in trained_metrics
 carbon_footprints = [metric['bat_CO2_footprint'] for metric in trained_metrics['agent_bat']]
 
 # Define the number of points to plot
-num_points = 96*
+num_points = 96*7
 init_point = 225
 
 # Select the data to plot
@@ -888,7 +864,6 @@ cooling_powers = cooling_powers[init_point:init_point + num_points]
 carbon_footprints = carbon_footprints[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 3
 smoothed_it_powers = pd.Series(it_powers).rolling(window=window_size).mean().dropna()
 smoothed_cooling_powers = pd.Series(cooling_powers).rolling(window=window_size).mean().dropna()
 smoothed_carbon_footprints = pd.Series(carbon_footprints).rolling(window=window_size).mean().dropna()
@@ -947,7 +922,6 @@ battery_soc = battery_soc[init_point:init_point + num_points]
 battery_soc = (battery_soc - np.min(battery_soc)) / (np.max(battery_soc) - np.min(battery_soc))
  
 # Smooth the data using a rolling window
-window_size = 3
 smoothed_original_workloads = pd.Series(original_workloads).rolling(window=window_size).mean().dropna()
 smoothed_shifted_workloads = pd.Series(shifted_workloads).rolling(window=window_size).mean().dropna()
 smoothed_battery_soc = pd.Series(battery_soc).rolling(window=window_size).mean().dropna()
@@ -995,7 +969,6 @@ pump_speeds = pump_speeds[init_point:init_point + num_points]
 return_temperatures = return_temperatures[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 3  # Use a larger window size to smooth the data more
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_return_temperatures = pd.Series(return_temperatures).rolling(window=window_size).mean().dropna()
 
@@ -1052,7 +1025,6 @@ return_temperatures = return_temperatures[init_point:init_point + num_points]
 workload_utilizations = workload_utilizations[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 3  # Use a rolling window to smooth the data more
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_return_temperatures = pd.Series(return_temperatures).rolling(window=window_size).mean().dropna()
 smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
@@ -1121,7 +1093,6 @@ cooling_power = cooling_power[init_point:init_point + num_points]
 it_power = it_power[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 3  # Use a rolling window to smooth the data more
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_cooling_power = pd.Series(cooling_power).rolling(window=window_size).mean().dropna()
 smoothed_it_power = pd.Series(it_power).rolling(window=window_size).mean().dropna()
@@ -1190,7 +1161,6 @@ average_server_temperatures = average_server_temperatures[init_point:init_point 
 average_pipe_temperatures = average_pipe_temperatures[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 3  # Use a rolling window to smooth the data more
 smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
 smoothed_average_server_temperatures = pd.Series(average_server_temperatures).rolling(window=window_size).mean().dropna()
 smoothed_average_pipe_temperatures = pd.Series(average_pipe_temperatures).rolling(window=window_size).mean().dropna()
@@ -1264,7 +1234,6 @@ pump_speeds_following = pump_speeds_following[init_point:init_point + num_points
 workload_utilizations = workload_utilizations[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 1  # Use a larger window size to smooth the data more
 smoothed_pump_speeds_random = pd.Series(pump_speeds_random).rolling(window=window_size).mean().dropna()
 smoothed_pump_speeds_fixed = pd.Series(pump_speeds_fixed).rolling(window=window_size).mean().dropna()
 smoothed_pump_speeds_following = pd.Series(pump_speeds_following).rolling(window=window_size).mean().dropna()
@@ -1328,7 +1297,6 @@ pump_speeds_following = pump_speeds_following[init_point:init_point + num_points
 workload_utilizations = workload_utilizations[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 1  # Use a larger window size to smooth the data more
 smoothed_pump_speeds_random = pd.Series(pump_speeds_random).rolling(window=window_size).mean().dropna()
 smoothed_pump_speeds_fixed = pd.Series(pump_speeds_fixed).rolling(window=window_size).mean().dropna()
 smoothed_pump_speeds_following = pd.Series(pump_speeds_following).rolling(window=window_size).mean().dropna()
@@ -1388,7 +1356,6 @@ pump_speeds_following = pump_speeds_following[init_point:init_point + num_points
 outside_temps = outside_temps[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 1  # Use a larger window size to smooth the data more
 smoothed_pump_speeds_random = pd.Series(pump_speeds_random).rolling(window=window_size).mean().dropna()
 smoothed_pump_speeds_fixed = pd.Series(pump_speeds_fixed).rolling(window=window_size).mean().dropna()
 smoothed_pump_speeds_following = pd.Series(pump_speeds_following).rolling(window=window_size).mean().dropna()
@@ -1448,7 +1415,6 @@ pump_speeds_following = pump_speeds_following[init_point:init_point + num_points
 outside_temps = outside_temps[init_point:init_point + num_points]
 
 # Smooth the data using a rolling window
-window_size = 1  # Use a larger window size to smooth the data more
 smoothed_pump_speeds_random = pd.Series(pump_speeds_random).rolling(window=window_size).mean().dropna()
 smoothed_pump_speeds_fixed = pd.Series(pump_speeds_fixed).rolling(window=window_size).mean().dropna()
 smoothed_pump_speeds_following = pd.Series(pump_speeds_following).rolling(window=window_size).mean().dropna()
@@ -1495,3 +1461,100 @@ plt.tight_layout()
 # Show the plot
 plt.show()
 # %%
+# Now I will work on the explanation of the results
+# Aggregate data across episodes for each metric we’re interested in.
+import pandas as pd
+import numpy as np
+
+# Function to aggregate specific metrics across episodes
+def aggregate_metrics(metrics_runs, agent_name, metric_key):
+    metric_data = []
+    for run_metrics in metrics_runs:
+        # Gather data for the specific agent and metric
+        metric_values = [metric[metric_key] for metric in run_metrics[agent_name] if metric_key in metric]
+        metric_data.extend(metric_values)
+    return np.array(metric_data)
+
+# Example usage:
+pump_speeds = aggregate_metrics(trained_metrics_runs, 'agent_dc', 'dc_coo_mov_flow_actual')
+workload_utilizations = aggregate_metrics(trained_metrics_runs, 'agent_dc', 'dc_cpu_workload_fraction')
+outside_temps = aggregate_metrics(trained_metrics_runs, 'agent_dc', 'outside_temp')
+supply_liquid_temps = aggregate_metrics(trained_metrics_runs, 'agent_dc', 'dc_supply_liquid_temp')
+
+#%%
+# Calculate correlations
+correlation_workload_pump_speed = np.corrcoef(workload_utilizations, pump_speeds)[0, 1]
+correlation_workload_supply_temp = np.corrcoef(workload_utilizations, supply_liquid_temps)[0, 1]
+correlation_outside_temp_pump_speed = np.corrcoef(outside_temps, pump_speeds)[0, 1]
+correlation_outside_temp_supply_temp = np.corrcoef(outside_temps, supply_liquid_temps)[0, 1]
+
+print("Correlation between workload utilization and pump speed:", correlation_workload_pump_speed)
+print("Correlation between workload utilization and supply liquid temperature:", correlation_workload_supply_temp)
+print("Correlation between outside temperature and pump speed:", correlation_outside_temp_pump_speed)
+print("Correlation between outside temperature and supply liquid temperature:", correlation_outside_temp_supply_temp)
+
+#%%
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Set up smoothing with a rolling window
+window_size = 10
+smoothed_pump_speeds = pd.Series(pump_speeds).rolling(window=window_size).mean().dropna()
+smoothed_workload_utilizations = pd.Series(workload_utilizations).rolling(window=window_size).mean().dropna()
+smoothed_outside_temps = pd.Series(outside_temps).rolling(window=window_size).mean().dropna()
+smoothed_supply_liquid_temps = pd.Series(supply_liquid_temps).rolling(window=window_size).mean().dropna()
+
+# Create time intervals if needed for better labeling on the plot
+time_intervals = pd.date_range(start="2024-08-01", periods=len(smoothed_pump_speeds), freq="15T")
+
+
+#%%
+import matplotlib.dates as mdates
+
+# Plot Workload Utilization vs. Pump Speed
+fig, ax1 = plt.subplots(figsize=(8, 4))
+
+ax1.set_xlabel('Time (Days)')
+ax1.set_ylabel('Workload Utilization (%)', color='tab:blue')
+ax1.plot(time_intervals, smoothed_workload_utilizations * 100, color='tab:blue', linewidth=2)
+ax1.tick_params(axis='y', labelcolor='tab:blue')
+
+ax2 = ax1.twinx()
+ax2.set_ylabel('Pump Speed (l/s)', color='tab:red')
+ax2.plot(time_intervals, smoothed_pump_speeds, color='tab:red', linewidth=2)
+ax2.tick_params(axis='y', labelcolor='tab:red')
+
+# Format the x-axis
+ax1.xaxis.set_major_formatter(mdates.DateFormatter('%d-%b'))
+ax1.xaxis.set_major_locator(mdates.DayLocator(interval=2))
+plt.xticks(rotation=45, ha='right')
+ax1.grid(linestyle='--')
+plt.tight_layout()
+plt.show()
+
+# Repeat similar code for other pairs, e.g., Outside Temp vs. Pump Speed, Supply Temp vs. Outside Temp
+
+
+#%%
+from tabulate import tabulate
+
+# Create a function to display insights
+def display_insights_table(results, baseline_name):
+    table_data = [
+        ["Metric", f"{baseline_name} Baseline (Avg ± Std)", "Trained (Avg ± Std)", "Reduction (%) (Avg ± Std)"],
+        ["Total Energy (MWh)", f"{results['energy']['baseline_avg']:.3f} ± {results['energy']['baseline_std']:.3f}",
+         f"{results['energy']['trained_avg']:.3f} ± {results['energy']['trained_std']:.3f}",
+         f"{results['energy']['reduction_avg']:.3f} ± {results['energy']['reduction_std']:.3f}"],
+        ["Carbon Emissions (Tonnes CO2)", f"{results['co2']['baseline_avg']:.3f} ± {results['co2']['baseline_std']:.3f}",
+         f"{results['co2']['trained_avg']:.3f} ± {results['co2']['trained_std']:.3f}",
+         f"{results['co2']['reduction_avg']:.3f} ± {results['co2']['reduction_std']:.3f}"],
+        ["Water Usage (liters)", f"{results['water']['baseline_avg']:.3f} ± {results['water']['baseline_std']:.3f}",
+         f"{results['water']['trained_avg']:.3f} ± {results['water']['trained_std']:.3f}",
+         f"{results['water']['reduction_avg']:.3f} ± {results['water']['reduction_std']:.3f}"]
+    ]
+    print(tabulate(table_data, headers="firstrow", tablefmt="grid"))
+
+# Example: Display insights for random baseline
+display_insights_table(results_random, "Random")
+
+#%%

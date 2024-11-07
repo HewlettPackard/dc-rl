@@ -197,9 +197,13 @@ class dc_gymenv(gym.Env):
             # self.pump_speed = 0.25
             # supply_liquid_temp = max(min(action[0], self.max_supply_temp), self.min_supply_temp) + 273.15 #  Kelvins.
         else:
+            # Transform the action to the [0,1] range using the self.action_space
+            action = (action - self.action_space.low)/(self.action_space.high - self.action_space.low)
+            
             # Scale the action to the correct range 
             action[0] = action[0] * (self.max_pump_speed - self.min_pump_speed) + self.min_pump_speed
             action[1] = action[1] * (self.max_supply_temp - self.min_supply_temp) + self.min_supply_temp
+            
             
             self.pump_speed = max(min(action[0], self.max_pump_speed), self.min_pump_speed)
             supply_liquid_temp = max(min(action[1], self.max_supply_temp), self.min_supply_temp) + 273.15 #  Kelvins.
@@ -346,7 +350,7 @@ class dc_gymenv(gym.Env):
             'dc_crac_setpoint_delta': pump_speed_delta,
             'dc_crac_setpoint': self.pump_speed,
             'dc_cpu_workload_fraction': self.cpu_load_frac,
-            'dc_int_temperature': return_temp_liq,
+            'dc_int_temperature': return_temp_liq - 273.15,
             'dc_exterior_ambient_temp': self.ambient_temp,
             'dc_power_lb_kW': self.power_lb_kW,
             'dc_power_ub_kW': self.power_ub_kW,
@@ -361,10 +365,10 @@ class dc_gymenv(gym.Env):
             'dc_return_liquid_temp': return_temp_liq - 273.15,
             'dc_average_pipe_temp': (pipe1_temp + pipe2_temp + pipe3_temp) / 3 - 273.15,
             'dc_average_server_temp': (server1_temp + server2_temp + server3_temp) / 3 - 273.15,
-            'dc_current_servers_temps': np.average(server_temps),
+            'dc_current_servers_temps': np.average(server_temps) - 273.15,
             'dc_previous_servers_temps': self.prev_server_temps,
         }
-        self.prev_server_temps = np.average(server_temps)
+        self.prev_server_temps = np.average(server_temps) - 273.15
 
         #Done and truncated are managed by the main class, implement individual function if needed
         truncated = False

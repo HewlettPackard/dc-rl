@@ -58,25 +58,25 @@ class HARLSustainDCEnv:
             infos = self.env.unwrapped.env.infos
 
             # Common information
-            time = infos['__common__']['time']
-            ci = infos['__common__']['ci_future']
+            # time = infos['__common__']['time']
+            # ci = infos['__common__']['ci_future']
             # concat_states.extend(time)
             # concat_states.extend(ci)
 
             # Info from ls_env
             envs_infos = infos['__common__']['states']
-            ls_env_info = envs_infos['agent_ls']
-            concat_states.extend(ls_env_info)  # [Current workload and queue status]
+            # ls_env_info = envs_infos['agent_ls']
+            # concat_states.extend(ls_env_info)  # [Current workload and queue status]
 
             # Info from dc_env
             dc_env_info = envs_infos['agent_dc']
-            # concat_states.extend(dc_env_info)  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
+            concat_states.extend(dc_env_info)  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
 
             # Info from bat_env
-            bat_env_info = envs_infos['agent_bat']
+            # bat_env_info = envs_infos['agent_bat']
             # concat_states.extend(bat_env_info[5].reshape(1,))  # battery_soc
 
-            states = np.array(concat_states, dtype=np.float16)
+            states = np.array(concat_states, dtype=np.float32)
         else:
             states = np.concatenate(states, axis=None)
         
@@ -107,26 +107,25 @@ class HARLSustainDCEnv:
             infos = self.env.unwrapped.env.infos
 
             # Common information
-            time = infos['__common__']['time']
-            ci = infos['__common__']['ci_future']
+            # time = infos['__common__']['time']
+            # ci = infos['__common__']['ci_future']
             # concat_states.extend(time)
             # concat_states.extend(ci)
 
             # Info from ls_env
             envs_infos = infos['__common__']['states']
-            # CHECK why envs_infos['agent_ls'] is not the same as returned in the step method of sustainddc_env.py
-            ls_env_info = envs_infos['agent_ls']
-            concat_states.extend(ls_env_info)  # [Current workload and queue status]
+            # ls_env_info = envs_infos['agent_ls']
+            # concat_states.extend(ls_env_info)  # [Current workload and queue status]
 
             # Info from dc_env
             dc_env_info = envs_infos['agent_dc']
-            # concat_states.extend(dc_env_info)  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
+            concat_states.extend(dc_env_info)  # [ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power, next_workload]
 
             # Info from bat_env
-            bat_env_info = envs_infos['agent_bat']
+            # bat_env_info = envs_infos['agent_bat']
             # concat_states.extend(bat_env_info[5].reshape(1,))  # battery_soc
 
-            states = np.array(concat_states, dtype=np.float16)
+            states = np.array(concat_states, dtype=np.float32)
         else:
             states = np.concatenate(states, axis=None)
 
