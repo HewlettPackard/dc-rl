@@ -59,7 +59,7 @@ model:
   # hidden sizes for the MLP module of the value network
   hidden_size_value: [16, 16] # Layer sizes for value network
   # activation function, choose from sigmoid, tanh, relu, leaky_relu, selu
-  activation_func: tanh
+  activation_func: selu
   # whether the tanh squashing function is used to scale the action output between -1 and 1 
   action_squash_method: 'none'  # Options: 'tanh' or 'clip' or 'none'
   # whether to use feature normalization
