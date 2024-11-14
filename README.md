@@ -566,6 +566,16 @@ If you have any questions, suggestions, or issues, please feel free to contact u
 - **Email:** [soumyendu.sarkar@hpe.com](mailto:soumyendu.sarkar@hpe.com)
 - **GitHub Issues:** [GitHub Issues Page](https://github.com/HewlettPackard/dc-rl/issues)
 
+## Star History
+
+<a href="https://star-history.com/#HewlettPackard/dc-rl&Date">
+ <picture>
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=HewlettPackard/dc-rl&type=Date&theme=dark" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=HewlettPackard/dc-rl&type=Date" />
+   <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=HewlettPackard/dc-rl&type=Date" />
+ </picture>
+</a>
+
 ## License
 
 ### MIT License
