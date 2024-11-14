@@ -133,6 +133,10 @@ class Battery2:
 
     def is_full(self):
         return (self.capacity == self.current_load)
+
+    def get_battery_soc(self):
+        '''Returns the state of charge (0...1) of the battery'''
+        return self.current_load/self.capacity
     
     # calculate the minimum battery capacity required
     # to be able to charge it with input_load

@@ -1,4 +1,49 @@
 # File where the rewards are defined
+import numpy as np
+from collections import deque
+
+energy_history = deque(maxlen=10000)
+
+def update_energy_history(value: float):
+    """
+    Update the global energy history deque with a new value.
+
+    Args:
+        value (float): The new energy value to add.
+    """
+    energy_history.append(value)
+
+def normalize_energy(value: float):
+    """
+    Normalize the energy value based on the energy history, clipping outliers.
+
+    Args:
+        value (float): The energy value to normalize.
+
+    Returns:
+        float: The normalized energy value.
+    """
+    if len(energy_history) < 2:  # Avoid division by zero with too few samples
+        return 0.0  # Default normalized value when history is insufficient
+
+    # Convert history to a numpy array for processing
+    history_array = np.array(energy_history)
+
+    # Clip outliers (e.g., values beyond 1.5 times the interquartile range)
+    q1 = np.percentile(history_array, 25)
+    q3 = np.percentile(history_array, 75)
+    iqr = q3 - q1
+    lower_bound = q1 - 1.5 * iqr
+    upper_bound = q3 + 1.5 * iqr
+
+    # Apply clipping
+    clipped_history = np.clip(history_array, lower_bound, upper_bound)
+
+    # Calculate mean and std from clipped values
+    mean = np.mean(clipped_history)
+    std = np.std(clipped_history)
+    return (value - mean) / (std if std > 0 else 1)  # Prevent division by zero
+
 
 def default_ls_reward(params: dict) -> float:
     """
@@ -14,33 +59,27 @@ def default_ls_reward(params: dict) -> float:
         float: Reward value.
     """
     # Energy part of the reward
-    total_energy_with_battery = params['bat_total_energy_with_battery_KWh']
-    norm_CI = params['norm_CI']
-    dcload_min = params['bat_dcload_min']
-    dcload_max = params['bat_dcload_max']
-        
-    # Calculate the reward associted to the energy consumption
-    norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
-    footprint = -1.0 * norm_CI * norm_net_dc_load
+    total_energy = params['bat_total_energy_with_battery_KWh']
+    update_energy_history(total_energy)  # Update the energy history deque
+    norm_total_energy = normalize_energy(total_energy)  # Normalize using the deque
+    norm_ci = params['norm_CI']
+    
+    footprint_reward = -1.0 * (norm_ci * norm_total_energy / 0.50)  # Mean and std reward. Negate to maximize reward and minimize energy consumption
+    
+    # Overdue Tasks Penalty (scaled)
+    overdue_penalty_scale = 0.3  # Adjust this scaling factor as needed
+    overdue_penalty_bias = 0.3
+    # tasks_overdue_penalty = -overdue_penalty_scale * np.log(params['ls_overdue_penalty'] + 1) # +1 to avoid log(0) and be always negative
+    tasks_overdue_penalty = -overdue_penalty_scale * np.sqrt(params['ls_overdue_penalty']) + overdue_penalty_bias # To have a +1 if the number of overdue tasks is 0, and a negative value otherwise
+    # Oldest Task Age Penalty
+    age_penalty_scale = 0.1  # Adjust this scaling factor as needed
+    tasks_age_penalty = -age_penalty_scale * params['ls_oldest_task_age']  # Assume normalized between 0 and 1
 
-    # Penalize the agent for each task that was dropped due to queue limit
-    penalty_per_dropped_task = -10  # Define the penalty value per dropped task
-    tasks_dropped = params['ls_tasks_dropped']
-    penalty_dropped_tasks = tasks_dropped * penalty_per_dropped_task
-    
-    tasks_in_queue = params['ls_tasks_in_queue']
-    current_step = params['ls_current_hour']
-    penalty_tasks_queue = 0
-    if current_step % (24*4) >= (23*4):   # Penalty for queued tasks at the end of the day
-        factor_hour = (current_step % (24*4)) / 96 # min = 0.95833, max = 0.98953
-        factor_hour = (factor_hour - 0.95833) / (0.98935 - 0.95833)
-        penalty_tasks_queue = -1.0 * factor_hour * tasks_in_queue/10  # Penalty for each task left in the queue
-    
-    if current_step % (24*4) == 0:   # Penalty for queued tasks at the end of the day
-        penalty_tasks_queue = -1.0 * tasks_in_queue/10 # Penalty for each task left in the queue
-    
-    reward = footprint + penalty_dropped_tasks + penalty_tasks_queue    
-    return reward
+    # Total Reward
+    total_reward = footprint_reward + tasks_overdue_penalty + tasks_age_penalty
+    clipped_reward = np.clip(total_reward, -10, 10)
+
+    return clipped_reward
 
 
 def default_dc_reward(params: dict) -> float:
@@ -57,11 +96,14 @@ def default_dc_reward(params: dict) -> float:
     Returns:
         float: Reward value.
     """
-    data_center_total_ITE_Load = params['dc_ITE_total_power_kW']
-    CT_Cooling_load = params['dc_HVAC_total_power_kW']
-    energy_lb,  energy_ub = params['dc_power_lb_kW'], params['dc_power_ub_kW']
+    # Energy part of the reward
+    total_energy = params['bat_total_energy_with_battery_KWh']
+    norm_total_energy = normalize_energy(total_energy)  # Normalize using the deque
+    norm_ci = params['norm_CI']
     
-    return - 1.0 * ((data_center_total_ITE_Load + CT_Cooling_load) - energy_lb) / (energy_ub - energy_lb)
+    footprint_reward = -1.0 * (norm_ci * norm_total_energy / 0.50)  # Mean and std reward. Negate to maximize reward and minimize energy consumption
+    
+    return footprint_reward
 
 
 def default_bat_reward(params: dict) -> float:
@@ -78,15 +120,14 @@ def default_bat_reward(params: dict) -> float:
     Returns:
         float: Reward value.
     """
-    total_energy_with_battery = params['bat_total_energy_with_battery_KWh']
-    norm_CI = params['norm_CI']
-    dcload_min = params['bat_dcload_min']
-    dcload_max = params['bat_dcload_max']
+    # Energy part of the reward
+    total_energy = params['bat_total_energy_with_battery_KWh']
+    norm_total_energy = normalize_energy(total_energy)  # Normalize using the deque
+    norm_ci = params['norm_CI']
     
-    norm_net_dc_load = (total_energy_with_battery - dcload_min) / (dcload_max - dcload_min)
-    rew_footprint = -1.0 * norm_CI * norm_net_dc_load #Added scalar to line up with dc reward
-
-    return rew_footprint
+    footprint_reward = -1.0 * (norm_ci * norm_total_energy / 0.50)  # Mean and std reward. Negate to maximize reward and minimize energy consumption
+    
+    return footprint_reward
 
 
 def custom_agent_reward(params: dict) -> float:

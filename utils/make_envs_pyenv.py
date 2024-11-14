@@ -111,14 +111,10 @@ def make_dc_pyeplus_env(month : int = 1,
         # TODO: Will add sum of IT POWER  and HVAC Power Here if AGP wants it
         'Facility Total Building Electricity Demand Rate(Whole Building)'  #  'IT POWER'
     ]
-    if add_cpu_usage:    
-        observation_space = spaces.Box(low=np.float32(0.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
-                                        high=np.float32(1.0*np.ones(len(observation_variables)+num_sin_cos_vars+int(3*float(add_cpu_usage)))),
-                                        )
-    else:
-        observation_space = spaces.Box(low=np.float32(0.0*np.ones(len(observation_variables)+num_sin_cos_vars+1)),  # p.o.
-                                        high=np.float32(1.0*np.ones(len(observation_variables)+num_sin_cos_vars+1)),  # p.o. here we add 1 to only include current CI
-                                        )
+    observation_space = spaces.Box(low=np.float32(-1.0*np.ones(14)),
+                                    high=np.float32(1.0*np.ones(14)),
+                                    )
+
     
     ################################################################################
     ########################## Action Variables ####################################
@@ -153,12 +149,12 @@ def make_dc_pyeplus_env(month : int = 1,
     if 'NY'.lower() in location.lower():
         max_amb_temperature = 30.0
     elif 'AZ'.lower() in location.lower():
-        max_amb_temperature = 40.0
+        max_amb_temperature = 50.0
     elif 'WA'.lower() in location.lower():
         max_amb_temperature = 20.0
     else:
         print('WARNING, using default values for chiller sizing...')
-        max_amb_temperature = 40.0
+        max_amb_temperature = 50.0
         
     ctafr, ct_rated_load = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint=min_temp, max_CRAC_setpoint=max_temp, max_ambient_temp=max_amb_temperature)
     dc_config.CT_REFRENCE_AIR_FLOW_RATE = ctafr

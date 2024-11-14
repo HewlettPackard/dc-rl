@@ -1,6 +1,7 @@
 import os
 import sys
 import random
+import datetime
 from typing import Optional, Tuple, Union
 
 import torch
@@ -26,6 +27,10 @@ from matplotlib.offsetbox import OffsetImage, AnnotationBbox
 
 from collections import deque
 
+import threading
+import queue
+from harl.envs.sustaindc.dashboard_v2 import Dashboard  # Import the Dashboard class
+
 class EnvConfig(dict):
 
     # Default configuration for this environment. New parameters should be
@@ -47,7 +52,7 @@ class EnvConfig(dict):
         'timezone_shift': 0,
         
         # Days per simulated episode
-        'days_per_episode': 30,
+        'days_per_episode': 7,
         
         # Maximum battery capacity
         'max_bat_cap_Mw': 2,
@@ -199,47 +204,235 @@ class SustainDC(gym.Env):
         # This actions_are_logits is True only for MADDPG if continuous actions is used on the algorithm.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
         
-        # Plots for the rendering
-        # Load and scale icons for the visualization using Matplotlib
-        self.datacenter_icon = mpimg.imread('/lustre/guillant/dc-rl/icons/data_center_icon2.png')
-        self.temperature_icon = mpimg.imread('/lustre/guillant/dc-rl/icons/thermostat_icon.png')
-        self.battery_icon = mpimg.imread('/lustre/guillant/dc-rl/icons/battery_icon.png')
-        self.background_image = mpimg.imread('/lustre/guillant/dc-rl/icons/background_v2.png')
+        # # Plots for the rendering
+        # # Load and scale icons for the visualization using Matplotlib
+        # self.datacenter_icon = mpimg.imread('/lustre/guillant/dc-rl/icons/data_center_icon2.png')
+        # self.temperature_icon = mpimg.imread('/lustre/guillant/dc-rl/icons/thermostat_icon.png')
+        # self.battery_icon = mpimg.imread('/lustre/guillant/dc-rl/icons/battery_icon.png')
+        # self.background_image = mpimg.imread('/lustre/guillant/dc-rl/icons/background_v2.png')
 
-        # Resize images if necessary
-        from PIL import Image
-        self.datacenter_icon = self.resize_image(self.datacenter_icon, (1024, 1024))
-        self.temperature_icon = self.resize_image(self.temperature_icon, (50, 50))
-        self.battery_icon = self.resize_image(self.battery_icon, (50, 50))
-        self.background_image = self.resize_image(self.background_image, (1600, 900))  # Adjust the size as needed
+        # # Resize images if necessary
+        # from PIL import Image
+        # self.datacenter_icon = self.resize_image(self.datacenter_icon, (1024, 1024))
+        # self.temperature_icon = self.resize_image(self.temperature_icon, (50, 50))
+        # self.battery_icon = self.resize_image(self.battery_icon, (50, 50))
+        # self.background_image = self.resize_image(self.background_image, (1600, 900))  # Adjust the size as needed
 
-        self.BG_COLOR = (1.0, 1.0, 1.0)  # White background in normalized RGB
-        self.BAR_COLOR = (105/255, 179/255, 162/255)  # Normalize RGB values to [0,1]
-        self.FONT_COLOR = 'black'
-        self.fontsize = 20  # Default font size
+        # self.BG_COLOR = (1.0, 1.0, 1.0)  # White background in normalized RGB
+        # self.BAR_COLOR = (105/255, 179/255, 162/255)  # Normalize RGB values to [0,1]
+        # self.FONT_COLOR = 'black'
+        # self.fontsize = 20  # Default font size
         
-        self.carbon_intensity_history = deque(maxlen=96+1)  # Store the carbon intensity history for plotting
-        self.external_temperature_history = deque(maxlen=96+1)  # Store the carbon intensity history for plotting
+        # self.carbon_intensity_history = deque(maxlen=96+1)  # Store the carbon intensity history for plotting
+        # self.external_temperature_history = deque(maxlen=96+1)  # Store the carbon intensity history for plotting
+        
+        # # Initialize a thread-safe queue to share data
+        # self.data_queue = queue.Queue()
 
+        # Initialize the dashboard
+        # Only launch this dashboard for the render environment
+        self.is_render = env_config.get("is_render", False)
+        if self.is_render:
+            self.evaluation_render_dir = './results/evaluation_render'
+            self.dashboard = Dashboard(self.evaluation_render_dir)
+            self.dashboard.start()
 
-    def resize_image(self, image, size):
-        from PIL import Image
-        img = Image.fromarray((image * 255).astype('uint8'))  # Convert to PIL Image
-        img = img.resize(size, Image.LANCZOS)
-        return np.array(img) / 255.0  # Convert back to numpy array
 
     def seed(self, seed=None):
-        """
-        Set the random seed for the environment.
+        """Set the random seed for the environment."""
+        seed = seed or 1
+        np.random.seed(seed)
+        random.seed(seed)
+        if torch is not None:
+            torch.manual_seed(seed)
+            if torch.cuda.is_available():
+                torch.cuda.manual_seed_all(seed)
 
-        Args:
-            seed (int, optional): Random seed.
-        """
-        if seed is None:
-            np.random.seed(1)
-        else:
-            np.random.seed(seed)
+        self._seed_spaces()
+
+    def _seed_spaces(self):
+        """Seed the action and observation spaces."""
+        if hasattr(self, 'action_space') and hasattr(self.action_space, 'seed'):
+            self.action_space.seed(self.seed)
+        if hasattr(self, 'observation_space') and hasattr(self.observation_space, 'seed'):
+            self.observation_space.seed(self.seed)
     
+    def normalize_ci(ci_values):
+        ci_min = np.min(ci_values)
+        ci_max = np.max(ci_values)
+        ci_norm = (ci_values - ci_min) / (ci_max - ci_min + 1e-8)  # Add epsilon to avoid division by zero
+        return ci_norm
+    
+    def extract_ci_features(self, ci_values, current_ci):
+        # Calculate statistical measures
+        ci_mean = np.mean(ci_values)
+        ci_std = np.std(ci_values)
+        ci_variance = ci_std ** 2
+
+        # Calculate gradients
+        ci_gradient = np.gradient(np.hstack((current_ci, ci_values)))
+        # ci_second_derivative = np.gradient(ci_gradient)
+
+        # Normalize gradients
+        # ci_gradient_norm = ci_gradient / (np.max(np.abs(ci_gradient)) + 1e-8)
+        # ci_second_derivative_norm = ci_second_derivative / (np.max(np.abs(ci_second_derivative)) + 1e-8)
+
+        # Identify peaks and valleys
+        peaks = np.where((ci_gradient[:-1] > 0) & (ci_gradient[1:] <= 0))[0]
+        valleys = np.where((ci_gradient[:-1] < 0) & (ci_gradient[1:] >= 0))[0]
+
+        # Time to next peak or valley
+        time_to_next_peak = peaks[0] if len(peaks) > 0 else len(ci_values)
+        time_to_next_valley = valleys[0] if len(valleys) > 0 else len(ci_values)
+
+        # Relative CI position
+        ci_percentile = (current_ci - ci_mean) / (ci_std + 1e-8)
+
+        # Assemble features
+        ci_features = np.array([
+                                ci_mean,
+                                ci_std,
+                                ci_percentile,
+                                time_to_next_peak/len(ci_values),
+                                time_to_next_valley/len(ci_values),
+                            ])
+
+        return ci_features
+
+    def _create_ls_state(self, t_i, current_workload, queue_status, current_ci, ci_future, ci_past, next_workload, current_out_temperature, next_out_temperature, next_n_out_temperature, oldest_task_age, average_task_age, ls_task_age_histogram):
+        """
+        Create the state of the load shifting environment.
+
+        Returns:
+            np.ndarray: State of the load shifting environment.
+        """
+        hour_sin_cos = t_i[:2]
+
+        # CI Trend analysis
+        trend_smoothing_window = 4
+        smoothed_ci_future = np.convolve(np.hstack((current_ci, ci_future[:16])), np.ones(trend_smoothing_window), 'valid') / trend_smoothing_window
+        smoothed_ci_past = np.convolve(np.hstack((ci_past, current_ci)), np.ones(trend_smoothing_window), 'valid') / trend_smoothing_window
+        
+        # Slope the next 4 hours of CI and the previous 1 hour of CI
+        ci_future_slope = np.polyfit(range(len(smoothed_ci_future)), smoothed_ci_future, 1)[0]
+        ci_past_slope = np.polyfit(range(len(smoothed_ci_past)), smoothed_ci_past, 1)[0]
+
+        # Extract features for future and past CI
+        ci_future_features = self.extract_ci_features(ci_future, current_ci)
+        # ci_past_features = self.extract_ci_features(ci_past, current_ci)
+
+        # Assemble CI features
+        ci_features = np.hstack([
+                        ci_future_slope, ci_past_slope,
+                        ci_future_features
+                    ])
+
+        # Weather trend analysis
+        temperature_slope = np.polyfit(range(len(next_n_out_temperature) + 1), np.hstack([current_out_temperature, next_n_out_temperature]), 1)[0]
+        
+        # Extract features for the future temperature
+        temperature_features = self.extract_ci_features(next_n_out_temperature, current_out_temperature)
+        
+        # Assemble temperature features
+        temperature_features = np.hstack([
+                                        temperature_slope, temperature_features
+                                    ])
+        
+        # Combine all features into the state
+        ls_state = np.float32(np.hstack((
+                                        hour_sin_cos,
+                                        current_ci,
+                                        ci_features,
+                                        oldest_task_age,
+                                        average_task_age,
+                                        queue_status,
+                                        current_workload,
+                                        current_out_temperature,
+                                        temperature_features,
+                                        ls_task_age_histogram
+                                    )))
+        if len(ls_state) != 26:
+            print(f'Error: {len(ls_state)}')
+        return ls_state
+    
+    def _create_dc_state(self, t_i, current_workload, next_workload, current_ci, ci_future, ci_past, current_out_temperature, next_out_temperature):
+        """
+        Create the state of the data center environment.
+
+        Returns:
+            np.ndarray: State of the data center environment.
+        """
+        hour_sin_cos = t_i[:2]
+        
+        # CI Trend analysis
+        trend_smoothing_window = 4
+        smoothed_ci_future = np.convolve(np.hstack((current_ci, ci_future[:16])), np.ones(trend_smoothing_window), 'valid') / trend_smoothing_window
+        smoothed_ci_past = np.convolve(np.hstack((ci_past, current_ci)), np.ones(trend_smoothing_window), 'valid') / trend_smoothing_window
+        
+        # Slope the next 4 hours of CI and the previous 1 hour of CI
+        ci_future_slope = np.polyfit(range(len(smoothed_ci_future)), smoothed_ci_future, 1)[0]
+        ci_past_slope = np.polyfit(range(len(smoothed_ci_past)), smoothed_ci_past, 1)[0]
+
+        # Extract features for future and past CI
+        ci_future_features = self.extract_ci_features(ci_future, current_ci)
+
+        # Assemble CI features
+        ci_features = np.hstack([
+                        ci_future_slope, ci_past_slope,
+                        ci_future_features
+                    ])
+
+
+        dc_state = np.float32(np.hstack((hour_sin_cos,
+                                         current_ci,
+                                         ci_features,
+                                         current_workload, 
+                                         next_workload,
+                                         current_out_temperature,
+                                         next_out_temperature,
+                                        )))
+        
+        return dc_state
+
+
+    def _create_bat_state(self, t_i, current_workload, battery_soc, current_ci, ci_future, ci_past, current_temperature):
+        """
+        Create the state of the battery environment.
+
+        Returns:
+            np.ndarray: State of the battery environment.
+        """
+        hour_sin_cos = t_i[:2]
+        
+        # CI Trend analysis
+        trend_smoothing_window = 4
+        smoothed_ci_future = np.convolve(np.hstack((current_ci, ci_future[:16])), np.ones(trend_smoothing_window), 'valid') / trend_smoothing_window
+        smoothed_ci_past = np.convolve(np.hstack((ci_past, current_ci)), np.ones(trend_smoothing_window), 'valid') / trend_smoothing_window
+        
+        # Slope the next 4 hours of CI and the previous 1 hour of CI
+        ci_future_slope = np.polyfit(range(len(smoothed_ci_future)), smoothed_ci_future, 1)[0]
+        ci_past_slope = np.polyfit(range(len(smoothed_ci_past)), smoothed_ci_past, 1)[0]
+
+        # Extract features for future and past CI
+        ci_future_features = self.extract_ci_features(ci_future, current_ci)
+
+        # Assemble CI features
+        ci_features = np.hstack([
+                        ci_future_slope, ci_past_slope,
+                        ci_future_features
+                    ])
+
+
+        bat_state = np.float32(np.hstack((hour_sin_cos,
+                                          current_ci,
+                                          ci_features,
+                                          current_workload,
+                                          current_temperature,
+                                          battery_soc
+                                        )))
+        return bat_state
+
+
     def reset(self):
         """
         Reset the environment.
@@ -252,44 +445,56 @@ class SustainDC(gym.Env):
             states (dict): Dictionary of states.
             infos (dict): Dictionary of infos.
         """
-        self.ls_terminated = False
-        self.dc_terminated = False
-        self.bat_terminated = False
-        self.ls_truncated = False
-        self.dc_truncated = False
-        self.bat_truncated = False
-        self.ls_reward = 0
-        self.dc_reward = 0
-        self.bat_reward = 0
+        # Reset termination and reward flags for all agents
+        self.ls_terminated = self.dc_terminated = self.bat_terminated = False
+        self.ls_truncated = self.dc_truncated = self.bat_truncated = False
+        self.ls_reward = self.dc_reward = self.bat_reward = 0
 
         # Reset the managers
-        random_init_day = random.randint(max(0, self.ranges_day[0]), min(364, self.ranges_day[1]))
+        random_init_day =  random.randint(max(0, self.ranges_day[0]), min(364, self.ranges_day[1])) # self.init_day 
         random_init_hour = random.randint(0, 23)
+        self.current_hour = random_init_hour
         
         t_i = self.t_m.reset(init_day=random_init_day, init_hour=random_init_hour)
         workload = self.workload_m.reset(init_day=random_init_day, init_hour=random_init_hour)  # Workload manager
         temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.reset(init_day=random_init_day, init_hour=random_init_hour)  # Weather manager
-        ci_i, ci_i_future = self.ci_m.reset(init_day=random_init_day, init_hour=random_init_hour)  # CI manager. ci_i -> CI in the current timestep.
+        ci_i, ci_i_future, ci_i_denorm = self.ci_m.reset(init_day=random_init_day, init_hour=random_init_hour)  # CI manager. ci_i -> CI in the current timestep.
         
         # Set the external ambient temperature to data center environment
         self.dc_env.set_ambient_temp(temp, wet_bulb)
         
         # Update the workload of the load shifting environment
         self.ls_env.update_workload(workload)
+        self.ls_env.update_current_date(random_init_day, random_init_hour)
         
         # Reset all the environments
         ls_s, self.ls_info = self.ls_env.reset()
         self.dc_state, self.dc_info = self.dc_env.reset()
         bat_s, self.bat_info = self.bat_env.reset()
+                
+        current_workload = self.workload_m.get_current_workload()
+        next_workload = self.workload_m.get_next_workload()
+        
+        current_out_temperature = self.weather_m.get_current_temperature()
+        next_out_temperature = self.weather_m.get_next_temperature()
+        next_n_out_temperature = self.weather_m.get_n_next_temperature(n=16)
         
         # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
-        self.ls_state = np.float32(np.hstack((t_i, ls_s, ci_i_future)))  # For p.o.
+        queue_status = self.ls_info['ls_norm_tasks_in_queue']
+        ci_i_past = self.ci_m.get_n_past_ci(n=16)
+        oldest_task_age = self.ls_info['ls_oldest_task_age']
+        average_task_age = self.ls_info['ls_average_task_age']
+        ls_task_age_histogram = self.ls_info['ls_task_age_histogram']
+        self.ls_state = self._create_ls_state(t_i, workload, queue_status, ci_i, ci_i_future, ci_i_past, next_workload, current_out_temperature, next_out_temperature, next_n_out_temperature, oldest_task_age, average_task_age, ls_task_age_histogram)
         
-        # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]  # p.o.
-        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, ci_i_future[0])))  # p.o.
-        
+        self.dc_state = self._create_dc_state(t_i, current_workload, next_workload,  ci_i, ci_i_future, ci_i_past, current_out_temperature, next_out_temperature)
         # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
-        self.bat_state = np.float32(np.hstack((t_i, bat_s, ci_i_future)))
+        # self.bat_state = np.float32(np.hstack((t_i, bat_s, ci_i_future)))
+        battery_soc = self.bat_env.get_battery_soc()
+        self.bat_state = self._create_bat_state(t_i, current_workload, battery_soc, ci_i, ci_i_future, ci_i_past, current_out_temperature)
+
+        # Update ci in the battery environment
+        self.bat_env.update_ci(ci_i_denorm, ci_i_future[0])
 
         # States should be a dictionary with agent names as keys and their observations as values
         states = {}
@@ -297,32 +502,34 @@ class SustainDC(gym.Env):
         # Update states and infos considering the agents defined in the environment config self.agents.
         if "agent_ls" in self.agents:
             states["agent_ls"] = self.ls_state
-        self.infos["agent_ls"] = self.ls_info
         if "agent_dc" in self.agents:
             states["agent_dc"] = self.dc_state
-        self.infos["agent_dc"] = self.dc_info
         if "agent_bat" in self.agents:
             states["agent_bat"] = self.bat_state
-        self.infos["agent_bat"] = self.bat_info
 
-        # Common information
-        self.infos['__common__'] = {}
-        self.infos['__common__']['time'] = t_i
-        self.infos['__common__']['workload'] = workload
-        self.infos['__common__']['weather'] = temp
-        self.infos['__common__']['ci'] = ci_i
-        self.infos['__common__']['ci_future'] = ci_i_future
+        # Prepare the infos dictionary with common and individual agent information
+        self.infos = {
+            'agent_ls': self.ls_info,
+            'agent_dc': self.dc_info,
+            'agent_bat': self.bat_info,
+            '__common__': {
+                'time': t_i,
+                'workload': workload,
+                'weather': temp,
+                'ci': ci_i,
+                'ci_future': ci_i_future,
+                'states': {
+                    'agent_ls': self.ls_state,
+                    'agent_dc': self.dc_state,
+                    'agent_bat': self.bat_state
+                }
+            }
+        }
         
-        # Store the states
-        self.infos['__common__']['states'] = {}
-        self.infos['__common__']['states']['agent_ls'] = self.ls_state
-        self.infos['__common__']['states']['agent_dc'] = self.dc_state
-        self.infos['__common__']['states']['agent_bat'] = self.bat_state
+        # available_actions = None
         
-        available_actions = None
-        
-        return states, self.infos
-
+        return states
+    
     def step(self, action_dict):
         """
         Step the environment.
@@ -341,131 +548,176 @@ class SustainDC(gym.Env):
         terminateds["__all__"] = False
         truncateds["__all__"] = False
         
-        # Step in the managers
+        # Perform actions for each agent and update their respective environments
+        self._perform_actions(action_dict)
+    
+        # Step the managers (time, workload, weather, CI) (t+1)
         day, hour, t_i, terminal = self.t_m.step()
         workload = self.workload_m.step()
         temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.step()
-        ci_i, ci_i_future = self.ci_m.step()
+        ci_i, ci_i_future, ci_i_denorm = self.ci_m.step()
         
-        # Extract the action from the action dictionary.
-        # If the agent is declared, use the action from the action dictionary.
-        # If the agent is not declared, use the default action (do nothing) of the base agent.
+        self.current_hour = hour
+
+        # Update environment states with new values from managers
+        self._update_environments(workload, temp, wet_bulb, ci_i_denorm, ci_i_future, day, hour)
+
+        # Create observations for the next step based on updated environment states
+        next_workload = self.workload_m.get_next_workload()
+        next_out_temperature = self.weather_m.get_next_temperature()
+
+        queue_status = self.ls_info['ls_norm_tasks_in_queue']
+        ci_i_past = self.ci_m.get_n_past_ci(n=16)
+        oldest_task_age = self.ls_info['ls_oldest_task_age']
+        average_task_age = self.ls_info['ls_average_task_age']
+        ls_task_age_histogram = self.ls_info['ls_task_age_histogram']
+        
+        next_n_out_temperature = self.weather_m.get_n_next_temperature(n=16)
+
+        
+        self.ls_state = self._create_ls_state(t_i, workload, queue_status, ci_i, ci_i_future, ci_i_past, next_workload, norm_temp, next_out_temperature, next_n_out_temperature, oldest_task_age, average_task_age, ls_task_age_histogram)
+        self.dc_state = self._create_dc_state(t_i, workload, next_workload,  ci_i, ci_i_future, ci_i_past, norm_temp, next_out_temperature)
+        
+        battery_soc = self.bat_env.get_battery_soc()
+        self.bat_state = self._create_bat_state(t_i, workload, battery_soc, ci_i, ci_i_future, ci_i_past, norm_temp)
+
+        # Populate observation dictionary based on updated states
+        obs = self._populate_observation_dict()
+
+        # Calculate rewards for all agents based on the updated state
+        reward_params = self._calculate_reward_params(workload, temp, ci_i, ci_i_future, day, hour, terminal)
+        self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
+
+        # Update rewards, terminations, and truncations for each agent
+        self._update_reward_and_termination(rew, terminateds, truncateds)
+
+        # Populate info dictionary with additional information
+        info = self._populate_info_dict(reward_params)
+
+        # Update the self.infos dictionary, similar to how it's done in the reset method
+        self.infos = {
+            'agent_ls': self.ls_info,
+            'agent_dc': self.dc_info,
+            'agent_bat': self.bat_info,
+            '__common__': {
+                'time': t_i,
+                'workload': workload,
+                'weather': temp,
+                'ci': ci_i,
+                'ci_future': ci_i_future,
+                'states': {
+                    'agent_ls': self.ls_state,
+                    'agent_dc': self.dc_state,
+                    'agent_bat': self.bat_state
+                }
+            }
+        }
+
+
+        # Handle termination if the episode ends
+        if terminal:
+            self._handle_terminal(terminateds, truncateds)
+
+        return obs, rew, terminateds, truncateds, info
+
+
+    def _perform_actions(self, action_dict):
+        """Execute actions for each agent and update their respective environments."""
+        # Load shifting agent
         if "agent_ls" in self.agents:
             action = action_dict["agent_ls"]
         else:
             action = self.base_agents["agent_ls"].do_nothing_action()
-            
-        # Now, update the load shifting environment/agent first.
-        self.ls_env.update_workload(workload)
-        
-        # Do a step
-        self.ls_state, _, self.ls_terminated, self.ls_truncated, self.ls_info = self.ls_env.step(action)
 
-        # Now, the data center environment/agent.
+        # call step method of the load shifting environment with the action and the workload for the rest of the day
+        workload_rest_day = self.workload_m.get_n_next_workloads(n=int((24 - self.current_hour) / 0.25))
+        self.ls_state, _, self.ls_terminated, self.ls_truncated, self.ls_info = self.ls_env.step(action, workload_rest_day)
+
+        # Data center agent
         if "agent_dc" in self.agents:
             action = action_dict["agent_dc"]
         else:
-            action = self.base_agents["agent_dc"].do_nothing_action()
-
-        # Update the data center environment/agent.
-        shifted_wkld = self.ls_info['ls_shifted_workload']
-        self.dc_env.set_shifted_wklds(shifted_wkld)
-        self.dc_env.set_ambient_temp(temp, wet_bulb)
-        
-        # Do a step in the data center environment
-        # By default, the reward is ignored. The reward is calculated after the battery env step with the total energy usage.
-        # dc_state -> [self.ambient_temp, zone_air_therm_cooling_stpt, zone_air_temp, hvac_power, it_power]
+            action = self.base_agents["agent_dc"].act()
+            print(f'Warning, using base agent for agent_dc: {action}')
+        self.dc_env.set_shifted_wklds(self.ls_info['ls_shifted_workload'])
         self.dc_state, _, self.dc_terminated, self.dc_truncated, self.dc_info = self.dc_env.step(action)
 
-        # Finally, the battery environment/agent.
+        # Battery agent
         if "agent_bat" in self.agents:
             action = action_dict["agent_bat"]
         else:
             action = self.base_agents["agent_bat"].do_nothing_action()
+            print(f'Warning, using base agent for agent_bat: {action}')
             
-        # The battery environment/agent is updated.
-        self.bat_env.set_dcload(self.dc_info['dc_total_power_kW'] / 1e3)  # The DC load is updated with the total power in MW.
-        self.bat_state = self.bat_env.update_state()  # The state is updated with DC load
-        self.bat_env.update_ci(ci_i, ci_i_future[0])  # Update the CI with the current CI, and the normalized current CI.
-        
-        # Do a step in the battery environment
+        self.bat_env.set_dcload(self.dc_info['dc_total_power_kW'] / 1e3)
         self.bat_state, _, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
-        
-        # ls_state -> [time (sine/cosine enconded), original ls observation, current+future normalized CI]
-        self.ls_state = np.float32(np.hstack((t_i, self.ls_state, ci_i_future)))  # For p.o.
-        
-        # Update the shared variables
-        # dc state -> [time (sine/cosine enconded), original dc observation, current normalized CI]
-        self.dc_state = np.float32(np.hstack((t_i, self.dc_state, ci_i_future[0])))  # For p.o.
-        
-        # Update the state of the bat state
-        # bat_state -> [time (sine/cosine enconded), battery SoC, current+future normalized CI]
-        self.bat_state = np.float32(np.hstack((t_i, self.bat_state, ci_i_future)))
 
-        # Params should be a dictionary with all of the info required plus other additional information like the external temperature, the hour, the day of the year, etc.
-        # Merge the self.bat_info, self.ls_info, self.dc_info in one dictionary called info_dict
-        info_dict = {**self.bat_info, **self.ls_info, **self.dc_info}
-        add_info = {"outside_temp": temp, "day": day, "hour": hour, "norm_CI": ci_i_future[0]}
-        reward_params = {**info_dict, **add_info}
-        self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
-        
-        # If agent_ls is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
+
+    def _update_environments(self, workload, temp, wet_bulb, ci_i_denorm, ci_i_future, current_day, current_hour):
+        """Update the environment states based on the manager's outputs."""
+        self.ls_env.update_workload(workload)
+        self.ls_env.update_current_date(current_day, current_hour)
+        self.dc_env.set_ambient_temp(temp, wet_bulb)
+        self.bat_env.update_ci(ci_i_denorm, ci_i_future[0])
+
+
+    def _populate_observation_dict(self):
+        """Generate the observation dictionary for all agents."""
+        obs = {}
         if "agent_ls" in self.agents:
             obs['agent_ls'] = self.ls_state
-            rew["agent_ls"] = self.indv_reward * self.ls_reward + self.collab_reward * self.bat_reward + self.collab_reward * self.dc_reward
-            terminateds["agent_ls"] = False
-            truncateds["agent_ls"] = False
-        info["agent_ls"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
-
-        # If agent_dc is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
         if "agent_dc" in self.agents:
-            obs["agent_dc"] = self.dc_state
-            rew["agent_dc"] = self.indv_reward * self.dc_reward + self.collab_reward * self.ls_reward + self.collab_reward * self.bat_reward
-            terminateds["agent_dc"] = False
-            truncateds["agent_dc"] = False
-        info["agent_dc"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
-
-         # If agent_bat is included in the agents list, then update the observation, reward, terminated, truncated, and info dictionaries. 
+            obs['agent_dc'] = self.dc_state
         if "agent_bat" in self.agents:
-            obs["agent_bat"] = self.bat_state
-            rew["agent_bat"] = self.indv_reward * self.bat_reward + self.collab_reward * self.dc_reward + self.collab_reward * self.ls_reward
-            terminateds["agent_bat"] = False
-            truncateds["agent_bat"] = False
-        info["agent_bat"] = {**self.dc_info, **self.ls_info, **self.bat_info, **add_info}
+            obs['agent_bat'] = self.bat_state
+        return obs
 
-        info["__common__"] = reward_params
-        if terminal:
-            terminateds["__all__"] = False
-            truncateds["__all__"] = True
-            for agent in self.agents:
-                truncateds[agent] = True
-        
-        # Common information
-        self.infos['__common__'] = {}
-        self.infos['__common__']['time'] = t_i
-        self.infos['__common__']['workload'] = workload
-        self.infos['__common__']['weather'] = temp
-        self.infos['__common__']['ci'] = ci_i
-        self.infos['__common__']['ci_future'] = ci_i_future
-        
-        # Store the states
-        self.infos['__common__']['states'] = {}
-        self.infos['__common__']['states']['agent_ls'] = self.ls_state
-        self.infos['__common__']['states']['agent_dc'] = self.dc_state
-        self.infos['__common__']['states']['agent_bat'] = self.bat_state
-        
-        # Update self.infos with the agents information
-        self.infos["agent_ls"] = info["agent_ls"]
-        self.infos["agent_dc"] = info["agent_dc"]
-        self.infos["agent_bat"] = info["agent_bat"]
-        
-        
-        # Append values for the render method
-        self.carbon_intensity_history.append(ci_i)
-        self.external_temperature_history.append(temp)
-        
-        return obs, rew, terminateds, truncateds, info
 
+    def _calculate_reward_params(self, workload, temp, ci_i, ci_i_future, day, hour, terminal):
+        """Create the parameters needed to calculate rewards."""
+        return {
+            **self.bat_info, **self.ls_info, **self.dc_info,
+            "outside_temp": temp, "day": day, "hour": hour,
+            "norm_CI": ci_i_future[0], "forecast_CI": ci_i_future,
+            "isterminal": terminal
+        }
+
+
+    def _update_reward_and_termination(self, rew, terminateds, truncateds):
+        """Update the rewards, termination, and truncation flags for all agents."""
+        if "agent_ls" in self.agents:
+            rew["agent_ls"] = self.ls_reward
+            terminateds["agent_ls"] = self.ls_terminated
+            truncateds["agent_ls"] = self.ls_truncated
+        if "agent_dc" in self.agents:
+            rew["agent_dc"] = self.dc_reward
+            terminateds["agent_dc"] = self.dc_terminated
+            truncateds["agent_dc"] = self.dc_truncated
+        if "agent_bat" in self.agents:
+            rew["agent_bat"] = self.bat_reward
+            terminateds["agent_bat"] = self.bat_terminated
+            truncateds["agent_bat"] = self.bat_truncated
+
+
+    def _populate_info_dict(self, reward_params):
+        """Generate the info dictionary for all agents and common info."""
+        info = {
+            "agent_ls": {**self.dc_info, **self.ls_info, **self.bat_info, **reward_params},
+            "agent_dc": {**self.dc_info, **self.ls_info, **self.bat_info, **reward_params},
+            "agent_bat": {**self.dc_info, **self.ls_info, **self.bat_info, **reward_params},
+            "__common__": reward_params
+        }
+        return info
+
+
+    def _handle_terminal(self, terminateds, truncateds):
+        """Handle the terminal state of the environment."""
+        terminateds["__all__"] = False
+        truncateds["__all__"] = True
+        for agent in self.agents:
+            truncateds[agent] = True
+    
+    
     def calculate_reward(self, params):
         """
         Calculate the individual reward for each agent.
@@ -483,50 +735,6 @@ class SustainDC(gym.Env):
         dc_reward = self.dc_reward_method(params)
         bat_reward = self.bat_reward_method(params)
         return ls_reward, dc_reward, bat_reward
-
-    # def render(self, mode='human'):
-    #     """
-    #     Render the environment.
-    #     """
-    #     if mode == 'pygame':
-    #         self.render_pygame()
-        
-    #     elif mode == 'plots':
-    #         # Plot HVAC and other loads as a bar chart
-    #         self.ax[0, 0].clear()
-    #         self.ax[0, 0].bar(['Fan Load', 'Compressor Load'], 
-    #                         [self.dc_env.CRAC_Fan_load, self.dc_env.Compressor_load])
-    #         self.ax[0, 0].set_title("HVAC System Loads")
-
-    #         # Plot CPU Power across racks as a line graph
-    #         self.ax[0, 1].clear()
-    #         self.ax[0, 1].plot(np.sum(self.dc_env.rackwise_cpu_pwr)/1e6, label="CPU Power (MW)")
-    #         self.ax[0, 1].set_title("Rack-wise CPU Power")
-    #         self.ax[0, 1].legend()
-
-    #         # Plot Battery State of Charge and HVAC Load
-    #         self.ax[1, 0].clear()
-    #         self.ax[1, 0].plot(self.bat_env.info['bat_SOC']*100, label="Battery SoC (%)")
-    #         self.ax[1, 0].plot(self.dc_env.HVAC_load/1e6, label="HVAC Power (MW)")
-    #         self.ax[1, 0].set_title("Battery & HVAC Power")
-    #         self.ax[1, 0].legend()
-
-    #         # Update temperature plot
-    #         self.ax[1, 1].clear()
-    #         self.ax[1, 1].plot(np.sum(self.dc_env.rackwise_outlet_temp), label="Outlet Temp (C)")
-    #         self.ax[1, 1].set_title("Rack-wise Outlet Temperature (C)")
-    #         self.ax[1, 1].legend()
-
-    #         # Redraw and pause briefly to simulate live updating
-    #         plt.pause(0.05)
-    #         plt.draw()
-
-    #     elif mode == 'animation':
-    #         print('Rendering the environment is not supported.')
-    #         raise NotImplementedError
-    #     else:
-    #         raise NotImplementedError
-        
         
     def close(self):
         """
@@ -577,196 +785,198 @@ class SustainDC(gym.Env):
         )
         return np.concatenate(states, axis=None)
     
-    def get_soc_color(self, value):
-        """
-        Compute the color for the battery SoC bar, interpolating from red to green.
+    # def get_soc_color(self, value):
+    #     """
+    #     Compute the color for the battery SoC bar, interpolating from red to green.
         
-        Args:
-            value (float): Battery SoC percentage (0 to 100).
+    #     Args:
+    #         value (float): Battery SoC percentage (0 to 100).
         
-        Returns:
-            tuple: RGB color tuple.
-        """
-        # Normalize the value to [0, 1]
-        normalized_value = value / 100.0
-        red = 1 - normalized_value    # Red decreases as SoC increases
-        green = normalized_value      # Green increases as SoC increases
-        blue = 0                      # Blue remains constant
-        return (red, green, blue)
+    #     Returns:
+    #         tuple: RGB color tuple.
+    #     """
+    #     # Normalize the value to [0, 1]
+    #     normalized_value = value / 100.0
+    #     red = 1 - normalized_value    # Red decreases as SoC increases
+    #     green = normalized_value      # Green increases as SoC increases
+    #     blue = 0                      # Blue remains constant
+    #     return (red, green, blue)
 
-    def draw_bar(self, ax, label, value, position, max_value=100, color=None):
-        bar_width = 1.5  # Matplotlib uses relative widths for bars
-        filled_width = (value / max_value)
+    # def draw_bar(self, ax, label, value, position, max_value=100, color=None):
+    #     bar_width = 1.5  # Matplotlib uses relative widths for bars
+    #     filled_width = (value / max_value)
         
-        # Draw the empty bar to indicate the complete range
-        ax.barh(position, 1, height=bar_width, color='lightgray', edgecolor='black', align='center')
+    #     # Draw the empty bar to indicate the complete range
+    #     ax.barh(position, 1, height=bar_width, color='lightgray', edgecolor='black', align='center')
         
-        # Use the provided color or the default bar color
-        if color is None:
-            color = self.BAR_COLOR  # Default color
+    #     # Use the provided color or the default bar color
+    #     if color is None:
+    #         color = self.BAR_COLOR  # Default color
         
-        # Draw the filled portion of the bar to indicate the value
-        ax.barh(position, filled_width, height=bar_width, color=color, edgecolor='black', align='center')
-        ax.set_xlim(0, 1)
-        ax.set_ylim(-0.5, 1.5)
-        ax.axis('off')  # Hide axes
+    #     # Draw the filled portion of the bar to indicate the value
+    #     ax.barh(position, filled_width, height=bar_width, color=color, edgecolor='black', align='center')
+    #     ax.set_xlim(0, 1)
+    #     ax.set_ylim(-0.5, 1.5)
+    #     ax.axis('off')  # Hide axes
         
-        # Add label and value
-        ax.text(-0.1, position, f"{label}:", fontsize=14, va='center', ha='right', color=self.FONT_COLOR, weight='bold')
-        ax.text(1.1, position, f"{value:.1f}%", fontsize=14, va='center', ha='left', color=self.FONT_COLOR, weight='bold')
+    #     # Add label and value
+    #     ax.text(-0.1, position, f"{label}:", fontsize=14, va='center', ha='right', color=self.FONT_COLOR, weight='bold')
+    #     ax.text(1.1, position, f"{value:.1f}%", fontsize=14, va='center', ha='left', color=self.FONT_COLOR, weight='bold')
 
 
     def render(self, mode='human'):
         """
         Render the environment using Matplotlib, incorporating logos.
         """
-        # Prepare data for plotting
-        agent_ls_info = self.infos.get('agent_ls', {})
-        agent_bat_info = self.infos.get('agent_bat', {})
-        agent_dc_info = self.infos.get('agent_dc', {})
-        common_info = self.infos.get('__common__', {})
+        pass
 
-        # Extract necessary data
-        original_workload = agent_ls_info.get('ls_original_workload', 0) * 100  # Convert to percentage
-        shifted_workload = agent_ls_info.get('ls_shifted_workload', 0) * 100
-        temp = common_info.get('weather', 0)
-        bat_soc = agent_bat_info.get('bat_SOC', 0) * 100  # Convert to percentage
-        cooling_setpoint = agent_dc_info.get('dc_crac_setpoint', 0)
-        energy_consumption = agent_bat_info.get('dc_total_power_kW', 0)
-        carbon_footprint = agent_bat_info.get('bat_CO2_footprint', 0)
-        water_usage = agent_bat_info.get('dc_water_usage', 0)
-        carbon_intensity = agent_bat_info.get('bat_avg_CI', 320)  # Example default value
+        # # Prepare data for plotting
+        # agent_ls_info = self.infos.get('agent_ls', {})
+        # agent_bat_info = self.infos.get('agent_bat', {})
+        # agent_dc_info = self.infos.get('agent_dc', {})
+        # common_info = self.infos.get('__common__', {})
+
+        # # Extract necessary data
+        # original_workload = agent_ls_info.get('ls_original_workload', 0) * 100  # Convert to percentage
+        # shifted_workload = agent_ls_info.get('ls_shifted_workload', 0) * 100
+        # temp = common_info.get('weather', 0)
+        # bat_soc = agent_bat_info.get('bat_SOC', 0) * 100  # Convert to percentage
+        # cooling_setpoint = agent_dc_info.get('dc_crac_setpoint', 0)
+        # energy_consumption = agent_bat_info.get('dc_total_power_kW', 0)
+        # carbon_footprint = agent_bat_info.get('bat_CO2_footprint', 0)
+        # water_usage = agent_bat_info.get('dc_water_usage', 0)
+        # carbon_intensity = agent_bat_info.get('bat_avg_CI', 320)  # Example default value
         
-        day = agent_ls_info.get('day', 0)
-        hour = agent_ls_info.get('hour', 0)
+        # day = agent_ls_info.get('day', 0)
+        # hour = agent_ls_info.get('hour', 0)
 
-        # Create a figure and axes
-        fig = plt.figure(figsize=(16, 9))
-        ax = fig.add_axes([0, 0, 1, 1])
-        ax.axis('off')
+        # # Create a figure and axes
+        # fig = plt.figure(figsize=(16, 9))
+        # ax = fig.add_axes([0, 0, 1, 1])
+        # ax.axis('off')
 
-        # Display the background image
-        ax.imshow(self.background_image, extent=[0, 1, 0, 1], aspect='auto')
+        # # Display the background image
+        # ax.imshow(self.background_image, extent=[0, 1, 0, 1], aspect='auto')
 
-        # Draw workload bars with improved positioning
-        ax_workload = fig.add_axes([0.40, 0.85, 0.2, 0.05])
-        self.draw_bar(ax_workload, 'Original Workload', original_workload, 0)
-        ax_computed_workload = fig.add_axes([0.40, 0.80, 0.2, 0.05])
-        self.draw_bar(ax_computed_workload, 'Computed Workload', shifted_workload, 0)
+        # # Draw workload bars with improved positioning
+        # ax_workload = fig.add_axes([0.40, 0.85, 0.2, 0.05])
+        # self.draw_bar(ax_workload, 'Original Workload', original_workload, 0)
+        # ax_computed_workload = fig.add_axes([0.40, 0.80, 0.2, 0.05])
+        # self.draw_bar(ax_computed_workload, 'Computed Workload', shifted_workload, 0)
         
-        # Draw a bar for the battery SoC
-        ax_battery = fig.add_axes([0.40, 0.17, 0.2, 0.05])
+        # # Draw a bar for the battery SoC
+        # ax_battery = fig.add_axes([0.40, 0.17, 0.2, 0.05])
 
-        # Compute the color based on the battery SoC
-        color = self.get_soc_color(bat_soc)
+        # # Compute the color based on the battery SoC
+        # color = self.get_soc_color(bat_soc)
 
-        # Draw the bar with the computed color
-        self.draw_bar(ax_battery, 'Battery SoC', bat_soc, 0, color=color)
+        # # Draw the bar with the computed color
+        # self.draw_bar(ax_battery, 'Battery SoC', bat_soc, 0, color=color)
 
 
-        # Overlay the dynamic text at appropriate positions
-        # Adjust the positions (x, y) based on your background layout
+        # # Overlay the dynamic text at appropriate positions
+        # # Adjust the positions (x, y) based on your background layout
         
-        ax.text(0.675, 0.641, f'External Temp (°C)', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
-        ax.text(0.66, 0.55, f'{temp:.1f}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.675, 0.641, f'External Temp (°C)', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.66, 0.55, f'{temp:.1f}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
 
-        ax.text(0.59, 0.415,  f'Cooling Setpoint (°C)', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
-        ax.text(0.582, 0.346, f'{cooling_setpoint:.1f}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.59, 0.415,  f'Cooling Setpoint (°C)', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.582, 0.346, f'{cooling_setpoint:.1f}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
         
-        ax.text(0.280, 0.637, f'Energy Grid Carbon Intensity', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
-        ax.text(0.295, 0.500, f'{carbon_intensity/1000:.1f} gCO2/Wh', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.280, 0.637, f'Energy Grid Carbon Intensity', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.295, 0.500, f'{carbon_intensity/1000:.1f} gCO2/Wh', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
 
-        # ax.text(0.35, 0.327, f'Battery SoC', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
-        # ax.text(0.35, 0.265, f'{bat_soc:.1f} (%)', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # # ax.text(0.35, 0.327, f'Battery SoC', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # # ax.text(0.35, 0.265, f'{bat_soc:.1f} (%)', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
         
-        # Prin the day and hour at the top right corner
-        ax.text(0.95, 0.95, f'Day: {day}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
-        ax.text(0.95, 0.90, f'Hour: {hour}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # # Prin the day and hour at the top right corner
+        # ax.text(0.95, 0.95, f'Day: {day}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.95, 0.90, f'Hour: {hour}', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
 
-        # Display final metrics at the bottom
-        metrics_text = (
-            f'Energy Consumption: {energy_consumption:.2f} MWh\n'
-            f'Carbon Footprint: {carbon_footprint:.2f} KgCO2\n'
-            f'Water Usage: {water_usage:.2f} L'
-        )
+        # # Display final metrics at the bottom
+        # metrics_text = (
+        #     f'Energy Consumption: {energy_consumption:.2f} MWh\n'
+        #     f'Carbon Footprint: {carbon_footprint:.2f} KgCO2\n'
+        #     f'Water Usage: {water_usage:.2f} L'
+        # )
         
-        ax.text(0.176, 0.085, f'Energy Consumption:', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
-        ax.text(0.176, 0.055, f'{energy_consumption/1000:.2f} MWh', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.176, 0.085, f'Energy Consumption:', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.176, 0.055, f'{energy_consumption/1000:.2f} MWh', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
         
-        ax.text(0.5, 0.085, f'Carbon Footprint:', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
-        ax.text(0.5, 0.055, f'{carbon_footprint/1000:.2f} KgCO2', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.5, 0.085, f'Carbon Footprint:', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.5, 0.055, f'{carbon_footprint/1000:.2f} KgCO2', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
         
-        ax.text(0.824, 0.085, f'Water Usage:', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
-        ax.text(0.824, 0.055, f'{water_usage:.2f} L', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)        
+        # ax.text(0.824, 0.085, f'Water Usage:', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)
+        # ax.text(0.824, 0.055, f'{water_usage:.2f} L', fontsize=14, ha='center', va='center', weight='bold', color=self.FONT_COLOR)        
 
         
-        # Add a small plot for carbon intensity history
-        N = len(self.carbon_intensity_history)  # Total number of timesteps
-        timestep_duration_minutes  = 15  # Duration of each timestep in minutes
-        timestep_duration_hours = timestep_duration_minutes / 60  # Convert to hours
+        # # Add a small plot for carbon intensity history
+        # N = len(self.carbon_intensity_history)  # Total number of timesteps
+        # timestep_duration_minutes  = 15  # Duration of each timestep in minutes
+        # timestep_duration_hours = timestep_duration_minutes / 60  # Convert to hours
 
-        # max_minutes_ago = (N - 1) * timestep_duration  # Total time span in minutes
+        # # max_minutes_ago = (N - 1) * timestep_duration  # Total time span in minutes
         
-        # Generate 5 equally spaced indices
-        indices = np.linspace(0, N - 1, num=5).astype(int)
+        # # Generate 5 equally spaced indices
+        # indices = np.linspace(0, N - 1, num=5).astype(int)
 
-        # Ensure indices are within valid range
-        indices = np.clip(indices, 0, N - 1)
+        # # Ensure indices are within valid range
+        # indices = np.clip(indices, 0, N - 1)
         
-        # Time steps in minutes ago (from oldest to most recent)
-        time_steps_minutes_ago = [(N - i - 1) * timestep_duration_hours  for i in range(N)]  # e.g., [60, 45, 30, 15, 0]
+        # # Time steps in minutes ago (from oldest to most recent)
+        # time_steps_minutes_ago = [(N - i - 1) * timestep_duration_hours  for i in range(N)]  # e.g., [60, 45, 30, 15, 0]
 
-        # Select time steps for x-ticks
-        xticks_to_show = [time_steps_minutes_ago[i] for i in indices]
+        # # Select time steps for x-ticks
+        # xticks_to_show = [time_steps_minutes_ago[i] for i in indices]
 
-        xlabels = [str(int(t)) if t != 0 else 'Now' for t in xticks_to_show]
+        # xlabels = [str(int(t)) if t != 0 else 'Now' for t in xticks_to_show]
 
-        # Create the plot
-        ax_history = fig.add_axes([0.1, 0.20, 0.15, 0.125])  # Adjust position and size
-        ax_history.plot(time_steps_minutes_ago, np.array(self.carbon_intensity_history)/1000, color='tab:blue')
+        # # Create the plot
+        # ax_history = fig.add_axes([0.1, 0.20, 0.15, 0.125])  # Adjust position and size
+        # ax_history.plot(time_steps_minutes_ago, np.array(self.carbon_intensity_history)/1000, color='tab:blue')
 
-        # Select x-ticks every 4 timesteps
-        ax_history.set_xticks(xticks_to_show)
-        ax_history.set_xticklabels(xlabels, fontsize=8)
+        # # Select x-ticks every 4 timesteps
+        # ax_history.set_xticks(xticks_to_show)
+        # ax_history.set_xticklabels(xlabels, fontsize=8)
 
-        # Invert x-axis so 'Now' is at the right
-        ax_history.invert_xaxis()
+        # # Invert x-axis so 'Now' is at the right
+        # ax_history.invert_xaxis()
 
-        # Set labels and title
-        ax_history.set_title('Carbon Intensity History', fontsize=10)
-        ax_history.set_xlabel('Hours Ago', fontsize=8)
-        ax_history.set_ylabel('CI (gCO₂/Wh)', fontsize=8)
-        ax_history.tick_params(axis='both', which='major', labelsize=8)
-        ax_history.grid(True)
-        ax_history.set_facecolor((0.95, 0.95, 0.95, 0.5))  # Semi-transparent background
+        # # Set labels and title
+        # ax_history.set_title('Carbon Intensity History', fontsize=10)
+        # ax_history.set_xlabel('Hours Ago', fontsize=8)
+        # ax_history.set_ylabel('CI (gCO₂/Wh)', fontsize=8)
+        # ax_history.tick_params(axis='both', which='major', labelsize=8)
+        # ax_history.grid(True)
+        # ax_history.set_facecolor((0.95, 0.95, 0.95, 0.5))  # Semi-transparent background
         
-        # Add a small plot for the external weather history
-        # Create the plot
-        ax_weather = fig.add_axes([0.75, 0.4, 0.15, 0.125])
-        ax_weather.plot(time_steps_minutes_ago, self.external_temperature_history, color='tab:red')
+        # # Add a small plot for the external weather history
+        # # Create the plot
+        # ax_weather = fig.add_axes([0.75, 0.4, 0.15, 0.125])
+        # ax_weather.plot(time_steps_minutes_ago, self.external_temperature_history, color='tab:red')
         
-        # Select x-ticks every 4 timesteps
-        ax_weather.set_xticks(xticks_to_show)
-        ax_weather.set_xticklabels(xlabels, fontsize=8)
+        # # Select x-ticks every 4 timesteps
+        # ax_weather.set_xticks(xticks_to_show)
+        # ax_weather.set_xticklabels(xlabels, fontsize=8)
 
-        # Invert x-axis so 'Now' is at the right
-        ax_weather.invert_xaxis()
+        # # Invert x-axis so 'Now' is at the right
+        # ax_weather.invert_xaxis()
         
-        # Set labels and title
-        ax_weather.set_title('External Temp History', fontsize=10)
-        ax_weather.set_xlabel('Hours Ago', fontsize=8)
-        ax_weather.set_ylabel('Temp (°C)', fontsize=8)
-        ax_weather.tick_params(axis='both', which='major', labelsize=8)
-        ax_weather.grid(True)
-        ax_weather.set_facecolor((0.95, 0.95, 0.95, 0.5))
+        # # Set labels and title
+        # ax_weather.set_title('External Temp History', fontsize=10)
+        # ax_weather.set_xlabel('Hours Ago', fontsize=8)
+        # ax_weather.set_ylabel('Temp (°C)', fontsize=8)
+        # ax_weather.tick_params(axis='both', which='major', labelsize=8)
+        # ax_weather.grid(True)
+        # ax_weather.set_facecolor((0.95, 0.95, 0.95, 0.5))
             
-        # Save the figure to a file
-        if not hasattr(self, 'render_step'):
-            self.render_step = 0
-        else:
-            self.render_step += 1
+        # # Save the figure to a file
+        # if not hasattr(self, 'render_step'):
+        #     self.render_step = 0
+        # else:
+        #     self.render_step += 1
 
-        filename = f'evaluation_render/render_{self.render_step:04d}.png'
-        plt.savefig(filename, dpi=100, bbox_inches='tight', pad_inches=0)
-        plt.close(fig)
+        # filename = f'evaluation_render/render_{self.render_step:04d}.png'
+        # plt.savefig(filename, dpi=100, bbox_inches='tight', pad_inches=0)
+        # plt.close(fig)
 

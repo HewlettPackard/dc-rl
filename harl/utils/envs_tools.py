@@ -119,6 +119,8 @@ def make_render_env(env_name, seed, env_args):
         else:
             # 33% June (5), 33% July (6), 33% August (7)
             env_args['month'] = rank % 3 + 5
+        
+        env_args['is_render'] = True
             
         print("Rendering the environment with month: ", env_args['month'])
         env = HARLSustainDCEnv(env_args)

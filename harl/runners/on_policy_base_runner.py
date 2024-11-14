@@ -53,50 +53,79 @@ class OnPolicyBaseRunner:
         self.update_chkpoints = False
         
         self.dump_info = algo_args["eval"].get('dump_eval_metrcs', False)
+        self.dump_render_info = algo_args["render"].get('dump_render_metrics', False)
         
         set_seed(algo_args["seed"])
         self.device = init_device(algo_args["device"])
-        if not self.algo_args["render"]["use_render"]:  # train, not render
-            self.run_dir, self.log_dir, self.save_dir, self.writter = init_dir(
-                args["env"],
-                env_args,
-                args["algo"],
-                args["exp_name"],
-                algo_args["seed"]["seed"],
-                logger_path=algo_args["logger"]["log_dir"],
-            )
-            save_config(args, algo_args, env_args, self.run_dir)
+        # if not self.algo_args["render"]["use_render"]:  # train, not render
+        self.run_dir, self.log_dir, self.save_dir, self.writter = init_dir(
+            args["env"],
+            env_args,
+            args["algo"],
+            args["exp_name"],
+            algo_args["seed"]["seed"],
+            logger_path=algo_args["logger"]["log_dir"],
+        )
+        save_config(args, algo_args, env_args, self.run_dir)
         # set the title of the process
         setproctitle.setproctitle(
             str(args["algo"]) + "-" + str(args["env"]) + "-" + str(args["exp_name"])
         )
 
-        # set the config of env
+        # # set the config of env
+        # if self.algo_args["render"]["use_render"]:  # make envs for rendering
+        #     (
+        #         self.envs,
+        #         self.manual_render,
+        #         self.manual_expand_dims,
+        #         self.manual_delay,
+        #         self.env_num,
+        #     ) = make_render_env(args["env"], algo_args["seed"]["seed"], env_args)
+        # else:  # make envs for training and evaluation
+        #     self.envs = make_train_env(
+        #         args["env"],
+        #         algo_args["seed"]["seed"],
+        #         algo_args["train"]["n_rollout_threads"],
+        #         env_args,
+        #     )
+        #     self.eval_envs = (
+        #         make_eval_env(
+        #             args["env"],
+        #             algo_args["seed"]["seed"],
+        #             algo_args["eval"]["n_eval_rollout_threads"],
+        #             env_args,
+        #         )
+        #         if algo_args["eval"]["use_eval"]
+        #         else None
+        #     )
+                # set the config of env
+
+        self.envs = make_train_env(
+            args["env"],
+            algo_args["seed"]["seed"],
+            algo_args["train"]["n_rollout_threads"],
+            env_args,
+        )
+        self.eval_envs = (
+            make_eval_env(
+                args["env"],
+                algo_args["seed"]["seed"],
+                algo_args["eval"]["n_eval_rollout_threads"],
+                env_args,
+            )
+            if algo_args["eval"]["use_eval"]
+            else None
+        )
+        
         if self.algo_args["render"]["use_render"]:  # make envs for rendering
             (
-                self.envs,
+                self.render_env,
                 self.manual_render,
                 self.manual_expand_dims,
                 self.manual_delay,
                 self.env_num,
             ) = make_render_env(args["env"], algo_args["seed"]["seed"], env_args)
-        else:  # make envs for training and evaluation
-            self.envs = make_train_env(
-                args["env"],
-                algo_args["seed"]["seed"],
-                algo_args["train"]["n_rollout_threads"],
-                env_args,
-            )
-            self.eval_envs = (
-                make_eval_env(
-                    args["env"],
-                    algo_args["seed"]["seed"],
-                    algo_args["eval"]["n_eval_rollout_threads"],
-                    env_args,
-                )
-                if algo_args["eval"]["use_eval"]
-                else None
-            )
+            
         self.num_agents = get_num_agents(args["env"], env_args, self.envs)
 
         print("share_observation_space: ", self.envs.share_observation_space)
@@ -133,57 +162,57 @@ class OnPolicyBaseRunner:
                 )
                 self.actor.append(agent)
 
-        if self.algo_args["render"]["use_render"] is False:  # train, not render
-            self.actor_buffer = []
-            for agent_id in range(self.num_agents):
-                ac_bu = OnPolicyActorBuffer(
-                    {**algo_args["train"], **algo_args["model"]},
-                    self.envs.observation_space[agent_id],
-                    self.envs.action_space[agent_id],
-                )
-                self.actor_buffer.append(ac_bu)
+        # if self.algo_args["render"]["use_render"] is False:  # train, not render
+        self.actor_buffer = []
+        for agent_id in range(self.num_agents):
+            ac_bu = OnPolicyActorBuffer(
+                {**algo_args["train"], **algo_args["model"]},
+                self.envs.observation_space[agent_id],
+                self.envs.action_space[agent_id],
+            )
+            self.actor_buffer.append(ac_bu)
 
-            share_observation_space = self.envs.share_observation_space[0]
-            self.critic = VCritic(
-                {**algo_args["model"], **algo_args["algo"]},
+        share_observation_space = self.envs.share_observation_space[0]
+        self.critic = VCritic(
+            {**algo_args["model"], **algo_args["algo"]},
+            share_observation_space,
+            device=self.device,
+        )
+        if self.state_type == "EP":
+            # EP stands for Environment Provided, as phrased by MAPPO paper.
+            # In EP, the global states for all agents are the same.
+            self.critic_buffer = OnPolicyCriticBufferEP(
+                {**algo_args["train"], **algo_args["model"], **algo_args["algo"]},
                 share_observation_space,
-                device=self.device,
             )
-            if self.state_type == "EP":
-                # EP stands for Environment Provided, as phrased by MAPPO paper.
-                # In EP, the global states for all agents are the same.
-                self.critic_buffer = OnPolicyCriticBufferEP(
-                    {**algo_args["train"], **algo_args["model"], **algo_args["algo"]},
-                    share_observation_space,
-                )
-            elif self.state_type == "FP":
-                # FP stands for Feature Pruned, as phrased by MAPPO paper.
-                # In FP, the global states for all agents are different, and thus needs the dimension of the number of agents.
-                self.critic_buffer = OnPolicyCriticBufferFP(
-                    {**algo_args["train"], **algo_args["model"], **algo_args["algo"]},
-                    share_observation_space,
-                    self.num_agents,
-                )
-            else:
-                raise NotImplementedError
-
-            if self.algo_args["train"]["use_valuenorm"] is True:
-                self.value_normalizer = ValueNorm(1, device=self.device)
-            else:
-                self.value_normalizer = None
-
-            self.logger = LOGGER_REGISTRY[args["env"]](
-                args, algo_args, env_args, self.num_agents, self.writter, self.run_dir
+        elif self.state_type == "FP":
+            # FP stands for Feature Pruned, as phrased by MAPPO paper.
+            # In FP, the global states for all agents are different, and thus needs the dimension of the number of agents.
+            self.critic_buffer = OnPolicyCriticBufferFP(
+                {**algo_args["train"], **algo_args["model"], **algo_args["algo"]},
+                share_observation_space,
+                self.num_agents,
             )
+        else:
+            raise NotImplementedError
+
+        if self.algo_args["train"]["use_valuenorm"] is True:
+            self.value_normalizer = ValueNorm(1, device=self.device)
+        else:
+            self.value_normalizer = None
+
+        self.logger = LOGGER_REGISTRY[args["env"]](
+            args, algo_args, env_args, self.num_agents, self.writter, self.run_dir
+        )
         if self.algo_args["train"]["model_dir"] is not None:  # restore model
             self.restore()
 
     def run(self):
         """Run the training (or rendering) pipeline."""
-        if self.algo_args["render"]["use_render"] is True:
-            self.render()
-            return
-        print("start running")
+        # if self.algo_args["render"]["use_render"] is True:
+            # self.render()
+            # return
+        print("Start Training")
         self.warmup()
 
         episodes = (
@@ -275,6 +304,9 @@ class OnPolicyBaseRunner:
                 if self.update_chkpoints:
                     self.save()
                     self.update_chkpoints = False
+                    
+            if episode % self.algo_args["train"]["render_interval"] == 0 and self.algo_args["render"]["use_render"] is True:
+                self.render()
 
             self.after_update()
 
@@ -284,7 +316,7 @@ class OnPolicyBaseRunner:
         obs, share_obs, available_actions = self.envs.reset()
         # replay buffer
         for agent_id in range(self.num_agents):
-            self.actor_buffer[agent_id].obs[0] = obs[:, agent_id].copy()
+            self.actor_buffer[agent_id].obs[0] = np.stack(obs[:, agent_id], axis=0) # obs[:, agent_id].copy()
             if self.actor_buffer[agent_id].available_actions is not None:
                 self.actor_buffer[agent_id].available_actions[0] = available_actions[
                     :, agent_id
@@ -443,10 +475,9 @@ class OnPolicyBaseRunner:
                     for info in infos
                 ]
             )
-
         for agent_id in range(self.num_agents):
             self.actor_buffer[agent_id].insert(
-                obs[:, agent_id],
+                np.stack(obs[:, agent_id], axis=0),
                 rnn_states[:, agent_id],
                 actions[:, agent_id],
                 action_log_probs[:, agent_id],
@@ -542,7 +573,7 @@ class OnPolicyBaseRunner:
             eval_actions_collector = []
             for agent_id in range(self.num_agents):
                 eval_actions, temp_rnn_state = self.actor[agent_id].act(
-                    eval_obs[:, agent_id],
+                    np.stack(eval_obs[:, agent_id], axis=0),
                     eval_rnn_states[:, agent_id],
                     eval_masks[:, agent_id],
                     eval_available_actions[:, agent_id]
@@ -709,136 +740,160 @@ class OnPolicyBaseRunner:
                 writer.writeheader()
                 writer.writerows(sorted_combined_data)
         
-        print(f"Metrics for all agents have been saved to {filename}.")
+        print(f"Metrics for all agents have been saved to {filename}")
     
     @torch.no_grad()
     def render(self):
         """Render the model."""
         print("start rendering")
-        last_render_time = time.time()
+        # last_render_time = time.time()
 
-        if self.manual_expand_dims:
-            # this env needs manual expansion of the num_of_parallel_envs dimension
-            for _ in range(self.algo_args["render"]["render_episodes"]):
-                eval_obs, _, eval_available_actions = self.envs.reset()
+        # Initialize the metrics dictionary
+        metrics = {
+            'agent_1': [],
+            'agent_2': [],
+            'agent_3': []
+        }
+        eval_episode =  self.render_env.render_episode
+
+        # this env needs manual expansion of the num_of_parallel_envs dimension
+        for _ in range(self.algo_args["render"]["render_episodes"]):
+            eval_obs, _, eval_available_actions = self.render_env.reset()
+            eval_obs = np.expand_dims(np.array(eval_obs), axis=0)
+            eval_available_actions = (
+                np.expand_dims(np.array(eval_available_actions), axis=0)
+                if eval_available_actions is not None
+                else None
+            )
+            eval_rnn_states = np.zeros(
+                (
+                    self.env_num,
+                    self.num_agents,
+                    self.recurrent_n,
+                    self.rnn_hidden_size,
+                ),
+                dtype=np.float32,
+            )
+            eval_masks = np.ones(
+                (self.env_num, self.num_agents, 1), dtype=np.float32
+            )
+            rewards = 0
+            while True:
+                eval_actions_collector = []
+                for agent_id in range(self.num_agents):
+                    eval_actions, temp_rnn_state = self.actor[agent_id].act(
+                        np.stack(eval_obs[:, agent_id], axis=0),
+                        eval_rnn_states[:, agent_id],
+                        eval_masks[:, agent_id],
+                        eval_available_actions[:, agent_id]
+                        if eval_available_actions is not None
+                        else None,
+                        deterministic=True,
+                    )
+                    eval_rnn_states[:, agent_id] = _t2n(temp_rnn_state)
+                    eval_actions_collector.append(_t2n(eval_actions))
+                eval_actions = np.array(eval_actions_collector).transpose(1, 0, 2)
+                (
+                    eval_obs,
+                    _,
+                    eval_rewards,
+                    eval_dones,
+                    eval_infos,
+                    eval_available_actions,
+                ) = self.render_env.step(eval_actions[0])
+                rewards += eval_rewards[0][0]
                 eval_obs = np.expand_dims(np.array(eval_obs), axis=0)
                 eval_available_actions = (
                     np.expand_dims(np.array(eval_available_actions), axis=0)
                     if eval_available_actions is not None
                     else None
                 )
-                eval_rnn_states = np.zeros(
-                    (
-                        self.env_num,
-                        self.num_agents,
-                        self.recurrent_n,
-                        self.rnn_hidden_size,
-                    ),
-                    dtype=np.float32,
-                )
-                eval_masks = np.ones(
-                    (self.env_num, self.num_agents, 1), dtype=np.float32
-                )
-                rewards = 0
-                while True:
-                    eval_actions_collector = []
-                    for agent_id in range(self.num_agents):
-                        eval_actions, temp_rnn_state = self.actor[agent_id].act(
-                            eval_obs[:, agent_id],
-                            eval_rnn_states[:, agent_id],
-                            eval_masks[:, agent_id],
-                            eval_available_actions[:, agent_id]
-                            if eval_available_actions is not None
-                            else None,
-                            deterministic=True,
-                        )
-                        eval_rnn_states[:, agent_id] = _t2n(temp_rnn_state)
-                        eval_actions_collector.append(_t2n(eval_actions))
-                    eval_actions = np.array(eval_actions_collector).transpose(1, 0, 2)
-                    (
-                        eval_obs,
-                        _,
-                        eval_rewards,
-                        eval_dones,
-                        _,
-                        eval_available_actions,
-                    ) = self.envs.step(eval_actions[0])
-                    rewards += eval_rewards[0][0]
-                    eval_obs = np.expand_dims(np.array(eval_obs), axis=0)
-                    eval_available_actions = (
-                        np.expand_dims(np.array(eval_available_actions), axis=0)
-                        if eval_available_actions is not None
-                        else None
-                    )
-                    if self.manual_render:
-                        # self.envs.render()
-                        # Render every 1 second
-                        print("Rendering...")
-                        current_time = time.time()
-                        if current_time - last_render_time >= 1.0:
-                            self.envs.render()  # Render the environment plot
-                            last_render_time = current_time
-                    if self.manual_delay:
-                        time.sleep(0.1)
-                    if eval_dones[0]:
-                        print(f"total reward of this episode: {rewards}")
-                        break
-        else:
-            # this env does not need manual expansion of the num_of_parallel_envs dimension
-            # such as dexhands, which instantiates a parallel env of 64 pair of hands
-            last_render_time = time.time()
-            for _ in range(self.algo_args["render"]["render_episodes"]):
-                eval_obs, _, eval_available_actions = self.envs.reset()
-                eval_rnn_states = np.zeros(
-                    (
-                        self.env_num,
-                        self.num_agents,
-                        self.recurrent_n,
-                        self.rnn_hidden_size,
-                    ),
-                    dtype=np.float32,
-                )
-                eval_masks = np.ones(
-                    (self.env_num, self.num_agents, 1), dtype=np.float32
-                )
-                rewards = 0
-                while True:
-                    eval_actions_collector = []
-                    for agent_id in range(self.num_agents):
-                        eval_actions, temp_rnn_state = self.actor[agent_id].act(
-                            eval_obs[:, agent_id],
-                            eval_rnn_states[:, agent_id],
-                            eval_masks[:, agent_id],
-                            eval_available_actions[:, agent_id]
-                            if eval_available_actions[0] is not None
-                            else None,
-                            deterministic=True,
-                        )
-                        eval_rnn_states[:, agent_id] = _t2n(temp_rnn_state)
-                        eval_actions_collector.append(_t2n(eval_actions))
-                    eval_actions = np.array(eval_actions_collector).transpose(1, 0, 2)
-                    (
-                        eval_obs,
-                        _,
-                        eval_rewards,
-                        eval_dones,
-                        _,
-                        eval_available_actions,
-                    ) = self.envs.step(eval_actions)
-                    rewards += eval_rewards[0][0][0]
-                    if self.manual_render:
-                        # self.envs.render()
-                        # Render every 1 second
-                        print("Rendering...")
-                        current_time = time.time()
-                        if current_time - last_render_time >= 1.0:
-                            self.envs.render()  # Render the environment plot
-                            last_render_time = current_time
-                    if self.manual_delay:
-                        time.sleep(0.1)
-                    if eval_dones[0][0]:
-                        print(f"total reward of this episode: {rewards}")
-                        break
+
+                if self.dump_render_info:
+                # Collect metrics from eval_infos
+                    for j in range(self.num_agents):
+                        if j == 0:  # Agent 1
+                            metrics[f'agent_{j+1}'].append({
+                                key: eval_infos[j].get(key, None) for key in [
+                                    'ls_original_workload', 'ls_shifted_workload', 'ls_action', 'ls_norm_load_left',
+                                    'ls_unasigned_day_load_left', 'ls_penalty_flag', 'ls_tasks_in_queue',
+                                    'ls_tasks_dropped', 'ls_current_hour'
+                                ]
+                            })
+                        elif j == 1:  # Agent 2
+                            metrics[f'agent_{j+1}'].append({
+                                key: eval_infos[j].get(key, None) for key in [
+                                    'dc_ITE_total_power_kW', 'dc_HVAC_total_power_kW', 'dc_total_power_kW', 'dc_power_lb_kW', 
+                                    'dc_power_ub_kW', 'dc_crac_setpoint_delta', 'dc_crac_setpoint', 'dc_cpu_workload_fraction', 
+                                    'dc_int_temperature', 'dc_CW_pump_power_kW', 'dc_CT_pump_power_kW', 'dc_water_usage', 'dc_exterior_ambient_temp',
+                                    'outside_temp', 'day', 'hour'
+                                ]
+                            })
+                        elif j == 2:  # Agent 3
+                            metrics[f'agent_{j+1}'].append({
+                                key: eval_infos[j].get(key, None) for key in [
+                                    'bat_action', 'bat_SOC', 'bat_CO2_footprint', 'bat_avg_CI', 'bat_total_energy_without_battery_KWh',
+                                    'bat_total_energy_with_battery_KWh', 'bat_max_bat_cap',
+                                    'bat_dcload_min', 'bat_dcload_max',
+                                ]
+                            })
+                        else:
+                            print(f'There is an error while saving the evaluation metrics')
+
+                if eval_dones[0]:
+                    print(f"total reward of this episode: {rewards}")
+                    break
+
+
+        # After rendering, save the collected metrics
+        if self.dump_render_info:
+            if metrics['agent_1']:  # Check if metrics were collected
+                self.dump_metrics_render_to_csv(metrics, eval_episode)
+                print("Data saved to render_data.csv.")
+
+    def dump_metrics_render_to_csv(self, metrics, eval_episode):
+        """Dump collected metrics to a CSV file for all agents in one go."""
+        # Get the current date and time
+        current_datetime = self.render_env.experiment_datetime
+        
+        # Construct the base directory path
+        base_dir = os.path.join('./results/', 'evaluation_render', current_datetime, f'episode_{eval_episode}')
+        os.makedirs(base_dir, exist_ok=True)
+        
+        # Define the filename
+        filename = os.path.join(base_dir, f"all_agents_episode_{eval_episode}.csv")
+        
+        # Assuming each agent's data list is of the same length
+        num_steps = len(metrics['agent_1'])
+        
+        # Prepare combined data for each timestep
+        combined_data = []
+        for i in range(num_steps):
+            combined_row = {}
+            for agent_key, data in metrics.items():
+                agent_prefix = f"{agent_key}_"
+                if i < len(data):
+                    for key, value in data[i].items():
+                        combined_key = f"{key}"
+                        combined_row[combined_key] = round(float(value), 4) if value is not None else None
+                else:
+                    # Handle missing data for this timestep
+                    pass  # Or set default values if necessary
+            combined_data.append(combined_row)
+        
+        # Determine fieldnames from the keys of the combined data
+        fieldnames = set()
+        for row in combined_data:
+            fieldnames.update(row.keys())
+        fieldnames = sorted(fieldnames)
+        
+        # Write to the CSV file
+        with open(filename, 'w', newline='') as file:
+            writer = csv.DictWriter(file, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(combined_data)
+        
+        print(f"Metrics for all agents have been saved to {filename}")
 
     def prep_rollout(self):
         """Prepare for rollout."""

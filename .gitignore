@@ -30,3 +30,4 @@ plots/
 evaluation_render/
 .history/
 checkpoint_new_model/
+.ipynb_checkpoints/

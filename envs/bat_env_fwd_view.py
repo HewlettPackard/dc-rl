@@ -20,8 +20,8 @@ class BatteryEnvFwd(gym.Env):
         n_fwd_steps = env_config['n_fwd_steps']
         max_bat_cap = env_config['max_bat_cap']
         charging_rate = env_config['charging_rate']
-        self.observation_space = spaces.Box(low=np.float32(-1.0 * np.ones(1 + 1 + 4 + n_fwd_steps)),
-                                            high=np.float32(1.0 * np.ones(1 + 1 + 4 + n_fwd_steps)))
+        self.observation_space = spaces.Box(low=np.float32(-1.0 * np.ones(13)),
+                                            high=np.float32(1.0 * np.ones(13)))
         
         self.max_dc_pw_MW = env_config['max_dc_pw_MW'] # 7.24  # in MW
         self.action_space = spaces.Discrete(3)
@@ -77,7 +77,7 @@ class BatteryEnvFwd(gym.Env):
             'total_energy_with_battery': 0,
             'CO2_footprint': 0,
             'avg_CI': 0,
-            'battery SOC': self.battery.current_load,
+            'bat_SOC': self.get_battery_soc(),
             'total_energy_with_battery': 0
         }
 
@@ -91,6 +91,12 @@ class BatteryEnvFwd(gym.Env):
             done (bool): A boolean value signaling the if the episode has ended.
             info (dict): A dictionary that containing additional information about the environment state
         """
+        
+        # Change the action for a random action
+        # action_id = np.random.randint(self.action_space.n)
+        # print(f'Warning, using random action {action_id} in the bat environment')
+        # print(f'Using action {action_id} in the bat environment')
+
         action_instantaneous = self._action_to_direction[action_id]
         self.discharge_energy = self._simulate_battery_operation(self.battery, action_instantaneous,
                                                                   charging_rate=self.charging_rate)
@@ -104,7 +110,7 @@ class BatteryEnvFwd(gym.Env):
 
         self.info = {
             'bat_action': action_id,
-            'bat_SOC': self.battery.current_load,
+            'bat_SOC': self.get_battery_soc(),
             'bat_CO2_footprint': self.CO2_total,
             'bat_avg_CI': self.ci,
             'bat_total_energy_without_battery_KWh': self.dcload * 1e3 * 0.25,
@@ -165,6 +171,15 @@ class BatteryEnvFwd(gym.Env):
 
         """
         self.dcload = dc_load
+        
+    def get_battery_soc(self,):
+        """Get the current battery state of charge
+
+        Returns:
+            battery_soc float: Battery state of charge
+        """
+        return self.battery.get_battery_soc()
+    
 
     def _hist_data_collector(self):
         """Generates the observation for the agent

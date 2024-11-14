@@ -28,7 +28,7 @@ class SustainDCPettingZooEnv(ParallelEnv):
         
         if env_config['nonoverlapping_shared_obs_space']:
             # ls_state[0:10]->10 variables; dc_state[4:9]->5 variables & bat_state[5]->1 variable
-            self.share_observation_space = {agent: spaces.Box(low=0.0, high=1.0, shape=(20,), dtype=np.float32) for agent in self.possible_agents}
+            self.share_observation_space = {agent: spaces.Box(low=-2.0, high=2.0, shape=(29,), dtype=np.float32) for agent in self.possible_agents}
         else:
             # Find the maximum dimension of observation space
             max_obs_dim = max(space.shape[0] for space in self.observation_spaces.values())
@@ -59,7 +59,7 @@ class SustainDCPettingZooEnv(ParallelEnv):
             np.random.seed(seed)  # Example of setting seed, adjust based on your environment's requirements
         
         # initial_observation should be a dictionary with agent names as keys and their observations as values
-        initial_observations_with_info, infos = self.env.reset()
+        initial_observations_with_info = self.env.reset()
         return initial_observations_with_info, []
 
     def step(self, actions):
