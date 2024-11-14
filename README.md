@@ -12,8 +12,9 @@
 9. [Dashboard](#dashboard)
 10. [Contributing](#contributing)
 11. [Contact](#contact)
-12. [License](#license)
-13. [Citation](#citation)
+12. [Star History](#star-history)
+13. [License](#license)
+14. [Citation](#citation)
 
 ## Disclaimer
 
