@@ -8,6 +8,8 @@ certifi==2024.2.2
 charset-normalizer==3.3.2
 click==8.1.7
 cloudpickle==3.0.0
+dash==2.9.3
+dash-bootstrap-components==1.4.1
 decorator==5.1.1
 distlib==0.3.8
 dm-tree==0.1.8
@@ -35,6 +37,7 @@ lz4==4.3.3
 markdown-it-py==3.0.0
 Markdown==3.6
 MarkupSafe==2.1.5
+matplotlib==3.7.1
 mdurl==0.1.2
 ml-dtypes==0.4.0
 mpmath==1.3.0
@@ -46,7 +49,7 @@ opt-einsum==3.3.0
 opyplus==1.4.2
 packaging==24.0
 pandas==1.5.3
-pettingzoo==1.22.2
+pettingzoo==1.25.0
 pillow==10.3.0
 platformdirs==3.11.0
 protobuf==4.25.3
@@ -71,7 +74,7 @@ scipy==1.13.0
 setproctitle==1.3.3
 shellingham==1.5.4
 six==1.16.0
-SuperSuit==3.7.0
+SuperSuit==3.9.3
 sympy==1.12
 tabulate==0.9.0
 tensorboard-data-server==0.7.2
