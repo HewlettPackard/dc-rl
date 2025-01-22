@@ -49,7 +49,7 @@ opt-einsum==3.3.0
 opyplus==1.4.2
 packaging==24.0
 pandas==1.5.3
-pettingzoo==1.25.0
+pettingzoo==1.24.3
 pillow==10.3.0
 platformdirs==3.11.0
 protobuf==4.25.3
