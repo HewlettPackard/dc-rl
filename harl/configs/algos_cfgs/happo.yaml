@@ -46,7 +46,7 @@ eval:
 
 render:
   # whether to use render
-  use_render: True
+  use_render: False
   # number of episodes to render
   render_episodes: 1
   # whether to dump the render metric in a csv file

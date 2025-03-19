@@ -305,7 +305,7 @@ class OnPolicyBaseRunner:
                     self.save()
                     self.update_chkpoints = False
                     
-            if episode % self.algo_args["train"]["render_interval"] == 0 and self.algo_args["render"]["use_render"] is True:
+            if episode % self.algo_args["train"].get("render_interval",1) == 0 and self.algo_args["render"]["use_render"] is True:
                 self.render()
 
             self.after_update()

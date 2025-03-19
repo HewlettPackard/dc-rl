@@ -23,6 +23,7 @@ class HARLSustainDCEnv:
 
         # Pad action and observation spaces to have the same shape
         self.env = ss.pad_action_space_v0(self.env)
+        self.env = ss.pad_observations_v0(self.env)
 
         self._seed = 0
         self.agents = self.env.possible_agents
@@ -95,7 +96,7 @@ class HARLSustainDCEnv:
         self.render_episode += 1
         self._seed += 1
         self.cur_step = 0
-        obs, _ = self.env.reset(seed=self._seed)
+        obs = self.env.reset(seed=self._seed)
         obs = self.unwrap(obs)
         
         s_obs = self._create_shared_observation(obs)

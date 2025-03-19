@@ -60,7 +60,7 @@ class SustainDCPettingZooEnv(ParallelEnv):
         
         # initial_observation should be a dictionary with agent names as keys and their observations as values
         initial_observations_with_info = self.env.reset()
-        return initial_observations_with_info, []
+        return initial_observations_with_info  # , []
 
     def step(self, actions):
         """
