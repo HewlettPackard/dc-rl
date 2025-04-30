@@ -156,7 +156,7 @@ def make_dc_pyeplus_env(month : int = 1,
         print('WARNING, using default values for chiller sizing...')
         max_amb_temperature = 50.0
         
-    ctafr, ct_rated_load = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint=min_temp, max_CRAC_setpoint=max_temp, max_ambient_temp=max_amb_temperature)
+    ctafr, ct_rated_load, data_center_total_ITE_Load = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint=min_temp, max_CRAC_setpoint=max_temp, max_ambient_temp=max_amb_temperature)
     dc_config.CT_REFRENCE_AIR_FLOW_RATE = ctafr
     dc_config.CT_FAN_REF_P = ct_rated_load
     
@@ -232,7 +232,8 @@ def make_dc_pyeplus_env(month : int = 1,
                     max_temp=max_temp,
                     action_definition=action_definition,
                     DC_Config=dc_config,
-                    episode_length_in_time=episode_length_in_time
+                    episode_length_in_time=episode_length_in_time,
+                    max_ite_load = data_center_total_ITE_Load
                     )
     
     dc_env.NormalizeObservation()

@@ -19,6 +19,7 @@ class dc_gymenv(gym.Env):
                        add_cpu_usage : bool,
                        min_temp : float,
                        max_temp : float,
+                       max_ite_load: float,
                        action_definition : dict,
                        DC_Config : dict,
                        seed : int = 123,
@@ -57,6 +58,7 @@ class dc_gymenv(gym.Env):
         self.obs_max = []
         self.obs_min = []
         self.DC_Config = DC_Config
+        self.max_IT_load = max_ite_load
                 
         # similar to reset
         self.dc = DataCenter.DataCenter_ITModel(num_racks=self.DC_Config.NUM_RACKS,
@@ -66,7 +68,7 @@ class dc_gymenv(gym.Env):
                                                 DC_ITModel_config=self.DC_Config)
         
         
-        self.CRAC_Fan_load, self.CRAC_cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = None, None, None, None, None
+        self.CRAC_Fan_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = None, None, None, None, None
         self.HVAC_load = self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         self.cpu_load_frac = 0.5
@@ -104,10 +106,12 @@ class dc_gymenv(gym.Env):
 
         super().reset(seed=self.seed)
 
-        self.CRAC_Fan_load, self.CRAC_cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = None, None, None, None, None
+        self.CRAC_Fan_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load = None, None, None, None, None
         self.HVAC_load = self.ranges['Facility Total HVAC Electricity Demand Rate(Whole Building)'][0]
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         self.water_usage = None
+        self.reduced_water_usage = None
+        self.water_savings = None
         
         self.raw_curr_state = self.get_obs()
         
@@ -122,6 +126,7 @@ class dc_gymenv(gym.Env):
             'dc_CT_total_power_kW': 0,
             'dc_Compressor_total_power_kW': 0,
             'dc_HVAC_total_power_kW': 0,
+            'dc_saved_HVAC_total_power_kw': 0,
             'dc_total_power_kW': 0,
             'dc_crac_setpoint_delta': 16,
             'dc_crac_setpoint': 16,
@@ -133,6 +138,8 @@ class dc_gymenv(gym.Env):
             'dc_CW_pump_power_kW': 0,
             'dc_CT_pump_power_kW': 0,
             'dc_water_usage': 0,
+            'dc_reduced_water_usage': 0,
+            'dc_water_savings':0
         }
         
         
@@ -185,20 +192,28 @@ class dc_gymenv(gym.Env):
         data_center_total_ITE_Load = sum(self.rackwise_cpu_pwr) + sum(self.rackwise_itfan_pwr)
         
         
-        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load  = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
+        self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load, self.CRAC_Cooling_load_reduction  = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
                                                                                                                                                                        avg_CRAC_return_temp=avg_CRAC_return_temp,
                                                                                                                                                                        ambient_temp=self.ambient_temp,
                                                                                                                                                                        data_center_full_load=data_center_total_ITE_Load,
-                                                                                                                                                                       DC_Config=self.DC_Config)
+                                                                                                                                                                       DC_Config=self.DC_Config,max_IT_load=self.max_IT_load)
+        
         self.HVAC_load = self.CT_Cooling_load + self.Compressor_load
 
-        # Set the additional attributes for the cooling tower water usage calculation
+        #get cooling reduction returned if > 0 then we need to update CRAC_return_temp and call calc water savings
+        if self.CRAC_Cooling_load_reduction > 0: #if cooling reduction occurs find the new reduced_avg_return_temp due to cooling reduction
+            reduced_avg_CRAC_return_temp = (self.CRAC_Cooling_load * (avg_CRAC_return_temp - self.raw_curr_stpt)+ (self.CRAC_Cooling_load + self.CRAC_Cooling_load_reduction)* self.raw_curr_stpt)/(self.CRAC_Cooling_load + self.CRAC_Cooling_load_reduction) #This is an energy blanacing of Q = m Cp Delta T
+            self.dc.reduced_hot_water_temp = reduced_avg_CRAC_return_temp
+        else:
+            self.dc.reduced_hot_water_temp = avg_CRAC_return_temp #If not cooling reduction occurs then reduced_hot_water_temp is the same as avg_CRAC_return_temp
+            
         self.dc.hot_water_temp = avg_CRAC_return_temp  # °C
         self.dc.cold_water_temp = self.raw_curr_stpt  # °C
         self.dc.wet_bulb_temp = self.wet_bulb  # °C from weather data
 
         # Calculate the cooling tower water usage
-        self.water_usage = self.dc.calculate_cooling_tower_water_usage()
+        self.water_usage, self.reduced_water_usage, self.water_savings = self.dc.calculate_cooling_tower_water_usage()
+        
 
         # calculate reward
         self.reward = 0
@@ -215,6 +230,7 @@ class dc_gymenv(gym.Env):
             'dc_CT_total_power_kW': self.CT_Cooling_load / 1e3,
             'dc_Compressor_total_power_kW': self.Compressor_load / 1e3,
             'dc_HVAC_total_power_kW': (self.CT_Cooling_load + self.Compressor_load) / 1e3,
+            'dc_saved_HVAC_total_power_kw' : (self.CRAC_Cooling_load_reduction)/1e3,
             'dc_total_power_kW': (data_center_total_ITE_Load + self.CT_Cooling_load + self.Compressor_load) / 1e3,
             'dc_crac_setpoint_delta': crac_setpoint_delta,
             'dc_crac_setpoint': self.raw_curr_stpt,
@@ -226,6 +242,8 @@ class dc_gymenv(gym.Env):
             'dc_CW_pump_power_kW': self.CW_pump_load,
             'dc_CT_pump_power_kW': self.CT_pump_load,
             'dc_water_usage': self.water_usage,
+            'dc_reduced_water_usage' : self.reduced_water_usage,
+            'dc_water_savings' :self.water_savings
         }
         
 

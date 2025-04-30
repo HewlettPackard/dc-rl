@@ -48,8 +48,10 @@ class BatteryEnvFwd(gym.Env):
         self.total_energy_with_battery = 0
         self.ci = 0
         self.ci_n = []
+        self.energy_saved = 0
         self.dcload_max = env_config['dcload_max']
         self.dcload_min = env_config['dcload_min']
+
         
     def reset(self, *, seed=None, options=None):
         """
@@ -76,6 +78,7 @@ class BatteryEnvFwd(gym.Env):
             'Grid_CI': 0,
             'total_energy_with_battery': 0,
             'CO2_footprint': 0,
+            'CO2_saved_footprint': 0,
             'avg_CI': 0,
             'bat_SOC': self.get_battery_soc(),
             'total_energy_with_battery': 0
@@ -101,7 +104,9 @@ class BatteryEnvFwd(gym.Env):
         self.discharge_energy = self._simulate_battery_operation(self.battery, action_instantaneous,
                                                                   charging_rate=self.charging_rate)
         
-        self.CO2_total = self.CO2_footprint(self.dcload, self.ci, action_instantaneous, self.discharge_energy)
+        self.CO2_total, self.CO2_saving_total = self.CO2_footprint(self.dcload, self.ci, action_instantaneous, self.discharge_energy, self.energy_saved)
+        
+        
 
         self.raw_obs = self._hist_data_collector()
         self.temp_state = self._process_obs(self.raw_obs)
@@ -112,6 +117,7 @@ class BatteryEnvFwd(gym.Env):
             'bat_action': action_id,
             'bat_SOC': self.get_battery_soc(),
             'bat_CO2_footprint': self.CO2_total,
+            'bat_CO2_saved_footprint': self.CO2_saving_total,
             'bat_avg_CI': self.ci,
             'bat_total_energy_without_battery_KWh': self.dcload * 1e3 * 0.25,
             'bat_total_energy_with_battery_KWh': self.total_energy_with_battery,
@@ -124,6 +130,10 @@ class BatteryEnvFwd(gym.Env):
         truncated = False
         done = False 
         return self.temp_state, self.reward, done, truncated, self.info
+   
+    def set_energy_savings(self, energy_saved):
+        self.energy_saved= energy_saved
+
 
     def update_ci(self, ci, ci_n):
         """Sets internal CIs values.
@@ -215,7 +225,7 @@ class BatteryEnvFwd(gym.Env):
         self.var_to_dc = self.var_to_dc / self.max_bat_cap
         return discharge_energy
 
-    def CO2_footprint(self, dc_load, ci, a_t, discharge_energy):
+    def CO2_footprint(self, dc_load, ci, a_t, discharge_energy, energy_saved):
         """Calculates carbon footprint
 
         Args:
@@ -231,18 +241,23 @@ class BatteryEnvFwd(gym.Env):
             self.total_energy_with_battery = dc_load * 1e3 * 0.25 + self.battery.charging_load * 1e3
             self.energy_added_removed.append(self.battery.charging_load * 1e3)
             self.battery.charging_load = 0  # *Added*
-
             CO2_footprint = (self.total_energy_with_battery) * ci
+            CO2_saved_footprint = energy_saved * ci * 1e3 * 0.25
+
         elif a_t == 'discharge':
+            #print(dc_load * 1e3 * 0.25)
+            #print(discharge_energy  * 1e3)
             assert dc_load * 1e3 * 0.25 >= discharge_energy * 1e3, "Battery discharge rate should not be higher than the datacenter energy consumption rate"
             self.total_energy_with_battery = dc_load * 1e3 * 0.25 - discharge_energy * 1e3
             self.energy_added_removed.append(-1.0*discharge_energy * 1e3)
             CO2_footprint = max(self.total_energy_with_battery, 0) * ci  # (KWh) * gCO2/KWh
+            CO2_saved_footprint = energy_saved * ci * 1e3 * 0.25
         else:
             self.total_energy_with_battery = dc_load * 1e3 * 0.25
             CO2_footprint = self.total_energy_with_battery * ci
+            CO2_saved_footprint = energy_saved * ci * 1e3 * 0.25
 
-        return CO2_footprint
+        return CO2_footprint, CO2_saved_footprint
 
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))

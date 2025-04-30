@@ -111,9 +111,22 @@ CT_PRESSURE_DROP = 300000 #Pa
 CT_WATER_FLOW_RATE = 0.011#m3/s
 CT_PUMP_EFFICIENCY = 0.87 #%
 
+#Heat Recovery parameters
+AVE_HLP = 2 # W/(K*m^2)  [6],[7]       
+OFFICE_GUIDE_TEMP = 22 #Deg C  [8]    
+DC_AREA_PU = (1/850)*0.775 #m^2 per W  [9], [10] 
+OFFICE_BUILDING_AREA =  1765 #m^2 [11]       #typical area modern office buildings
+#WATER_REDUCTION_P_KWH = 2.5 #L/kWh   #Amount of water saved due to a reduction in evaporative cooling needed by the cooling tower
+
 #References:
 #[1]: Postema, Björn Frits. "Energy-efficient data centres: model-based analysis of power-performance trade-offs." (2018).
 #[2]: Raghunathan, S., & Vk, M. (2014). Power management using dynamic power state transitions and dynamic voltage frequency scaling controls in virtualized server clusters. Turkish Journal of Electrical Engineering and Computer Sciences, 24(4). doi: 10.3906/elk-1403-264
 #[3]: Sun, Kaiyu, et al. "Prototype energy models for data centers." Energy and Buildings 231 (2021): 110603.
 #[4]: Breen, Thomas J., et al. "From chip to cooling tower data center modeling: Part I influence of server inlet temperature and temperature rise across cabinet." 2010 12th IEEE Intersociety Conference on Thermal and Thermomechanical Phenomena in Electronic Systems. IEEE, 2010.
 #[5]: https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water.
+#[6]: https://assets.publishing.service.gov.uk/media/63d8edbde90e0773d8af2c98/Approved_Document_L__Conservation_of_fuel_and_power__Volume_2_Buildings_other_than_dwellings__2021_edition_incorporating_2023_amendments.pdf
+#[7]: https://www.buildtestsolutions.com/technical/heat-loss-parameter-a-metric-for-total-fabric-performance
+#[8]: https://www.hsa.ie/eng/publications_and_forms/publications/general_application_regulations/gen_apps_workplace.pdf
+#[9]: Rasmussen, Neil, "Calculating Space and Power Density Requirements for Data Centers", Whitepaper, Schneider Electric
+#[10]: Uptime Institute, Data Center Design Standards in 2025
+#[11]: https://www.eia.gov/todayinenergy/detail.php?id=21152#

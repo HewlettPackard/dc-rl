@@ -240,6 +240,7 @@ class DataCenter_ITModel():
         
         self.tower_flow_rate = np.round(DC_ITModel_config.CT_WATER_FLOW_RATE * 3600, 4)  # m³/hr
         self.hot_water_temp = None  # °C
+        self.reduced_hot_water_temp = None # °C
         self.cold_water_temp = None  # °C
         self.wet_bulb_temp = None  # °C
         self.cycles_of_concentration = 5
@@ -265,7 +266,7 @@ class DataCenter_ITModel():
         rackwise_itfan_pwr = []
         rackwise_outlet_temp = []
         rackwise_inlet_temp = []
-                
+      
         c = 1.918
         d = 1.096
         e = 0.824
@@ -285,6 +286,7 @@ class DataCenter_ITModel():
             rackwise_itfan_pwr.append(rack_itfan_power)
             
             power_term = (rack_cpu_power + rack_itfan_power)**d
+            
             airflow_term = self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*rack.get_total_rack_fan_v()**e * f
             log_term = 0# h * np.log(max(power_term / airflow_term, 1))  # Log term, avoid log(0)
             # rackwise_outlet_temp.append((rack_inlet_temp + (rack_cpu_power+rack_itfan_power)/(self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*rack.get_total_rack_fan_v()*a) + b * (rack_cpu_power+rack_itfan_power) - c))
@@ -332,25 +334,33 @@ class DataCenter_ITModel():
         https://spxcooling.com/water-calculator/
         """
         # We're assuming m³/hr, which is standard
+        # Calculations doubles as 'self' variables are passed
 
         # Calculate the range (difference between hot and cold water temperature)
         range_temp = self.hot_water_temp - self.cold_water_temp
+        reduced_range_temp  = self.reduced_hot_water_temp - self.cold_water_temp
         
         y_intercept = 0.3528 * range_temp + 0.101
+        reduced_y_intercept = 0.3528 * reduced_range_temp + 0.101
         
         # The water usage estimation formula would need to be derived from the graph you provided.
-        
         norm_water_usage = 0.044 * self.wet_bulb_temp + y_intercept
+        reduced_norm_water_usage = 0.044 * self.wet_bulb_temp + reduced_y_intercept
         
         water_usage = np.clip(norm_water_usage, 0, None)
+        reduced_water_usage = np.clip(reduced_norm_water_usage, 0, None)
         
         water_usage += water_usage * self.drift_rate  # adjust for drift
+        reduced_water_usage += reduced_water_usage * self.drift_rate  # adjust for drift
+
 
         # Convert m³/hr to the desired unit (e.g., liters per 15 minutes) if necessary
         # There are 1000 liters in a cubic meter. There are 4 15-minute intervals in an hour.
         water_usage_liters_per_15min = np.round((water_usage * 1000) / 4, 4)
+        reduced_water_usage_liters_per_15min = np.round((reduced_water_usage * 1000) / 4, 4)
+        water_savings_liters_per_15min = water_usage_liters_per_15min - reduced_water_usage_liters_per_15min
 
-        return water_usage_liters_per_15min
+        return water_usage_liters_per_15min, reduced_water_usage_liters_per_15min, water_savings_liters_per_15min
 
 
 def calculate_chiller_power(max_cooling_cap, load, ambient_temp):
@@ -429,7 +439,7 @@ def calculate_chiller_power(max_cooling_cap, load, ambient_temp):
     return power if oper_part_load_rat > 0 else 0
 
 
-def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data_center_full_load, DC_Config, ctafr=None):
+def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data_center_full_load, DC_Config, max_IT_load, ctafr=None):
     """Calculate the HVAV power attributes
 
         Args:
@@ -442,27 +452,36 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data
             CRAC_Fan_load (float): CRAC fan power
             CT_Fan_pwr (float):  Cooling tower fan power
             CRAC_cooling_load (float): CRAC cooling load
-            Compressor_load (float): Chiller compressor load
+            Compressor_load (float): Chiller compressor load - called chiller power
+            CRAC_cooling_load_reduction (float): Reduction in cooling requirements due to heat recovery
         """
     # Air system calculations
     m_sys = DC_Config.RHO_AIR * DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu * data_center_full_load
     CRAC_cooling_load = m_sys * DC_Config.C_AIR * max(0.0, avg_CRAC_return_temp - CRAC_setpoint) # coo.Q_thistime
     CRAC_Fan_load = DC_Config.CRAC_FAN_REF_P * (DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu / DC_Config.CRAC_REFRENCE_AIR_FLOW_RATE_pu)**3
-    
-    chiller_power = calculate_chiller_power(DC_Config.CT_FAN_REF_P, CRAC_cooling_load, ambient_temp)
 
-    # Chiller power calculation
+    #Call heat recovery code to determine how much CRAC_cooling_load changes due to heat transferred to DC office and nearby office building
+    CRAC_cooling_load_reduction = min(heat_recovery(max_IT_load, ambient_temp, DC_Config), 0.25* data_center_full_load)
+    #print(heat_recovery(max_IT_load, ambient_temp, DC_Config), "What it want to recover")
+    #print(CRAC_cooling_load_reduction, "WHAT IT IS ALLOWED TO RECOVER")
+    #print(data_center_full_load, "ITE LOAD ATM")
+    CRAC_cooling_required = CRAC_cooling_load - CRAC_cooling_load_reduction 
+
+    #How was the cooling towers max capacity picked for this, why are the variables from the config files different to the calculate_chiller_power? 
+    chiller_power = calculate_chiller_power(DC_Config.CT_FAN_REF_P, CRAC_cooling_required, ambient_temp)
+
+    # Pumping Chiller power calculation
     power_consumed_CW = (DC_Config.CW_PRESSURE_DROP * DC_Config.CW_WATER_FLOW_RATE) / DC_Config.CW_PUMP_EFFICIENCY
 
-    # Chilled water pump power calculation
+    # Chilled water pump power calculation for Cooling Tower
     power_consumed_CT = (DC_Config.CT_PRESSURE_DROP*DC_Config.CT_WATER_FLOW_RATE)/DC_Config.CT_PUMP_EFFICIENCY
 
     if ambient_temp < 5:
-        return CRAC_Fan_load, 0.0, CRAC_cooling_load, chiller_power, power_consumed_CW, power_consumed_CT
+        return CRAC_Fan_load, 0.0, CRAC_cooling_required, chiller_power, power_consumed_CW, power_consumed_CT
 
     # Cooling tower fan power calculations
     Cooling_tower_air_delta = max(50 - (ambient_temp - CRAC_setpoint), 1)
-    m_air = CRAC_cooling_load / (DC_Config.C_AIR * Cooling_tower_air_delta)
+    m_air = CRAC_cooling_required / (DC_Config.C_AIR * Cooling_tower_air_delta)
     v_air = m_air / DC_Config.RHO_AIR
     
     # Reference cooling tower air flow rate
@@ -471,7 +490,7 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data
     CT_Fan_pwr = DC_Config.CT_FAN_REF_P * (min(v_air / ctafr, 1))**3
     
     # ToDo: exploring the new chiller_power method
-    return CRAC_Fan_load, CT_Fan_pwr, CRAC_cooling_load, chiller_power, power_consumed_CW, power_consumed_CT
+    return CRAC_Fan_load, CT_Fan_pwr, CRAC_cooling_required, chiller_power, power_consumed_CW, power_consumed_CT, CRAC_cooling_load_reduction
 
 def chiller_sizing(DC_Config, min_CRAC_setpoint=16, max_CRAC_setpoint=22, max_ambient_temp=40.0):
     '''
@@ -506,8 +525,10 @@ def chiller_sizing(DC_Config, min_CRAC_setpoint=16, max_CRAC_setpoint=22, max_am
     m_sys = DC_Config.RHO_AIR * DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu * data_center_total_ITE_Load
     
     CRAC_cooling_load = m_sys*DC_Config.C_AIR*max(0.0, avg_CRAC_return_temp-min_CRAC_setpoint) 
+    #Do not understand how this delta is determine or why, seems to set the temperature delta at 26K, where does the 50 come from?)
     Cooling_tower_air_delta = max(50 - (max_ambient_temp-min_CRAC_setpoint), 1)  
     
+    #Should the cooling tower load not also account for the added heat caused by the HVAC/Chiller?
     m_air = CRAC_cooling_load/(DC_Config.C_AIR*Cooling_tower_air_delta) 
     
     # Cooling Tower Reference Air FlowRate
@@ -523,10 +544,10 @@ def chiller_sizing(DC_Config, min_CRAC_setpoint=16, max_CRAC_setpoint=22, max_am
     # So, to obtain an average HVAC energy consumption of 43%, we need to scale the total maximum energy consumption with a factor of 10
     # This value is obtained after a methodic literature search.
     '''
-    
+    #The cooling tower should also be accounting for the heat generated by the CRAC cooler which depends on COP
     CT_rated_load = CRAC_cooling_load #2 * data_center_total_ITE_Load * (43/(100-43))
     
-    return ctafr, CT_rated_load
+    return ctafr, CT_rated_load, data_center_total_ITE_Load
     
 def calculate_avg_CRAC_return_temp(rack_return_approach_temp_list,rackwise_outlet_temp):   
     """Calculate the CRAC return air temperature
@@ -540,6 +561,19 @@ def calculate_avg_CRAC_return_temp(rack_return_approach_temp_list,rackwise_outle
     n = len(rack_return_approach_temp_list)
     return sum([i + j for i,j in zip(rack_return_approach_temp_list,rackwise_outlet_temp)])/n  # CRAC return is averaged across racks
 
+def heat_recovery(max_IT_load, ambient_temp, DC_Config):
+    temperature_delta = max((DC_Config.OFFICE_GUIDE_TEMP - ambient_temp), 0) #don't allow negative numbers, heat can't be lost to outside if it is warmer than inside
+    DC_office_heat = DC_Config.AVE_HLP * DC_Config.DC_AREA_PU * max_IT_load *  temperature_delta
+    
+    #Some heat can be sent to an office building immediatly next to the DC, this is not a District heating network model
+    office_heat = DC_Config.AVE_HLP *DC_Config.OFFICE_BUILDING_AREA * temperature_delta
+    #print("************************")
+    #print(DC_office_heat, "DC HEAT SAVED")
+    #print(office_heat, "OFFICE HEAT SAVED")
+    #print("________________________")
+    cooling_load_reduction = DC_office_heat + office_heat
+
+    return cooling_load_reduction
 
 """
 References:

@@ -303,17 +303,17 @@ def water_usage_efficiency_reward(params: dict) -> float:
 
     Args:
         params (dict): Dictionary containing parameters:
-            dc_water_usage (float): The amount of water used by the data center in a given period.
+            dc_reduced_water_usage (float): The amount of water used by the data center in a given period, taking into acount the reduction of water due to HRU.
 
     Returns:
         float: Reward value. The reward is higher for lower values of water usage, 
         promoting reduced water consumption.
     """
-    dc_water_usage = params['dc_water_usage']
+    dc_reduced_water_usage = params['dc_reduced_water_usage']
     
     # Calculate the reward. This is a simple inverse relationship; many other functions could be applied.
     # Adjust the scalar as needed to fit the scale of your rewards or to emphasize the importance of water savings.
-    reward = -0.01 * dc_water_usage
+    reward = -0.01 * dc_reduced_water_usage
     
     return reward
 

@@ -68,5 +68,14 @@
                                                 [170, 10],
                                                 [170, 10]],
         "HP_PROLIANT" : [110,170]
+    },
+    "heat_recovery_configuration":
+    {
+        "AVE_HLP": 2,
+        "OFFICE_GUIDE_TEMP":  22,
+        "DC_AREA_PU" : 0.00152,
+        "OFFICE_BUILDING_AREA":  1765,
+        "WATER_REDUCTION_P_KWH": 2.5
+
     }
 }

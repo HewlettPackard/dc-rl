@@ -650,6 +650,7 @@ class SustainDC(gym.Env):
             print(f'Warning, using base agent for agent_bat: {action}')
             
         self.bat_env.set_dcload(self.dc_info['dc_total_power_kW'] / 1e3)
+        self.bat_env.set_energy_savings(self.dc_info['dc_saved_HVAC_total_power_kw'])
         self.bat_state, _, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
 
 
@@ -845,6 +846,7 @@ class SustainDC(gym.Env):
         # energy_consumption = agent_bat_info.get('dc_total_power_kW', 0)
         # carbon_footprint = agent_bat_info.get('bat_CO2_footprint', 0)
         # water_usage = agent_bat_info.get('dc_water_usage', 0)
+        # not updated to account for new reduced water consumption due to HRU
         # carbon_intensity = agent_bat_info.get('bat_avg_CI', 320)  # Example default value
         
         # day = agent_ls_info.get('day', 0)

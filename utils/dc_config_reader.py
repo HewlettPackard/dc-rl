@@ -145,6 +145,14 @@ class DC_Config:
         self.CT_PUMP_EFFICIENCY = json_obj['hvac_configuration']['CT_PUMP_EFFICIENCY'] #%
 
 
+        # Heat Recovery paremeters
+        self.AVE_HLP = json_obj['heat_recovery_configuration']['AVE_HLP'] # W/(K*m^2) 
+        self.OFFICE_GUIDE_TEMP = json_obj['heat_recovery_configuration']['OFFICE_GUIDE_TEMP']  #Deg C      
+        self.DC_AREA_PU = json_obj['heat_recovery_configuration']['DC_AREA_PU']  #m^2 per W    
+        self.OFFICE_BUILDING_AREA =  json_obj['heat_recovery_configuration']['OFFICE_BUILDING_AREA']  #m
+        #self.WATER_REDUCTION_P_KWH = json_obj['heat_recovery_configuration']['WATER_REDUCTION_P_KWH']  #L/kWh
+
+
 #References:
 #[1]: Postema, Björn Frits. "Energy-efficient data centres: model-based analysis of power-performance trade-offs." (2018).
 #[2]: Raghunathan, S., & Vk, M. (2014). Power management using dynamic power state transitions and dynamic voltage frequency scaling controls in virtualized server clusters. Turkish Journal of Electrical Engineering and Computer Sciences, 24(4). doi: 10.3906/elk-1403-264

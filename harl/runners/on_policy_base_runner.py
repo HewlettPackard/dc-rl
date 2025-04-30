@@ -49,7 +49,7 @@ class OnPolicyBaseRunner:
         self.share_param = algo_args["algo"]["share_param"]
         self.fixed_order = algo_args["algo"]["fixed_order"]
         
-        self.current_best_avg_eval_episode_reward = -np.Inf
+        self.current_best_avg_eval_episode_reward = -np.inf
         self.update_chkpoints = False
         
         self.dump_info = algo_args["eval"].get('dump_eval_metrcs', False)
@@ -623,9 +623,9 @@ class OnPolicyBaseRunner:
                         elif j == 1:  # Assuming agent_1 corresponds to index 0
                             metrics[f'agent_{j+1}'].append({
                                 key: eval_infos[i][j].get(key, None) for key in [
-                                    'dc_ITE_total_power_kW', 'dc_HVAC_total_power_kW', 'dc_total_power_kW', 'dc_power_lb_kW', 
+                                    'dc_ITE_total_power_kW', 'dc_HVAC_total_power_kW', 'dc_saved_HVAC_total_power_kw', 'dc_total_power_kW', 'dc_power_lb_kW', 
                                     'dc_power_ub_kW', 'dc_crac_setpoint_delta', 'dc_crac_setpoint', 'dc_cpu_workload_fraction', 
-                                    'dc_int_temperature', 'dc_CW_pump_power_kW', 'dc_CT_pump_power_kW', 'dc_water_usage', 'dc_exterior_ambient_temp',
+                                    'dc_int_temperature', 'dc_CW_pump_power_kW', 'dc_CT_pump_power_kW', 'dc_water_usage', 'dc_reduced_water_usage', 'dc_water_savings', 'dc_exterior_ambient_temp',
                                     'outside_temp', 'day', 'hour'
                                 ]
                             })
@@ -823,9 +823,9 @@ class OnPolicyBaseRunner:
                         elif j == 1:  # Agent 2
                             metrics[f'agent_{j+1}'].append({
                                 key: eval_infos[j].get(key, None) for key in [
-                                    'dc_ITE_total_power_kW', 'dc_HVAC_total_power_kW', 'dc_total_power_kW', 'dc_power_lb_kW', 
+                                    'dc_ITE_total_power_kW', 'dc_HVAC_total_power_kW', 'dc_saved_HVAC_total_power_kw', 'dc_total_power_kW', 'dc_power_lb_kW', 
                                     'dc_power_ub_kW', 'dc_crac_setpoint_delta', 'dc_crac_setpoint', 'dc_cpu_workload_fraction', 
-                                    'dc_int_temperature', 'dc_CW_pump_power_kW', 'dc_CT_pump_power_kW', 'dc_water_usage', 'dc_exterior_ambient_temp',
+                                    'dc_int_temperature', 'dc_CW_pump_power_kW', 'dc_CT_pump_power_kW', 'dc_water_usage', 'dc_reduced_water_usage', 'dc_water_savings', 'dc_exterior_ambient_temp',
                                     'outside_temp', 'day', 'hour'
                                 ]
                             })
