@@ -461,7 +461,7 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data
     CRAC_Fan_load = DC_Config.CRAC_FAN_REF_P * (DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu / DC_Config.CRAC_REFRENCE_AIR_FLOW_RATE_pu)**3
 
     #Call heat recovery code to determine how much CRAC_cooling_load changes due to heat transferred to DC office and nearby office building
-    CRAC_cooling_load_reduction = min(heat_recovery(max_IT_load, ambient_temp, DC_Config), 0.25* data_center_full_load)
+    CRAC_cooling_load_reduction = min(heat_recovery(max_IT_load, ambient_temp, DC_Config), 0.25* data_center_full_load) #[6]
     #print(heat_recovery(max_IT_load, ambient_temp, DC_Config), "What it want to recover")
     #print(CRAC_cooling_load_reduction, "WHAT IT IS ALLOWED TO RECOVER")
     #print(data_center_full_load, "ITE LOAD ATM")
@@ -567,10 +567,6 @@ def heat_recovery(max_IT_load, ambient_temp, DC_Config):
     
     #Some heat can be sent to an office building immediatly next to the DC, this is not a District heating network model
     office_heat = DC_Config.AVE_HLP *DC_Config.OFFICE_BUILDING_AREA * temperature_delta
-    #print("************************")
-    #print(DC_office_heat, "DC HEAT SAVED")
-    #print(office_heat, "OFFICE HEAT SAVED")
-    #print("________________________")
     cooling_load_reduction = DC_office_heat + office_heat
 
     return cooling_load_reduction
@@ -584,4 +580,5 @@ References:
 [4]: Breen, Thomas J., et al. "From chip to cooling tower data center modeling: Part I influence of server inlet temperature and temperature 
      rise across cabinet." 2010 12th IEEE Intersociety Conference on Thermal and Thermomechanical Phenomena in Electronic Systems. IEEE, 2010.
 [5]: https://h2ocooling.com/blog/look-cooling-tower-fan-efficiences/#:~:text=The%20tower%20has%20been%20designed,of%200.42%20inches%20of%20water.
+[6]: SEAI, "District Heating and Cooling National Heat Study Spatial Analysis of Infrastructure Costs and Potential in Ireland", 2022
 """
