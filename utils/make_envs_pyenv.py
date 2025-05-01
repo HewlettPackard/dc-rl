@@ -73,6 +73,7 @@ def make_bat_fwd_env(month,
     return bat_env
 
 def make_dc_pyeplus_env(month : int = 1,
+                        hru : bool = True,
                         location : str = 'NYIS',
                         dc_config_file: str = 'dc_config_file.json',
                         datacenter_capacity_mw: int = 1,
@@ -163,7 +164,7 @@ def make_dc_pyeplus_env(month : int = 1,
     
     # Perform sizing of ITE power and ambient temperature
     # Find highest and lowest values of ITE power, rackwise outlet temperature
-    dc = DataCenter.DataCenter_ITModel(num_racks=dc_config.NUM_RACKS, rack_supply_approach_temp_list=dc_config.RACK_SUPPLY_APPROACH_TEMP_LIST,
+    dc = DataCenter.DataCenter_ITModel(num_racks=dc_config.NUM_RACKS, hru = hru, rack_supply_approach_temp_list=dc_config.RACK_SUPPLY_APPROACH_TEMP_LIST,
                                     rack_CPU_config=dc_config.RACK_CPU_CONFIG, max_W_per_rack=dc_config.MAX_W_PER_RACK, DC_ITModel_config=dc_config)
     raw_curr_stpt_list = range(15,23)
     cpu_load_list = range(0,110,10) # We assume same data center load for all servers; Here it will be max
@@ -222,6 +223,7 @@ def make_dc_pyeplus_env(month : int = 1,
     ################################################################################
         
     dc_env = dc_gymenv(observation_variables=observation_variables,
+                    hru = hru,
                     observation_space=observation_space,
                     action_variables=action_variables,
                     action_space=action_space,

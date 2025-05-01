@@ -3,6 +3,7 @@ agents:
   - agent_dc
   - agent_bat
 location: ca
+hru: False
 workload_file: 'Alibaba_CPU_Data_Hourly_1.csv'
 max_bat_cap_Mw: 1.0
 individual_reward_weight: 0.8

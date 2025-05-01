@@ -58,11 +58,13 @@ def init_dir(env, env_args, algo, exp_name, seed, logger_path):
     """Init directory for saving results."""
     task = get_task_name(env, env_args)
     hms_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+    hr_toggle = "HR-"+str(env_args["hru"])
     results_path = os.path.join(
         logger_path,
         env,
         task,
         algo,
+        hr_toggle,
         exp_name,
         "-".join(["seed-{:0>5}".format(seed), hms_time]),
     )

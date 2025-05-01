@@ -300,7 +300,7 @@ class OnPolicyBaseRunner:
             if episode % self.algo_args["train"]["eval_interval"] == 0:
                 if self.algo_args["eval"]["use_eval"]:
                     self.prep_rollout()
-                    self.update_chkpoints = self.eval()
+                    self.update_chkpoints = self.eval(data[4][6][2]["hru_toggle"])
                 if self.update_chkpoints:
                     self.save()
                     self.update_chkpoints = False
@@ -540,9 +540,9 @@ class OnPolicyBaseRunner:
         self.critic_buffer.after_update()
 
     @torch.no_grad()
-    def eval(self):
+    def eval(self, hru_toggle):
         """Evaluate the model."""
-        self.logger.eval_init()  # logger callback at the beginning of evaluation
+        self.logger.eval_init(hru_toggle)  # logger callback at the beginning of evaluation
         eval_episode = 0
 
         update_chkpoints = False

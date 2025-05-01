@@ -216,7 +216,7 @@ class Rack():
     
 class DataCenter_ITModel():
 
-    def __init__(self, num_racks, rack_supply_approach_temp_list, rack_CPU_config, max_W_per_rack = 10000, DC_ITModel_config = None, chiller_sizing = False) -> None:
+    def __init__(self, num_racks, hru, rack_supply_approach_temp_list, rack_CPU_config, max_W_per_rack = 10000, DC_ITModel_config = None, chiller_sizing = False) -> None:
         """Creates the DC from a giving DC configuration
 
         Args:
@@ -230,6 +230,7 @@ class DataCenter_ITModel():
         self.racks_list = []
         self.rack_supply_approach_temp_list = rack_supply_approach_temp_list
         self.rack_CPU_config = rack_CPU_config
+        self.hru = hru
         
         self.rackwise_inlet_temp = []
         
@@ -439,7 +440,7 @@ def calculate_chiller_power(max_cooling_cap, load, ambient_temp):
     return power if oper_part_load_rat > 0 else 0
 
 
-def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data_center_full_load, DC_Config, max_IT_load, ctafr=None):
+def calculate_HVAC_power(CRAC_setpoint, hru, avg_CRAC_return_temp, ambient_temp, data_center_full_load, DC_Config, max_IT_load, ctafr=None):
     """Calculate the HVAV power attributes
 
         Args:
@@ -461,7 +462,10 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data
     CRAC_Fan_load = DC_Config.CRAC_FAN_REF_P * (DC_Config.CRAC_SUPPLY_AIR_FLOW_RATE_pu / DC_Config.CRAC_REFRENCE_AIR_FLOW_RATE_pu)**3
 
     #Call heat recovery code to determine how much CRAC_cooling_load changes due to heat transferred to DC office and nearby office building
-    CRAC_cooling_load_reduction = min(heat_recovery(max_IT_load, ambient_temp, DC_Config), 0.25* data_center_full_load)
+    if hru:
+        CRAC_cooling_load_reduction = min(heat_recovery(max_IT_load, ambient_temp, DC_Config), 0.25* data_center_full_load)
+    else:
+        CRAC_cooling_load_reduction = 0
     #print(heat_recovery(max_IT_load, ambient_temp, DC_Config), "What it want to recover")
     #print(CRAC_cooling_load_reduction, "WHAT IT IS ALLOWED TO RECOVER")
     #print(data_center_full_load, "ITE LOAD ATM")
@@ -506,6 +510,7 @@ def chiller_sizing(DC_Config, min_CRAC_setpoint=16, max_CRAC_setpoint=22, max_am
         tuple: A tuple containing the cooling tower reference air flow rate (ctafr) and the rated load of the cooling tower (CT_rated_load).
     '''
     dc = DataCenter_ITModel(num_racks=DC_Config.NUM_RACKS,
+                            hru=False,
                             rack_supply_approach_temp_list=DC_Config.RACK_SUPPLY_APPROACH_TEMP_LIST,
                             rack_CPU_config=DC_Config.RACK_CPU_CONFIG,
                             max_W_per_rack=DC_Config.MAX_W_PER_RACK,
