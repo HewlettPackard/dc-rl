@@ -268,6 +268,7 @@ class OffPolicyBaseRunner:
                 else None,
             )
             self.insert(data)
+            hru_toggle = data[4][6][2]["hru_toggle"]
             obs = new_obs
             share_obs = new_share_obs
             available_actions = new_available_actions
@@ -290,7 +291,7 @@ class OffPolicyBaseRunner:
                     print(
                         f"Env {self.args['env']} Task {self.task_name} Algo {self.args['algo']} Exp {self.args['exp_name']} Evaluation at step {cur_step} / {self.algo_args['train']['num_env_steps']}:"
                     )
-                    self.eval(cur_step)
+                    self.eval(cur_step, hru_toggle)
                 else:
                     print(
                         f"Env {self.args['env']} Task {self.task_name} Algo {self.args['algo']} Exp {self.args['exp_name']} Step {cur_step} / {self.algo_args['train']['num_env_steps']}, average step reward in buffer: {self.buffer.get_mean_rewards()}.\n"
@@ -521,7 +522,7 @@ class OffPolicyBaseRunner:
         raise NotImplementedError
 
     @torch.no_grad()
-    def eval(self, step):
+    def eval(self, step, hru_toggle):
         """Evaluate the model"""
         eval_episode_rewards = []
         one_episode_rewards = []
@@ -531,7 +532,7 @@ class OffPolicyBaseRunner:
         eval_episode = 0
         # do eval init
         if "sustaindc" in self.args["env"]:
-            self.logger.eval_init_off_policy(total_num_steps=step)  # logger callback at the beginning of evaluation
+            self.logger.eval_init_off_policy(total_num_steps=step, hru_toggle=hru_toggle)  # logger callback at the beginning of evaluation
         episode_lens = []
         one_episode_len = np.zeros(
             self.algo_args["eval"]["n_eval_rollout_threads"], dtype=int

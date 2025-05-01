@@ -41,10 +41,11 @@ class SustainDCLogger(BaseLogger):
         }
         self.is_off_policy = False
 
-    def eval_init(self):
+    def eval_init(self,hru_toggle):
         """Initialize metrics at the beginning of each episode."""
         super().eval_init()
         self.eval_metrics = {
+            "hru_toggle": hru_toggle,
             "net_energy_sum": 0,
             "ite_power_sum": 0,
             'ct_power_sum': 0,
@@ -68,10 +69,11 @@ class SustainDCLogger(BaseLogger):
         }
         self.is_off_policy = False
         
-    def eval_init_off_policy(self, total_num_steps):
+    def eval_init_off_policy(self, total_num_steps, hru_toggle):
         """Initialize metrics at the beginning of each episode."""
         super().eval_init_off_policy(total_num_steps)
         self.eval_metrics = {
+            "hru_toggle": hru_toggle,
             "net_energy_sum": 0,
             "ite_power_sum": 0,
             'ct_power_sum': 0,
@@ -100,6 +102,11 @@ class SustainDCLogger(BaseLogger):
         super().per_step(data)
         obs, _, rewards, dones, infos, _, _, _, _, _, _ = data
         dones_env = np.all(dones, axis=1)
+
+
+        hru_toggle = data[4][6][2]["hru_toggle"]
+        self.metrics["hru_toggle"] = hru_toggle
+
         
         for i in range(len(infos)):  # Assuming infos are structured with one dict per environment
             self.metrics["net_energy_sum"] += infos[i][0].get("bat_total_energy_with_battery_KWh", 0)
@@ -213,9 +220,15 @@ class SustainDCLogger(BaseLogger):
         self.writter.add_scalar("metrics/Total Tasks Dropped", total_tasks_dropped, self.total_num_steps)
 
         # Optionally, log to the console or to a file
-        print(f"Episode {self.episode}: Avg Net Energy={average_net_energy:.3f}, Avg HVAC Energy Savings= {average_hvac_saved_power:.3f}, Avg CO2={average_CO2_footprint:.3f}, Water Usage={total_water_usage:.3f},Reduced Water Usage={total_reduced_water_usage:.3f},Water Savings={total_water_savings:.3f}")
-        print(f"Tasks in Queue={total_tasks_in_queue:.3f}, Tasks Dropped={total_tasks_dropped:.3f}")
-        print(f"PUE with HRU={PUE:.3f}, PUE without HRU={PUE_wo_HRU:.3f}")
+        if self.metrics["hru_toggle"]:
+            print(f"Episode {self.episode}: Avg Net Energy={average_net_energy:.3f}, Avg HVAC Energy Savings= {average_hvac_saved_power:.3f}, Avg CO2={average_CO2_footprint:.3f}, Water Usage={total_water_usage:.3f},Reduced Water Usage={total_reduced_water_usage:.3f},Water Savings={total_water_savings:.3f}")
+            print(f"Tasks in Queue={total_tasks_in_queue:.3f}, Tasks Dropped={total_tasks_dropped:.3f}")
+            print(f"PUE with HRU={PUE:.3f}, PUE without HRU={PUE_wo_HRU:.3f}")
+        else:
+            print(f"Episode {self.episode}: Avg Net Energy={average_net_energy:.3f}, Avg HVAC Energy Savings= {average_hvac_saved_power:.3f}, Avg CO2={average_CO2_footprint:.3f}, Water Usage={total_water_usage:.3f}")
+            print(f"Tasks in Queue={total_tasks_in_queue:.3f}, Tasks Dropped={total_tasks_dropped:.3f}")
+            print(f"PUE with HRU={PUE:.3f}")
+
 
         # Reset metrics for the next episode
         self.metrics = {
@@ -306,9 +319,16 @@ class SustainDCLogger(BaseLogger):
         # Optionally, log to the console or to a file
         if self.is_off_policy:
             self.episode = (int(self.total_num_steps)//self.algo_args["train"]["episode_length"]//self.algo_args["train"]["n_rollout_threads"])
-        print(f"Episode {self.episode}: Avg Net Energy={average_net_energy:.3f},Avg HVAC Energy Savings= {average_hvac_saved_power:.3f}, Avg CO2={average_CO2_footprint:.3f}, Water Usage={total_water_usage:.3f}, Reduced Water Usage={total_reduced_water_usage:.3f},Water Savings={total_water_savings:.3f}")
-        print(f"Tasks in Queue={total_tasks_in_queue:.3f}, Tasks Dropped={total_tasks_dropped:.3f}")
-        print(f"PUE with HRU={PUE:.3f}, PUE without HRU={PUE_wo_HRU:.3f}")
+
+        if self.eval_metrics["hru_toggle"]:
+            print(f"Episode {self.episode}: Avg Net Energy={average_net_energy:.3f}, Avg HVAC Energy Savings= {average_hvac_saved_power:.3f}, Avg CO2={average_CO2_footprint:.3f}, Water Usage={total_water_usage:.3f},Reduced Water Usage={total_reduced_water_usage:.3f},Water Savings={total_water_savings:.3f}")
+            print(f"Tasks in Queue={total_tasks_in_queue:.3f}, Tasks Dropped={total_tasks_dropped:.3f}")
+            print(f"PUE with HRU={PUE:.3f}, PUE without HRU={PUE_wo_HRU:.3f}")
+        else:
+            print(f"Episode {self.episode}: Avg Net Energy={average_net_energy:.3f}, Avg HVAC Energy Savings= {average_hvac_saved_power:.3f}, Avg CO2={average_CO2_footprint:.3f}, Water Usage={total_water_usage:.3f}")
+            print(f"Tasks in Queue={total_tasks_in_queue:.3f}, Tasks Dropped={total_tasks_dropped:.3f}")
+            print(f"PUE with HRU={PUE:.3f}")
+
 
         # Reset metrics for the next episode
         self.eval_metrics = {

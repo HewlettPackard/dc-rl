@@ -103,6 +103,7 @@ class SustainDC(gym.Env):
 
         # Create environments and agents
         self.agents = env_config['agents']
+        self.hru = env_config["hru"]
         self.rbc_agents = env_config.get('rbc_agents', [])
         
         self.location = env_config['location']
@@ -147,7 +148,7 @@ class SustainDC(gym.Env):
         n_vars_ci = 8
         self.ls_env = make_ls_env(month=self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci, 
                                   n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, queue_max_len=1000)
-        self.dc_env, _ = make_dc_pyeplus_env(month=self.month + 1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, 
+        self.dc_env, _ = make_dc_pyeplus_env(month=self.month + 1, hru=self.hru, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, 
                                              datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file, add_cpu_usage=False)
         self.bat_env = make_bat_fwd_env(month=self.month, max_bat_cap_Mwh=self.dc_env.ranges['max_battery_energy_Mwh'], 
                                         max_dc_pw_MW=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1] / 1e6, 

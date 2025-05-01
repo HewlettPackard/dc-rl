@@ -11,6 +11,7 @@ from utils import reward_creator
 class dc_gymenv(gym.Env):
     
     def __init__(self, observation_variables : list,
+                       hru : bool,
                        observation_space : spaces.Box,
                        action_variables: list,
                        action_space : spaces.Discrete,
@@ -59,9 +60,11 @@ class dc_gymenv(gym.Env):
         self.obs_min = []
         self.DC_Config = DC_Config
         self.max_IT_load = max_ite_load
+        self.hru = hru
                 
         # similar to reset
         self.dc = DataCenter.DataCenter_ITModel(num_racks=self.DC_Config.NUM_RACKS,
+                                                hru = self.hru,
                                                 rack_supply_approach_temp_list=self.DC_Config.RACK_SUPPLY_APPROACH_TEMP_LIST,
                                                 rack_CPU_config=self.DC_Config.RACK_CPU_CONFIG,
                                                 max_W_per_rack=self.DC_Config.MAX_W_PER_RACK,
@@ -193,6 +196,7 @@ class dc_gymenv(gym.Env):
         
         
         self.CRAC_Fan_load, self.CT_Cooling_load, self.CRAC_Cooling_load, self.Compressor_load, self.CW_pump_load, self.CT_pump_load, self.CRAC_Cooling_load_reduction  = DataCenter.calculate_HVAC_power(CRAC_setpoint=self.raw_curr_stpt,
+                                                                                                                                                                       hru = self.hru,                               
                                                                                                                                                                        avg_CRAC_return_temp=avg_CRAC_return_temp,
                                                                                                                                                                        ambient_temp=self.ambient_temp,
                                                                                                                                                                        data_center_full_load=data_center_total_ITE_Load,
@@ -230,6 +234,7 @@ class dc_gymenv(gym.Env):
             'dc_CT_total_power_kW': self.CT_Cooling_load / 1e3,
             'dc_Compressor_total_power_kW': self.Compressor_load / 1e3,
             'dc_HVAC_total_power_kW': (self.CT_Cooling_load + self.Compressor_load) / 1e3,
+            'hru_toggle' : self.hru,
             'dc_saved_HVAC_total_power_kw' : (self.CRAC_Cooling_load_reduction)/1e3,
             'dc_total_power_kW': (data_center_total_ITE_Load + self.CT_Cooling_load + self.Compressor_load) / 1e3,
             'dc_crac_setpoint_delta': crac_setpoint_delta,
