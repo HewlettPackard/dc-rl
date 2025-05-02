@@ -485,7 +485,7 @@ def calculate_HVAC_power(CRAC_setpoint, hru, avg_CRAC_return_temp, ambient_temp,
 
     # Cooling tower fan power calculations
     Cooling_tower_air_delta = max(50 - (ambient_temp - CRAC_setpoint), 1)
-    m_air = CRAC_cooling_required / (DC_Config.C_AIR * Cooling_tower_air_delta)
+    m_air = (CRAC_cooling_required + chiller_power) / (DC_Config.C_AIR * Cooling_tower_air_delta)
     v_air = m_air / DC_Config.RHO_AIR
     
     # Reference cooling tower air flow rate
