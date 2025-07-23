@@ -592,9 +592,20 @@ This combined work is available under both the MIT License for the new contribut
 
 ## Citation
 
-If you find our paper or this repository helpful in your research or project, please consider citing our work using the following BibTeX citation:
+If you find our papers or this repository helpful in your research or project, please consider citing our work using the following BibTeX citation:
 
 ```tex
+@article{Naug2024Dec,
+	author = {Naug, Avisek and Guillen, Antonio and Luna, Ricardo and Gundecha, Vineet and Bash, Cullen and Ghorbanpour, Sahand and Mousavi, Sajad and Babu, Ashwin R. and Markovikj, Dejan and Kashyap, Lekhapriya D. and Rengarajan, Desik and Sarkar, Soumyendu},
+	title = {{SustainDC: Benchmarking for Sustainable Data Center Control}},
+	journal = {Advances in Neural Information Processing Systems},
+	volume = {37},
+	pages = {100630--100669},
+	year = {2024},
+	month = dec,
+	url = {https://proceedings.neurips.cc/paper_files/paper/2024/hash/b6676756f8a935e208f394a1ba47f0bc-Abstract-Datasets_and_Benchmarks_Track.html}
+}
+
 @article{Sarkar2024Mar,
 	author = {Sarkar, Soumyendu and Naug, Avisek and Luna, Ricardo and Guillen, Antonio and Gundecha, Vineet and Ghorbanpour, Sahand and Mousavi, Sajad and Markovikj, Dejan and Babu, Ashwin Ramesh},
 	title = {{Carbon Footprint Reduction for Sustainable Data Centers in Real-Time}},
