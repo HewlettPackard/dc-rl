@@ -5,12 +5,12 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="data package" href="data.html" /><link rel="prev" title="envs package" href="envs.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
         <title>utils package - SustainDC 2.2.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -89,19 +89,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -142,7 +129,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -277,6 +264,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../publications.html">Our Publications</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../contribution_guidelines.html">Contribution Guidelines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../references.html">References</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
@@ -464,89 +452,8 @@ all the checkpoints</p></li>
 </dd></dl>
 
 </section>
-<section id="module-utils.helper_methods">
-<span id="utils-helper-methods-module"></span><h2>utils.helper_methods module<a class="headerlink" href="#module-utils.helper_methods" title="Link to this heading">¶</a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="utils.helper_methods.f2c">
-<span class="sig-prename descclassname"><span class="pre">utils.helper_methods.</span></span><span class="sig-name descname"><span class="pre">f2c</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/helper_methods.html#f2c"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.helper_methods.f2c" title="Link to this definition">¶</a></dt>
-<dd><p>Converts temperature in Fahrenheit to Celsius using the formula (5/9)*(t-23).</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>t</strong> (<em>float</em>) – Temperature in Fahrenheit.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Temperature in Celsius.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py class">
-<dt class="sig sig-object py" id="utils.helper_methods.pyeplus_callback">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.helper_methods.</span></span><span class="sig-name descname"><span class="pre">pyeplus_callback</span></span><a class="reference internal" href="../_modules/utils/helper_methods.html#pyeplus_callback"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.helper_methods.pyeplus_callback" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DefaultCallbacks</span></code></p>
-<p>Custom callbacks class that extends the DefaultCallbacks class.</p>
-<p>Defines callback methods that are triggered at various points of the training process.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="utils.helper_methods.pyeplus_callback.on_episode_end">
-<span class="sig-name descname"><span class="pre">on_episode_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_index</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/helper_methods.html#pyeplus_callback.on_episode_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.helper_methods.pyeplus_callback.on_episode_end" title="Link to this definition">¶</a></dt>
-<dd><p>Method that is called at the end of each episode in the training process.</p>
-<p>Calculates some metrics based on the user_data variables updated during the episode.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>worker</strong> (<em>Worker</em>) – The worker object that is being used in the training process.</p></li>
-<li><p><strong>base_env</strong> (<em>BaseEnv</em>) – The base environment that is being used in the training process.</p></li>
-<li><p><strong>policies</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Policy</em><em>]</em>) – The policies that are being used in the training process.</p></li>
-<li><p><strong>episode</strong> (<em>MultiAgentEpisode</em>) – The episode object that is being processed.</p></li>
-<li><p><strong>env_index</strong> (<em>int</em>) – The index of the environment within the worker task.</p></li>
-<li><p><strong>**kwargs</strong> – additional arguments that can be passed.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="utils.helper_methods.pyeplus_callback.on_episode_start">
-<span class="sig-name descname"><span class="pre">on_episode_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">policies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_index</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/helper_methods.html#pyeplus_callback.on_episode_start"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.helper_methods.pyeplus_callback.on_episode_start" title="Link to this definition">¶</a></dt>
-<dd><p>Method that is called at the beginning of each episode in the training process.</p>
-<p>Initializes some user_data variables to be used later on.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>worker</strong> (<em>Worker</em>) – The worker object that is being used in the training process.</p></li>
-<li><p><strong>base_env</strong> (<em>BaseEnv</em>) – The base environment that is being used in the training process.</p></li>
-<li><p><strong>policies</strong> (<em>Dict</em><em>[</em><em>str</em><em>, </em><em>Policy</em><em>]</em>) – The policies that are being used in the training process.</p></li>
-<li><p><strong>episode</strong> (<em>MultiAgentEpisode</em>) – The episode object that is being processed.</p></li>
-<li><p><strong>env_index</strong> (<em>int</em>) – The index of the environment within the worker task.</p></li>
-<li><p><strong>**kwargs</strong> – additional arguments that can be passed.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="utils.helper_methods.pyeplus_callback.on_episode_step">
-<span class="sig-name descname"><span class="pre">on_episode_step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">worker</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">base_env</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">episode</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">env_index</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/helper_methods.html#pyeplus_callback.on_episode_step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.helper_methods.pyeplus_callback.on_episode_step" title="Link to this definition">¶</a></dt>
-<dd><p>Method that is called at each step of each episode in the training process.</p>
-<p>Updates some user_data variables to be used later on.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>worker</strong> (<em>Worker</em>) – The worker object that is being used in the training process.</p></li>
-<li><p><strong>base_env</strong> (<em>BaseEnv</em>) – The base environment that is being used in the training process.</p></li>
-<li><p><strong>episode</strong> (<em>MultiAgentEpisode</em>) – The episode object that is being processed.</p></li>
-<li><p><strong>env_index</strong> (<em>int</em>) – The index of the environment within the worker task.</p></li>
-<li><p><strong>**kwargs</strong> – additional arguments that can be passed.</p></li>
-</ul>
-</dd>
-</dl>
-</dd></dl>
-
-</dd></dl>
-
+<section id="utils-helper-methods-module">
+<h2>utils.helper_methods module<a class="headerlink" href="#utils-helper-methods-module" title="Link to this heading">¶</a></h2>
 </section>
 <section id="module-utils.make_envs_pyenv">
 <span id="utils-make-envs-pyenv-module"></span><h2>utils.make_envs_pyenv module<a class="headerlink" href="#module-utils.make_envs_pyenv" title="Link to this heading">¶</a></h2>
@@ -627,7 +534,7 @@ all the checkpoints</p></li>
 <span id="utils-managers-module"></span><h2>utils.managers module<a class="headerlink" href="#module-utils.managers" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="utils.managers.CI_Manager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">CI_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NYIS'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timezone_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CI_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CI_Manager" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">CI_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NYIS'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timezone_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CI_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CI_Manager" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>Manager of the carbon intensity data.</p>
 <dl class="field-list simple">
@@ -650,7 +557,12 @@ all the checkpoints</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.managers.CI_Manager.get_forecast_ci">
-<span class="sig-name descname"><span class="pre">get_forecast_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CI_Manager.get_forecast_ci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CI_Manager.get_forecast_ci" title="Link to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_forecast_ci</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CI_Manager.get_forecast_ci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CI_Manager.get_forecast_ci" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.CI_Manager.get_n_past_ci">
+<span class="sig-name descname"><span class="pre">get_n_past_ci</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#CI_Manager.get_n_past_ci"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.CI_Manager.get_n_past_ci" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -770,21 +682,7 @@ float: Normalized carbon intensity at current time step and it’s forecast</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.managers.Time_Manager.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_hour</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Time_Manager.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Time_Manager.reset" title="Link to this definition">¶</a></dt>
-<dd><p>Reset time manager to a specific initial day and hour.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>init_day</strong> (<em>int</em><em>, </em><em>optional</em>) – Day to start from. If None, defaults to the initial day set during initialization.</p></li>
-<li><p><strong>init_hour</strong> (<em>int</em><em>, </em><em>optional</em>) – Hour to start from. If None, defaults to the timezone shift set during initialization.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Sine and cosine of the current hour and day.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>List[float]</p>
-</dd>
-</dl>
+<dd><p>Reset the time manager to a specific initial day and hour.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -806,7 +704,7 @@ bool: Signal if the episode has reach the end.</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="utils.managers.Weather_Manager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">Weather_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NY'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.02</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rh_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pres_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timezone_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">Weather_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">location</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NY'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.02</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">temp_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rh_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">8</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pres_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">9</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timezone_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="simple">
 <dt>Manager of the weather data.</dt><dd><p>Where to obtain other weather files:
@@ -829,8 +727,23 @@ bool: Signal if the episode has reach the end.</p>
 </dd>
 </dl>
 <dl class="py method">
-<dt class="sig sig-object py" id="utils.managers.Weather_Manager.get_current_weather">
-<span class="sig-name descname"><span class="pre">get_current_weather</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager.get_current_weather"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager.get_current_weather" title="Link to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="utils.managers.Weather_Manager.get_current_temperature">
+<span class="sig-name descname"><span class="pre">get_current_temperature</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager.get_current_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager.get_current_temperature" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Weather_Manager.get_current_wet_bulb">
+<span class="sig-name descname"><span class="pre">get_current_wet_bulb</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager.get_current_wet_bulb"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager.get_current_wet_bulb" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Weather_Manager.get_n_next_temperature">
+<span class="sig-name descname"><span class="pre">get_n_next_temperature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager.get_n_next_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager.get_n_next_temperature" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Weather_Manager.get_next_temperature">
+<span class="sig-name descname"><span class="pre">get_next_temperature</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Weather_Manager.get_next_temperature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Weather_Manager.get_next_temperature" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -886,11 +799,21 @@ float: Normalized temperature a current step</p>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="utils.managers.Workload_Manager">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">Workload_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workload_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.025</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timezone_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">Workload_Manager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workload_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">init_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future_steps</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">weight</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.005</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">desired_std_dev</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.01</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timezone_shift</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">debug</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.managers.Workload_Manager.get_current_workload">
 <span class="sig-name descname"><span class="pre">get_current_workload</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager.get_current_workload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager.get_current_workload" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Workload_Manager.get_n_next_workloads">
+<span class="sig-name descname"><span class="pre">get_n_next_workloads</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager.get_n_next_workloads"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager.get_n_next_workloads" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Workload_Manager.get_next_workload">
+<span class="sig-name descname"><span class="pre">get_next_workload</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager.get_next_workload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager.get_next_workload" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -942,6 +865,23 @@ np.array: The scaled numpy array.</p>
 <dt class="sig sig-object py" id="utils.managers.Workload_Manager.set_current_workload">
 <span class="sig-name descname"><span class="pre">set_current_workload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">workload</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager.set_current_workload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager.set_current_workload" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="utils.managers.Workload_Manager.smooth_workload">
+<span class="sig-name descname"><span class="pre">smooth_workload</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">window_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#Workload_Manager.smooth_workload"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.Workload_Manager.smooth_workload" title="Link to this definition">¶</a></dt>
+<dd><p>Apply moving average to smooth out workload changes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>window_size</strong> (<em>int</em>) – The size of the moving window. Defaults to 3.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Smoothed workload data.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>np.array</p>
+</dd>
+</dl>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="utils.managers.Workload_Manager.step">
@@ -997,23 +937,6 @@ float: Amount of daily flexible workload</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>List[float]</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="utils.managers.standarize">
-<span class="sig-prename descclassname"><span class="pre">utils.managers.</span></span><span class="sig-name descname"><span class="pre">standarize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/managers.html#standarize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.managers.standarize" title="Link to this definition">¶</a></dt>
-<dd><p>Function to standarize a list of values</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>v</strong> (<em>float</em>) – Values to be normalized</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Normalized values</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1185,6 +1108,23 @@ total_energy_consumption (float): Total energy consumption of the data center.</
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.normalize_energy">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">normalize_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/reward_creator.html#normalize_energy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.normalize_energy" title="Link to this definition">¶</a></dt>
+<dd><p>Normalize the energy value based on the energy history, clipping outliers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>float</em>) – The energy value to normalize.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The normalized energy value.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="utils.reward_creator.renewable_energy_reward">
 <span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">renewable_energy_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/reward_creator.html#renewable_energy_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.renewable_energy_reward" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates a reward value based on the usage of renewable energy sources.</p>
@@ -1242,6 +1182,17 @@ hour (int): The current hour of the day (24-hour format).</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="utils.reward_creator.update_energy_history">
+<span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">update_energy_history</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/utils/reward_creator.html#update_energy_history"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.update_energy_history" title="Link to this definition">¶</a></dt>
+<dd><p>Update the global energy history deque with a new value.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>value</strong> (<em>float</em>) – The new energy value to add.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="utils.reward_creator.water_usage_efficiency_reward">
 <span class="sig-prename descclassname"><span class="pre">utils.reward_creator.</span></span><span class="sig-name descname"><span class="pre">water_usage_efficiency_reward</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">params</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dict</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">float</span></span></span><a class="reference internal" href="../_modules/utils/reward_creator.html#water_usage_efficiency_reward"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.reward_creator.water_usage_efficiency_reward" title="Link to this definition">¶</a></dt>
 <dd><p>Calculates a reward value based on the efficiency of water usage in the data center.</p>
@@ -1268,7 +1219,7 @@ promoting reduced water consumption.</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="utils.rllib_callbacks.CustomCallbacks">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">utils.rllib_callbacks.</span></span><span class="sig-name descname"><span class="pre">CustomCallbacks</span></span><a class="reference internal" href="../_modules/utils/rllib_callbacks.html#CustomCallbacks"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#utils.rllib_callbacks.CustomCallbacks" title="Link to this definition">¶</a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">DefaultCallbacks</span></code></p>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">RLlibCallback</span></code></p>
 <p>CustomCallbacks class that extends the DefaultCallbacks class and overrides its methods to customize the
 behavior of the callbacks during the RL training process.</p>
 <dl class="py method">
@@ -1496,16 +1447,7 @@ Based on #6 Supply Air Temperature Reset</p>
 <li><a class="reference internal" href="#utils.dc_config_reader.DC_Config"><code class="docutils literal notranslate"><span class="pre">DC_Config</span></code></a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#module-utils.helper_methods">utils.helper_methods module</a><ul>
-<li><a class="reference internal" href="#utils.helper_methods.f2c"><code class="docutils literal notranslate"><span class="pre">f2c()</span></code></a></li>
-<li><a class="reference internal" href="#utils.helper_methods.pyeplus_callback"><code class="docutils literal notranslate"><span class="pre">pyeplus_callback</span></code></a><ul>
-<li><a class="reference internal" href="#utils.helper_methods.pyeplus_callback.on_episode_end"><code class="docutils literal notranslate"><span class="pre">pyeplus_callback.on_episode_end()</span></code></a></li>
-<li><a class="reference internal" href="#utils.helper_methods.pyeplus_callback.on_episode_start"><code class="docutils literal notranslate"><span class="pre">pyeplus_callback.on_episode_start()</span></code></a></li>
-<li><a class="reference internal" href="#utils.helper_methods.pyeplus_callback.on_episode_step"><code class="docutils literal notranslate"><span class="pre">pyeplus_callback.on_episode_step()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
+<li><a class="reference internal" href="#utils-helper-methods-module">utils.helper_methods module</a></li>
 <li><a class="reference internal" href="#module-utils.make_envs_pyenv">utils.make_envs_pyenv module</a><ul>
 <li><a class="reference internal" href="#utils.make_envs_pyenv.make_bat_fwd_env"><code class="docutils literal notranslate"><span class="pre">make_bat_fwd_env()</span></code></a></li>
 <li><a class="reference internal" href="#utils.make_envs_pyenv.make_dc_pyeplus_env"><code class="docutils literal notranslate"><span class="pre">make_dc_pyeplus_env()</span></code></a></li>
@@ -1516,6 +1458,7 @@ Based on #6 Supply Air Temperature Reset</p>
 <li><a class="reference internal" href="#utils.managers.CI_Manager"><code class="docutils literal notranslate"><span class="pre">CI_Manager</span></code></a><ul>
 <li><a class="reference internal" href="#utils.managers.CI_Manager.get_current_ci"><code class="docutils literal notranslate"><span class="pre">CI_Manager.get_current_ci()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.CI_Manager.get_forecast_ci"><code class="docutils literal notranslate"><span class="pre">CI_Manager.get_forecast_ci()</span></code></a></li>
+<li><a class="reference internal" href="#utils.managers.CI_Manager.get_n_past_ci"><code class="docutils literal notranslate"><span class="pre">CI_Manager.get_n_past_ci()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.CI_Manager.get_total_ci"><code class="docutils literal notranslate"><span class="pre">CI_Manager.get_total_ci()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.CI_Manager.reset"><code class="docutils literal notranslate"><span class="pre">CI_Manager.reset()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.CI_Manager.step"><code class="docutils literal notranslate"><span class="pre">CI_Manager.step()</span></code></a></li>
@@ -1532,7 +1475,10 @@ Based on #6 Supply Air Temperature Reset</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#utils.managers.Weather_Manager"><code class="docutils literal notranslate"><span class="pre">Weather_Manager</span></code></a><ul>
-<li><a class="reference internal" href="#utils.managers.Weather_Manager.get_current_weather"><code class="docutils literal notranslate"><span class="pre">Weather_Manager.get_current_weather()</span></code></a></li>
+<li><a class="reference internal" href="#utils.managers.Weather_Manager.get_current_temperature"><code class="docutils literal notranslate"><span class="pre">Weather_Manager.get_current_temperature()</span></code></a></li>
+<li><a class="reference internal" href="#utils.managers.Weather_Manager.get_current_wet_bulb"><code class="docutils literal notranslate"><span class="pre">Weather_Manager.get_current_wet_bulb()</span></code></a></li>
+<li><a class="reference internal" href="#utils.managers.Weather_Manager.get_n_next_temperature"><code class="docutils literal notranslate"><span class="pre">Weather_Manager.get_n_next_temperature()</span></code></a></li>
+<li><a class="reference internal" href="#utils.managers.Weather_Manager.get_next_temperature"><code class="docutils literal notranslate"><span class="pre">Weather_Manager.get_next_temperature()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.Weather_Manager.get_total_weather"><code class="docutils literal notranslate"><span class="pre">Weather_Manager.get_total_weather()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.Weather_Manager.reset"><code class="docutils literal notranslate"><span class="pre">Weather_Manager.reset()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.Weather_Manager.step"><code class="docutils literal notranslate"><span class="pre">Weather_Manager.step()</span></code></a></li>
@@ -1540,16 +1486,18 @@ Based on #6 Supply Air Temperature Reset</p>
 </li>
 <li><a class="reference internal" href="#utils.managers.Workload_Manager"><code class="docutils literal notranslate"><span class="pre">Workload_Manager</span></code></a><ul>
 <li><a class="reference internal" href="#utils.managers.Workload_Manager.get_current_workload"><code class="docutils literal notranslate"><span class="pre">Workload_Manager.get_current_workload()</span></code></a></li>
+<li><a class="reference internal" href="#utils.managers.Workload_Manager.get_n_next_workloads"><code class="docutils literal notranslate"><span class="pre">Workload_Manager.get_n_next_workloads()</span></code></a></li>
+<li><a class="reference internal" href="#utils.managers.Workload_Manager.get_next_workload"><code class="docutils literal notranslate"><span class="pre">Workload_Manager.get_next_workload()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.Workload_Manager.get_total_wkl"><code class="docutils literal notranslate"><span class="pre">Workload_Manager.get_total_wkl()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.Workload_Manager.reset"><code class="docutils literal notranslate"><span class="pre">Workload_Manager.reset()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.Workload_Manager.scale_array"><code class="docutils literal notranslate"><span class="pre">Workload_Manager.scale_array()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.Workload_Manager.set_current_workload"><code class="docutils literal notranslate"><span class="pre">Workload_Manager.set_current_workload()</span></code></a></li>
+<li><a class="reference internal" href="#utils.managers.Workload_Manager.smooth_workload"><code class="docutils literal notranslate"><span class="pre">Workload_Manager.smooth_workload()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.Workload_Manager.step"><code class="docutils literal notranslate"><span class="pre">Workload_Manager.step()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#utils.managers.normalize"><code class="docutils literal notranslate"><span class="pre">normalize()</span></code></a></li>
 <li><a class="reference internal" href="#utils.managers.sc_obs"><code class="docutils literal notranslate"><span class="pre">sc_obs()</span></code></a></li>
-<li><a class="reference internal" href="#utils.managers.standarize"><code class="docutils literal notranslate"><span class="pre">standarize()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#module-utils.rbc_agents">utils.rbc_agents module</a><ul>
@@ -1567,9 +1515,11 @@ Based on #6 Supply Air Temperature Reset</p>
 <li><a class="reference internal" href="#utils.reward_creator.energy_PUE_reward"><code class="docutils literal notranslate"><span class="pre">energy_PUE_reward()</span></code></a></li>
 <li><a class="reference internal" href="#utils.reward_creator.energy_efficiency_reward"><code class="docutils literal notranslate"><span class="pre">energy_efficiency_reward()</span></code></a></li>
 <li><a class="reference internal" href="#utils.reward_creator.get_reward_method"><code class="docutils literal notranslate"><span class="pre">get_reward_method()</span></code></a></li>
+<li><a class="reference internal" href="#utils.reward_creator.normalize_energy"><code class="docutils literal notranslate"><span class="pre">normalize_energy()</span></code></a></li>
 <li><a class="reference internal" href="#utils.reward_creator.renewable_energy_reward"><code class="docutils literal notranslate"><span class="pre">renewable_energy_reward()</span></code></a></li>
 <li><a class="reference internal" href="#utils.reward_creator.temperature_efficiency_reward"><code class="docutils literal notranslate"><span class="pre">temperature_efficiency_reward()</span></code></a></li>
 <li><a class="reference internal" href="#utils.reward_creator.tou_reward"><code class="docutils literal notranslate"><span class="pre">tou_reward()</span></code></a></li>
+<li><a class="reference internal" href="#utils.reward_creator.update_energy_history"><code class="docutils literal notranslate"><span class="pre">update_energy_history()</span></code></a></li>
 <li><a class="reference internal" href="#utils.reward_creator.water_usage_efficiency_reward"><code class="docutils literal notranslate"><span class="pre">water_usage_efficiency_reward()</span></code></a></li>
 </ul>
 </li>
@@ -1609,9 +1559,9 @@ Based on #6 Supply Air Temperature Reset</p>
     </aside>
   </div>
 </div><script src="../_static/documentation_options.js?v=16656018"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     </body>

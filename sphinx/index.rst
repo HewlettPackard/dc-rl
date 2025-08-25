@@ -75,6 +75,7 @@ Features of |F|
    usage/index
    evaluation/index
    Code<code/modules>
+   publications
    contribution_guidelines
    references
    genindex

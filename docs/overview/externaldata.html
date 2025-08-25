@@ -5,12 +5,12 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="Benchmarking Algorithms" href="algorithms.html" /><link rel="prev" title="Inter-connected Environments" href="interconnected.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
         <title>External Input Data - SustainDC 2.2.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -89,19 +89,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -142,7 +129,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -328,22 +315,26 @@
 <h2>Workload<a class="headerlink" href="#workload" title="Link to this heading">¶</a></h2>
 <p>The Workload external data in SustainDC represents the computational demand placed on the DC. By default, SustainDC includes a collection of open-source workload traces from Alibaba and Google DCs.</p>
 <p>Users can customize this component by adding new workload traces to the <code class="code docutils literal notranslate"><span class="pre">data/Workload</span></code> folder or specifying a path to existing traces in the <code class="code docutils literal notranslate"><span class="pre">sustaindc_env.py</span></code> file under the <code class="code docutils literal notranslate"><span class="pre">workload_file</span></code> configuration. Comparison between two workload traces of Alibaba trace (2017) and Google (2011) is given in the figure below.</p>
-<a class="reference internal image-reference" href="../_images/workload_comparison.png"><img alt="workload comparison" class="align-center" src="../_images/workload_comparison.png" style="width: 600.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/workload_comparison.png"><img alt="workload comparison" class="align-center" src="../_images/workload_comparison.png" style="width: 600.0px; height: 360.0px;" />
+</a>
 </section>
 <section id="weather">
 <h2>Weather<a class="headerlink" href="#weather" title="Link to this heading">¶</a></h2>
 <p>The Weather external data in SustainDC captures the ambient environmental conditions impacting the DC’s cooling requirements. By default, SustainDC includes weather data files in the <code class="code docutils literal notranslate"><span class="pre">.epw</span></code> format from various locations where DCs are commonly situated. These locations include Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington.</p>
 <p>Users can customize this component by adding new weather files to the <code class="code docutils literal notranslate"><span class="pre">data/Weather</span></code> folder or specifying a path to existing weather files in the <code class="code docutils literal notranslate"><span class="pre">sustaindc_env.py</span></code> file under the <code class="code docutils literal notranslate"><span class="pre">weather_file</span></code> configuration.</p>
 <p>Each <code class="code docutils literal notranslate"><span class="pre">.epw</span></code> file contains hourly data for various weather parameters, but for our purposes, we focus on the ambient temperature. Comparison between external temperature of the different selected locations is given below.</p>
-<a class="reference internal image-reference" href="../_images/weather_all_locations.png"><img alt="workload comparison" class="align-center" src="../_images/weather_all_locations.png" style="width: 600.0px; height: 360.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/weather_all_locations.png"><img alt="workload comparison" class="align-center" src="../_images/weather_all_locations.png" style="width: 600.0px; height: 360.0px;" />
+</a>
 </section>
 <section id="carbon-intensity">
 <h2>Carbon Intensity<a class="headerlink" href="#carbon-intensity" title="Link to this heading">¶</a></h2>
 <p>The Carbon Intensity (CI) external data in SustainDC represents the carbon emissions associated with electricity consumption. By default, SustainDC includes CI data files for various locations: Arizona, California, Georgia, Illinois, New York, Texas, Virginia, and Washington. These files are located in the <code class="code docutils literal notranslate"><span class="pre">data/CarbonIntensity</span></code> folder and are extracted from this <a class="reference external" href="https://api.eia.gov/bulk/EBA.zip">zip file</a>.</p>
 <p>Users can customize this component by adding new CI files to the <code class="code docutils literal notranslate"><span class="pre">data/CarbonIntensity</span></code> folder or specifying a path to existing files in the <code class="code docutils literal notranslate"><span class="pre">sustaindc_env.py</span></code> file under the <code class="code docutils literal notranslate"><span class="pre">cintensity_file</span></code> configuration. Comparison of carbon intensity across the different selected locations is given in the figure below</p>
-<a class="reference internal image-reference" href="../_images/ci_all_locations.png"><img alt="CI comparison by location" class="align-center" src="../_images/ci_all_locations.png" style="width: 518.2px; height: 348.0px;" /></a>
+<a class="reference internal image-reference" href="../_images/ci_all_locations.png"><img alt="CI comparison by location" class="align-center" src="../_images/ci_all_locations.png" style="width: 518.2px; height: 348.0px;" />
+</a>
 <p>Furthermore, in the figure below, we show the average daily carbon intensity against the average daily coefficient of variation (CV) for various locations. This figure highlights an important perspective on the variability and magnitude of carbon intensity values across different regions. Locations with a high CV indicate greater fluctuation in carbon intensity, offering more “room to play” for DRL agents to effectively reduce carbon emissions through dynamic actions. Additionally, locations with a high average carbon intensity value present greater opportunities for achieving significant carbon emission reductions. The selected locations are highlighted, while other U.S. locations are also plotted for comparison. Regions with both high CV and high average carbon intensity are identified as prime targets for DRL agents to maximize their impact on reducing carbon emissions.</p>
-<a class="reference internal image-reference" href="../_images/average_CI_vs_avgerage_CV.png"><img alt="CI vs aavearage CV" class="align-center" src="../_images/average_CI_vs_avgerage_CV.png" style="width: 612.3px; height: 402.3px;" /></a>
+<a class="reference internal image-reference" href="../_images/average_CI_vs_avgerage_CV.png"><img alt="CI vs aavearage CV" class="align-center" src="../_images/average_CI_vs_avgerage_CV.png" style="width: 612.3px; height: 402.3px;" />
+</a>
 <p>Below is a summary of the selected locations, typical weather values, and carbon emissions characteristics:</p>
 <div class="table-wrapper docutils container">
 <table class="docutils align-default">
@@ -463,9 +454,9 @@
     </aside>
   </div>
 </div><script src="../_static/documentation_options.js?v=16656018"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     </body>

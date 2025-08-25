@@ -5,12 +5,12 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="index" title="Index" href="../genindex.html" /><link rel="search" title="Search" href="../search.html" /><link rel="next" title="utils package" href="utils.html" /><link rel="prev" title="harl.utils package" href="harl.utils.html" />
 
-    <!-- Generated with Sphinx 7.3.7 and Furo 2024.05.06 -->
+    <!-- Generated with Sphinx 8.1.3 and Furo 2024.08.06 -->
         <title>envs package - SustainDC 2.2.1 documentation</title>
-      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=a746c00c" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=387cc868" />
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=354aac6f" />
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
-    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=36a5483c" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=302659d7" />
     
     
 
@@ -89,19 +89,6 @@
       <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
     </svg>
   </symbol>
-  <symbol id="svg-sun-half" viewBox="0 0 24 24">
-    <title>Auto light/dark mode</title>
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-shadow">
-      <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
-      <circle cx="12" cy="12" r="9" />
-      <path d="M13 12h5" />
-      <path d="M13 15h4" />
-      <path d="M13 18h1" />
-      <path d="M13 9h4" />
-      <path d="M13 6h1" />
-    </svg>
-  </symbol>
   <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
     <title>Auto light/dark, in light mode</title>
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
@@ -142,7 +129,7 @@
       <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
       <path d="M13.5 6.5l4 4" />
       <path d="M20 21l2 -2l-2 -2" />
-      <path d="M17 17l-2 2l2 2" /
+      <path d="M17 17l-2 2l2 2" />
     </svg>
   </symbol>
   <symbol id="svg-eye" viewBox="0 0 24 24">
@@ -389,6 +376,20 @@
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.get_battery_soc">
+<span class="sig-name descname"><span class="pre">get_battery_soc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.get_battery_soc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.get_battery_soc" title="Link to this definition">¶</a></dt>
+<dd><p>Get the current battery state of charge</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Battery state of charge</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>battery_soc float</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="envs.bat_env_fwd_view.BatteryEnvFwd.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/bat_env_fwd_view.html#BatteryEnvFwd.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.bat_env_fwd_view.BatteryEnvFwd.reset" title="Link to this definition">¶</a></dt>
 <dd><p>Reset <cite>BatteryEnvFwd</cite> to initial state.</p>
@@ -526,6 +527,12 @@ info (dict): A dictionary that containing additional information about the envir
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="envs.battery_model.Battery2.get_battery_soc">
+<span class="sig-name descname"><span class="pre">get_battery_soc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery2.get_battery_soc"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery2.get_battery_soc" title="Link to this definition">¶</a></dt>
+<dd><p>Returns the state of charge (0…1) of the battery</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="envs.battery_model.Battery2.is_full">
 <span class="sig-name descname"><span class="pre">is_full</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/battery_model.html#Battery2.is_full"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.battery_model.Battery2.is_full" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -562,8 +569,13 @@ info (dict): A dictionary that containing additional information about the envir
 <span id="envs-carbon-ls-module"></span><h2>envs.carbon_ls module<a class="headerlink" href="#module-envs.carbon_ls" title="Link to this heading">¶</a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.carbon_ls.</span></span><span class="sig-name descname"><span class="pre">CarbonLoadEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_ci</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexible_workload_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_battery</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue_max_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv" title="Link to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">envs.carbon_ls.</span></span><span class="sig-name descname"><span class="pre">CarbonLoadEnv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">env_config</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">{}</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">future</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_ci</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">flexible_workload_ratio</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_energy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_vars_battery</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">test_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue_max_len</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">500</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initialize_queue_at_reset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv" title="Link to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">Env</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv.get_task_age_histogram">
+<span class="sig-name descname"><span class="pre">get_task_age_histogram</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tasks_queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_day</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_hour</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv.get_task_age_histogram"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv.get_task_age_histogram" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv.reset">
 <span class="sig-name descname"><span class="pre">reset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seed</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">options</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv.reset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv.reset" title="Link to this definition">¶</a></dt>
@@ -581,20 +593,37 @@ info (dict): A dictionary that containing additional information about the envir
 
 <dl class="py method">
 <dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv.step">
-<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv.step" title="Link to this definition">¶</a></dt>
-<dd><p>Makes an environment step in`CarbonLoadEnv.</p>
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">action</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">workload_rest_day</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv.step"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv.step" title="Link to this definition">¶</a></dt>
+<dd><p>Makes an environment step in <cite>CarbonLoadEnv</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>action</strong> (<em>int</em>) – Action to take.</p>
+<dd class="field-odd"><p><strong>action</strong> (<em>float</em>) – <p>Continuous action between -1 and 1.
+-1: Defer all shiftable tasks.</p>
+<blockquote>
+<div><p>1: Process tasks from the DTQ to maximize utilization.
+Values between -1 and 0 defer a fraction of tasks, and values between 0 and 1 process a fraction of tasks in the DTQ.</p>
+</div></blockquote>
+</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Current state of the environmment
-reward (float): reward value.
-done (bool): A boolean value signaling the if the episode has ended.
-info (dict): A dictionary that containing additional information about the environment state</p>
+<dd class="field-even"><p>Current state of the environment.
+reward (float): Reward value.
+done (bool): A boolean signaling if the episode has ended.
+info (dict): A dictionary containing additional information about the environment state.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>observations (List[float])</p>
+<dd class="field-odd"><p>state (List[float])</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="envs.carbon_ls.CarbonLoadEnv.update_current_date">
+<span class="sig-name descname"><span class="pre">update_current_date</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current_day</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">current_hour</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/envs/carbon_ls.html#CarbonLoadEnv.update_current_date"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#envs.carbon_ls.CarbonLoadEnv.update_current_date" title="Link to this definition">¶</a></dt>
+<dd><p>Update the current hour in the environment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>current_hour</strong> (<em>float</em>) – Current hour in the environment.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1045,6 +1074,7 @@ info (dict): A dictionary that containing additional information about the envir
 <li><a class="reference internal" href="#envs.bat_env_fwd_view.BatteryEnvFwd.CO2_footprint"><code class="docutils literal notranslate"><span class="pre">BatteryEnvFwd.CO2_footprint()</span></code></a></li>
 <li><a class="reference internal" href="#envs.bat_env_fwd_view.BatteryEnvFwd.charging_rate_modifier"><code class="docutils literal notranslate"><span class="pre">BatteryEnvFwd.charging_rate_modifier()</span></code></a></li>
 <li><a class="reference internal" href="#envs.bat_env_fwd_view.BatteryEnvFwd.discharging_rate_modifier"><code class="docutils literal notranslate"><span class="pre">BatteryEnvFwd.discharging_rate_modifier()</span></code></a></li>
+<li><a class="reference internal" href="#envs.bat_env_fwd_view.BatteryEnvFwd.get_battery_soc"><code class="docutils literal notranslate"><span class="pre">BatteryEnvFwd.get_battery_soc()</span></code></a></li>
 <li><a class="reference internal" href="#envs.bat_env_fwd_view.BatteryEnvFwd.reset"><code class="docutils literal notranslate"><span class="pre">BatteryEnvFwd.reset()</span></code></a></li>
 <li><a class="reference internal" href="#envs.bat_env_fwd_view.BatteryEnvFwd.set_dcload"><code class="docutils literal notranslate"><span class="pre">BatteryEnvFwd.set_dcload()</span></code></a></li>
 <li><a class="reference internal" href="#envs.bat_env_fwd_view.BatteryEnvFwd.sigmoid"><code class="docutils literal notranslate"><span class="pre">BatteryEnvFwd.sigmoid()</span></code></a></li>
@@ -1068,6 +1098,7 @@ info (dict): A dictionary that containing additional information about the envir
 <li><a class="reference internal" href="#envs.battery_model.Battery2.eff_c"><code class="docutils literal notranslate"><span class="pre">Battery2.eff_c</span></code></a></li>
 <li><a class="reference internal" href="#envs.battery_model.Battery2.eff_d"><code class="docutils literal notranslate"><span class="pre">Battery2.eff_d</span></code></a></li>
 <li><a class="reference internal" href="#envs.battery_model.Battery2.find_and_init_capacity"><code class="docutils literal notranslate"><span class="pre">Battery2.find_and_init_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#envs.battery_model.Battery2.get_battery_soc"><code class="docutils literal notranslate"><span class="pre">Battery2.get_battery_soc()</span></code></a></li>
 <li><a class="reference internal" href="#envs.battery_model.Battery2.is_full"><code class="docutils literal notranslate"><span class="pre">Battery2.is_full()</span></code></a></li>
 <li><a class="reference internal" href="#envs.battery_model.Battery2.lower_lim_u"><code class="docutils literal notranslate"><span class="pre">Battery2.lower_lim_u</span></code></a></li>
 <li><a class="reference internal" href="#envs.battery_model.Battery2.lower_lim_v"><code class="docutils literal notranslate"><span class="pre">Battery2.lower_lim_v</span></code></a></li>
@@ -1080,8 +1111,10 @@ info (dict): A dictionary that containing additional information about the envir
 </li>
 <li><a class="reference internal" href="#module-envs.carbon_ls">envs.carbon_ls module</a><ul>
 <li><a class="reference internal" href="#envs.carbon_ls.CarbonLoadEnv"><code class="docutils literal notranslate"><span class="pre">CarbonLoadEnv</span></code></a><ul>
+<li><a class="reference internal" href="#envs.carbon_ls.CarbonLoadEnv.get_task_age_histogram"><code class="docutils literal notranslate"><span class="pre">CarbonLoadEnv.get_task_age_histogram()</span></code></a></li>
 <li><a class="reference internal" href="#envs.carbon_ls.CarbonLoadEnv.reset"><code class="docutils literal notranslate"><span class="pre">CarbonLoadEnv.reset()</span></code></a></li>
 <li><a class="reference internal" href="#envs.carbon_ls.CarbonLoadEnv.step"><code class="docutils literal notranslate"><span class="pre">CarbonLoadEnv.step()</span></code></a></li>
+<li><a class="reference internal" href="#envs.carbon_ls.CarbonLoadEnv.update_current_date"><code class="docutils literal notranslate"><span class="pre">CarbonLoadEnv.update_current_date()</span></code></a></li>
 <li><a class="reference internal" href="#envs.carbon_ls.CarbonLoadEnv.update_workload"><code class="docutils literal notranslate"><span class="pre">CarbonLoadEnv.update_workload()</span></code></a></li>
 </ul>
 </li>
@@ -1142,9 +1175,9 @@ info (dict): A dictionary that containing additional information about the envir
     </aside>
   </div>
 </div><script src="../_static/documentation_options.js?v=16656018"></script>
-    <script src="../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
-    <script src="../_static/scripts/furo.js?v=4e2eecee"></script>
+    <script src="../_static/scripts/furo.js?v=5fa4622c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
     <script src="../_static/copybutton.js?v=f281be69"></script>
     </body>
