@@ -78,7 +78,8 @@ class HARLSustainDCEnv:
             # The whole information available without repeating the same information:
             # ls_state + dc next_workload/next_exterior_temp + bat SoC.
             # Note: obs here are zero-padded at the end by supersuit, so bat SoC is at index 12, not -1.
-            states = build_joint_obs(states[0], states[1], states[2])
+            states = build_joint_obs(states[0], states[1], states[2],
+                                     include_dc_setpoint=self.env_args.get('include_dc_setpoint', False))
         else:
             states = np.concatenate(states, axis=None)
         
