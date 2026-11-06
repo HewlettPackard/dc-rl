@@ -146,6 +146,11 @@ class DC_Config:
         self.CT_REFRENCE_AIR_FLOW_RATE = json_obj['hvac_configuration']['CT_REFRENCE_AIR_FLOW_RATE']
         self.CT_PRESSURE_DROP = json_obj['hvac_configuration']['CT_PRESSURE_DROP'] #Pa 
         self.CT_WATER_FLOW_RATE = json_obj['hvac_configuration']['CT_WATER_FLOW_RATE']#m3/s
+        # Cooling tower approach (condenser water supply = wet bulb + approach) and chilled water approach
+        # (chilled water supply = CRAC setpoint - approach). Defaults keep EnergyPlus' design point (29.44 C condenser
+        # water at ~25.5 C wet bulb; 6.7-7 C chilled water at the 15 C minimum setpoint).
+        self.CT_APPROACH_TEMP = json_obj['hvac_configuration'].get('CT_APPROACH_TEMP', 3.9)
+        self.CHW_SUPPLY_APPROACH_TEMP = json_obj['hvac_configuration'].get('CHW_SUPPLY_APPROACH_TEMP', 8.0)
         self.CT_PUMP_EFFICIENCY = json_obj['hvac_configuration']['CT_PUMP_EFFICIENCY'] #%
 
 

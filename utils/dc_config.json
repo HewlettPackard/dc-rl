@@ -34,7 +34,9 @@
         "CW_PUMP_EFFICIENCY" : 0.87,
         "CT_PRESSURE_DROP" : 300000,
         "CT_WATER_FLOW_RATE" : 0.0011,
-        "CT_PUMP_EFFICIENCY" : 0.87
+        "CT_PUMP_EFFICIENCY" : 0.87,
+        "CT_APPROACH_TEMP" : 3.9,
+        "CHW_SUPPLY_APPROACH_TEMP" : 8.0
 
     },
     "server_characteristics" : 
