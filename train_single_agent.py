@@ -8,18 +8,22 @@ PPO hyperparameters default to harl/configs/algos_cfgs/happo.yaml so runs are co
 """
 import argparse
 import datetime
+import glob
 import json
 import os
+import re
 import sys
 import warnings
 
 warnings.filterwarnings('ignore')
 sys.path.insert(0, os.getcwd())
 
+import numpy as np
 import torch
 import yaml
 from stable_baselines3 import A2C, DQN, PPO
-from stable_baselines3.common.callbacks import BaseCallback, CallbackList, CheckpointCallback, EvalCallback
+from stable_baselines3.common.callbacks import BaseCallback, CallbackList, EvalCallback
+from stable_baselines3.common.off_policy_algorithm import OffPolicyAlgorithm
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv
 
@@ -71,6 +75,73 @@ class SustainDCMetricsCallback(BaseCallback):
         return True
 
 
+def list_checkpoints(ckpt_dir, prefix):
+    """Return [(num_timesteps, path)] of the model checkpoints in ckpt_dir, oldest first."""
+    found = []
+    for path in glob.glob(os.path.join(ckpt_dir, f'{prefix}_*_steps.zip')):
+        m = re.search(r'_(\d+)_steps\.zip$', path)
+        if m:
+            found.append((int(m.group(1)), path))
+    return sorted(found)
+
+
+def replay_buffer_path(ckpt_path):
+    return ckpt_path[:-len('.zip')] + '_replay_buffer.pkl'
+
+
+class ResumableCheckpointCallback(BaseCallback):
+    """Save the model (and the replay buffer for off-policy algos) every `save_freq` env steps.
+
+    Files are written to a temp name and renamed, so a job killed mid-save never leaves a corrupt checkpoint.
+    Only the newest `keep` checkpoints are kept (DQN replay buffers are large).
+    """
+
+    def __init__(self, ckpt_dir, prefix, save_freq, keep=2):
+        super().__init__()
+        self.ckpt_dir, self.prefix, self.save_freq, self.keep = ckpt_dir, prefix, save_freq, keep
+
+    def _on_training_start(self):
+        os.makedirs(self.ckpt_dir, exist_ok=True)
+        self._last_bucket = self.num_timesteps // self.save_freq  # don't re-save right after resuming
+
+    def _on_step(self):
+        bucket = self.num_timesteps // self.save_freq
+        if bucket > self._last_bucket:
+            self._last_bucket = bucket
+            self.save()
+        return True
+
+    def save(self):
+        path = os.path.join(self.ckpt_dir, f'{self.prefix}_{self.num_timesteps}_steps.zip')
+        if isinstance(self.model, OffPolicyAlgorithm):
+            buf = replay_buffer_path(path)
+            self.model.save_replay_buffer(buf + '.tmp')
+            os.replace(buf + '.tmp', buf)
+        # The model zip is written last: it marks the checkpoint as complete.
+        self.model.save(path + '.tmp')
+        os.replace(path + '.tmp', path)
+        for _, old in list_checkpoints(self.ckpt_dir, self.prefix)[:-self.keep]:
+            for f in (old, replay_buffer_path(old)):
+                if os.path.exists(f):
+                    os.remove(f)
+        print(f'Checkpoint saved at {self.num_timesteps} steps: {path}', flush=True)
+
+
+def restore_eval_history(eval_cb, npz_path, resumed_at):
+    """Reload EvalCallback's history so a resumed run keeps evaluations.npz and the best-model threshold."""
+    if not os.path.exists(npz_path):
+        return
+    d = np.load(npz_path)
+    if len(d['timesteps']) == 0:
+        return
+    # best_model.zip on disk is the best over *all* past evals, even ones after the checkpoint we resume from.
+    eval_cb.best_mean_reward = float(np.max(np.mean(d['results'], axis=1)))
+    keep = d['timesteps'] <= resumed_at  # keep the logged history monotonic in timesteps
+    eval_cb.evaluations_timesteps = d['timesteps'][keep].tolist()
+    eval_cb.evaluations_results = d['results'][keep].tolist()
+    eval_cb.evaluations_length = d['ep_lengths'][keep].tolist()
+
+
 def ppo_kwargs_from_happo(n_envs):
     """Map the HAPPO config onto SB3 PPO arguments."""
     with open(HAPPO_CFG) as f:
@@ -105,12 +176,19 @@ def main():
     p.add_argument('--action_type', choices=['multidiscrete', 'discrete'], default='multidiscrete',
                    help='Joint action encoding. DQN always uses discrete.')
     p.add_argument('--reward_type', choices=['agent_ls', 'ls_raw'], default='agent_ls')
-    p.add_argument('--include_dc_setpoint', action='store_true')
+    p.add_argument('--include_dc_setpoint', action=argparse.BooleanOptionalAction, default=None,
+                   help='Observe the current CRAC setpoint. Default: the value in the env yaml (on).')
     p.add_argument('--eval_freq', type=int, default=50_000, help='Evaluate every N total env steps.')
     p.add_argument('--n_eval_episodes', type=int, default=1)
-    p.add_argument('--checkpoint_freq', type=int, default=500_000, help='Save a checkpoint every N total env steps.')
+    p.add_argument('--checkpoint_freq', type=int, default=250_000, help='Save a checkpoint every N total env steps.')
+    p.add_argument('--run_id', default=None,
+                   help='Run directory suffix (default: a timestamp). Reusing a run id resumes from its latest '
+                        'checkpoint, e.g. the Slurm job id, so a preempted/requeued job continues where it stopped.')
     p.add_argument('--device', default='cpu')
+    p.add_argument('--torch_threads', type=int, default=1,
+                   help='Torch threads for the learner. 1 leaves the other cores to the env processes.')
     args = p.parse_args()
+    torch.set_num_threads(args.torch_threads)
 
     with open(ENV_CFG) as f:
         env_config = yaml.safe_load(f)
@@ -119,42 +197,70 @@ def main():
             env_config[key] = getattr(args, key)
     env_config['action_type'] = 'discrete' if args.algo == 'dqn' else args.action_type
     env_config['reward_type'] = args.reward_type
-    env_config['include_dc_setpoint'] = args.include_dc_setpoint
+    if args.include_dc_setpoint is not None:
+        env_config['include_dc_setpoint'] = args.include_dc_setpoint
 
-    stamp = datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    run_id = args.run_id or datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     run_dir = os.path.join('results', 'sustaindc', env_config['location'], f'single_{args.algo}', args.exp_name,
-                           f'seed-{args.seed:0>5}-{stamp}')
+                           f'seed-{args.seed:0>5}-{run_id}')
+    ckpt_dir = os.path.join(run_dir, 'models', 'checkpoints')
     os.makedirs(run_dir, exist_ok=True)
-
-    vec_cls = SubprocVecEnv if args.n_envs > 1 else DummyVecEnv
-    env = make_vec_env(SustainDCSingleAgentEnv, n_envs=args.n_envs, seed=args.seed,
-                       env_kwargs={'env_config': dict(env_config)}, vec_env_cls=vec_cls)
-    eval_env = make_vec_env(SustainDCSingleAgentEnv, n_envs=1, seed=args.seed + 10_000,
-                            env_kwargs={'env_config': dict(env_config)}, vec_env_cls=DummyVecEnv)
 
     if args.algo == 'ppo':
         algo_kwargs = ppo_kwargs_from_happo(args.n_envs)
     else:
         algo_kwargs = dict(gamma=0.995)
-    model = ALGOS[args.algo]('MlpPolicy', env, seed=args.seed, device=args.device, verbose=1,
-                             tensorboard_log=os.path.join(run_dir, 'tb'), **algo_kwargs)
+    config = {'main_args': vars(args), 'env_args': env_config,
+              'algo_args': {k: str(v) if k == 'policy_kwargs' else v for k, v in algo_kwargs.items()}}
 
-    with open(os.path.join(run_dir, 'config.json'), 'w') as f:
-        json.dump({'main_args': vars(args), 'env_args': env_config,
-                   'algo_args': {k: str(v) if k == 'policy_kwargs' else v for k, v in algo_kwargs.items()}},
-                  f, indent=2)
+    checkpoints = list_checkpoints(ckpt_dir, args.algo)
+    resumed_at = checkpoints[-1][0] if checkpoints else 0
+    config_path = os.path.join(run_dir, 'config.json')
+    if checkpoints and os.path.exists(config_path):
+        with open(config_path) as f:
+            saved = json.load(f)
+        if saved['env_args'] != json.loads(json.dumps(env_config)) or saved['algo_args'] != json.loads(json.dumps(config['algo_args'])):
+            raise SystemExit(f'Refusing to resume {run_dir}: env/algo config differs from the saved config.json. '
+                             f'Use a different --run_id for a new run.')
+    else:
+        with open(config_path, 'w') as f:
+            json.dump(config, f, indent=2)
 
+    # Offset env seeds on resume so the restarted envs don't replay the same episode starts.
+    vec_cls = SubprocVecEnv if args.n_envs > 1 else DummyVecEnv
+    env = make_vec_env(SustainDCSingleAgentEnv, n_envs=args.n_envs, seed=args.seed + resumed_at,
+                       env_kwargs={'env_config': dict(env_config)}, vec_env_cls=vec_cls)
+    eval_env = make_vec_env(SustainDCSingleAgentEnv, n_envs=1, seed=args.seed + 10_000,
+                            env_kwargs={'env_config': dict(env_config)}, vec_env_cls=DummyVecEnv)
+
+    if checkpoints:
+        ckpt = checkpoints[-1][1]
+        print(f'Resuming from {ckpt} ({resumed_at} steps)', flush=True)
+        model = ALGOS[args.algo].load(ckpt, env=env, device=args.device)
+        if isinstance(model, OffPolicyAlgorithm) and os.path.exists(replay_buffer_path(ckpt)):
+            model.load_replay_buffer(replay_buffer_path(ckpt))
+    else:
+        model = ALGOS[args.algo]('MlpPolicy', env, seed=args.seed, device=args.device, verbose=1,
+                                 tensorboard_log=os.path.join(run_dir, 'tb'), **algo_kwargs)
+
+    eval_cb = EvalCallback(eval_env, n_eval_episodes=args.n_eval_episodes, deterministic=True,
+                           eval_freq=max(args.eval_freq // args.n_envs, 1),
+                           best_model_save_path=os.path.join(run_dir, 'models'),
+                           log_path=os.path.join(run_dir, 'eval'))
+    if checkpoints:
+        restore_eval_history(eval_cb, os.path.join(run_dir, 'eval', 'evaluations.npz'), resumed_at)
     callbacks = CallbackList([
         SustainDCMetricsCallback(),
-        EvalCallback(eval_env, n_eval_episodes=args.n_eval_episodes, deterministic=True,
-                     eval_freq=max(args.eval_freq // args.n_envs, 1),
-                     best_model_save_path=os.path.join(run_dir, 'models'),
-                     log_path=os.path.join(run_dir, 'eval')),
-        CheckpointCallback(save_freq=max(args.checkpoint_freq // args.n_envs, 1),
-                           save_path=os.path.join(run_dir, 'models', 'checkpoints'), name_prefix=args.algo),
+        eval_cb,
+        ResumableCheckpointCallback(ckpt_dir, args.algo, save_freq=args.checkpoint_freq),
     ])
-    print(f'Run dir: {run_dir}')
-    model.learn(total_timesteps=args.total_timesteps, callback=callbacks, tb_log_name=args.algo)
+
+    print(f'Run dir: {run_dir}', flush=True)
+    remaining = args.total_timesteps - model.num_timesteps
+    if remaining > 0:
+        # reset_num_timesteps=False continues the step counter, LR/exploration schedules and the same tensorboard run.
+        model.learn(total_timesteps=remaining, callback=callbacks, tb_log_name=args.algo,
+                    reset_num_timesteps=not checkpoints)
     model.save(os.path.join(run_dir, 'models', 'final_model'))
     env.close(); eval_env.close()
     print(f'Saved final model to {run_dir}/models/final_model.zip')
