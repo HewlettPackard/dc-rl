@@ -181,6 +181,8 @@ def main():
     p.add_argument('--eval_freq', type=int, default=50_000, help='Evaluate every N total env steps.')
     p.add_argument('--n_eval_episodes', type=int, default=1)
     p.add_argument('--checkpoint_freq', type=int, default=250_000, help='Save a checkpoint every N total env steps.')
+    p.add_argument('--results_root', default='results',
+                   help='Top-level folder for runs: <root>/sustaindc/<location>/single_<algo>/<exp_name>/<run>.')
     p.add_argument('--run_id', default=None,
                    help='Run directory suffix (default: a timestamp). Reusing a run id resumes from its latest '
                         'checkpoint, e.g. the Slurm job id, so a preempted/requeued job continues where it stopped.')
@@ -201,7 +203,7 @@ def main():
         env_config['include_dc_setpoint'] = args.include_dc_setpoint
 
     run_id = args.run_id or datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    run_dir = os.path.join('results', 'sustaindc', env_config['location'], f'single_{args.algo}', args.exp_name,
+    run_dir = os.path.join(args.results_root, 'sustaindc', env_config['location'], f'single_{args.algo}', args.exp_name,
                            f'seed-{args.seed:0>5}-{run_id}')
     ckpt_dir = os.path.join(run_dir, 'models', 'checkpoints')
     os.makedirs(run_dir, exist_ok=True)
