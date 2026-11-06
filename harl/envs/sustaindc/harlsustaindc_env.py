@@ -6,6 +6,7 @@ import numpy as np
 import supersuit as ss
 
 from harl.envs.sustaindc.sustaindc_ptzoo import SustainDCPettingZooEnv
+from utils.joint_obs import build_joint_obs
 from pettingzoo.utils.conversions import parallel_wrapper_fn
 class HARLSustainDCEnv:
     def __init__(self, env_args):
@@ -74,13 +75,10 @@ class HARLSustainDCEnv:
             # bat_soc = bat_env_info['bat_SOC']
             # concat_states.extend([bat_soc])  # Battery SOC
             
-            # The whole information available without repeating the same information
-            concat_states.extend(states[0]) # ls_state
-            concat_states.extend([states[1][11], states[1][13]]) # dc_state (next_workload and next_exterior_temp)
-            concat_states.extend([states[2][-1]]) # bat_state (SOC)
-            
-
-            states = np.array(concat_states, dtype=np.float32)
+            # The whole information available without repeating the same information:
+            # ls_state + dc next_workload/next_exterior_temp + bat SoC.
+            # Note: obs here are zero-padded at the end by supersuit, so bat SoC is at index 12, not -1.
+            states = build_joint_obs(states[0], states[1], states[2])
         else:
             states = np.concatenate(states, axis=None)
         
