@@ -214,6 +214,12 @@ class Rack():
         """
         return max(3.8, min(supply_approach_temperature, 5.3))
     
+# CRAC setpoint (C) at which `datacenter_capacity_mw` is matched. IT power rises with inlet temperature, and 22 C is the
+# highest setpoint evaluated when building the environment's observation ranges (the agent can use 15-21.6 C), so
+# full-load IT power never exceeds the configured capacity.
+FULL_LOAD_REFERENCE_CRAC_SETPOINT = 22.0
+
+
 class DataCenter_ITModel():
 
     def __init__(self, num_racks, rack_supply_approach_temp_list, rack_CPU_config, max_W_per_rack = 10000, DC_ITModel_config = None, chiller_sizing = False) -> None:
@@ -244,6 +250,16 @@ class DataCenter_ITModel():
         self.wet_bulb_temp = None  # °C
         self.cycles_of_concentration = 5
         self.drift_rate = 0.01
+
+        # Scale extensive quantities (IT power, and through it cooling load, HVAC power and water use) so that the
+        # data center's full-load IT power equals DC_Config.TOTAM_MAX_PWR (= datacenter_capacity_mw * 1e6 W).
+        # Temperatures are computed from the unscaled reference racks, so they do not depend on the capacity.
+        self.power_scale = 1.0
+        capacity_W = getattr(DC_ITModel_config, 'TOTAM_MAX_PWR', None)
+        if capacity_W:
+            cpu_pwr, itfan_pwr, _ = self.compute_datacenter_IT_load_outlet_temp(
+                ITE_load_pct_list=[100.0] * len(self.racks_list), CRAC_setpoint=FULL_LOAD_REFERENCE_CRAC_SETPOINT)
+            self.power_scale = capacity_W / (sum(cpu_pwr) + sum(itfan_pwr))
         
         
         
@@ -313,7 +329,11 @@ class DataCenter_ITModel():
             #                     (rack_cpu_power+rack_itfan_power)/(self.DC_ITModel_config.C_AIR*self.DC_ITModel_config.RHO_AIR*rack.get_total_rack_fan_v())
             #                     )
         self.rackwise_inlet_temp = rackwise_inlet_temp
-            
+
+        # Outlet temperatures above use the unscaled reference racks; only the reported powers are scaled.
+        rackwise_cpu_pwr = [p * self.power_scale for p in rackwise_cpu_pwr]
+        rackwise_itfan_pwr = [p * self.power_scale for p in rackwise_itfan_pwr]
+
         return rackwise_cpu_pwr, rackwise_itfan_pwr, rackwise_outlet_temp
     
     def total_datacenter_full_load(self,):
@@ -349,6 +369,9 @@ class DataCenter_ITModel():
         # Convert m³/hr to the desired unit (e.g., liters per 15 minutes) if necessary
         # There are 1000 liters in a cubic meter. There are 4 15-minute intervals in an hour.
         water_usage_liters_per_15min = np.round((water_usage * 1000) / 4, 4)
+
+        # The empirical formula above is per reference data center; scale with data center size.
+        water_usage_liters_per_15min = water_usage_liters_per_15min * self.power_scale
 
         return water_usage_liters_per_15min
 

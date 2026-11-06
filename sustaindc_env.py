@@ -54,8 +54,9 @@ class EnvConfig(dict):
         # Days per simulated episode
         'days_per_episode': 7,
         
-        # Maximum battery capacity
-        'max_bat_cap_Mw': 2,
+        # Battery energy capacity in MWh (the key name says "Mw" for backwards compatibility).
+        # None = size the battery automatically to one hour of the data center's peak total power.
+        'max_bat_cap_Mw': None,
         
         # Data center configuration file
         'dc_config_file': 'dc_config.json',
@@ -112,7 +113,11 @@ class SustainDC(gym.Env):
         self.workload_file = env_config['workload_file']
         
         self.max_bat_cap_Mw = env_config['max_bat_cap_Mw']
+        if self.max_bat_cap_Mw is not None and not self.max_bat_cap_Mw > 0:
+            raise ValueError(f"max_bat_cap_Mw must be a positive battery capacity in MWh, or None for automatic sizing; got {self.max_bat_cap_Mw!r}")
         self.indv_reward = env_config['individual_reward_weight']
+        if not 0.0 <= self.indv_reward <= 1.0:
+            raise ValueError(f"individual_reward_weight must be in [0, 1]; got {self.indv_reward!r}")
         self.collab_reward = (1 - self.indv_reward) / 2
         
         self.flexible_load = env_config['flexible_load']
@@ -146,10 +151,12 @@ class SustainDC(gym.Env):
         n_vars_energy, n_vars_battery = 0, 0  # For partial observability (for p.o.)
         n_vars_ci = 8
         self.ls_env = make_ls_env(month=self.month, test_mode=self.evaluation_mode, n_vars_ci=n_vars_ci, 
-                                  n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, queue_max_len=1000)
+                                  n_vars_energy=n_vars_energy, n_vars_battery=n_vars_battery, queue_max_len=1000,
+                                  flexible_workload_ratio=self.flexible_load)
         self.dc_env, _ = make_dc_pyeplus_env(month=self.month + 1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, 
                                              datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file, add_cpu_usage=False)
-        self.bat_env = make_bat_fwd_env(month=self.month, max_bat_cap_Mwh=self.dc_env.ranges['max_battery_energy_Mwh'], 
+        bat_capacity_Mwh = self.max_bat_cap_Mw if self.max_bat_cap_Mw is not None else self.dc_env.ranges['max_battery_energy_Mwh']
+        self.bat_env = make_bat_fwd_env(month=self.month, max_bat_cap_Mwh=bat_capacity_Mwh, 
                                         max_dc_pw_MW=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1] / 1e6, 
                                         dcload_max=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1],
                                         dcload_min=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][0],
@@ -549,6 +556,7 @@ class SustainDC(gym.Env):
         truncateds["__all__"] = False
         
         # Perform actions for each agent and update their respective environments
+        action_dict = self._validate_actions(action_dict)
         self._perform_actions(action_dict)
     
         # Step the managers (time, workload, weather, CI) (t+1)
@@ -621,6 +629,36 @@ class SustainDC(gym.Env):
         return obs, rew, terminateds, truncateds, info
 
 
+    def _validate_actions(self, action_dict):
+        """Check that every active agent has a valid discrete action and return them as plain ints.
+
+        Accepts Python/NumPy integers, integer-valued floats and single-element arrays (as produced by HARL).
+        Raises ValueError for missing agents, non-numeric values (e.g. strings) or out-of-range actions, instead of
+        letting the sub-environments silently treat them as "do nothing".
+        """
+        validated = dict(action_dict)
+        spaces_by_agent = {'agent_ls': self.ls_env.action_space, 'agent_dc': self.dc_env.action_space,
+                           'agent_bat': self.bat_env.action_space}
+        for agent in self.agents:
+            if agent not in action_dict:
+                raise ValueError(f"Missing action for active agent '{agent}'. Got actions for: {list(action_dict)}")
+            raw = action_dict[agent]
+            try:
+                arr = np.asarray(raw)
+                if arr.size != 1 or arr.dtype.kind not in 'iuf':
+                    raise TypeError
+                value = arr.reshape(()).item()
+                if value != int(value):
+                    raise TypeError
+                action = int(value)
+            except (TypeError, ValueError):
+                raise ValueError(f"Action for '{agent}' must be a single integer, got {raw!r}") from None
+            space = spaces_by_agent[agent]
+            if not space.contains(action):
+                raise ValueError(f"Action {action} for '{agent}' is outside its action space {space}")
+            validated[agent] = action
+        return validated
+
     def _perform_actions(self, action_dict):
         """Execute actions for each agent and update their respective environments."""
         # Load shifting agent
@@ -685,16 +723,19 @@ class SustainDC(gym.Env):
 
     def _update_reward_and_termination(self, rew, terminateds, truncateds):
         """Update the rewards, termination, and truncation flags for all agents."""
+        # Collaborative reward (paper Sec. 4): each agent gets `individual_reward_weight` of its own reward plus
+        # (1 - individual_reward_weight) / 2 of each of the other two agents' rewards. 1.0 = fully individual.
+        w, c = self.indv_reward, self.collab_reward
         if "agent_ls" in self.agents:
-            rew["agent_ls"] = self.ls_reward
+            rew["agent_ls"] = w * self.ls_reward + c * self.dc_reward + c * self.bat_reward
             terminateds["agent_ls"] = self.ls_terminated
             truncateds["agent_ls"] = self.ls_truncated
         if "agent_dc" in self.agents:
-            rew["agent_dc"] = self.dc_reward
+            rew["agent_dc"] = w * self.dc_reward + c * self.ls_reward + c * self.bat_reward
             terminateds["agent_dc"] = self.dc_terminated
             truncateds["agent_dc"] = self.dc_truncated
         if "agent_bat" in self.agents:
-            rew["agent_bat"] = self.bat_reward
+            rew["agent_bat"] = w * self.bat_reward + c * self.ls_reward + c * self.dc_reward
             terminateds["agent_bat"] = self.bat_terminated
             truncateds["agent_bat"] = self.bat_truncated
 

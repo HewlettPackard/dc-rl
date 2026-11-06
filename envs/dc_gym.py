@@ -74,7 +74,8 @@ class dc_gymenv(gym.Env):
         
         self.raw_curr_state = None
         self.raw_next_state = None
-        self.raw_curr_stpt = action_definition['cooling setpoints']['initial_value']
+        self.initial_stpt = action_definition['cooling setpoints']['initial_value']
+        self.raw_curr_stpt = self.initial_stpt
         self.max_temp = max_temp
         self.min_temp = min_temp
         
@@ -109,6 +110,7 @@ class dc_gymenv(gym.Env):
         self.rackwise_cpu_pwr, self.rackwise_itfan_pwr, self.rackwise_outlet_temp = [], [], []
         self.water_usage = None
         
+        self.raw_curr_stpt = self.initial_stpt  # start every episode from the initial CRAC setpoint
         self.raw_curr_state = self.get_obs()
         
         self.consecutive_actions = 0

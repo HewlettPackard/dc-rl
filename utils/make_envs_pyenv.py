@@ -21,7 +21,8 @@ def make_ls_env(month,
                 n_vars_energy : int = 4,
                 n_vars_battery : int = 1,
                 queue_max_len: int = 500,
-                test_mode = False):
+                test_mode = False,
+                flexible_workload_ratio: float = 0.2):
     """Method to build the Load shifting environment
 
     Args:
@@ -29,6 +30,7 @@ def make_ls_env(month,
         n_vars_energy (int, optional): Number of variables from the Energy environment. Defaults to 4.
         n_vars_battery (int, optional): Number of variables from the Battery environment. Defaults to 1.
         queue_max_len (int, optional): The size of the queue where the tasks are stored to be processed latter. Default to 500.
+        flexible_workload_ratio (float, optional): Fraction of the workload that can be deferred. Defaults to 0.2.
 
     Returns:
         CarbonLoadEnv: Load Shifting environment
@@ -38,7 +40,8 @@ def make_ls_env(month,
                          n_vars_energy=n_vars_energy,
                          n_vars_battery=n_vars_battery,
                          queue_max_len=queue_max_len,
-                         test_mode=test_mode)
+                         test_mode=test_mode,
+                         flexible_workload_ratio=flexible_workload_ratio)
     
     
 
@@ -90,7 +93,7 @@ def make_dc_pyeplus_env(month : int = 1,
         location (str, optional): The geographical location in a standard format for which Carbon Intensity files are accessed. Supported options are 
                                 'NYIS', 'AZPS', 'BPAT'. Defaults to 'NYIS'.
         datacenter_capacity_mw (int, optional): Maximum capacity (MW) of the data center. This value will scale the number of servers installed in the data center.
-        max_bat_cap_Mw (float, optional): The battery capacity in Megawatts for the installed battery. Defaults to 2.0.
+        max_bat_cap_Mw (float, optional): The battery energy capacity in MWh. None uses one hour of peak DC power. Defaults to 2.0.
         add_cpu_usage (bool, optional): Boolean Flag to indicate whether cpu usage is part of the environment statespace. Defaults to True.
         add_CI (bool, optional): Boolean Flag to indicate whether Carbon Intensity is part of the environment statespace. Defaults to True.
         episode_length_in_time (pd.Timedelta, optional): Length of an episode in terms of pandas time-delta object. Defaults to None.
@@ -213,7 +216,7 @@ def make_dc_pyeplus_env(month : int = 1,
         
         'cpuUsage':[0.0, 1.0],
         'carbonIntensity':[0.0, 1000.0],
-        'batterySoC': [0.0, max_bat_cap_Mw*1e6],
+        'batterySoC': [0.0, (max_bat_cap_Mw if max_bat_cap_Mw is not None else max_dc_energy)*1e6],
         'max_battery_energy_Mwh' : max_dc_energy
     }
     

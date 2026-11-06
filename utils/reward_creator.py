@@ -45,6 +45,9 @@ def normalize_energy(value: float):
     return (value - mean) / (std if std > 0 else 1)  # Prevent division by zero
 
 
+# Penalty per task dropped by the load-shifting environment (queue full). Used by default_ls_reward.
+PENALTY_PER_DROPPED_TASK = -10.0
+
 def default_ls_reward(params: dict) -> float:
     """
     Calculates a reward value based on normalized load shifting.
@@ -75,8 +78,12 @@ def default_ls_reward(params: dict) -> float:
     age_penalty_scale = 0.1  # Adjust this scaling factor as needed
     tasks_age_penalty = -age_penalty_scale * params['ls_oldest_task_age']  # Assume normalized between 0 and 1
 
+    # Dropped Tasks Penalty: tasks deferred while the queue is full are lost. Same value as the original SustainDC
+    # reward (-10 per task). Note the total is clipped to [-10, 10] below, so any drop drives the reward to -10.
+    tasks_dropped_penalty = PENALTY_PER_DROPPED_TASK * params['ls_tasks_dropped']
+
     # Total Reward
-    total_reward = footprint_reward + tasks_overdue_penalty + tasks_age_penalty
+    total_reward = footprint_reward + tasks_overdue_penalty + tasks_age_penalty + tasks_dropped_penalty
     clipped_reward = np.clip(total_reward, -10, 10)
 
     return clipped_reward
@@ -192,7 +199,8 @@ def tou_reward(params: dict) -> float:
            }
     
     # Obtain the price of electricity at the current hour
-    current_price = tou[params['hour']]
+    # 'hour' is fractional (15-min steps, e.g. 13.25), so use the hour of day it falls in
+    current_price = tou[int(params['hour']) % 24]
     # Obtain the energy usage
     energy_usage = params['bat_total_energy_with_battery_KWh']
     

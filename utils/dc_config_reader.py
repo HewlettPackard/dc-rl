@@ -3,7 +3,7 @@ This file is used to read the data center configuration from  user inputs provid
 """
 import json
 import os
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor
 
 class DC_Config:
     def __init__(self, dc_config_file='dc_config.json', datacenter_capacity_mw=1):
@@ -50,7 +50,9 @@ class DC_Config:
         self.NUM_RACKS = self.NUM_ROWS * self.NUM_RACKS_PER_ROW  # calculate total number of racks/ITcabinets in the data center model
 
         self.TOTAM_MAX_PWR = self.datacenter_capacity_mw * 1e6  # specify maximum allowed power consumption (W) for the entire data center
-        self.MAX_W_PER_RACK = int(self.TOTAM_MAX_PWR/self.NUM_RACKS)  # calculate maximum allowable power consumption for each rack/ITcabinet
+        # Capacity is applied by scaling powers in envs.datacenter.DataCenter_ITModel (full-load IT power ==
+        # TOTAM_MAX_PWR). The per-rack wattage cap is disabled so it does not also change the number of servers.
+        self.MAX_W_PER_RACK = float('inf')
 
 
         # CFD may be used to precompute the "supply/return approach temperature" for each rack under given
@@ -102,7 +104,9 @@ class DC_Config:
             futures = [executor.submit(construct_cpu_config, [j]) for j in self.DEFAULT_SERVER_POWER_CHARACTERISTICS]
             
             # Wait for the futures to complete and collect the results
-            self.RACK_CPU_CONFIG = [future.result() for future in as_completed(futures)]
+            # Collect results in submission order so rack i always gets server type i (as_completed() returned them
+            # in completion order, which shuffled the rack layout on every construction).
+            self.RACK_CPU_CONFIG = [future.result() for future in futures]
 
         # A default value of HP_PROLIANT server for standalone testing
         self.HP_PROLIANT = json_obj["server_characteristics"]['HP_PROLIANT']
