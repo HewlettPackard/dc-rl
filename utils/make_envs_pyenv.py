@@ -159,9 +159,12 @@ def make_dc_pyeplus_env(month : int = 1,
         print('WARNING, using default values for chiller sizing...')
         max_amb_temperature = 50.0
         
-    ctafr, ct_rated_load = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint=min_temp, max_CRAC_setpoint=max_temp, max_ambient_temp=max_amb_temperature)
+    max_wet_bulb_temperature = 32.0  # design maximum wet bulb (C) for sizing the chiller
+    ctafr, ct_rated_load, chiller_nominal_cap = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint=min_temp, max_CRAC_setpoint=max_temp,
+                                                                          max_ambient_temp=max_amb_temperature, max_wet_bulb_temp=max_wet_bulb_temperature)
     dc_config.CT_REFRENCE_AIR_FLOW_RATE = ctafr
     dc_config.CT_FAN_REF_P = ct_rated_load
+    dc_config.CHILLER_NOMINAL_CAP = chiller_nominal_cap
     
     
     # Perform sizing of ITE power and ambient temperature
@@ -187,7 +190,8 @@ def make_dc_pyeplus_env(month : int = 1,
     highest_ambient_temp = max_amb_temperature  # Highest ambient temperature
     max_load = max(total_ite_pwr)  # Maximum load from your previous calculations
 
-    chiller_max_load = DataCenter.calculate_chiller_power(max_cooling_cap, max_load, highest_ambient_temp)
+    cond_inlet_temp, chw_outlet_temp = DataCenter.chiller_operating_temps(min_temp, max_wet_bulb_temperature, dc_config)
+    chiller_max_load = DataCenter.calculate_chiller_power(chiller_nominal_cap, max_load, cond_inlet_temp, chw_outlet_temp)
 
     # This will be battery sizing
     max_dc_power_w =  1.1*max(total_ite_pwr) + 1.1*ct_rated_load + 1.1*chiller_max_load # Watts

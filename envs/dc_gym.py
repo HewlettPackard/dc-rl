@@ -162,7 +162,9 @@ class dc_gymenv(gym.Env):
         crac_setpoint_delta = self.action_mapping[action]
         
         # Check if the current action is in the same direction as the last one
-        if crac_setpoint_delta == self.last_action and action != 0:
+        # Repeated moves in the same direction speed up (+1, +1, +1, +2, +3 ...). Exclude "hold" (action 1); this used to
+        # exclude action 0 ("decrease"), so only increases accelerated.
+        if crac_setpoint_delta == self.last_action and action != 1:
             self.consecutive_actions += 1
         else:
             self.consecutive_actions = 1
@@ -191,13 +193,15 @@ class dc_gymenv(gym.Env):
                                                                                                                                                                        avg_CRAC_return_temp=avg_CRAC_return_temp,
                                                                                                                                                                        ambient_temp=self.ambient_temp,
                                                                                                                                                                        data_center_full_load=data_center_total_ITE_Load,
-                                                                                                                                                                       DC_Config=self.DC_Config)
+                                                                                                                                                                       DC_Config=self.DC_Config,
+                                                                                                                                                                       wet_bulb_temp=self.wet_bulb)
         self.HVAC_load = self.CT_Cooling_load + self.Compressor_load
 
         # Set the additional attributes for the cooling tower water usage calculation
         self.dc.hot_water_temp = avg_CRAC_return_temp  # °C
         self.dc.cold_water_temp = self.raw_curr_stpt  # °C
         self.dc.wet_bulb_temp = self.wet_bulb  # °C from weather data
+        self.dc.heat_rejected_W = self.CRAC_Cooling_load + self.Compressor_load  # IT heat + chiller compressor heat
 
         # Calculate the cooling tower water usage
         self.water_usage = self.dc.calculate_cooling_tower_water_usage()
