@@ -4,6 +4,11 @@ from collections import deque
 
 energy_history = deque(maxlen=10000)
 
+# The ls, dc and bat rewards each call normalize_energy on the same history every step, and the percentiles over
+# the 10k-entry history dominate step time. Cache the history statistics until the history changes.
+_history_version = 0
+_stats_cache = {'key': None, 'mean': 0.0, 'std': 1.0}
+
 def update_energy_history(value: float):
     """
     Update the global energy history deque with a new value.
@@ -11,7 +16,26 @@ def update_energy_history(value: float):
     Args:
         value (float): The new energy value to add.
     """
+    global _history_version
     energy_history.append(value)
+    _history_version += 1
+
+def _energy_history_stats():
+    """Mean and std of the energy history after clipping outliers (beyond 1.5x the interquartile range)."""
+    # The version tracks update_energy_history; length and end values also catch direct edits of the deque.
+    key = (_history_version, len(energy_history), energy_history[0], energy_history[-1])
+    if _stats_cache['key'] != key:
+        # Convert history to a numpy array for processing
+        history_array = np.array(energy_history)
+
+        # Clip outliers (e.g., values beyond 1.5 times the interquartile range)
+        q1, q3 = np.percentile(history_array, [25, 75])
+        iqr = q3 - q1
+        clipped_history = np.clip(history_array, q1 - 1.5 * iqr, q3 + 1.5 * iqr)
+
+        # Calculate mean and std from clipped values
+        _stats_cache.update(key=key, mean=np.mean(clipped_history), std=np.std(clipped_history))
+    return _stats_cache['mean'], _stats_cache['std']
 
 def normalize_energy(value: float):
     """
@@ -26,22 +50,7 @@ def normalize_energy(value: float):
     if len(energy_history) < 2:  # Avoid division by zero with too few samples
         return 0.0  # Default normalized value when history is insufficient
 
-    # Convert history to a numpy array for processing
-    history_array = np.array(energy_history)
-
-    # Clip outliers (e.g., values beyond 1.5 times the interquartile range)
-    q1 = np.percentile(history_array, 25)
-    q3 = np.percentile(history_array, 75)
-    iqr = q3 - q1
-    lower_bound = q1 - 1.5 * iqr
-    upper_bound = q3 + 1.5 * iqr
-
-    # Apply clipping
-    clipped_history = np.clip(history_array, lower_bound, upper_bound)
-
-    # Calculate mean and std from clipped values
-    mean = np.mean(clipped_history)
-    std = np.std(clipped_history)
+    mean, std = _energy_history_stats()
     return (value - mean) / (std if std > 0 else 1)  # Prevent division by zero
 
 
