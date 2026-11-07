@@ -31,3 +31,5 @@ evaluation_render/
 .history/
 checkpoint_new_model/
 .ipynb_checkpoints/
+# Cluster job scripts (machine/user specific)
+*.sbatch

@@ -15,3 +15,6 @@ month: 6
 days_per_episode: 30
 partial_obs: True
 nonoverlapping_shared_obs_space: True
+# Observe the current CRAC setpoint (cooling agent obs 14->15, shared/joint obs 29->30). Code default is False so
+# configs of models trained before this keep their observation size.
+include_dc_setpoint: True

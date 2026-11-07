@@ -77,7 +77,12 @@ class EnvConfig(dict):
         'evaluation': False,
 
         # Set this to True if an agent (like MADDPG) returns continuous actions,
-        "actions_are_logits": False
+        "actions_are_logits": False,
+
+        # Append the current CRAC setpoint (normalized to [0, 1]) to the cooling agent's observation. The cooling action
+        # is a relative change, so without this the setpoint is not observed. Off by default so configs of models
+        # trained without it keep their 14-dim cooling observation; the training yaml turns it on.
+        'include_dc_setpoint': False,
     }
 
     def __init__(self, raw_config):
@@ -185,8 +190,13 @@ class SustainDC(gym.Env):
         else:
             self.base_agents["agent_ls"] = BaseLoadShiftingAgent()
             
+        self.include_dc_setpoint = bool(env_config['include_dc_setpoint'])
         if "agent_dc" in self.agents:
-            self.observation_space.append(self.dc_env.observation_space)
+            dc_obs_space = self.dc_env.observation_space
+            if self.include_dc_setpoint:
+                dc_obs_space = spaces.Box(low=np.float32(-1.0 * np.ones(dc_obs_space.shape[0] + 1)),
+                                          high=np.float32(1.0 * np.ones(dc_obs_space.shape[0] + 1)))
+            self.observation_space.append(dc_obs_space)
             self.action_space.append(self.dc_env.action_space)
         else:
             self.base_agents["agent_dc"] = BaseHVACAgent()
@@ -398,7 +408,12 @@ class SustainDC(gym.Env):
                                          current_out_temperature,
                                          next_out_temperature,
                                         )))
-        
+        if self.include_dc_setpoint:
+            # Current CRAC setpoint (the one the next cooling action changes), normalized to [0, 1].
+            dc = self.dc_env
+            setpoint = (dc.raw_curr_stpt - dc.min_temp) / (dc.max_temp - dc.min_temp)
+            dc_state = np.append(dc_state, np.float32(setpoint)).astype(np.float32)
+
         return dc_state
 
 

@@ -2,6 +2,8 @@ import numpy as np
 from gymnasium import spaces
 from pettingzoo import ParallelEnv
 
+from utils.joint_obs import joint_obs_dim
+
 class SustainDCPettingZooEnv(ParallelEnv):
     def __init__(self, env_config):
         """
@@ -27,8 +29,9 @@ class SustainDCPettingZooEnv(ParallelEnv):
         self.action_spaces = {agent: space for agent, space in zip(self.possible_agents, self.env.action_space)}
         
         if env_config['nonoverlapping_shared_obs_space']:
-            # ls_state[0:10]->10 variables; dc_state[4:9]->5 variables & bat_state[5]->1 variable
-            self.share_observation_space = {agent: spaces.Box(low=-2.0, high=2.0, shape=(29,), dtype=np.float32) for agent in self.possible_agents}
+            # ls_state (26) + dc next workload/next temp + bat SoC (+ dc setpoint): see utils/joint_obs.py
+            shared_dim = joint_obs_dim(env_config.get('include_dc_setpoint', False))
+            self.share_observation_space = {agent: spaces.Box(low=-2.0, high=2.0, shape=(shared_dim,), dtype=np.float32) for agent in self.possible_agents}
         else:
             # Find the maximum dimension of observation space
             max_obs_dim = max(space.shape[0] for space in self.observation_spaces.values())
