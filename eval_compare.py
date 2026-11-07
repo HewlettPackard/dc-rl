@@ -135,7 +135,10 @@ class HARLPolicy:
         self.agents = list(self.train_config['agents'])
         model_args, algo_args = cfg['algo_args']['model'], cfg['algo_args']['algo']
         self.recurrent = model_args.get('use_recurrent_policy', False) or model_args.get('use_naive_recurrent_policy', False)
-        self.rnn_shape = (1, model_args.get('recurrent_n', 1), model_args['hidden_sizes'][-1])
+        # RNN state shape only matters for recurrent on-policy actors; off-policy configs (e.g. HAD3QN) name their
+        # layers base_hidden_sizes instead of hidden_sizes.
+        hidden = model_args.get('hidden_sizes') or model_args.get('base_hidden_sizes') or [1]
+        self.rnn_shape = (1, model_args.get('recurrent_n', 1), hidden[-1])
 
         # Supersuit pads every active agent's observation with zeros up to the largest one.
         obs_dims = {'agent_ls': 26, 'agent_dc': 14 + int(self.include_dc_setpoint), 'agent_bat': 13}
