@@ -188,8 +188,21 @@ class HARLPolicy:
         return actions
 
 
+def split_label(spec):
+    """'<spec>=<label>' -> (spec, label). Controller parameters also use '=' (rule:ls:ls_hi=0.8), so the label is the
+    text after the last '=' unless that text is a number (then it is a parameter value and there is no label)."""
+    head, sep, tail = spec.rpartition('=')
+    if not sep:
+        return spec, ''
+    try:
+        float(tail)
+        return spec, ''
+    except ValueError:
+        return head, tail
+
+
 def make_policy(spec):
-    spec, _, label = spec.partition('=')
+    spec, label = split_label(spec)
     kind, _, rest = spec.partition(':')
     if kind == 'noop':
         policy = NoOpPolicy()
@@ -265,7 +278,7 @@ def expand_specs(specs):
     """Expand harl:<glob> specs into one spec per run directory, labelled <label>_s<seed>."""
     out = []
     for spec in specs:
-        body, eq, label = spec.partition('=')
+        body, label = split_label(spec)
         kind, _, rest = body.partition(':')
         if kind == 'harl' and any(ch in rest for ch in '*?['):
             dirs = sorted(d for d in glob.glob(rest) if os.path.isfile(os.path.join(d, 'config.json')))

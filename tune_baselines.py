@@ -27,8 +27,8 @@ from sustaindc_single_env import AGENTS
 
 GRIDS = {
     'setpoint': [f'setpoint:{s}' for s in (15.0, 16.0, 17.0, 18.0, 19.0, 20.0, 21.0, 21.6)],
-    'rule_ls': [f'rule:ls:ls_hi={hi},ls_lo={lo}' for hi in (0.5, 0.6, 0.7, 0.8) for lo in (0.2, 0.3, 0.4) if lo < hi],
-    'oracle_ls': [f'oracle:ls:ls_hi={hi},ls_lo={lo}' for hi in (0.3, 0.5, 0.7) for lo in (0.1, 0.2, 0.3) if lo < hi],
+    'rule_ls': [f'rule:ls:ls_hi={hi},ls_lo={lo}' for hi in (0.5, 0.6, 0.7, 0.8, 0.9) for lo in (0.2, 0.3, 0.4, 0.5, 0.6) if lo < hi],
+    'oracle_ls': [f'oracle:ls:ls_hi={hi},ls_lo={lo}' for hi in (0.4, 0.5, 0.6, 0.7, 0.8, 0.9) for lo in (0.1, 0.2, 0.3, 0.4, 0.5) if lo < hi],
     'rule_bat': [f'rule:bat:bat_lo={lo},bat_hi={hi}' for lo in (0.2, 0.3, 0.4) for hi in (0.6, 0.7, 0.8)],
 }
 

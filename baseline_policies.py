@@ -79,42 +79,59 @@ def expected_utilization(sdc, ls_action):
 # ---------------------------------------------------------------------------------------------------------------------
 # Load shifting
 # ---------------------------------------------------------------------------------------------------------------------
-class LSRule:
-    """Defer flexible work when CI is above the `hi` quantile of the past day; run queued work below the `lo` quantile."""
+def queue_can_take(sdc):
+    """True if deferring this step's flexible tasks fits in the queue (otherwise the env drops the excess)."""
+    ls = sdc.ls_env
+    shiftable = int(np.floor(float(ls.workload) * ls.flexible_workload_ratio * 100))
+    return len(ls.tasks_queue) + shiftable <= ls.queue_max_len
 
-    def __init__(self, hi=0.6, lo=0.4):
-        self.hi, self.lo = hi, lo
+
+def oldest_task_age_hours(sdc):
+    ls = sdc.ls_env
+    if not ls.tasks_queue:
+        return 0.0
+    t = ls.tasks_queue[0]
+    return (ls.current_day - t['day']) * 24 + (ls.current_hour - t['hour'])
+
+
+class LSRule:
+    """Defer flexible work when CI is above the `hi` quantile of the past day; run queued work when CI is below the
+    `lo` quantile. Queue-aware: never defers more than the queue can hold (no dropped tasks) and runs the oldest work
+    once it is `deadline` hours old, before the env would force it at whatever CI it happens to be (24 h)."""
+
+    def __init__(self, hi=0.6, lo=0.4, deadline=20.0):
+        self.hi, self.lo, self.deadline = hi, lo, deadline
 
     def init(self, sdc):
         pass
 
+    def reference_ci(self, sdc):
+        return past_ci(sdc)
+
     def act(self, sdc):
-        hist = past_ci(sdc)
-        if len(hist) < DAY // 2:
+        ref = self.reference_ci(sdc)
+        if len(ref) < DAY // 2:
             return 1
         ci = current_ci(sdc)
-        if ci > np.quantile(hist, self.hi):
+        queued = len(sdc.ls_env.tasks_queue) > 0
+        if queued and oldest_task_age_hours(sdc) >= self.deadline:
+            return 2
+        if ci > np.quantile(ref, self.hi) and queue_can_take(sdc):
             return 0
-        if len(sdc.ls_env.tasks_queue) > 0 and ci < np.quantile(hist, self.lo):
+        if queued and ci <= np.quantile(ref, self.lo):
             return 2
         return 1
 
 
 class LSOracle(LSRule):
-    """Same rule, but against the true CI of the *next* day (deferred work must run within 24 h): defer when cheaper
-    hours are coming (CI above the `hi` quantile of the next day), run queued work in the cheapest hours (below `lo`)."""
+    """Same queue-aware rule, but against the true CI of the *next* day (deferred work must run within 24 h): defer when
+    cheaper hours are coming (CI above the `hi` quantile of the next day), run queued work in the cheap hours (`lo`)."""
 
-    def __init__(self, hi=0.5, lo=0.2):
-        super().__init__(hi, lo)
+    def __init__(self, hi=0.5, lo=0.3, deadline=20.0):
+        super().__init__(hi, lo, deadline)
 
-    def act(self, sdc):
-        fut = future_ci(sdc)
-        ci = current_ci(sdc)
-        if ci > np.quantile(fut, self.hi):
-            return 0
-        if len(sdc.ls_env.tasks_queue) > 0 and ci <= np.quantile(fut, self.lo):
-            return 2
-        return 1
+    def reference_ci(self, sdc):
+        return future_ci(sdc)
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -285,12 +302,12 @@ def make_baseline_policy(kind, rest):
         raise ValueError(f"Unknown subsystem(s) {unknown}; use ls, dc, bat")
     if kind == 'rule':
         return ComposedPolicy(
-            ls=LSRule(p.get('ls_hi', 0.6), p.get('ls_lo', 0.4)) if 'ls' in subsystems else None,
+            ls=LSRule(p.get('ls_hi', 0.6), p.get('ls_lo', 0.4), p.get('ls_deadline', 20.0)) if 'ls' in subsystems else None,
             dc=DCFixed(p.get('dc_setpoint', 18.0)) if 'dc' in subsystems else None,
             bat=BatRule(p.get('bat_lo', 0.3), p.get('bat_hi', 0.7)) if 'bat' in subsystems else None)
     if kind == 'oracle':
         return ComposedPolicy(
-            ls=LSOracle(p.get('ls_hi', 0.5), p.get('ls_lo', 0.2)) if 'ls' in subsystems else None,
+            ls=LSOracle(p.get('ls_hi', 0.5), p.get('ls_lo', 0.3), p.get('ls_deadline', 20.0)) if 'ls' in subsystems else None,
             dc=DCOracle() if 'dc' in subsystems else None,
             bat=BatOracle(int(p.get('bat_grid', 201))) if 'bat' in subsystems else None)
     raise ValueError(f"Unknown baseline policy kind {kind!r}")
