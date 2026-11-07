@@ -73,6 +73,8 @@ class SustainDCMetricsCallback(BaseCallback):
                     self.logger.record_mean(f'sustaindc/{name}', v)
                 for name, v in self._means[i].items():
                     self.logger.record_mean(f'sustaindc/{name}_mean', v / max(self._steps[i], 1))
+                self.logger.record_mean('sustaindc/ls_tasks_queued_end', float(info.get('ls_tasks_in_queue', 0.0)))
+                self.logger.record_mean('sustaindc/end_queue_penalty', float(info.get('end_queue_penalty', 0.0)))
                 self._sums[i] = dict.fromkeys(EPISODE_SUM_METRICS, 0.0)
                 self._means[i] = dict.fromkeys(EPISODE_MEAN_METRICS, 0.0)
                 self._steps[i] = 0
@@ -283,6 +285,8 @@ def main():
     p.add_argument('--action_type', choices=['multidiscrete', 'discrete'], default='multidiscrete',
                    help='Joint action encoding. DQN always uses discrete.')
     p.add_argument('--reward_type', choices=['agent_ls', 'ls_raw'], default='agent_ls')
+    p.add_argument('--end_queue_penalty', type=float, default=0.0,
+                   help='Reward penalty per task still queued when an episode ends (added to the last step).')
     p.add_argument('--include_dc_setpoint', action=argparse.BooleanOptionalAction, default=None,
                    help='Observe the current CRAC setpoint. Default: the value in the env yaml (on).')
     p.add_argument('--learning_rate', type=float, default=None, help='Override the HAPPO learning rate (3e-5).')
@@ -318,6 +322,8 @@ def main():
             env_config[key] = getattr(args, key)
     env_config['action_type'] = 'discrete' if args.algo == 'dqn' else args.action_type
     env_config['reward_type'] = args.reward_type
+    if args.end_queue_penalty:
+        env_config['end_queue_penalty'] = args.end_queue_penalty
     if args.include_dc_setpoint is not None:
         env_config['include_dc_setpoint'] = args.include_dc_setpoint
 
