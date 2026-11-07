@@ -16,7 +16,7 @@ sys.path.insert(0, os.getcwd())
 import numpy as np
 
 from sustaindc_single_env import SustainDCSingleAgentEnv
-from train_single_agent import ALGOS
+from train_single_agent import ALGOS, load_obs_normalizer
 
 DO_NOTHING = {'agent_ls': 1, 'agent_dc': 1, 'agent_bat': 2}  # ls: do nothing, dc: keep setpoint, bat: idle
 
@@ -62,11 +62,13 @@ def main():
     with open(os.path.join(args.run_dir, 'config.json')) as f:
         cfg = json.load(f)
     env = SustainDCSingleAgentEnv(dict(cfg['env_args']))
-    model = ALGOS[cfg['main_args']['algo']].load(os.path.join(args.run_dir, 'models', args.model), device='cpu')
+    model_path = os.path.join(args.run_dir, 'models', args.model)
+    model = ALGOS[cfg['main_args']['algo']].load(model_path, device='cpu')
+    normalize = load_obs_normalizer(model_path)
 
     seeds = [args.seed + i for i in range(args.n_episodes)]
     agent = summarize(f"{cfg['main_args']['algo']} ({args.model})",
-                      [run_episode(env, lambda o: model.predict(o, deterministic=True)[0], s) for s in seeds])
+                      [run_episode(env, lambda o: model.predict(normalize(o), deterministic=True)[0], s) for s in seeds])
 
     if args.baseline:
         if env.action_type == 'discrete':
