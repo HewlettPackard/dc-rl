@@ -23,6 +23,8 @@ Policy specs:
     rule:<subsystems>[:<params>]  rule-based controllers (past CI only), e.g. rule:ls,dc,bat or rule:bat:bat_lo=0.2
     oracle:<subsystems>[:<params>] perfect-forecast controllers (true future CI/workload/weather), e.g. oracle:ls,dc,bat
     setpoint:<C>                  hold the CRAC setpoint at <C>, everything else does nothing
+    mpc[:<params>]                MPC (CEM over the joint action) on a simulator clone, e.g. mpc:horizon=96,block=8,
+                                  mpc:forecast=persistence (past data only), mpc:workers=8 (see mpc_policy.py)
 Add =<label> to any spec to name it in the table, e.g. harl:<dir>=happo. See baseline_policies.py for the controllers.
 
 Each policy is compared with `noop` episode by episode (paired), which removes the episode-to-episode variation:
@@ -188,8 +190,26 @@ class HARLPolicy:
         return actions
 
 
+PARAM_SEGMENT = {'rule': 2, 'oracle': 2, 'mpc': 1}  # ':'-separated segment holding key=value parameters
+
+
+def split_label(spec):
+    """Split '<spec>=<label>' into (spec, label). In a key=value parameter list the label is after an extra '=' on the
+    last parameter (rule:bat:bat_lo=0.2=lbl, mpc:forecast=persistence=lbl); otherwise after the first '='."""
+    segments = spec.split(':')
+    idx = PARAM_SEGMENT.get(segments[0])
+    if idx is not None and len(segments) > idx:
+        last = segments[idx].split(',')[-1]
+        if last.count('=') >= 2:
+            body, _, label = spec.rpartition('=')
+            return body, label
+        return spec, ''
+    body, _, label = spec.partition('=')
+    return body, label
+
+
 def make_policy(spec):
-    spec, _, label = spec.partition('=')
+    spec, label = split_label(spec)
     kind, _, rest = spec.partition(':')
     if kind == 'noop':
         policy = NoOpPolicy()
@@ -203,6 +223,9 @@ def make_policy(spec):
     elif kind in ('rule', 'oracle', 'setpoint'):
         from baseline_policies import make_baseline_policy
         policy = make_baseline_policy(kind, rest)
+    elif kind == 'mpc':
+        from mpc_policy import make_mpc_policy
+        policy = make_mpc_policy(rest)
     else:
         raise ValueError(f'Unknown policy spec {spec!r}')
     return label or spec, policy
@@ -265,7 +288,7 @@ def expand_specs(specs):
     """Expand harl:<glob> specs into one spec per run directory, labelled <label>_s<seed>."""
     out = []
     for spec in specs:
-        body, eq, label = spec.partition('=')
+        body, label = split_label(spec)
         kind, _, rest = body.partition(':')
         if kind == 'harl' and any(ch in rest for ch in '*?['):
             dirs = sorted(d for d in glob.glob(rest) if os.path.isfile(os.path.join(d, 'config.json')))
