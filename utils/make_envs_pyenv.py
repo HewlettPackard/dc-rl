@@ -9,7 +9,7 @@ import pandas as pd
 from envs.bat_env_fwd_view import BatteryEnvFwd as battery_env_fwd
 from envs.carbon_ls import CarbonLoadEnv
 from envs.dc_gym import dc_gymenv
-from utils.utils_cf import get_init_day
+from utils.utils_cf import get_init_day, obtain_paths, PATH as REPO_PATH
 
 import envs.datacenter as DataCenter
 from utils.dc_config_reader import DC_Config
@@ -44,6 +44,26 @@ def make_ls_env(month,
                          flexible_workload_ratio=flexible_workload_ratio)
     
     
+
+# Design conditions from each location's weather file:
+# - cooling tower airflow: the 99.6th-percentile dry bulb (ASHRAE's 0.4% annual design condition); above it the fan
+#   simply runs at its rated power;
+# - chiller capacity: the peak wet bulb plus a margin for Weather_Manager's noise, so the chiller never runs short
+#   (the simulator does not track unmet cooling).
+TOWER_DESIGN_DRY_BULB_PERCENTILE = 99.6
+CHILLER_WET_BULB_MARGIN = 2.0
+
+
+def design_weather(location):
+    """(tower design dry bulb, chiller design wet bulb) in C for a location; see the constants above."""
+    import psychrolib as psy
+    psy.SetUnitSystem(psy.SI)
+    weather_file = obtain_paths(location)[1]
+    data = pd.read_csv(os.path.join(REPO_PATH, 'data', 'Weather', weather_file), skiprows=8, header=None).values
+    dry, rh, pres = data[:, 6].astype(float), data[:, 8].astype(float), data[:, 9].astype(float)
+    wet = np.array([psy.GetTWetBulbFromRelHum(t, min(max(h, 0.0), 100.0) / 100, p) for t, h, p in zip(dry, rh, pres)])
+    return float(np.percentile(dry, TOWER_DESIGN_DRY_BULB_PERCENTILE)), float(wet.max()) + CHILLER_WET_BULB_MARGIN
+
 
 def make_bat_fwd_env(month,
                     max_bat_cap_Mwh : float = 2.0,
@@ -147,26 +167,20 @@ def make_dc_pyeplus_env(month : int = 1,
     # setting a higher ambient temp here will cause the CT to consume less power for cooling water under normal ambient temperature. Lower amb temp -> higher HVAC power
     # setting a lower value of min_CRAC_setpoint will cause the CT to consume more power for higher crac setpoints during normal use. Lower min_CRAC_set -> higher HVAC power
     
-    # dictionary with locations and min_CRAC_setpoint/max_amb_temp
-
-    if 'NY'.lower() in location.lower():
-        max_amb_temperature = 30.0
-    elif 'AZ'.lower() in location.lower():
-        max_amb_temperature = 50.0
-    elif 'WA'.lower() in location.lower():
-        max_amb_temperature = 20.0
-    else:
-        print('WARNING, using default values for chiller sizing...')
-        max_amb_temperature = 50.0
-        
-    max_wet_bulb_temperature = 32.0  # design maximum wet bulb (C) for sizing the chiller
+    # Size the cooling tower and chiller for this location's own design conditions (from its weather file, see
+    # design_weather). This replaces a hard-coded table (e.g. NY 30 C although its weather file reaches ~36 C).
+    max_amb_temperature, max_wet_bulb_temperature = design_weather(location)
     ctafr, ct_rated_load, chiller_nominal_cap = DataCenter.chiller_sizing(dc_config, min_CRAC_setpoint=min_temp, max_CRAC_setpoint=max_temp,
                                                                           max_ambient_temp=max_amb_temperature, max_wet_bulb_temp=max_wet_bulb_temperature)
     dc_config.CT_REFRENCE_AIR_FLOW_RATE = ctafr
-    dc_config.CT_FAN_REF_P = ct_rated_load
+    dc_config.CT_RATED_LOAD = ct_rated_load  # rated heat rejection (W)
+    # Tower fan rated power: a fraction of the rated heat rejection (typically ~1-2%). This used to be set to the rated
+    # heat rejection itself (~1 MW for a 1 MW data center), so on hot days the fan alone could draw more than the IT load.
+    ct_fan_rated_power = dc_config.CT_FAN_POWER_FRACTION * ct_rated_load
+    dc_config.CT_FAN_REF_P = ct_fan_rated_power
     dc_config.CHILLER_NOMINAL_CAP = chiller_nominal_cap
-    
-    
+
+
     # Perform sizing of ITE power and ambient temperature
     # Find highest and lowest values of ITE power, rackwise outlet temperature
     dc = DataCenter.DataCenter_ITModel(num_racks=dc_config.NUM_RACKS, rack_supply_approach_temp_list=dc_config.RACK_SUPPLY_APPROACH_TEMP_LIST,
@@ -194,7 +208,7 @@ def make_dc_pyeplus_env(month : int = 1,
     chiller_max_load = DataCenter.calculate_chiller_power(chiller_nominal_cap, max_load, cond_inlet_temp, chw_outlet_temp)
 
     # This will be battery sizing
-    max_dc_power_w =  1.1*max(total_ite_pwr) + 1.1*ct_rated_load + 1.1*chiller_max_load # Watts
+    max_dc_power_w =  1.1*max(total_ite_pwr) + 1.1*ct_fan_rated_power + 1.1*chiller_max_load # Watts
     
     # By carbon explorer paper, we need a battery to feed the DC by at least 1 hours, so we need the energy metric
     num_hours_battery = 1
@@ -214,8 +228,8 @@ def make_dc_pyeplus_env(month : int = 1,
         'Site Outdoor Air Drybulb Temperature(Environment)': [-10.0, 40.0], #6
         'Zone Thermostat Cooling Setpoint Temperature(West Zone)': [15.0, 30.0],  # reasonable range for setpoint; can be updated based on need #7
         'Zone Air Temperature(West Zone)':[0.9*min(dc_ambient_temp_list), 1.1*max(dc_ambient_temp_list)],
-        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0.0, 1.1*ct_rated_load + 1.1*chiller_max_load],  # this is cooling tower power and chiller power
-        'Facility Total Electricity Demand Rate(Whole Building)': [0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr) +  1.1*ct_rated_load + 1.1*chiller_max_load],  # TODO: This is not a part of the observation variables right now
+        'Facility Total HVAC Electricity Demand Rate(Whole Building)':  [0.0, 1.1*ct_fan_rated_power + 1.1*chiller_max_load],  # this is cooling tower fan power and chiller power
+        'Facility Total Electricity Demand Rate(Whole Building)': [0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr) +  1.1*ct_fan_rated_power + 1.1*chiller_max_load],  # TODO: This is not a part of the observation variables right now
         'Facility Total Building Electricity Demand Rate(Whole Building)':[0.9*min(total_ite_pwr), 1.1*max(total_ite_pwr)],  # this is it power
         
         'cpuUsage':[0.0, 1.0],
