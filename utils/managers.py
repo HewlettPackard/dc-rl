@@ -591,6 +591,7 @@ class Weather_Manager():
         self.time_steps_day = self.timestep_per_hour*24
         
         self.debug = debug
+        self.last_roll_days = 0
 
     # Function to return all weather data
     def get_total_weather(self):
@@ -623,6 +624,7 @@ class Weather_Manager():
             self.wet_bulb_data = self.original_wb_data + coh_noise
             
             num_roll_days = np.random.randint(0, 14) # Random roll the temperature some days.
+            self.last_roll_days = num_roll_days  # PV_Manager applies the same roll so PV stays in sync with the weather
             self.temperature_data =  np.roll(self.temperature_data, num_roll_days*self.timestep_per_hour*24)
             self.wet_bulb_data =  np.roll(self.wet_bulb_data, num_roll_days*self.timestep_per_hour*24)
 
@@ -638,6 +640,7 @@ class Weather_Manager():
             
         else:
             # Use a fixed temperature for debugging and wet bulb temperature
+            self.last_roll_days = 0
             self.temperature_data = np.ones_like(self.temperature_data) * 30
             self.norm_temp_data = np.ones_like(self.norm_temp_data) * 0.5
             self.wet_bulb_data = np.ones_like(self.wet_bulb_data) * 25
@@ -688,3 +691,83 @@ class Weather_Manager():
     
     def get_current_wet_bulb(self):
         return self._current_wet_bulb
+
+# Class to manage on-site solar PV generation
+class PV_Manager():
+    """Manager of the on-site PV generation, computed from the same EPW weather file as Weather_Manager.
+
+    The hourly PV series goes through exactly the same pipeline as Weather_Manager's temperature: interpolation to
+    15-minute steps, the timezone_shift roll, and on every reset the same random day roll as the weather
+    (Weather_Manager.last_roll_days), so PV output stays consistent with the temperature/cloud conditions.
+
+    Args:
+        weather_file (str): EPW filename in data/Weather/ (the one Weather_Manager uses).
+        pv_config (dict, optional): PV specs, see envs.pv_model.DEFAULT_PV_CONFIG. capacity_kWp = 0 disables PV.
+        init_day (int, optional): Initial day of the year. Defaults to 0.
+        timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
+    """
+    def __init__(self, weather_file, pv_config=None, init_day=0, timezone_shift=0):
+        from envs.pv_model import ac_rating_kw, compute_pv_ac_kw, make_pv_config
+        self.pv_config = make_pv_config(pv_config)
+        self.ac_rating_kw = ac_rating_kw(self.pv_config)
+        self.enabled = self.ac_rating_kw > 0
+
+        pv_hourly_kw = compute_pv_ac_kw(weather_file, self.pv_config)
+
+        self.init_day = init_day
+        self.timezone_shift = timezone_shift
+        self.timestep_per_hour = 4
+        self.time_steps_day = self.timestep_per_hour*24
+
+        # Same interpolation and timezone roll as Weather_Manager
+        x = range(0, len(pv_hourly_kw))
+        x_new = np.linspace(0, len(pv_hourly_kw), len(pv_hourly_kw)*self.timestep_per_hour)
+        pv_kw = np.interp(x_new, x, pv_hourly_kw)
+        self.original_pv_kw = np.roll(pv_kw, -1*self.timezone_shift*self.timestep_per_hour)
+        self.pv_kw = self.original_pv_kw.copy()
+        self.time_step = 0
+
+    def reset(self, init_day=None, init_hour=None, roll_days=0):
+        """Reset to a specific initial day and hour.
+
+        Args:
+            init_day (int, optional): Day to start from. Defaults to the initial day set during initialization.
+            init_hour (int, optional): Hour to start from. Defaults to 0.
+            roll_days (int, optional): Random day roll applied to the weather on this reset
+                (Weather_Manager.last_roll_days). Defaults to 0.
+
+        Returns:
+            float: PV AC power (kW) at the current step.
+        """
+        self.time_step = (init_day if init_day is not None else self.init_day) * self.time_steps_day + (init_hour if init_hour is not None else 0) * self.timestep_per_hour
+        self.pv_kw = np.roll(self.original_pv_kw, roll_days*self.time_steps_day)
+        return self.get_current_pv_kw()
+
+    def step(self):
+        """Advance one step (wrapping like Weather_Manager). Returns the PV AC power (kW) at the new step."""
+        self.time_step += 1
+        if self.time_step >= len(self.pv_kw):
+            self.time_step = self.init_day*self.time_steps_day
+        return self.get_current_pv_kw()
+
+    def get_current_pv_kw(self):
+        return float(self.pv_kw[self.time_step])
+
+    def _normalize(self, values):
+        return values / self.ac_rating_kw if self.enabled else np.zeros_like(values)
+
+    def get_current_norm_pv(self):
+        """Current PV power as a fraction of the AC rating, in [0, 1] (0 when PV is disabled)."""
+        return float(self._normalize(self.pv_kw[self.time_step]))
+
+    def get_n_next_norm_pv(self, n):
+        """Normalized PV of the next n steps (perfect forecast), padded with the last value at the end of the data."""
+        window = self.pv_kw[self.time_step+1:self.time_step+1+n]
+        if len(window) < n:
+            window = np.concatenate([window, np.full(n - len(window), self.pv_kw[-1])])
+        return self._normalize(window)
+
+    def get_pv_obs(self):
+        """PV observation features: [current, mean of each of the next 4 hours], normalized by the AC rating."""
+        next_4h = self.get_n_next_norm_pv(16).reshape(4, 4).mean(axis=1)
+        return np.hstack([self.get_current_norm_pv(), next_4h]).astype(np.float32)

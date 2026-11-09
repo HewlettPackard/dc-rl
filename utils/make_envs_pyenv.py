@@ -67,7 +67,7 @@ def design_weather(location):
 
 def make_bat_fwd_env(month,
                     max_bat_cap_Mwh : float = 2.0,
-                    charging_rate : float = 0.5,
+                    battery_config : dict = None,
                     max_dc_pw_MW : float = 7.23,
                     dcload_max : float = 2.5,
                     dcload_min : float = 0.1,
@@ -78,7 +78,8 @@ def make_bat_fwd_env(month,
     Args:
         month (int): Month of the year in which the agent is training.
         max_bat_cap_Mwh (float, optional): Max battery capacity. Defaults to 2.0.
-        charging_rate (float, optional): Charging rate of the battery. Defaults to 0.5.
+        battery_config (dict, optional): Battery specs (C-rate, efficiencies, SoC window, charge taper), see
+            envs.battery_model.DEFAULT_BATTERY_CONFIG. Defaults to a 0.5C (2-hour) Li-ion battery.
         reward_method (str, optional): Method used to calculate the rewards. Defaults to 'default_bat_reward'.
 
     Returns:
@@ -88,7 +89,7 @@ def make_bat_fwd_env(month,
     env_config= {'n_fwd_steps':n_fwd_steps,
                  'max_dc_pw_MW':max_dc_pw_MW,
                  'max_bat_cap':max_bat_cap_Mwh,
-                 'charging_rate':charging_rate,
+                 'battery_config':battery_config,
                  'start_point':init_day,
                  'dcload_max':dcload_max, 
                  'dcload_min':dcload_min}

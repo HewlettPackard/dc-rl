@@ -140,7 +140,7 @@ while True:
                         key: eval_infos[i][j].get(key, None) for key in [
                             'bat_action', 'bat_SOC', 'bat_CO2_footprint', 'bat_avg_CI', 'bat_total_energy_without_battery_KWh',
                             'bat_total_energy_with_battery_KWh', 'bat_max_bat_cap',
-                            'bat_dcload_min', 'bat_dcload_max',
+                            'bat_dcload_min', 'bat_dcload_max', 'pv_power_kW', 'pv_energy_KWh', 'pv_curtailed_KWh',
                         ]
                     })
                 else:

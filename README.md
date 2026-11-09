@@ -168,9 +168,20 @@ The **Battery Environment** simulates the charging and discharging cycles of bat
   - Grid Energy Consumption: Combined energy consumption of IT and cooling systems.
   - Grid Carbon Intensity (CI): Current and forecasted carbon intensity values to determine optimal charging and discharging times.
 
+- **Battery Model** (`envs/battery_model.py`, configured with `battery_config` in `harl/configs/envs_cfgs/sustaindc.yaml`): a stationary lithium-ion battery (LFP chemistry) rated by duration. Charging and discharging have the same power limit, `c_rate` × capacity.
+
+  | Key | Default | Meaning |
+  |---|---|---|
+  | `c_rate` | 0.5 | Power / capacity per hour. 0.5 is a 2-hour battery, common for commercial behind-the-meter storage; 0.25 (4-hour) is typical of grid scale. |
+  | `eff_charge`, `eff_discharge` | 0.95 | One-way efficiencies, about 90% round trip. Grid or PV pays for the losses. |
+  | `soc_min`, `soc_max` | 0.05, 0.95 | Usable state-of-charge window. Episodes start at `soc_min`. |
+  | `taper_start` | 0.90 | Charging power tapers linearly to 0 between `taper_start` and `soc_max`. |
+
+  With the defaults, a 1 MWh battery charges and discharges at up to 500 kW (125 kWh per 15-minute step) and goes from empty to full in about 2 hours. Discharging is also capped at the DC load (net of PV), because the battery only supplies the data center. The info dict reports `bat_energy_in_KWh` (drawn to charge) and `bat_energy_out_KWh` (delivered).
+
 - **Action Space:**
   - Charge Battery: Stores energy in the battery during periods of low carbon intensity.
-  - Hold Energy: Maintains the current state of charge.
+  - Hold Energy: Maintains the current state of charge. With on-site PV, the battery still absorbs any PV surplus (see On-site Solar PV).
   - Discharge Battery: Provides auxiliary energy to the data center during periods of high carbon intensity.
 
 ### Interconnected Environments
@@ -229,6 +240,60 @@ Below is a summary of the selected locations, typical weather values, and carbon
 | Washington | Mild, temperate climate; wet winters | Low avg CI, Low variation        |
 
 </div>
+
+#### On-site Solar PV
+**SustainDC** can simulate an on-site solar PV array next to the DC. No extra dataset is needed. The `.epw` weather files already contain hourly global, direct and diffuse irradiance (GHI/DNI/DHI), air temperature and wind speed. Their header gives each site's latitude, longitude, time zone and elevation. PV output therefore comes from the same weather the cooling model sees: cloudy hours are also cool hours, and PV follows the same random day shift as the temperature in every episode.
+
+Generation is computed once per location with [pvlib](https://pvlib-python.readthedocs.io), in `envs/pv_model.py`. The model chain is:
+1. solar position;
+2. Perez transposition to the panel plane;
+3. incidence-angle losses;
+4. SAPM cell temperature;
+5. PVWatts DC power and a flat system loss;
+6. a PVWatts inverter, which clips output at the AC rating.
+
+PV is configured with `pv_config` in `harl/configs/envs_cfgs/sustaindc.yaml`. With `capacity_kWp: 0` (the default) PV is off and the simulation is unchanged.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `capacity_kWp` | 0 | DC nameplate capacity (kWp). |
+| `surface_tilt` | site latitude | Panel tilt (degrees). Fixed mount only. |
+| `surface_azimuth` | 180 | Panel azimuth (180 = facing south), or the tracker axis azimuth. |
+| `tracking` | `fixed` | `fixed` or `single_axis` (horizontal N–S axis with backtracking; also takes `max_angle` and `gcr`). |
+| `gamma_pdc` | -0.0035 | Power temperature coefficient (1/°C). |
+| `temp_model` | `open_rack_glass_polymer` | SAPM mounting / module type. |
+| `system_losses_pct` | 14 | Soiling, wiring, mismatch, availability, … |
+| `dc_ac_ratio` | 1.2 | DC rating / inverter AC rating. |
+| `inverter_eff_nom` | 0.96 | Nominal inverter efficiency. |
+| `albedo` | from the EPW | Ground reflectance. |
+
+Typical annual yields with a fixed array at latitude tilt: Phoenix about 1760 kWh/kWp, San Jose about 1720, New York about 1370, Seattle about 1170. A single-axis tracker gives about 15% more.
+
+**Energy accounting.** PV is not dispatched. It follows the standard self-consumption priority of on-site PV + battery systems:
+1. PV supplies the DC load.
+2. Any surplus charges the battery automatically, within its per-step charge limit, whatever the battery action.
+3. The rest is curtailed, or exported if `pv_export_credit` is on.
+
+The battery agent only makes the grid-facing decisions:
+
+| Action | Effect |
+|---|---|
+| *charge* | Charge at the full per-step rate. PV surplus goes in first, then the grid tops it up. |
+| *idle* | No grid charging. PV surplus is still absorbed. |
+| *discharge* | Cover the load PV leaves uncovered. During a PV surplus there is nothing to cover, so the battery absorbs the surplus instead. |
+
+The info key `bat_mode` reports what the battery actually did: `charge`, `discharge`, `idle`, or `pv_charge` (absorbing surplus).
+
+Every 15-minute step:
+- Grid import is `max(load + charging − discharging − PV used, 0)`, and CO2 is grid import × carbon intensity.
+- `bat_total_energy_with_battery_KWh`, which the rewards use, is this grid import. The PV breakdown is in the info dict: `pv_power_kW`, `pv_energy_KWh`, `pv_self_consumed_KWh`, `pv_to_battery_KWh`, `pv_curtailed_KWh`, `pv_exported_KWh` and `grid_energy_KWh`.
+- With `pv_export_credit: True`, the surplus left after the battery is exported instead of curtailed and credited at the current carbon intensity, so net CO2 can go negative.
+
+**Observation.** `include_pv_obs: True` appends 5 values to every agent's observation, and to the end of the joint and shared observation. The values are current PV and the mean PV of each of the next 4 hours, as fractions of the AC rating. The flag is off by default, so existing checkpoints keep their observation sizes.
+
+**Overriding from the command line.**
+- HARL: pass keys directly, e.g. `--capacity_kWp 500 --include_pv_obs True`.
+- `train_single_agent.py` and `eval_compare.py`: use `--pv_capacity_kWp 500`. `train_single_agent.py` also takes `--include_pv_obs`.
 
 
 ## Customization
