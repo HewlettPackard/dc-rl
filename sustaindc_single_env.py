@@ -37,9 +37,6 @@ class SustainDCSingleAgentEnv(gym.Env):
         include_dc_setpoint: passed to SustainDC, which appends the normalized current CRAC setpoint to the cooling
                      observation; the joint observation then includes it as its last element (30 dims instead of 29).
                      Default False; the training yaml turns it on for both this env and MARL.
-        end_queue_penalty: reward penalty per task still in the queue when the episode ends (default 0). Added to the
-                     last step's reward, so deferring work and never running it is no longer free. Tasks older than
-                     24 h are forced through, so the leftover queue is work deferred in the last day.
     """
 
     metadata = {'render_modes': []}
@@ -49,9 +46,6 @@ class SustainDCSingleAgentEnv(gym.Env):
         env_config = dict(env_config or {})
         self.action_type = env_config.pop('action_type', 'multidiscrete')
         self.reward_type = env_config.pop('reward_type', 'agent_ls')
-        self.end_queue_penalty = float(env_config.pop('end_queue_penalty', 0.0))
-        if self.end_queue_penalty < 0:
-            raise ValueError(f'end_queue_penalty must be >= 0, got {self.end_queue_penalty}')
         self.include_dc_setpoint = bool(env_config.get('include_dc_setpoint', False))
         env_config['agents'] = list(AGENTS)
 
@@ -90,12 +84,7 @@ class SustainDCSingleAgentEnv(gym.Env):
         reward = float(rew['agent_ls'] if self.reward_type == 'agent_ls' else self.env.ls_reward)
         truncated = bool(truncs.get('__all__', False) or truncs['agent_ls'])
         # info['agent_ls'] already merges ls/dc/bat infos and the reward params.
-        info = info['agent_ls']
-        if truncated and self.end_queue_penalty:
-            penalty = self.end_queue_penalty * float(info.get('ls_tasks_in_queue', 0))
-            reward -= penalty
-            info = {**info, 'end_queue_penalty': penalty}
-        return self._obs(), reward, False, truncated, info
+        return self._obs(), reward, False, truncated, info['agent_ls']
 
     def reset_reward_history(self):
         """Clear this process's energy history used by the reward normalization.

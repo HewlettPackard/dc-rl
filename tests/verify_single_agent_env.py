@@ -109,22 +109,5 @@ while True:
         break
 check("truncated after 96 steps, never terminated", n == 96 and trunc and not term, f"{n} steps")
 
-print("5. End-of-episode queue penalty")
-def defer_episode(penalty):
-    e = SustainDCSingleAgentEnv({**BASE, 'end_queue_penalty': penalty}); e.reset_reward_history(); e.reset(seed=3)
-    rews = []
-    while True:
-        _, r, _, trunc, info = e.step(np.array([0, 1, 2]))  # always defer, hold setpoint, battery idle
-        rews.append(r)
-        if trunc:
-            return np.array(rews), info
-r0, i0 = defer_episode(0.0)
-r2, i2 = defer_episode(2.0)
-check("tasks are left in the queue when always deferring", i0['ls_tasks_in_queue'] > 0, f"{i0['ls_tasks_in_queue']} tasks")
-check("penalty only changes the last step", np.allclose(r0[:-1], r2[:-1]))
-check("last step loses penalty x leftover tasks", np.isclose(r0[-1] - r2[-1], 2.0 * i2['ls_tasks_in_queue']),
-      f"{r0[-1] - r2[-1]:.1f} vs {2.0 * i2['ls_tasks_in_queue']:.1f}")
-check("info reports the penalty", np.isclose(i2['end_queue_penalty'], 2.0 * i2['ls_tasks_in_queue']) and 'end_queue_penalty' not in i0)
-
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)
