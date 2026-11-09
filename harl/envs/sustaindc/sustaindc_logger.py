@@ -19,6 +19,8 @@ class SustainDCLogger(BaseLogger):
         super().episode_init(episode)
         self.metrics = {
             "net_energy_sum": 0,
+            "pv_energy_sum": 0,
+            "pv_curtailed_sum": 0,
             "ite_power_sum": 0,
             'ct_power_sum': 0,
             'chiller_power_sum': 0,
@@ -40,6 +42,8 @@ class SustainDCLogger(BaseLogger):
         super().eval_init()
         self.eval_metrics = {
             "net_energy_sum": 0,
+            "pv_energy_sum": 0,
+            "pv_curtailed_sum": 0,
             "ite_power_sum": 0,
             'ct_power_sum': 0,
             'chiller_power_sum': 0,
@@ -61,6 +65,8 @@ class SustainDCLogger(BaseLogger):
         super().eval_init_off_policy(total_num_steps)
         self.eval_metrics = {
             "net_energy_sum": 0,
+            "pv_energy_sum": 0,
+            "pv_curtailed_sum": 0,
             "ite_power_sum": 0,
             'ct_power_sum': 0,
             'chiller_power_sum': 0,
@@ -85,6 +91,8 @@ class SustainDCLogger(BaseLogger):
         
         for i in range(len(infos)):  # Assuming infos are structured with one dict per environment
             self.metrics["net_energy_sum"] += infos[i][0].get("bat_total_energy_with_battery_KWh", 0)
+            self.metrics["pv_energy_sum"] += infos[i][0].get("pv_energy_KWh", 0)
+            self.metrics["pv_curtailed_sum"] += infos[i][0].get("pv_curtailed_KWh", 0)
             self.metrics["CO2_footprint_sum"] += infos[i][0].get("bat_CO2_footprint", 0)
             self.metrics["water_usage"] += infos[i][0].get("dc_water_usage", 0)
             self.metrics["load_left"] += infos[i][0].get("ls_unasigned_day_load_left", 0)
@@ -107,6 +115,8 @@ class SustainDCLogger(BaseLogger):
         
         for i in range(len(eval_infos)):  # Assuming eval_infos are structured with one dict per environment
             self.eval_metrics["net_energy_sum"] += eval_infos[i][0].get("bat_total_energy_with_battery_KWh", 0)
+            self.eval_metrics["pv_energy_sum"] += eval_infos[i][0].get("pv_energy_KWh", 0)
+            self.eval_metrics["pv_curtailed_sum"] += eval_infos[i][0].get("pv_curtailed_KWh", 0)
             self.eval_metrics["CO2_footprint_sum"] += eval_infos[i][0].get("bat_CO2_footprint", 0)
             self.eval_metrics["water_usage"] += eval_infos[i][0].get("dc_water_usage", 0)
             self.eval_metrics["load_left"] += eval_infos[i][0].get("ls_unasigned_day_load_left", 0)
@@ -165,6 +175,9 @@ class SustainDCLogger(BaseLogger):
         self.writter.add_scalar("metrics/Average PUE", PUE, self.total_num_steps)
 
         self.writter.add_scalar("metrics/Average CO2 Footprint", average_CO2_footprint, self.total_num_steps)
+        if self.metrics["step_count"] > 0:
+            self.writter.add_scalar("metrics/Average PV Energy", self.metrics["pv_energy_sum"] / self.metrics["step_count"], self.total_num_steps)
+            self.writter.add_scalar("metrics/Average PV Curtailed", self.metrics["pv_curtailed_sum"] / self.metrics["step_count"], self.total_num_steps)
         self.writter.add_scalar("metrics/Total Water Usage", total_water_usage, self.total_num_steps)
         self.writter.add_scalar("metrics/Total Tasks in Queue", total_tasks_in_queue, self.total_num_steps)
         self.writter.add_scalar("metrics/Total Tasks Dropped", total_tasks_dropped, self.total_num_steps)
@@ -176,6 +189,8 @@ class SustainDCLogger(BaseLogger):
         # Reset metrics for the next episode
         self.metrics = {
             "net_energy_sum": 0,
+            "pv_energy_sum": 0,
+            "pv_curtailed_sum": 0,
             "ite_power_sum": 0,
             'ct_power_sum': 0,
             'chiller_power_sum': 0,
@@ -232,6 +247,9 @@ class SustainDCLogger(BaseLogger):
         self.writter.add_scalar("eval_metrics/Average PUE", PUE, self.total_num_steps)
         
         self.writter.add_scalar("eval_metrics/Average CO2 Footprint", average_CO2_footprint, self.total_num_steps)
+        if self.eval_metrics["step_count"] > 0:
+            self.writter.add_scalar("eval_metrics/Average PV Energy", self.eval_metrics["pv_energy_sum"] / self.eval_metrics["step_count"], self.total_num_steps)
+            self.writter.add_scalar("eval_metrics/Average PV Curtailed", self.eval_metrics["pv_curtailed_sum"] / self.eval_metrics["step_count"], self.total_num_steps)
         self.writter.add_scalar("eval_metrics/Total Water Usage", total_water_usage, self.total_num_steps)
         self.writter.add_scalar("eval_metrics/Total Tasks in Queue", total_tasks_in_queue, self.total_num_steps)
         self.writter.add_scalar("eval_metrics/Total Tasks Dropped", total_tasks_dropped, self.total_num_steps)
@@ -245,6 +263,8 @@ class SustainDCLogger(BaseLogger):
         # Reset metrics for the next episode
         self.eval_metrics = {
             "net_energy_sum": 0,
+            "pv_energy_sum": 0,
+            "pv_curtailed_sum": 0,
             "ite_power_sum": 0,
             'ct_power_sum': 0,
             'chiller_power_sum': 0,

@@ -41,6 +41,8 @@ ALGOS = {'ppo': PPO, 'a2c': A2C, 'dqn': DQN}
 EPISODE_SUM_METRICS = {
     'CO2_footprint_sum': 'bat_CO2_footprint',
     'net_energy_sum': 'bat_total_energy_with_battery_KWh',
+    'pv_energy_sum': 'pv_energy_KWh',
+    'pv_curtailed_sum': 'pv_curtailed_KWh',
     'water_usage': 'dc_water_usage',
     'ls_tasks_dropped': 'ls_tasks_dropped',
     'ite_power_sum': 'dc_ITE_total_power_kW',
@@ -295,6 +297,10 @@ def main():
                    help='Normalize observations with running mean/std (VecNormalize).')
     p.add_argument('--norm_reward', action=argparse.BooleanOptionalAction, default=True,
                    help='Scale rewards by a running std of the discounted return (VecNormalize).')
+    p.add_argument('--pv_capacity_kWp', type=float, default=None,
+                   help="On-site PV capacity (pv_config.capacity_kWp; 0 = no PV). Default: the value in the env yaml.")
+    p.add_argument('--include_pv_obs', action=argparse.BooleanOptionalAction, default=None,
+                   help='Observe current and forecast PV. Default: the value in the env yaml (off).')
     p.add_argument('--eval_freq', type=int, default=50_000, help='Evaluate every N total env steps.')
     p.add_argument('--n_eval_episodes', type=int, default=5,
                    help='Episodes per evaluation, run in parallel; always the same seeds (eval_seed + i).')
@@ -321,6 +327,10 @@ def main():
     env_config['reward_type'] = args.reward_type
     if args.include_dc_setpoint is not None:
         env_config['include_dc_setpoint'] = args.include_dc_setpoint
+    if args.pv_capacity_kWp is not None:
+        env_config['pv_config'] = {**env_config.get('pv_config', {}), 'capacity_kWp': args.pv_capacity_kWp}
+    if args.include_pv_obs is not None:
+        env_config['include_pv_obs'] = args.include_pv_obs
 
     run_id = args.run_id or datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     run_dir = os.path.join(args.results_root, 'sustaindc', env_config['location'], f'single_{args.algo}', args.exp_name,

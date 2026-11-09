@@ -51,6 +51,7 @@ pillow==10.3.0
 platformdirs==3.11.0
 protobuf==4.25.3
 PsychroLib==2.5.0
+pvlib==0.10.5
 pyarrow==16.1.0
 pyasn1==0.6.0
 pyasn1_modules==0.4.0

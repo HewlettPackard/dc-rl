@@ -23,11 +23,12 @@ DO_NOTHING = {'agent_ls': 1, 'agent_dc': 1, 'agent_bat': 2}  # ls: do nothing, d
 
 def run_episode(env, policy, seed):
     obs, _ = env.reset(seed=seed)
-    m = dict(co2=0.0, energy=0.0, water=0.0, dropped=0.0, queue=0.0, ret=0.0, steps=0)
+    m = dict(co2=0.0, energy=0.0, pv=0.0, water=0.0, dropped=0.0, queue=0.0, ret=0.0, steps=0)
     while True:
         obs, r, term, trunc, info = env.step(policy(obs))
         m['co2'] += info['bat_CO2_footprint']
         m['energy'] += info['bat_total_energy_with_battery_KWh']
+        m['pv'] += info['pv_energy_KWh']
         m['water'] += info['dc_water_usage']
         m['dropped'] += info['ls_tasks_dropped']
         m['queue'] += info['ls_tasks_in_queue']
