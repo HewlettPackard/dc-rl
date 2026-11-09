@@ -90,5 +90,14 @@ class SustainDCSingleAgentEnv(gym.Env):
         # info['agent_ls'] already merges ls/dc/bat infos and the reward params.
         return self._obs(), reward, False, truncated, info['agent_ls']
 
+    def reset_reward_history(self):
+        """Clear this process's energy history used by the reward normalization.
+
+        The rewards are z-scored against a process-wide history, so the same episode scores differently depending
+        on what ran before it. Clearing it before an evaluation makes the evaluation returns reproducible.
+        """
+        import utils.reward_creator as rc
+        rc.energy_history.clear()
+
     def close(self):
         pass

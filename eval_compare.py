@@ -104,21 +104,23 @@ class RandomPolicy(NoOpPolicy):
 
 class SB3Policy:
     def __init__(self, run_dir, model_name='best_model'):
-        from train_single_agent import ALGOS
+        from train_single_agent import ALGOS, load_obs_normalizer
         with open(os.path.join(run_dir, 'config.json')) as f:
             cfg = json.load(f)
         self.train_config = cfg['env_args']
         self.include_dc_setpoint = bool(self.train_config.get('include_dc_setpoint', False))
         self.include_pv_obs = bool(self.train_config.get('include_pv_obs', False))
         self.action_type = self.train_config.get('action_type', 'multidiscrete')
-        self.model = ALGOS[cfg['main_args']['algo']].load(os.path.join(run_dir, 'models', model_name), device='cpu')
+        model_path = os.path.join(run_dir, 'models', model_name)
+        self.model = ALGOS[cfg['main_args']['algo']].load(model_path, device='cpu')
+        self.normalize = load_obs_normalizer(model_path)  # VecNormalize stats saved with the model, if any
 
     def reset(self, seed):
         pass
 
     def act(self, sdc):
         obs = build_joint_obs(sdc.ls_state, sdc.dc_state, sdc.bat_state, self.include_dc_setpoint, self.include_pv_obs)
-        action, _ = self.model.predict(obs, deterministic=True)
+        action, _ = self.model.predict(self.normalize(obs), deterministic=True)
         return decode_joint_action(action, self.action_type)
 
 
