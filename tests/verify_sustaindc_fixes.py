@@ -169,16 +169,25 @@ check("episode completes", n == args['days_per_episode'] * 96, f"{n} steps; flex
 
 print("10. Dropped tasks are penalized in the default load-shifting reward")
 e = make(flexible_load=0.6, days_per_episode=7); e.seed(1); e.reset()
-drop_rewards, clean_rewards = [], []
+drop_rewards, clean_rewards, drop_exact = [], [], []
 while True:
+    before = list(rc.energy_history)  # only default_ls_reward updates the history (once per step)
     _, _, _, tr, info = e.step({'agent_ls': 0, 'agent_dc': 1, 'agent_bat': 2})
     i = info['agent_ls']
-    params = {**i, 'ls_tasks_dropped': 0}
-    (drop_rewards if i['ls_tasks_dropped'] > 0 else clean_rewards).append((e.ls_reward, i['ls_tasks_dropped']))
+    d = i['ls_tasks_dropped']
+    (drop_rewards if d > 0 else clean_rewards).append((e.ls_reward, d))
+    if d > 0:  # same reward without the drops, on the same history: the drop must cost exactly -10 per task, clipped
+        after = list(rc.energy_history)
+        rc.energy_history.clear(); rc.energy_history.extend(before)
+        r0 = rc.default_ls_reward({**i, 'ls_tasks_dropped': 0})
+        rc.energy_history.clear(); rc.energy_history.extend(after)
+        drop_exact.append(abs(e.ls_reward - np.clip(r0 - 10 * d, -10, 10)) < 1e-9)
     if tr['__all__']:
         break
-check("steps with drops get the -10 floor", len(drop_rewards) > 0 and all(r == -10 for r, _ in drop_rewards),
-      f"{len(drop_rewards)} steps with drops, {sum(d for _, d in drop_rewards)} tasks dropped")
+check("steps with drops score the no-drop reward - 10 per task, clipped at -10",
+      len(drop_rewards) > 0 and all(drop_exact),
+      f"{len(drop_rewards)} steps with drops, {sum(d for _, d in drop_rewards)} tasks dropped, "
+      f"rewards {min(r for r, _ in drop_rewards):.2f} to {max(r for r, _ in drop_rewards):.2f}" if drop_rewards else "no drops")
 check("steps without drops are not floored", len(clean_rewards) > 0 and max(r for r, _ in clean_rewards) > -10,
       f"{len(clean_rewards)} steps, mean reward {np.mean([r for r, _ in clean_rewards]):.2f}")
 import copy
@@ -191,3 +200,4 @@ base, small = ls_reward_with(0), ls_reward_with(0.05)  # 0.05 "tasks" keeps the 
 check("penalty is -10 per dropped task before clipping", abs((small - base) - (-0.5)) < 1e-9, f"{base:.3f} -> {small:.3f}")
 
 print(f"\n{sum(results)}/{len(results)} checks passed")
+sys.exit(0 if all(results) else 1)

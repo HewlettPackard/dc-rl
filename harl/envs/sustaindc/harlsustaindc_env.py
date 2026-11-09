@@ -120,6 +120,11 @@ class HARLSustainDCEnv:
         s_obs = self._create_shared_observation(obs)
         rewards = [[rew[agent]] for agent in self.agents]
         dones = {agent: term[agent] or trunc[agent] for agent in self.agents}
+        # SustainDC episodes end only at the time limit (truncation, not termination). Flag those steps as
+        # bad_transition so HARL bootstraps through them (bad_masks for on-policy GAE/returns, terms=False and
+        # original_obs for off-policy) instead of treating the end of the window as a true terminal state.
+        info = {agent: dict(info[agent], bad_transition=bool(trunc[agent] and not term[agent]))
+                for agent in self.agents}
 
         return (
             obs,

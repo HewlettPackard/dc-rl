@@ -315,6 +315,17 @@ class Workload_Manager():
 
 
 # Class to manage carbon intensity data
+
+def epw_utc_offset(filename):
+    """UTC offset (hours) of an EnergyPlus weather file: the time-zone field of its LOCATION header line.
+    EPW rows are in local standard time."""
+    path = filename if os.path.isabs(filename) else PATH + f'/data/Weather/{filename}'
+    with open(path) as f:
+        header = f.readline().split(',')
+    assert header[0].strip().upper() == 'LOCATION', f'{path} does not start with an EPW LOCATION line'
+    return float(header[8])
+
+
 class CI_Manager():
     """Manager of the carbon intensity data.
 
@@ -327,7 +338,8 @@ class CI_Manager():
         desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 5.
         timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
     """
-    def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5, timezone_shift=0, debug=False):
+    def __init__(self, filename='', location='NYIS', init_day=0, future_steps=4, weight=0.1, desired_std_dev=5, timezone_shift=0, debug=False,
+                 utc_offset_hours=None):
         """Initialize the CI_Manager class.
 
         Args:
@@ -338,15 +350,27 @@ class CI_Manager():
             weight (float, optional): Weight value for coherent noise. Defaults to 0.1.
             desired_std_dev (float, optional): Desired standard deviation for coherent noise. Defaults to 5.
             timezone_shift (int, optional): Shift for the timezone. Defaults to 0.
+            utc_offset_hours (float, optional): UTC offset of the simulation clock, i.e. of the weather file (local
+                standard time, e.g. -7 for Phoenix). The CI files are time-stamped in UTC; the hourly series is rolled
+                so that row k is local standard hour k, like the weather. None keeps the file's own clock (no shift).
         """
         # Load carbon intensity data from a CSV file
         # One year data=24*365=8760
-        if not location == '':
-            carbon_data_list = pd.read_csv(PATH+f"/data/CarbonIntensity/{location}_NG_&_avgCI.csv")['avg_CI'].values[:8760]
-        else:
-            carbon_data_list = pd.read_csv(PATH+f"/data/CarbonIntensity/{filename}")['avg_CI'].values[:8760]
+        path = PATH+f"/data/CarbonIntensity/{location}_NG_&_avgCI.csv" if not location == '' else PATH+f"/data/CarbonIntensity/{filename}"
+        ci_df = pd.read_csv(path)
+        carbon_data_list = ci_df['avg_CI'].values[:8760]
 
         assert len(carbon_data_list) == 8760, "The number of data points in the carbon intensity data is not one year data=24*365=8760."
+        self.ci_shift_hours = 0
+        if utc_offset_hours is not None:
+            first = pd.Timestamp(ci_df['timestamp'].iloc[0])
+            assert first.tzinfo is not None, f"CI timestamps in {path} have no UTC offset; cannot align them to local time."
+            assert (first.month, first.day, first.hour) == (1, 1, 0), f"CI data in {path} must start on Jan 1, 00:00."
+            file_offset = first.utcoffset().total_seconds() / 3600
+            # row k of the simulation clock is local hour k = file hour k + (file_offset - utc_offset_hours)
+            self.ci_shift_hours = int(round(utc_offset_hours - file_offset))
+            # The last |shift| hours of the year wrap around to the start of the same file (only affects Dec 31 / Jan 1).
+            carbon_data_list = np.roll(carbon_data_list, self.ci_shift_hours)
         self.debug = debug
         carbon_data_list = carbon_data_list.astype(float)
         self.init_day = init_day
