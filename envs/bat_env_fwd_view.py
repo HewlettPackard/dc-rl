@@ -53,10 +53,14 @@ class BatteryEnvFwd(gym.Env):
 
         # On-site PV (kW AC) available in the current step; set by SustainDC with set_pv(). See CO2_footprint().
         self.pv_kw = 0.0
-        # True: PV surplus not used by the DC or the battery is exported and credited at the current CI (net CO2 can
-        # go negative). False (default): the surplus is curtailed.
+        # PV follows the standard self-consumption priority: DC load first, then the battery (automatically, within its
+        # charge limit, whatever the action), then the grid. pv_export_credit True: that last part is exported and
+        # credited at the current CI (net CO2 can go negative). False (default): it is curtailed.
         self.pv_export_credit = env_config.get('pv_export_credit', False)
         self.pv_flows = self._pv_flows(0.0, 0.0, 0.0, 0.0)
+        # What the battery actually did in the last step: 'charge', 'discharge', 'idle' or 'pv_charge' (absorbing PV
+        # surplus while the action was idle/discharge). Without PV this always equals the action.
+        self.bat_mode = 'idle'
         
     def reset(self, *, seed=None, options=None):
         """
@@ -108,7 +112,7 @@ class BatteryEnvFwd(gym.Env):
         self.discharge_energy = self._simulate_battery_operation(self.battery, action_instantaneous,
                                                                   charging_rate=self.charging_rate)
         
-        self.CO2_total = self.CO2_footprint(self.dcload, self.ci, action_instantaneous, self.discharge_energy)
+        self.CO2_total = self.CO2_footprint(self.dcload, self.ci, self.bat_mode, self.discharge_energy)
 
         self.raw_obs = self._hist_data_collector()
         self.temp_state = self._process_obs(self.raw_obs)
@@ -124,6 +128,7 @@ class BatteryEnvFwd(gym.Env):
             'bat_total_energy_with_battery_KWh': self.total_energy_with_battery,
             'bat_max_bat_cap': self.max_bat_cap,
             'bat_a_t': action_instantaneous,
+            'bat_mode': self.bat_mode,
             'bat_dcload_min': self.dcload_min,
             'bat_dcload_max': self.dcload_max,
             **self.pv_flows,
@@ -206,6 +211,13 @@ class BatteryEnvFwd(gym.Env):
     def _simulate_battery_operation(self, battery, battery_action, charging_rate=None):
         """Simulates battery operation
 
+        PV surplus (PV beyond the DC load) is stored automatically, as in standard self-consumption control:
+            charge:    charge at the full per-step rate; PV surplus is used first, the rest comes from the grid.
+            idle:      no grid charging, but PV surplus is absorbed (up to the same per-step charge limit).
+            discharge: cover the net load (DC load - PV). With a PV surplus there is no net load, so the battery
+                       absorbs the surplus instead, as with idle.
+        Without PV this is the original charge / discharge / idle behaviour.
+
         Args:
             battery (Class): Battery model.
             battery_action (string): Desired action.
@@ -215,34 +227,56 @@ class BatteryEnvFwd(gym.Env):
             discharge_energy (float): Output energy.
         """
         discharge_energy = 0
+        surplus_MWh = max(self.pv_kw / 1e3 - self.dcload, 0) * 0.25
         if battery_action == 'charge':
+            self.bat_mode = 'charge'
             self.var_to_dc = battery.charge(battery.capacity, self.charging_rate_modifier(battery) * 15 / 60)
+        elif surplus_MWh > 0:
+            self.bat_mode = 'pv_charge'
+            self.var_to_dc = self._charge_from_pv(battery, surplus_MWh)
         elif battery_action == 'discharge':
+            self.bat_mode = 'discharge'
             # Only the load not already covered by PV can be served by the battery (no discharging into curtailment).
             net_dcload = max(self.dcload - self.pv_kw / 1e3, 0)
             discharge_energy = battery.discharge(battery.capacity, self.discharging_rate_modifier(battery) * 15 / 60,
                                                  net_dcload / 4)
             self.var_to_dc = -discharge_energy
         else:
+            self.bat_mode = 'idle'
             discharge_energy = 0
             self.var_to_dc = 0
         self.var_to_dc = self.var_to_dc / self.max_bat_cap
         return discharge_energy
 
+    def _charge_from_pv(self, battery, energy_MWh):
+        """Charge the battery with at most energy_MWh of PV surplus, within the same per-step limit as the charge action.
+
+        Returns:
+            float: Battery energy content after charging (MWh), like Battery2.charge.
+        """
+        T_u = self.charging_rate_modifier(battery) * 15 / 60
+        if T_u <= 0:
+            battery.charging_load = 0
+            return battery.current_load
+        # Battery2.charge stores min(max_charge, input_load) * eff_c * T_u, so this input stores at most energy_MWh.
+        return battery.charge(min(battery.capacity, energy_MWh / (battery.eff_c * T_u)), T_u)
+
     def CO2_footprint(self, dc_load, ci, a_t, discharge_energy):
         """Calculates the grid energy and carbon footprint of the current 15-minute step.
 
         Energy balance (kWh): L = DC load, P = PV, C = battery charging, D = battery discharging.
-            PV first serves the DC load (pv_self = min(P, L)); the surplus then feeds the battery if the agent chose to
-            charge (pv_to_battery = min(P - pv_self, C)); what is left is curtailed (or exported, if pv_export_credit).
-            Discharging is capped at the net load L - pv_self (see _simulate_battery_operation).
+            Self-consumption priority: PV first serves the DC load (pv_self = min(P, L)), then charges the battery
+            (pv_to_battery = min(P - pv_self, C); the battery takes PV surplus whatever the action, see
+            _simulate_battery_operation); what is left is curtailed (or exported, if pv_export_credit).
+            Discharging is capped at the net load L - pv_self. Charged energy is counted 1:1 against the grid or PV
+            (as in the original model, where charging efficiency only affects the stored energy).
             grid = L - pv_self - D + C - pv_to_battery >= 0, and CO2 = grid * ci.
         With no PV this reduces to the original accounting: L + C (charge), L - D (discharge), L (idle).
 
         Args:
             dc_load (float): DC power (MW) over the step.
             ci (float): Carbon intensity at current time step (gCO2/kWh).
-            a_t (string): Agent's action.
+            a_t (string): What the battery did: 'charge', 'discharge', 'idle' or 'pv_charge'.
             discharge_energy (float): Energy discharged by the battery (MWh).
 
         Returns:
@@ -252,7 +286,7 @@ class BatteryEnvFwd(gym.Env):
         pv = self.pv_kw * 0.25
         pv_self = min(pv, load)
         charge = discharge = 0.0
-        if a_t == 'charge':
+        if a_t in ('charge', 'pv_charge'):
             charge = self.battery.charging_load * 1e3
             self.energy_added_removed.append(charge)
             self.battery.charging_load = 0  # *Added*
@@ -260,10 +294,15 @@ class BatteryEnvFwd(gym.Env):
             discharge = discharge_energy * 1e3
             assert load - pv_self >= discharge - 1e-9, "Battery discharge should not be higher than the net (after PV) DC energy consumption"
             self.energy_added_removed.append(-1.0 * discharge)
+        if a_t == 'pv_charge':
+            # PV-only charging by construction; drop float round-off from the MWh <-> rate conversions.
+            charge = min(charge, pv - pv_self)
         pv_to_battery = min(pv - pv_self, charge)
         surplus = pv - pv_self - pv_to_battery
 
-        self.total_energy_with_battery = max(load - pv_self - discharge + charge - pv_to_battery, 0)
+        # Grouped as (load not covered by PV or battery) + (charging not covered by PV), so full PV coverage gives an
+        # exact 0, and without PV the float operations are the original ones (load + charge, load - discharge).
+        self.total_energy_with_battery = max((load - pv_self - discharge) + (charge - pv_to_battery), 0)
         CO2_footprint = self.total_energy_with_battery * ci  # (KWh) * gCO2/KWh
         if self.pv_export_credit:
             CO2_footprint -= surplus * ci

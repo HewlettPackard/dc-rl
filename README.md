@@ -170,7 +170,7 @@ The **Battery Environment** simulates the charging and discharging cycles of bat
 
 - **Action Space:**
   - Charge Battery: Stores energy in the battery during periods of low carbon intensity.
-  - Hold Energy: Maintains the current state of charge.
+  - Hold Energy: Maintains the current state of charge. With on-site PV, the battery still absorbs any PV surplus (see On-site Solar PV).
   - Discharge Battery: Provides auxiliary energy to the data center during periods of high carbon intensity.
 
 ### Interconnected Environments
@@ -258,13 +258,25 @@ PV is configured with `pv_config` in `harl/configs/envs_cfgs/sustaindc.yaml`. Wi
 
 Typical annual yields with a fixed array at latitude tilt: Phoenix about 1760 kWh/kWp, San Jose about 1720, New York about 1370, Seattle about 1170. A single-axis tracker gives about 15% more.
 
-**Energy accounting.** Every 15-minute step:
-- PV first supplies the DC load.
-- The battery agent decides what happens to any surplus. With *charge*, the battery takes the surplus first (free, zero-carbon) and only tops up from the grid. With *idle* or *discharge*, the surplus is curtailed.
-- The battery never discharges more than the load PV leaves uncovered.
+**Energy accounting.** PV is not dispatched. It follows the standard self-consumption priority of on-site PV + battery systems:
+1. PV supplies the DC load.
+2. Any surplus charges the battery automatically, within its per-step charge limit, whatever the battery action.
+3. The rest is curtailed, or exported if `pv_export_credit` is on.
+
+The battery agent only makes the grid-facing decisions:
+
+| Action | Effect |
+|---|---|
+| *charge* | Charge at the full per-step rate. PV surplus goes in first, then the grid tops it up. |
+| *idle* | No grid charging. PV surplus is still absorbed. |
+| *discharge* | Cover the load PV leaves uncovered. During a PV surplus there is nothing to cover, so the battery absorbs the surplus instead. |
+
+The info key `bat_mode` reports what the battery actually did: `charge`, `discharge`, `idle`, or `pv_charge` (absorbing surplus).
+
+Every 15-minute step:
 - Grid import is `max(load + charging − discharging − PV used, 0)`, and CO2 is grid import × carbon intensity.
 - `bat_total_energy_with_battery_KWh`, which the rewards use, is this grid import. The PV breakdown is in the info dict: `pv_power_kW`, `pv_energy_KWh`, `pv_self_consumed_KWh`, `pv_to_battery_KWh`, `pv_curtailed_KWh`, `pv_exported_KWh` and `grid_energy_KWh`.
-- With `pv_export_credit: True`, the surplus is exported instead of curtailed and credited at the current carbon intensity, so net CO2 can go negative.
+- With `pv_export_credit: True`, the surplus left after the battery is exported instead of curtailed and credited at the current carbon intensity, so net CO2 can go negative.
 
 **Observation.** `include_pv_obs: True` appends 5 values to every agent's observation, and to the end of the joint and shared observation. The values are current PV and the mean PV of each of the next 4 hours, as fractions of the AC rating. The flag is off by default, so existing checkpoints keep their observation sizes.
 

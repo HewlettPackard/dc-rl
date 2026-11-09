@@ -24,7 +24,8 @@ def check(name, cond, detail=""):
 
 
 def rollout(cfg, seed, policy='random'):
-    """Run one episode; return per-step (info, action, energy added/removed by the battery, obs)."""
+    """Run one episode; return per-step (info, action, energy added/removed by the battery, obs, pre-step battery
+    state: SoC and the most energy (kWh) the battery could take this step)."""
     random.seed(seed); np.random.seed(seed)
     env = SustainDC(cfg)
     random.seed(seed); np.random.seed(seed)
@@ -34,10 +35,14 @@ def rollout(cfg, seed, policy='random'):
     while True:
         act = ({a: int(rng.integers(3)) for a in env.agents} if policy == 'random'
                else {'agent_ls': 1, 'agent_dc': 1, 'agent_bat': 2})
+        bat, benv = env.bat_env.battery, env.bat_env
+        t_u = benv.charging_rate_modifier(bat) * 15 / 60
+        pre = {'soc': bat.get_battery_soc(),
+               'charge_limit_KWh': min(bat.calc_max_charge(t_u), bat.capacity) * bat.eff_c * t_u * 1e3}
         n_before = len(env.bat_env.energy_added_removed)
         obs, _, _, tr, info = env.step(act)
         added = env.bat_env.energy_added_removed[n_before:]
-        steps.append((info['agent_ls'], act, added[0] if added else 0.0, obs))
+        steps.append((info['agent_ls'], act, added[0] if added else 0.0, obs, pre))
         if tr['__all__']:
             return env, steps
 
@@ -76,8 +81,9 @@ check("PV is produced around midday on the env clock", pv[(hours >= 11) & (hours
 
 print("3. Energy balance and carbon accounting (random actions, CA, 1 MWp)")
 bal_err = flow_err = co2_err = 0.0
-neg_grid = cap_violations = surplus_steps = charged_from_pv = 0
-for info, act, added, _ in steps:
+neg_grid = cap_violations = 0
+idle_surplus = idle_stored = idle_grid_bad = dis_surplus = dis_surplus_ok = curtailed_steps = curtail_bad = 0
+for info, act, added, _, pre in steps:
     load = info['bat_total_energy_without_battery_KWh']
     charge, discharge = max(added, 0.0), max(-added, 0.0)
     grid, pv_e = info['grid_energy_KWh'], info['pv_energy_KWh']
@@ -87,9 +93,19 @@ for info, act, added, _ in steps:
     co2_err = max(co2_err, abs(info['bat_CO2_footprint'] - grid * info['bat_avg_CI']))
     neg_grid += grid < 0
     cap_violations += discharge > max(load - pv_e, 0) + 1e-6
-    if pv_e > load:
-        surplus_steps += 1
-        charged_from_pv += act['agent_bat'] == 0 and info['pv_to_battery_KWh'] > 0
+    surplus = pv_e > load
+    if act['agent_bat'] == 2:  # idle: never charges from the grid, but stores PV surplus while not full
+        idle_grid_bad += abs(grid - max(load - pv_e, 0)) > 1e-6
+        if surplus and pre['soc'] < 0.99:
+            idle_surplus += 1
+            idle_stored += info['pv_to_battery_KWh'] > 0 and grid == 0
+    if act['agent_bat'] == 1 and surplus:  # discharge during a surplus: nothing discharged, surplus absorbed
+        dis_surplus += 1
+        dis_surplus_ok += discharge == 0 and info['bat_mode'] == 'pv_charge'
+    if act['agent_bat'] != 0 and info['pv_curtailed_KWh'] > 1e-9:
+        # PV is only curtailed when the battery took all it could this step
+        curtailed_steps += 1
+        curtail_bad += not (abs(info['pv_to_battery_KWh'] - pre['charge_limit_KWh']) < 1e-6 or pre['soc'] > 0.999)
 check("load + charge = grid + PV self-use + PV to battery + discharge", bal_err < 1e-6, f"max err {bal_err:.2e} kWh")
 check("PV = self-use + to battery + curtailed + exported", flow_err < 1e-6, f"max err {flow_err:.2e} kWh")
 check("CO2 = grid import x CI", co2_err < 1e-6)
@@ -97,8 +113,13 @@ check("grid import never negative", neg_grid == 0)
 check("battery never discharges more than the net (after PV) load", cap_violations == 0)
 check("bat_total_energy_with_battery_KWh is the grid import",
       all(s[0]['bat_total_energy_with_battery_KWh'] == s[0]['grid_energy_KWh'] for s in steps))
-check("episode has PV-surplus steps, and charging then stores PV", surplus_steps > 0 and charged_from_pv > 0,
-      f"{surplus_steps} surplus steps, {charged_from_pv} charged from PV")
+check("idle stores PV surplus automatically (grid import 0)", idle_surplus > 0 and idle_stored == idle_surplus,
+      f"{idle_stored}/{idle_surplus} idle surplus steps")
+check("idle never charges from the grid", idle_grid_bad == 0)
+check("discharge during a surplus absorbs PV instead", dis_surplus > 0 and dis_surplus_ok == dis_surplus,
+      f"{dis_surplus_ok}/{dis_surplus} steps")
+check("PV curtailed only when the battery took its full per-step charge", curtail_bad == 0,
+      f"{curtailed_steps} curtailment steps")
 
 print("4. PV lowers grid energy and CO2 (same seed, do-nothing actions)")
 _, no_pv = rollout({**BASE, 'location': 'ca'}, seed=5, policy='noop')
@@ -107,6 +128,10 @@ co2_no, co2_pv = (sum(s[0]['bat_CO2_footprint'] for s in r) for r in (no_pv, wit
 it_no, it_pv = (sum(s[0]['dc_ITE_total_power_kW'] for s in r) for r in (no_pv, with_pv))
 check("same exogenous inputs and DC power with and without PV", it_no == it_pv)
 check("CO2 is lower with PV", co2_pv < co2_no, f"{co2_no / 1e3:.0f} -> {co2_pv / 1e3:.0f} kgCO2")
+stored = sum(s[0]['pv_to_battery_KWh'] for s in with_pv)
+soc_end = with_pv[-1][0]['bat_SOC']
+check("do-nothing policy: the battery fills up from PV surplus", stored > 0 and soc_end > 0,
+      f"{stored:.0f} kWh stored, final SoC {soc_end:.2f}")
 
 print("5. Export credit")
 _, exp = rollout({**BASE, 'location': 'ca', 'pv_config': PV, 'pv_export_credit': True}, seed=3)

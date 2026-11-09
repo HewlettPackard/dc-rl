@@ -94,8 +94,9 @@ class EnvConfig(dict):
         # the end of each agent's observation (+5 dims). Off by default so existing checkpoints keep their sizes.
         'include_pv_obs': False,
 
-        # PV surplus that neither the DC nor a charging battery uses is curtailed (False) or exported and credited
-        # at the current carbon intensity (True; net CO2 can then be negative).
+        # PV is used by the DC first, then stored in the battery automatically (whatever its action, within its charge
+        # limit). What is left is curtailed (False) or exported and credited at the current carbon intensity (True;
+        # net CO2 can then be negative).
         'pv_export_credit': False,
     }
 
