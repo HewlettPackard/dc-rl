@@ -28,6 +28,7 @@
         "CHILLER_COP_K" : 0.1,
         "CHILLER_COP_T_NOMINAL" : 25.0,
         "CT_FAN_REF_P" : 1000,
+        "CT_FAN_POWER_FRACTION" : 0.015,
         "CT_REFRENCE_AIR_FLOW_RATE" : 2.8315,
         "CW_PRESSURE_DROP" : 300000,
         "CW_WATER_FLOW_RATE" : 0.0011,

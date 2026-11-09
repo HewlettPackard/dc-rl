@@ -143,6 +143,8 @@ class DC_Config:
 
         # Cooling Tower parameters
         self.CT_FAN_REF_P = json_obj['hvac_configuration']['CT_FAN_REF_P']
+        # Cooling tower fan rated power as a fraction of the rated heat rejection (set when the env sizes the tower)
+        self.CT_FAN_POWER_FRACTION = json_obj['hvac_configuration'].get('CT_FAN_POWER_FRACTION', 0.015)
         self.CT_REFRENCE_AIR_FLOW_RATE = json_obj['hvac_configuration']['CT_REFRENCE_AIR_FLOW_RATE']
         self.CT_PRESSURE_DROP = json_obj['hvac_configuration']['CT_PRESSURE_DROP'] #Pa 
         self.CT_WATER_FLOW_RATE = json_obj['hvac_configuration']['CT_WATER_FLOW_RATE']#m3/s
