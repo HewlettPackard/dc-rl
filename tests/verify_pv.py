@@ -35,14 +35,12 @@ def rollout(cfg, seed, policy='random'):
     while True:
         act = ({a: int(rng.integers(3)) for a in env.agents} if policy == 'random'
                else {'agent_ls': 1, 'agent_dc': 1, 'agent_bat': 2})
-        bat, benv = env.bat_env.battery, env.bat_env
-        t_u = benv.charging_rate_modifier(bat) * 15 / 60
-        pre = {'soc': bat.get_battery_soc(),
-               'charge_limit_KWh': min(bat.calc_max_charge(t_u), bat.capacity) * bat.eff_c * t_u * 1e3}
-        n_before = len(env.bat_env.energy_added_removed)
+        bat = env.bat_env.battery
+        pre = {'soc': bat.get_battery_soc(), 'full': bat.get_battery_soc() >= bat.soc_max - 1e-9,
+               'charge_limit_KWh': float(bat.charge_limit(bat.current_load, 0.25)) * 1e3}
         obs, _, _, tr, info = env.step(act)
-        added = env.bat_env.energy_added_removed[n_before:]
-        steps.append((info['agent_ls'], act, added[0] if added else 0.0, obs, pre))
+        i = info['agent_ls']
+        steps.append((i, act, i['bat_energy_in_KWh'] - i['bat_energy_out_KWh'], obs, pre))
         if tr['__all__']:
             return env, steps
 
@@ -96,7 +94,7 @@ for info, act, added, _, pre in steps:
     surplus = pv_e > load
     if act['agent_bat'] == 2:  # idle: never charges from the grid, but stores PV surplus while not full
         idle_grid_bad += abs(grid - max(load - pv_e, 0)) > 1e-6
-        if surplus and pre['soc'] < 0.99:
+        if surplus and pre['charge_limit_KWh'] > 1e-9:
             idle_surplus += 1
             idle_stored += info['pv_to_battery_KWh'] > 0 and grid == 0
     if act['agent_bat'] == 1 and surplus:  # discharge during a surplus: nothing discharged, surplus absorbed
@@ -105,7 +103,7 @@ for info, act, added, _, pre in steps:
     if act['agent_bat'] != 0 and info['pv_curtailed_KWh'] > 1e-9:
         # PV is only curtailed when the battery took all it could this step
         curtailed_steps += 1
-        curtail_bad += not (abs(info['pv_to_battery_KWh'] - pre['charge_limit_KWh']) < 1e-6 or pre['soc'] > 0.999)
+        curtail_bad += not (abs(info['pv_to_battery_KWh'] - pre['charge_limit_KWh']) < 1e-6 or pre['full'])
 check("load + charge = grid + PV self-use + PV to battery + discharge", bal_err < 1e-6, f"max err {bal_err:.2e} kWh")
 check("PV = self-use + to battery + curtailed + exported", flow_err < 1e-6, f"max err {flow_err:.2e} kWh")
 check("CO2 = grid import x CI", co2_err < 1e-6)

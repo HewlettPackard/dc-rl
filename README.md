@@ -168,6 +168,17 @@ The **Battery Environment** simulates the charging and discharging cycles of bat
   - Grid Energy Consumption: Combined energy consumption of IT and cooling systems.
   - Grid Carbon Intensity (CI): Current and forecasted carbon intensity values to determine optimal charging and discharging times.
 
+- **Battery Model** (`envs/battery_model.py`, configured with `battery_config` in `harl/configs/envs_cfgs/sustaindc.yaml`): a stationary lithium-ion battery (LFP chemistry) rated by duration. Charging and discharging have the same power limit, `c_rate` × capacity.
+
+  | Key | Default | Meaning |
+  |---|---|---|
+  | `c_rate` | 0.5 | Power / capacity per hour. 0.5 is a 2-hour battery, common for commercial behind-the-meter storage; 0.25 (4-hour) is typical of grid scale. |
+  | `eff_charge`, `eff_discharge` | 0.95 | One-way efficiencies, about 90% round trip. Grid or PV pays for the losses. |
+  | `soc_min`, `soc_max` | 0.05, 0.95 | Usable state-of-charge window. Episodes start at `soc_min`. |
+  | `taper_start` | 0.90 | Charging power tapers linearly to 0 between `taper_start` and `soc_max`. |
+
+  With the defaults, a 1 MWh battery charges and discharges at up to 500 kW (125 kWh per 15-minute step) and goes from empty to full in about 2 hours. Discharging is also capped at the DC load (net of PV), because the battery only supplies the data center. The info dict reports `bat_energy_in_KWh` (drawn to charge) and `bat_energy_out_KWh` (delivered).
+
 - **Action Space:**
   - Charge Battery: Stores energy in the battery during periods of low carbon intensity.
   - Hold Energy: Maintains the current state of charge. With on-site PV, the battery still absorbs any PV surplus (see On-site Solar PV).

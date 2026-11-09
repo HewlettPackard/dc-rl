@@ -5,6 +5,14 @@ agents:
 location: ca
 workload_file: 'Alibaba_CPU_Data_Hourly_1.csv'
 max_bat_cap_Mw: 1.0
+# Stationary Li-ion battery (envs/battery_model.py): symmetric charge/discharge power = c_rate x capacity.
+battery_config:
+  c_rate: 0.5          # 0.5 = 2-hour battery (0.25 = 4-hour, 1.0 = 1-hour)
+  eff_charge: 0.95     # one-way efficiencies (~90% round trip)
+  eff_discharge: 0.95
+  soc_min: 0.05        # usable SoC window
+  soc_max: 0.95
+  taper_start: 0.90    # charging power tapers linearly to 0 between taper_start and soc_max
 individual_reward_weight: 0.8
 flexible_load: 0.6
 ls_reward: default_ls_reward

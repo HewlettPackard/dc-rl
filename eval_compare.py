@@ -60,7 +60,7 @@ STEP_HOURS = 0.25  # 15-minute steps
 # Config keys that define the simulated scenario. Policies may differ in observation settings, not in these.
 SCENARIO_KEYS = ['location', 'month', 'days_per_episode', 'workload_file', 'cintensity_file', 'weather_file',
                  'flexible_load', 'max_bat_cap_Mw', 'dc_config_file', 'datacenter_capacity_mw', 'timezone_shift',
-                 'pv_config', 'pv_export_credit']
+                 'pv_config', 'pv_export_credit', 'battery_config']
 
 METRICS = [  # (name, unit)
     ('co2', 'kgCO2'),

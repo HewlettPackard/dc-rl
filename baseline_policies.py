@@ -167,28 +167,29 @@ class DCOracle:
 # ---------------------------------------------------------------------------------------------------------------------
 # Battery
 # ---------------------------------------------------------------------------------------------------------------------
-def battery_transition(soc, cap, action, dc_load_mwh):
-    """Vectorized replica of BatteryEnvFwd + Battery2 for one 15-minute step.
+def battery_transition(stored, battery, action, dc_load_mwh, pv_mwh=0.0, dt=0.25):
+    """Vectorized replica of BatteryEnvFwd's battery step, using the env's own Battery limits (envs/battery_model.py).
 
-    soc: stored energy (MWh, array); action: 'charge' | 'discharge' | 'idle'; dc_load_mwh: this step's DC energy cap
-    on discharge (dcload / 4). Returns (next soc, grid energy change in MWh: + when charging, - when discharging).
+    stored: stored energy (MWh, array); battery: the env's Battery; action: 'charge' | 'discharge' | 'idle';
+    dc_load_mwh / pv_mwh: this step's DC energy and PV energy (scalars). PV surplus is stored automatically whatever
+    the action (self-consumption), charge tops up from the grid, discharge covers the net load.
+    Returns (next stored energy, grid energy change in MWh: + when charging from the grid, - when discharging,
+    PV energy stored in MWh).
     """
-    soc = np.asarray(soc, dtype=float)
-    frac = soc / cap
+    stored = np.asarray(stored, dtype=float)
+    zeros = np.zeros_like(stored)
+    surplus = max(pv_mwh - dc_load_mwh, 0.0)
     if action == 'charge':
-        rate = np.round(0.5 * (1 - 1 / (1 + np.exp(-10 * (frac - 0.5)))), 4)
-        t_u = rate * 15 / 60
-        max_charge = np.minimum(cap * 0.1, (cap - soc) / (t_u + 0.04))
-        added = np.minimum(max_charge, cap) * t_u
-        return np.round(soc + added, 8), added
+        draw = battery.charge_limit(stored, dt)
+        from_pv = np.minimum(draw, surplus)
+        return stored + draw * battery.eff_charge, draw - from_pv, from_pv
+    if surplus > 0:
+        draw = np.minimum(battery.charge_limit(stored, dt), surplus)
+        return stored + draw * battery.eff_charge, zeros, draw
     if action == 'discharge':
-        rate = np.maximum(0.5, 4 / (1 + np.exp(-10 * (frac - 0.25))))
-        t_u = rate * 15 / 60
-        max_dis = np.minimum(np.minimum(cap, soc / (0.01 + t_u)), dc_load_mwh)
-        nxt = np.round(soc - np.minimum(max_dis, cap) * t_u, 8)
-        delivered = np.where(max_dis < cap, max_dis * t_u, cap * t_u)
-        return nxt, -delivered
-    return soc, np.zeros_like(soc)
+        out = np.minimum(battery.discharge_limit(stored, dt), max(dc_load_mwh - pv_mwh, 0.0))
+        return np.maximum(stored - out / battery.eff_discharge, battery.soc_min * battery.capacity), -out, zeros
+    return stored, zeros, zeros
 
 
 BAT_ACTIONS = {0: 'charge', 1: 'discharge', 2: 'idle'}
@@ -216,45 +217,54 @@ class BatRule:
 
 
 class BatOracle:
-    """Dynamic programming over the battery's stored energy with the true CI and an estimated DC load for the whole
-    episode (load at a 18 C setpoint without load shifting). Minimizes sum_t CI_t * (grid energy added by the battery)."""
+    """Dynamic programming over the battery's stored energy with the true CI, PV and an estimated DC load for the whole
+    episode (load at a 18 C setpoint without load shifting). Minimizes sum_t CI_t * (grid energy added by the battery,
+    plus PV export credit forgone by storing PV when pv_export_credit is on)."""
 
     def __init__(self, grid_points=201):
         self.g = grid_points
 
     def init(self, sdc):
         bat = sdc.bat_env
+        self.battery = bat.battery
         self.cap = float(bat.max_bat_cap)
+        # With pv_export_credit, PV stored in the battery is PV not exported: it loses the export credit.
+        self.export_credit = bool(bat.pv_export_credit)
         self.t0 = sdc.t_m.current_timestep
         n = int(sdc.t_m.total_timesteps - sdc.t_m.current_timestep)
         ci = np.asarray(sdc.ci_m.carbon_smooth[sdc.ci_m.time_step:sdc.ci_m.time_step + n])
         wl = np.asarray(sdc.workload_m.cpu_smooth[sdc.workload_m.time_step:sdc.workload_m.time_step + n])
         amb = np.asarray(sdc.weather_m.temperature_data[sdc.weather_m.time_step:sdc.weather_m.time_step + n])
         wb = np.asarray(sdc.weather_m.wet_bulb_data[sdc.weather_m.time_step:sdc.weather_m.time_step + n])
-        n = min(len(ci), len(wl), len(amb), len(wb))
+        pv = np.asarray(sdc.pv_m.pv_kw[sdc.pv_m.time_step:sdc.pv_m.time_step + n])
+        n = min(len(ci), len(wl), len(amb), len(wb), len(pv))
         self.ci = ci[:n]
+        self.pv_mwh = pv[:n] / 1e3 / 4
         self.load_mwh = np.array([sum(dc_power(sdc, float(wl[k]), 18.0, float(amb[k]), float(wb[k]))) / 1e6 / 4
                                   for k in range(n)])
-        grid = np.linspace(0, self.cap, self.g)
+        b = self.battery
+        grid = np.linspace(b.soc_min * self.cap, b.soc_max * self.cap, self.g)
         self.grid = grid
         V = np.zeros((n + 1, self.g))
         for k in range(n - 1, -1, -1):
             best = np.full(self.g, np.inf)
             for a in ('charge', 'discharge', 'idle'):
-                nxt, de = battery_transition(grid, self.cap, a, self.load_mwh[k])
-                best = np.minimum(best, self.ci[k] * de * 1e3 + np.interp(nxt, grid, V[k + 1]))
+                best = np.minimum(best, self._cost(k, grid, a, V[k + 1]))
             V[k] = best
         self.V = V
+
+    def _cost(self, k, stored, action, v_next):
+        """CO2 of the battery's effect this step (g) plus the cost-to-go of the next stored energy."""
+        nxt, grid_delta, pv_stored = battery_transition(stored, self.battery, action, self.load_mwh[k], self.pv_mwh[k])
+        step = self.ci[k] * (grid_delta + self.export_credit * pv_stored) * 1e3
+        return step + np.interp(nxt, self.grid, v_next)
 
     def act(self, sdc):
         k = int(sdc.t_m.current_timestep - self.t0)
         if k >= len(self.ci):
             return 2
-        soc = float(sdc.bat_env.battery.current_load)
-        cost = {}
-        for a_id, a in BAT_ACTIONS.items():
-            nxt, de = battery_transition(np.array([soc]), self.cap, a, self.load_mwh[k])
-            cost[a_id] = float(self.ci[k] * de[0] * 1e3 + np.interp(nxt[0], self.grid, self.V[k + 1]))
+        stored = np.array([float(sdc.bat_env.battery.current_load)])
+        cost = {a_id: float(self._cost(k, stored, a, self.V[k + 1])[0]) for a_id, a in BAT_ACTIONS.items()}
         return min(cost, key=cost.get)
 
 

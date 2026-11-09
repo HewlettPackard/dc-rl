@@ -58,6 +58,10 @@ class EnvConfig(dict):
         # Battery energy capacity in MWh (the key name says "Mw" for backwards compatibility).
         # None = size the battery automatically to one hour of the data center's peak total power.
         'max_bat_cap_Mw': None,
+
+        # Battery specs (envs/battery_model.py): stationary Li-ion rated by duration, symmetric charge/discharge power.
+        # Defaults: c_rate 0.5 (2-hour battery), 95% one-way efficiencies, SoC window 5-95%, charge taper above 90%.
+        'battery_config': {},
         
         # Data center configuration file
         'dc_config_file': 'dc_config.json',
@@ -176,7 +180,7 @@ class SustainDC(gym.Env):
         self.dc_env, _ = make_dc_pyeplus_env(month=self.month + 1, location=ci_loc, max_bat_cap_Mw=self.max_bat_cap_Mw, use_ls_cpu_load=True, 
                                              datacenter_capacity_mw=self.datacenter_capacity_mw, dc_config_file=self.dc_config_file, add_cpu_usage=False)
         bat_capacity_Mwh = self.max_bat_cap_Mw if self.max_bat_cap_Mw is not None else self.dc_env.ranges['max_battery_energy_Mwh']
-        self.bat_env = make_bat_fwd_env(month=self.month, max_bat_cap_Mwh=bat_capacity_Mwh, 
+        self.bat_env = make_bat_fwd_env(month=self.month, max_bat_cap_Mwh=bat_capacity_Mwh, battery_config=env_config['battery_config'],
                                         max_dc_pw_MW=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1] / 1e6, 
                                         dcload_max=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][1],
                                         dcload_min=self.dc_env.ranges['Facility Total Electricity Demand Rate(Whole Building)'][0],
