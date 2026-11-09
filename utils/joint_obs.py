@@ -10,6 +10,10 @@ Per-agent observation layouts (built in sustaindc_env.SustainDC._create_*_state)
 Everything in dc/bat duplicates ls except dc's next workload / next temperature (and setpoint) and bat's SoC,
 so the union is ls + those values: 29 dims, or 30 with the setpoint (appended last, so SoC stays at index 28).
 
+With include_pv_obs, every agent's observation ends with the same 5 PV features (current PV and the mean of each of
+the next 4 hours, normalized by the AC rating); they sit at ls[26:31] and are appended once, at the very end of the
+joint observation (after the setpoint, if any).
+
 The indices are absolute (from the start of each array), so this also works on observations that
 supersuit has zero-padded at the end (as in the HARL wrapper).
 """
@@ -22,16 +26,19 @@ DC_SETPOINT_IDX = 14
 BAT_SOC_IDX = 12
 
 JOINT_OBS_DIM = LS_OBS_DIM + 3
+PV_OBS_DIM = 5
 
 
-def joint_obs_dim(include_dc_setpoint=False):
-    return JOINT_OBS_DIM + int(include_dc_setpoint)
+def joint_obs_dim(include_dc_setpoint=False, include_pv_obs=False):
+    return JOINT_OBS_DIM + int(include_dc_setpoint) + PV_OBS_DIM * int(include_pv_obs)
 
 
-def build_joint_obs(ls_state, dc_state, bat_state, include_dc_setpoint=False):
-    """Return the joint observation [ls(26), dc next workload, dc next temp, bat SoC(, dc setpoint)]."""
+def build_joint_obs(ls_state, dc_state, bat_state, include_dc_setpoint=False, include_pv_obs=False):
+    """Return the joint observation [ls(26), dc next workload, dc next temp, bat SoC(, dc setpoint)(, PV(5))]."""
     dc_idx = [DC_NEXT_WORKLOAD_IDX, DC_NEXT_TEMP_IDX]
     parts = [np.asarray(ls_state)[:LS_OBS_DIM], np.asarray(dc_state)[dc_idx], np.asarray(bat_state)[[BAT_SOC_IDX]]]
     if include_dc_setpoint:
         parts.append(np.asarray(dc_state)[[DC_SETPOINT_IDX]])
+    if include_pv_obs:
+        parts.append(np.asarray(ls_state)[LS_OBS_DIM:LS_OBS_DIM + PV_OBS_DIM])
     return np.hstack(parts).astype(np.float32)

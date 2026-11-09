@@ -230,6 +230,48 @@ Below is a summary of the selected locations, typical weather values, and carbon
 
 </div>
 
+#### On-site Solar PV
+**SustainDC** can simulate an on-site solar PV array next to the DC. No extra dataset is needed. The `.epw` weather files already contain hourly global, direct and diffuse irradiance (GHI/DNI/DHI), air temperature and wind speed. Their header gives each site's latitude, longitude, time zone and elevation. PV output therefore comes from the same weather the cooling model sees: cloudy hours are also cool hours, and PV follows the same random day shift as the temperature in every episode.
+
+Generation is computed once per location with [pvlib](https://pvlib-python.readthedocs.io), in `envs/pv_model.py`. The model chain is:
+1. solar position;
+2. Perez transposition to the panel plane;
+3. incidence-angle losses;
+4. SAPM cell temperature;
+5. PVWatts DC power and a flat system loss;
+6. a PVWatts inverter, which clips output at the AC rating.
+
+PV is configured with `pv_config` in `harl/configs/envs_cfgs/sustaindc.yaml`. With `capacity_kWp: 0` (the default) PV is off and the simulation is unchanged.
+
+| Key | Default | Meaning |
+|---|---|---|
+| `capacity_kWp` | 0 | DC nameplate capacity (kWp). |
+| `surface_tilt` | site latitude | Panel tilt (degrees). Fixed mount only. |
+| `surface_azimuth` | 180 | Panel azimuth (180 = facing south), or the tracker axis azimuth. |
+| `tracking` | `fixed` | `fixed` or `single_axis` (horizontal N–S axis with backtracking; also takes `max_angle` and `gcr`). |
+| `gamma_pdc` | -0.0035 | Power temperature coefficient (1/°C). |
+| `temp_model` | `open_rack_glass_polymer` | SAPM mounting / module type. |
+| `system_losses_pct` | 14 | Soiling, wiring, mismatch, availability, … |
+| `dc_ac_ratio` | 1.2 | DC rating / inverter AC rating. |
+| `inverter_eff_nom` | 0.96 | Nominal inverter efficiency. |
+| `albedo` | from the EPW | Ground reflectance. |
+
+Typical annual yields with a fixed array at latitude tilt: Phoenix about 1760 kWh/kWp, San Jose about 1720, New York about 1370, Seattle about 1170. A single-axis tracker gives about 15% more.
+
+**Energy accounting.** Every 15-minute step:
+- PV first supplies the DC load.
+- The battery agent decides what happens to any surplus. With *charge*, the battery takes the surplus first (free, zero-carbon) and only tops up from the grid. With *idle* or *discharge*, the surplus is curtailed.
+- The battery never discharges more than the load PV leaves uncovered.
+- Grid import is `max(load + charging − discharging − PV used, 0)`, and CO2 is grid import × carbon intensity.
+- `bat_total_energy_with_battery_KWh`, which the rewards use, is this grid import. The PV breakdown is in the info dict: `pv_power_kW`, `pv_energy_KWh`, `pv_self_consumed_KWh`, `pv_to_battery_KWh`, `pv_curtailed_KWh`, `pv_exported_KWh` and `grid_energy_KWh`.
+- With `pv_export_credit: True`, the surplus is exported instead of curtailed and credited at the current carbon intensity, so net CO2 can go negative.
+
+**Observation.** `include_pv_obs: True` appends 5 values to every agent's observation, and to the end of the joint and shared observation. The values are current PV and the mean PV of each of the next 4 hours, as fractions of the AC rating. The flag is off by default, so existing checkpoints keep their observation sizes.
+
+**Overriding from the command line.**
+- HARL: pass keys directly, e.g. `--capacity_kWp 500 --include_pv_obs True`.
+- `train_single_agent.py` and `eval_compare.py`: use `--pv_capacity_kWp 500`. `train_single_agent.py` also takes `--include_pv_obs`.
+
 
 ## Customization
 **SustainDC** offers extensive customization options to tailor the environments to specific needs and configurations. Users can modify various parameters and components across the **Workload**, **Data Center**, and **Battery** environments, as well as external variables like weather carbon intensity data, and workload trace.

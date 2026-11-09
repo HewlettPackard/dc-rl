@@ -51,7 +51,7 @@ import yaml
 
 from sustaindc_env import SustainDC
 from sustaindc_single_env import AGENTS, decode_joint_action
-from utils.joint_obs import build_joint_obs
+from utils.joint_obs import PV_OBS_DIM, build_joint_obs
 
 ENV_CFG = 'harl/configs/envs_cfgs/sustaindc.yaml'
 NOOP = {'agent_ls': 1, 'agent_dc': 1, 'agent_bat': 2}
@@ -59,11 +59,14 @@ STEP_HOURS = 0.25  # 15-minute steps
 
 # Config keys that define the simulated scenario. Policies may differ in observation settings, not in these.
 SCENARIO_KEYS = ['location', 'month', 'days_per_episode', 'workload_file', 'cintensity_file', 'weather_file',
-                 'flexible_load', 'max_bat_cap_Mw', 'dc_config_file', 'datacenter_capacity_mw', 'timezone_shift']
+                 'flexible_load', 'max_bat_cap_Mw', 'dc_config_file', 'datacenter_capacity_mw', 'timezone_shift',
+                 'pv_config', 'pv_export_credit']
 
 METRICS = [  # (name, unit)
     ('co2', 'kgCO2'),
-    ('total_energy', 'MWh'),   # grid energy incl. battery charging/discharging
+    ('total_energy', 'MWh'),   # grid energy incl. battery charging/discharging (net of on-site PV)
+    ('pv_energy', 'MWh'),      # on-site PV generation
+    ('pv_curtailed', 'MWh'),   # PV surplus not used by the DC or the battery (curtailed or exported)
     ('it_energy', 'MWh'),
     ('hvac_energy', 'MWh'),
     ('water', 'L'),
@@ -81,6 +84,7 @@ METRICS = [  # (name, unit)
 # ---------------------------------------------------------------------------------------------------------------------
 class NoOpPolicy:
     include_dc_setpoint = False
+    include_pv_obs = False
     train_config = {}
 
     def reset(self, seed):
@@ -105,6 +109,7 @@ class SB3Policy:
             cfg = json.load(f)
         self.train_config = cfg['env_args']
         self.include_dc_setpoint = bool(self.train_config.get('include_dc_setpoint', False))
+        self.include_pv_obs = bool(self.train_config.get('include_pv_obs', False))
         self.action_type = self.train_config.get('action_type', 'multidiscrete')
         self.model = ALGOS[cfg['main_args']['algo']].load(os.path.join(run_dir, 'models', model_name), device='cpu')
 
@@ -112,7 +117,7 @@ class SB3Policy:
         pass
 
     def act(self, sdc):
-        obs = build_joint_obs(sdc.ls_state, sdc.dc_state, sdc.bat_state, self.include_dc_setpoint)
+        obs = build_joint_obs(sdc.ls_state, sdc.dc_state, sdc.bat_state, self.include_dc_setpoint, self.include_pv_obs)
         action, _ = self.model.predict(obs, deterministic=True)
         return decode_joint_action(action, self.action_type)
 
@@ -132,6 +137,7 @@ class HARLPolicy:
             raise ValueError(f"HARL algo {self.algo!r} not supported here (discrete-action algos: {self.ON_POLICY + self.OFF_POLICY})")
         self.train_config = cfg['env_args']
         self.include_dc_setpoint = bool(self.train_config.get('include_dc_setpoint', False))
+        self.include_pv_obs = bool(self.train_config.get('include_pv_obs', False))
         self.agents = list(self.train_config['agents'])
         model_args, algo_args = cfg['algo_args']['model'], cfg['algo_args']['algo']
         self.recurrent = model_args.get('use_recurrent_policy', False) or model_args.get('use_naive_recurrent_policy', False)
@@ -141,7 +147,8 @@ class HARLPolicy:
         self.rnn_shape = (1, model_args.get('recurrent_n', 1), hidden[-1])
 
         # Supersuit pads every active agent's observation with zeros up to the largest one.
-        obs_dims = {'agent_ls': 26, 'agent_dc': 14 + int(self.include_dc_setpoint), 'agent_bat': 13}
+        n_pv = PV_OBS_DIM * int(self.include_pv_obs)
+        obs_dims = {'agent_ls': 26 + n_pv, 'agent_dc': 14 + int(self.include_dc_setpoint) + n_pv, 'agent_bat': 13 + n_pv}
         self.pad_dim = max(obs_dims[a] for a in self.agents)
         obs_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.pad_dim,), dtype=np.float32)
         act_space = spaces.Discrete(3)
@@ -165,8 +172,8 @@ class HARLPolicy:
 
     def _obs(self, sdc, agent):
         state = {'agent_ls': sdc.ls_state, 'agent_dc': sdc.dc_state, 'agent_bat': sdc.bat_state}[agent]
-        if agent == 'agent_dc' and not self.include_dc_setpoint:
-            state = state[:14]  # the eval env may append the setpoint; this policy was trained without it
+        if agent == 'agent_dc' and not self.include_dc_setpoint and sdc.include_dc_setpoint:
+            state = np.delete(state, 14)  # the eval env appends the setpoint; this policy was trained without it
         padded = np.zeros((1, self.pad_dim), dtype=np.float32)
         padded[0, :len(state)] = state
         return padded
@@ -239,6 +246,8 @@ def run_episode(sdc, policy, seed):
         i = info['agent_ls']  # merged ls/dc/bat info
         m['co2'] += i['bat_CO2_footprint'] / 1e3
         m['total_energy'] += i['bat_total_energy_with_battery_KWh'] / 1e3
+        m['pv_energy'] += i['pv_energy_KWh'] / 1e3
+        m['pv_curtailed'] += (i['pv_curtailed_KWh'] + i['pv_exported_KWh']) / 1e3
         m['it_energy'] += i['dc_ITE_total_power_kW'] * STEP_HOURS / 1e3
         m['hvac_energy'] += i['dc_HVAC_total_power_kW'] * STEP_HOURS / 1e3
         m['water'] += i['dc_water_usage']
@@ -342,7 +351,8 @@ def combine(dirs, out_dir):
         with open(os.path.join(d, 'episodes.csv')) as f:
             for row in csv.DictReader(f):
                 label = row['policy']
-                results.setdefault(label, {})[int(row['seed'])] = {n: float(row[n]) for n, _ in METRICS}
+                # Metrics added later (e.g. PV) are missing from older CSVs: read them as 0.
+                results.setdefault(label, {})[int(row['seed'])] = {n: float(row.get(n, 0.0)) for n, _ in METRICS}
                 fps.setdefault(int(row['seed']), set()).add(row['inputs_fingerprint'])
     seeds = sorted(next(iter(results.values())))
     if any(sorted(r) != seeds for r in results.values()):
@@ -374,6 +384,8 @@ def main():
     p.add_argument('--location', default=None)
     p.add_argument('--month', type=int, default=None)
     p.add_argument('--days_per_episode', type=int, default=None)
+    p.add_argument('--pv_capacity_kWp', type=float, default=None,
+                   help="Override the env config's on-site PV capacity (pv_config.capacity_kWp; 0 = no PV).")
     p.add_argument('--out_dir', default=None, help='Default: results/eval_compare/<timestamp>')
     args = p.parse_args()
     torch.set_num_threads(1)
@@ -388,6 +400,8 @@ def main():
     for key in ['location', 'month', 'days_per_episode']:
         if getattr(args, key) is not None:
             scenario[key] = getattr(args, key)
+    if args.pv_capacity_kWp is not None:
+        scenario['pv_config'] = {**scenario.get('pv_config', {}), 'capacity_kWp': args.pv_capacity_kWp}
     seeds = [args.seed + i for i in range(args.n_episodes)]
 
     policies = [make_policy(s) for s in expand_specs(args.policy)]
@@ -402,7 +416,8 @@ def main():
     results, fingerprints = {}, {}
     for label, pol in policies:
         # Observation flags follow the policy; everything that shapes the episode comes from the scenario.
-        sdc = SustainDC({**scenario, 'agents': list(AGENTS), 'include_dc_setpoint': pol.include_dc_setpoint})
+        sdc = SustainDC({**scenario, 'agents': list(AGENTS), 'include_dc_setpoint': pol.include_dc_setpoint,
+                         'include_pv_obs': pol.include_pv_obs})
         results[label], fingerprints[label] = [], []
         for seed in seeds:
             m, fp = run_episode(sdc, pol, seed)

@@ -265,6 +265,7 @@ class ComposedPolicy:
     """One controller per subsystem; subsystems without a controller do nothing. Same interface as eval_compare's
     policies: reset(seed) at the start of each episode, act(sdc) -> {agent: action}."""
     include_dc_setpoint = False
+    include_pv_obs = False
     train_config = {}
 
     def __init__(self, ls=None, dc=None, bat=None):

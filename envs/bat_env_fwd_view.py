@@ -50,6 +50,13 @@ class BatteryEnvFwd(gym.Env):
         self.ci_n = []
         self.dcload_max = env_config['dcload_max']
         self.dcload_min = env_config['dcload_min']
+
+        # On-site PV (kW AC) available in the current step; set by SustainDC with set_pv(). See CO2_footprint().
+        self.pv_kw = 0.0
+        # True: PV surplus not used by the DC or the battery is exported and credited at the current CI (net CO2 can
+        # go negative). False (default): the surplus is curtailed.
+        self.pv_export_credit = env_config.get('pv_export_credit', False)
+        self.pv_flows = self._pv_flows(0.0, 0.0, 0.0, 0.0)
         
     def reset(self, *, seed=None, options=None):
         """
@@ -119,6 +126,7 @@ class BatteryEnvFwd(gym.Env):
             'bat_a_t': action_instantaneous,
             'bat_dcload_min': self.dcload_min,
             'bat_dcload_max': self.dcload_max,
+            **self.pv_flows,
         }
         #Done and truncated are managed by the main class, implement individual function if needed
         truncated = False
@@ -163,6 +171,10 @@ class BatteryEnvFwd(gym.Env):
         self.temp_state[0] = self.dcload
         return self.temp_state
 
+    def set_pv(self, pv_kw):
+        """Set the on-site PV AC power (kW) available in the current step."""
+        self.pv_kw = float(pv_kw)
+
     def set_dcload(self, dc_load):
         """Set the current DC energy consumption
 
@@ -206,8 +218,10 @@ class BatteryEnvFwd(gym.Env):
         if battery_action == 'charge':
             self.var_to_dc = battery.charge(battery.capacity, self.charging_rate_modifier(battery) * 15 / 60)
         elif battery_action == 'discharge':
+            # Only the load not already covered by PV can be served by the battery (no discharging into curtailment).
+            net_dcload = max(self.dcload - self.pv_kw / 1e3, 0)
             discharge_energy = battery.discharge(battery.capacity, self.discharging_rate_modifier(battery) * 15 / 60,
-                                                 self.dcload / 4)
+                                                 net_dcload / 4)
             self.var_to_dc = -discharge_energy
         else:
             discharge_energy = 0
@@ -216,33 +230,58 @@ class BatteryEnvFwd(gym.Env):
         return discharge_energy
 
     def CO2_footprint(self, dc_load, ci, a_t, discharge_energy):
-        """Calculates carbon footprint
+        """Calculates the grid energy and carbon footprint of the current 15-minute step.
+
+        Energy balance (kWh): L = DC load, P = PV, C = battery charging, D = battery discharging.
+            PV first serves the DC load (pv_self = min(P, L)); the surplus then feeds the battery if the agent chose to
+            charge (pv_to_battery = min(P - pv_self, C)); what is left is curtailed (or exported, if pv_export_credit).
+            Discharging is capped at the net load L - pv_self (see _simulate_battery_operation).
+            grid = L - pv_self - D + C - pv_to_battery >= 0, and CO2 = grid * ci.
+        With no PV this reduces to the original accounting: L + C (charge), L - D (discharge), L (idle).
 
         Args:
-            dc_load (float): Total energy consumption of the DC.
-            ci (float): Carbon intensity at current time step.
+            dc_load (float): DC power (MW) over the step.
+            ci (float): Carbon intensity at current time step (gCO2/kWh).
             a_t (string): Agent's action.
-            discharge_energy (float): Amount of energy to be discharged
+            discharge_energy (float): Energy discharged by the battery (MWh).
 
         Returns:
             CO2_footprint (float): Carbon footprint produced at the current time step (gCO2e)
         """
+        load = dc_load * 1e3 * 0.25
+        pv = self.pv_kw * 0.25
+        pv_self = min(pv, load)
+        charge = discharge = 0.0
         if a_t == 'charge':
-            self.total_energy_with_battery = dc_load * 1e3 * 0.25 + self.battery.charging_load * 1e3
-            self.energy_added_removed.append(self.battery.charging_load * 1e3)
+            charge = self.battery.charging_load * 1e3
+            self.energy_added_removed.append(charge)
             self.battery.charging_load = 0  # *Added*
-
-            CO2_footprint = (self.total_energy_with_battery) * ci
         elif a_t == 'discharge':
-            assert dc_load * 1e3 * 0.25 >= discharge_energy * 1e3, "Battery discharge rate should not be higher than the datacenter energy consumption rate"
-            self.total_energy_with_battery = dc_load * 1e3 * 0.25 - discharge_energy * 1e3
-            self.energy_added_removed.append(-1.0*discharge_energy * 1e3)
-            CO2_footprint = max(self.total_energy_with_battery, 0) * ci  # (KWh) * gCO2/KWh
-        else:
-            self.total_energy_with_battery = dc_load * 1e3 * 0.25
-            CO2_footprint = self.total_energy_with_battery * ci
+            discharge = discharge_energy * 1e3
+            assert load - pv_self >= discharge - 1e-9, "Battery discharge should not be higher than the net (after PV) DC energy consumption"
+            self.energy_added_removed.append(-1.0 * discharge)
+        pv_to_battery = min(pv - pv_self, charge)
+        surplus = pv - pv_self - pv_to_battery
 
+        self.total_energy_with_battery = max(load - pv_self - discharge + charge - pv_to_battery, 0)
+        CO2_footprint = self.total_energy_with_battery * ci  # (KWh) * gCO2/KWh
+        if self.pv_export_credit:
+            CO2_footprint -= surplus * ci
+        self.pv_flows = self._pv_flows(pv, pv_self, pv_to_battery, surplus)
         return CO2_footprint
+
+    def _pv_flows(self, pv, pv_self, pv_to_battery, surplus):
+        """Info entries describing where the PV energy of the step went (kWh), plus the grid import."""
+        exported = surplus if self.pv_export_credit else 0.0
+        return {
+            'pv_power_kW': pv / 0.25,
+            'pv_energy_KWh': pv,
+            'pv_self_consumed_KWh': pv_self,
+            'pv_to_battery_KWh': pv_to_battery,
+            'pv_curtailed_KWh': surplus - exported,
+            'pv_exported_KWh': exported,
+            'grid_energy_KWh': self.total_energy_with_battery,
+        }
 
     def sigmoid(self, x):
         return 1 / (1 + np.exp(-x))

@@ -15,9 +15,10 @@ from utils.base_agents import (BaseBatteryAgent, BaseHVACAgent,
 from utils.rbc_agents import RBCBatteryAgent
 from utils.make_envs_pyenv import (make_bat_fwd_env, make_dc_pyeplus_env,
                                    make_ls_env)
-from utils.managers import (CI_Manager, Time_Manager, Weather_Manager,
+from utils.managers import (CI_Manager, PV_Manager, Time_Manager, Weather_Manager,
                             Workload_Manager)
 from utils.utils_cf import get_energy_variables, get_init_day, obtain_paths
+from utils.joint_obs import PV_OBS_DIM as N_PV_OBS
 
 import matplotlib
 matplotlib.use('Agg')  # Use a non-interactive backend suitable for servers without display
@@ -83,6 +84,19 @@ class EnvConfig(dict):
         # is a relative change, so without this the setpoint is not observed. Off by default so configs of models
         # trained without it keep their 14-dim cooling observation; the training yaml turns it on.
         'include_dc_setpoint': False,
+
+        # On-site solar PV, computed with pvlib from the location's EPW weather file (see envs/pv_model.py for all
+        # keys and defaults). capacity_kWp = 0 (default) disables PV and leaves the simulation unchanged.
+        # Example: {'capacity_kWp': 500, 'tracking': 'fixed', 'surface_tilt': None, 'system_losses_pct': 14}
+        'pv_config': {},
+
+        # Append PV features (current PV and the mean of each of the next 4 hours, as fractions of the AC rating) at
+        # the end of each agent's observation (+5 dims). Off by default so existing checkpoints keep their sizes.
+        'include_pv_obs': False,
+
+        # PV surplus that neither the DC nor a charging battery uses is curtailed (False) or exported and credited
+        # at the current carbon intensity (True; net CO2 can then be negative).
+        'pv_export_credit': False,
     }
 
     def __init__(self, raw_config):
@@ -191,18 +205,25 @@ class SustainDC(gym.Env):
             self.base_agents["agent_ls"] = BaseLoadShiftingAgent()
             
         self.include_dc_setpoint = bool(env_config['include_dc_setpoint'])
+        self.include_pv_obs = bool(env_config['include_pv_obs'])
+        if self.include_pv_obs:
+            # PV features are appended at the end of every agent's observation.
+            self.observation_space = [self._extend_obs_space(space, N_PV_OBS) for space in self.observation_space]
         if "agent_dc" in self.agents:
             dc_obs_space = self.dc_env.observation_space
             if self.include_dc_setpoint:
                 dc_obs_space = spaces.Box(low=np.float32(-1.0 * np.ones(dc_obs_space.shape[0] + 1)),
                                           high=np.float32(1.0 * np.ones(dc_obs_space.shape[0] + 1)))
+            if self.include_pv_obs:
+                dc_obs_space = self._extend_obs_space(dc_obs_space, N_PV_OBS)
             self.observation_space.append(dc_obs_space)
             self.action_space.append(self.dc_env.action_space)
         else:
             self.base_agents["agent_dc"] = BaseHVACAgent()
             
         if "agent_bat" in self.agents:
-            self.observation_space.append(self.bat_env.observation_space)
+            self.observation_space.append(self._extend_obs_space(self.bat_env.observation_space, N_PV_OBS) if self.include_pv_obs
+                                          else self.bat_env.observation_space)
             self.action_space.append(self.bat_env.action_space)
         else:
             self.base_agents["agent_bat"] = BaseBatteryAgent()
@@ -217,6 +238,9 @@ class SustainDC(gym.Env):
         self.workload_m = Workload_Manager(init_day=self.init_day, workload_filename=self.workload_file, timezone_shift=self.timezone_shift)
         self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file, timezone_shift=self.timezone_shift)
         self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=n_vars_ci, timezone_shift=self.timezone_shift)
+        # On-site PV from the same EPW file as the weather manager (and kept in sync with its random day roll).
+        self.pv_m = PV_Manager(wea_loc, pv_config=env_config['pv_config'], init_day=self.init_day, timezone_shift=self.timezone_shift)
+        self.bat_env.pv_export_credit = bool(env_config['pv_export_credit'])
 
         # This actions_are_logits is True only for MADDPG if continuous actions is used on the algorithm.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
@@ -254,6 +278,20 @@ class SustainDC(gym.Env):
             self.dashboard = Dashboard(self.evaluation_render_dir)
             self.dashboard.start()
 
+
+    @staticmethod
+    def _extend_obs_space(space, n):
+        """Return a copy of a Box observation space with n more dimensions in [-1, 1]."""
+        return spaces.Box(low=np.float32(-1.0 * np.ones(space.shape[0] + n)),
+                          high=np.float32(1.0 * np.ones(space.shape[0] + n)))
+
+    def _add_pv_obs(self):
+        """Append the PV features to the ls/dc/bat states when include_pv_obs is on."""
+        if self.include_pv_obs:
+            pv_obs = self.pv_m.get_pv_obs()
+            self.ls_state = np.append(self.ls_state, pv_obs).astype(np.float32)
+            self.dc_state = np.append(self.dc_state, pv_obs).astype(np.float32)
+            self.bat_state = np.append(self.bat_state, pv_obs).astype(np.float32)
 
     def seed(self, seed=None):
         """Set the random seed for the environment."""
@@ -481,6 +519,7 @@ class SustainDC(gym.Env):
         workload = self.workload_m.reset(init_day=random_init_day, init_hour=random_init_hour)  # Workload manager
         temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.reset(init_day=random_init_day, init_hour=random_init_hour)  # Weather manager
         ci_i, ci_i_future, ci_i_denorm = self.ci_m.reset(init_day=random_init_day, init_hour=random_init_hour)  # CI manager. ci_i -> CI in the current timestep.
+        pv_kw = self.pv_m.reset(init_day=random_init_day, init_hour=random_init_hour, roll_days=self.weather_m.last_roll_days)  # PV manager
         
         # Set the external ambient temperature to data center environment
         self.dc_env.set_ambient_temp(temp, wet_bulb)
@@ -514,9 +553,11 @@ class SustainDC(gym.Env):
         # self.bat_state = np.float32(np.hstack((t_i, bat_s, ci_i_future)))
         battery_soc = self.bat_env.get_battery_soc()
         self.bat_state = self._create_bat_state(t_i, current_workload, battery_soc, ci_i, ci_i_future, ci_i_past, current_out_temperature)
+        self._add_pv_obs()
 
-        # Update ci in the battery environment
+        # Update ci and PV in the battery environment
         self.bat_env.update_ci(ci_i_denorm, ci_i_future[0])
+        self.bat_env.set_pv(pv_kw)
 
         # States should be a dictionary with agent names as keys and their observations as values
         states = {}
@@ -540,6 +581,7 @@ class SustainDC(gym.Env):
                 'weather': temp,
                 'ci': ci_i,
                 'ci_future': ci_i_future,
+                'pv_kW': pv_kw,
                 'states': {
                     'agent_ls': self.ls_state,
                     'agent_dc': self.dc_state,
@@ -579,11 +621,12 @@ class SustainDC(gym.Env):
         workload = self.workload_m.step()
         temp, norm_temp, wet_bulb, norm_wet_bulb = self.weather_m.step()
         ci_i, ci_i_future, ci_i_denorm = self.ci_m.step()
+        pv_kw = self.pv_m.step()
         
         self.current_hour = hour
 
         # Update environment states with new values from managers
-        self._update_environments(workload, temp, wet_bulb, ci_i_denorm, ci_i_future, day, hour)
+        self._update_environments(workload, temp, wet_bulb, ci_i_denorm, ci_i_future, day, hour, pv_kw)
 
         # Create observations for the next step based on updated environment states
         next_workload = self.workload_m.get_next_workload()
@@ -603,6 +646,7 @@ class SustainDC(gym.Env):
         
         battery_soc = self.bat_env.get_battery_soc()
         self.bat_state = self._create_bat_state(t_i, workload, battery_soc, ci_i, ci_i_future, ci_i_past, norm_temp)
+        self._add_pv_obs()
 
         # Populate observation dictionary based on updated states
         obs = self._populate_observation_dict()
@@ -628,6 +672,7 @@ class SustainDC(gym.Env):
                 'weather': temp,
                 'ci': ci_i,
                 'ci_future': ci_i_future,
+                'pv_kW': pv_kw,
                 'states': {
                     'agent_ls': self.ls_state,
                     'agent_dc': self.dc_state,
@@ -706,12 +751,13 @@ class SustainDC(gym.Env):
         self.bat_state, _, self.bat_terminated, self.bat_truncated, self.bat_info = self.bat_env.step(action)
 
 
-    def _update_environments(self, workload, temp, wet_bulb, ci_i_denorm, ci_i_future, current_day, current_hour):
+    def _update_environments(self, workload, temp, wet_bulb, ci_i_denorm, ci_i_future, current_day, current_hour, pv_kw=0.0):
         """Update the environment states based on the manager's outputs."""
         self.ls_env.update_workload(workload)
         self.ls_env.update_current_date(current_day, current_hour)
         self.dc_env.set_ambient_temp(temp, wet_bulb)
         self.bat_env.update_ci(ci_i_denorm, ci_i_future[0])
+        self.bat_env.set_pv(pv_kw)
 
 
     def _populate_observation_dict(self):

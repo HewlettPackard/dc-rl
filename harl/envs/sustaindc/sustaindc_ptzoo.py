@@ -30,7 +30,7 @@ class SustainDCPettingZooEnv(ParallelEnv):
         
         if env_config['nonoverlapping_shared_obs_space']:
             # ls_state (26) + dc next workload/next temp + bat SoC (+ dc setpoint): see utils/joint_obs.py
-            shared_dim = joint_obs_dim(env_config.get('include_dc_setpoint', False))
+            shared_dim = joint_obs_dim(env_config.get('include_dc_setpoint', False), env_config.get('include_pv_obs', False))
             self.share_observation_space = {agent: spaces.Box(low=-2.0, high=2.0, shape=(shared_dim,), dtype=np.float32) for agent in self.possible_agents}
         else:
             # Find the maximum dimension of observation space
