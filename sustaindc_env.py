@@ -16,7 +16,7 @@ from utils.rbc_agents import RBCBatteryAgent
 from utils.make_envs_pyenv import (make_bat_fwd_env, make_dc_pyeplus_env,
                                    make_ls_env)
 from utils.managers import (CI_Manager, Time_Manager, Weather_Manager,
-                            Workload_Manager)
+                            Workload_Manager, epw_utc_offset)
 from utils.utils_cf import get_energy_variables, get_init_day, obtain_paths
 
 import matplotlib
@@ -216,7 +216,10 @@ class SustainDC(gym.Env):
         self.t_m = Time_Manager(self.init_day, timezone_shift=self.timezone_shift, days_per_episode=self.days_per_episode)
         self.workload_m = Workload_Manager(init_day=self.init_day, workload_filename=self.workload_file, timezone_shift=self.timezone_shift)
         self.weather_m = Weather_Manager(init_day=self.init_day, location=wea_loc, filename=self.weather_file, timezone_shift=self.timezone_shift)
-        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=n_vars_ci, timezone_shift=self.timezone_shift)
+        # The CI files are in UTC and the weather files in local standard time: align CI to the weather's clock.
+        utc_offset = epw_utc_offset(wea_loc if wea_loc else self.weather_file)
+        self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=n_vars_ci, timezone_shift=self.timezone_shift,
+                               utc_offset_hours=utc_offset)
 
         # This actions_are_logits is True only for MADDPG if continuous actions is used on the algorithm.
         self.actions_are_logits = env_config.get("actions_are_logits", False)
