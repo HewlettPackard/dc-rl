@@ -77,7 +77,9 @@ ci = np.array([100.0] * 4 + [500.0] * 4)
 floor = bt.soc_min * bt.capacity
 a = pol.plan_bat(floor, bt, ci, np.full(8, 1.0), lambda g: np.zeros(len(g)))
 check("charges ahead of a CI peak inside the horizon", a == M.BAT_ACTION_IDS['charge'], f"action {a}")
-a = pol.plan_bat(0.5, bt, np.full(8, 300.0), np.full(8, 1.0), lambda g: np.zeros(len(g)))
+# full battery, 4-step horizon: at the 0.5C power limit it cannot empty unless it starts now
+full = bt.soc_max * bt.capacity
+a = pol.plan_bat(full, bt, np.full(4, 300.0), np.full(4, 1.0), lambda g: np.zeros(len(g)))
 check("with no terminal value, discharges stored energy (it looks worthless after the horizon)",
       a == M.BAT_ACTION_IDS['discharge'], f"action {a}")
 a = pol.plan_bat(0.5, bt, np.full(8, 300.0), np.full(8, 1.0), lambda g: -g * 1000.0)
@@ -108,7 +110,7 @@ np.savez('/tmp/_verify_mpc_value.npz', ci_scale=np.array(500.0),
 lv = M.LearnedValue('/tmp/_verify_mpc_value.npz')
 check("a saved value file loads with the input sizes the planner uses",
       lv.ls(np.zeros((3, M.AGE_BINS)), np.zeros(12), None, coef, 0.5).shape == (3,)
-      and lv.bat(np.zeros(4), np.zeros(12), None).shape == (4,))
+      and lv.bat(np.zeros(4), np.zeros(12), None, 0.95).shape == (4,))
 
 print("4b. Per-unit Monte Carlo targets")
 from train_mpc_value import collect_episode, per_unit_targets
