@@ -336,7 +336,38 @@ def water_usage_efficiency_reward(params: dict) -> float:
 
 # Other reward methods can be added here.
 
+# ---------------------------------------------------------------------------------------------------------------------
+# CO2-aligned team reward
+# ---------------------------------------------------------------------------------------------------------------------
+CO2_REWARD_SCALE_G = 1e5          # grams of CO2 per unit of reward (fixed, no running normalization)
+DROPPED_TASK_CO2_FACTOR = 2.0     # dropped work is charged at 2x its energy x current CI, so dropping never pays
+UNFINISHED_TASK_CO2_FACTOR = 1.0  # work still queued at the end of the episode: 1x its energy x current CI
+
+
+def task_energy_kwh(params: dict) -> float:
+    """Approximate energy (kWh) of one task (1% CPU utilization for one 15-minute step), from the data center's power
+    range; slightly above the true marginal IT + HVAC energy, so charging unexecuted work is conservative."""
+    return (params['dc_power_ub_kW'] - params['dc_power_lb_kW']) / 100 * 0.25
+
+
+def co2_team_reward(params: dict) -> float:
+    """Reward = -(CO2 this step + CO2-equivalent of dropped / unfinished work) / CO2_REWARD_SCALE_G.
+
+    Meant to be used for all three agents (ls_reward = dc_reward = bat_reward = 'co2_team_reward'): every agent then
+    receives the same team reward and the collaborative mixing leaves it unchanged. bat_CO2_footprint is the step's
+    CO2 in grams (DC energy incl. battery charge/discharge x carbon intensity).
+    """
+    co2_g = params['bat_CO2_footprint']
+    ci = params['bat_avg_CI']  # gCO2/kWh this step
+    per_task_g = task_energy_kwh(params) * ci
+    co2_g += DROPPED_TASK_CO2_FACTOR * params['ls_tasks_dropped'] * per_task_g
+    if params.get('isterminal', False):
+        co2_g += UNFINISHED_TASK_CO2_FACTOR * params['ls_tasks_in_queue'] * per_task_g
+    return -co2_g / CO2_REWARD_SCALE_G
+
+
 REWARD_METHOD_MAP = {
+    'co2_team_reward': co2_team_reward,
     'default_dc_reward' : default_dc_reward,
     'default_bat_reward': default_bat_reward,
     'default_ls_reward' : default_ls_reward,
