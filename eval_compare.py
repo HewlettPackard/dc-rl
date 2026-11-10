@@ -22,6 +22,8 @@ Policy specs:
                                   a glob (quote it) expands to one policy per run, labelled <label>_s<seed>
     rule:<subsystems>[:<params>]  rule-based controllers (past CI only), e.g. rule:ls,dc,bat or rule:bat:bat_lo=0.2
     oracle:<subsystems>[:<params>] perfect-forecast controllers (true future CI/workload/weather), e.g. oracle:ls,dc,bat
+    mpc[:<params>]                MPC with a terminal value, e.g. mpc:H=16,value=<value.npz>,forecast=realistic
+                                  (see mpc_value.py)
     setpoint:<C>                  hold the CRAC setpoint at <C>, everything else does nothing
 Add =<label> to any spec to name it in the table, e.g. harl:<dir>=happo. See baseline_policies.py for the controllers.
 
@@ -199,9 +201,10 @@ class HARLPolicy:
 
 def split_label(spec):
     """'<spec>=<label>' -> (spec, label). Controller parameters also use '=' (rule:ls:ls_hi=0.8), so the label is the
-    text after the last '=' unless that text is a number (then it is a parameter value and there is no label)."""
+    text after the last '=' unless that text is a parameter value: a number, an MPC keyword or a .npz path."""
+    from mpc_value import PARAM_WORDS
     head, sep, tail = spec.rpartition('=')
-    if not sep:
+    if not sep or tail in PARAM_WORDS or tail.endswith('.npz'):
         return spec, ''
     try:
         float(tail)
@@ -225,6 +228,9 @@ def make_policy(spec):
     elif kind in ('rule', 'oracle', 'setpoint'):
         from baseline_policies import make_baseline_policy
         policy = make_baseline_policy(kind, rest)
+    elif kind == 'mpc':
+        from mpc_value import make_mpc_policy
+        policy = make_mpc_policy(rest)
     else:
         raise ValueError(f'Unknown policy spec {spec!r}')
     return label or spec, policy
