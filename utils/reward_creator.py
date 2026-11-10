@@ -341,7 +341,6 @@ def water_usage_efficiency_reward(params: dict) -> float:
 # ---------------------------------------------------------------------------------------------------------------------
 CO2_REWARD_SCALE_G = 1e5          # grams of CO2 per unit of reward (fixed, no running normalization)
 DROPPED_TASK_CO2_FACTOR = 2.0     # dropped work is charged at 2x its energy x current CI, so dropping never pays
-UNFINISHED_TASK_CO2_FACTOR = 1.0  # work still queued at the end of the episode: 1x its energy x current CI
 
 
 def task_energy_kwh(params: dict) -> float:
@@ -351,18 +350,20 @@ def task_energy_kwh(params: dict) -> float:
 
 
 def co2_team_reward(params: dict) -> float:
-    """Reward = -(CO2 this step + CO2-equivalent of dropped / unfinished work) / CO2_REWARD_SCALE_G.
+    """Reward = -(CO2 this step + CO2-equivalent of dropped work) / CO2_REWARD_SCALE_G.
 
     Meant to be used for all three agents (ls_reward = dc_reward = bat_reward = 'co2_team_reward'): every agent then
     receives the same team reward and the collaborative mixing leaves it unchanged. bat_CO2_footprint is the step's
     CO2 in grams (DC energy incl. battery charge/discharge x carbon intensity).
+
+    Work still queued when the episode ends is not charged: episodes end at a time limit (truncation, flagged as
+    bad_transition for HARL), so the learner bootstraps the value of the final state, which already prices the queued
+    work. A terminal charge would count it twice for off-policy learners (and is dropped by on-policy GAE anyway).
     """
     co2_g = params['bat_CO2_footprint']
     ci = params['bat_avg_CI']  # gCO2/kWh this step
     per_task_g = task_energy_kwh(params) * ci
     co2_g += DROPPED_TASK_CO2_FACTOR * params['ls_tasks_dropped'] * per_task_g
-    if params.get('isterminal', False):
-        co2_g += UNFINISHED_TASK_CO2_FACTOR * params['ls_tasks_in_queue'] * per_task_g
     return -co2_g / CO2_REWARD_SCALE_G
 
 

@@ -27,30 +27,35 @@ while True:
     _, rew, _, tr, info = e.step({'agent_ls': 0, 'agent_dc': 1, 'agent_bat': 2})  # always defer -> queue fills, drops
     i = info['__common__']
     task_g = rc.task_energy_kwh(i) * i['bat_avg_CI']
-    expect = -(i['bat_CO2_footprint'] + 2.0 * i['ls_tasks_dropped'] * task_g
-               + (i['ls_tasks_in_queue'] * task_g if i['isterminal'] else 0.0)) / 1e5
+    expect = -(i['bat_CO2_footprint'] + 2.0 * i['ls_tasks_dropped'] * task_g) / 1e5
     ok_same &= len(set(rew.values())) == 1
     ok_formula &= abs(rew['agent_ls'] - expect) < 1e-12
     drops += i['ls_tasks_dropped']; last = (i, rew['agent_ls'])
     if tr['__all__']:
         break
 check("all three agents get the same reward every step", ok_same)
-check("reward == -(CO2 + 2x dropped + end queue) / 1e5", ok_formula, f"{drops:.0f} tasks dropped in the episode")
+check("reward == -(CO2 + 2x dropped) / 1e5", ok_formula, f"{drops:.0f} tasks dropped in the episode")
 i, r = last
-check("terminal step charges the unfinished queue", i['isterminal'] and i['ls_tasks_in_queue'] > 0 and r < -i['bat_CO2_footprint'] / 1e5,
+check("terminal step does not charge the unfinished queue (time limit: the learner bootstraps instead)",
+      i['isterminal'] and i['ls_tasks_in_queue'] > 0 and abs(r - (-(i['bat_CO2_footprint'] + 2.0 * i['ls_tasks_dropped']
+      * rc.task_energy_kwh(i) * i['bat_avg_CI']) / 1e5)) < 1e-12,
       f"{i['ls_tasks_in_queue']} tasks queued at the end")
 check("per-task energy estimate is conservative (>= the evaluation's marginal energy)",
       rc.task_energy_kwh(i) >= marginal_kwh_per_util_step(e, 0.5, 30.0) / 100,
       f"{rc.task_energy_kwh(i):.2f} kWh vs marginal {marginal_kwh_per_util_step(e, 0.5, 30.0) / 100:.2f} kWh per task")
 
-print("2. Episode return ranks policies like work-adjusted CO2")
+print("2. Episode return + value of the work left queued ranks policies like work-adjusted CO2")
 def ret_and_metric(policy, seed):
+    # the reward does not charge work queued at the time limit; a learner's bootstrapped value does. Add that value
+    # (the queue at its energy x the current CI) to the return to compare with the metric.
     random.seed(seed); np.random.seed(seed)
     sdc = SustainDC(dict(BASE)); total = 0.0
     sdc.reset(); policy.reset(seed)
     while True:
-        _, rew, _, tr, _ = sdc.step(policy.act(sdc)); total += rew['agent_ls']
+        _, rew, _, tr, info = sdc.step(policy.act(sdc)); total += rew['agent_ls']
         if tr['__all__']:
+            c = info['__common__']
+            total -= c['ls_tasks_in_queue'] * rc.task_energy_kwh(c) * c['bat_avg_CI'] / 1e5
             break
     m, _ = run_episode(SustainDC(dict(BASE)), policy, seed)
     return total, m['co2_work_adjusted']
