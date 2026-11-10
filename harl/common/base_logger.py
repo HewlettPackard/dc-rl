@@ -19,8 +19,9 @@ class BaseLogger:
         self.num_agents = num_agents
         self.writter = writter
         self.run_dir = run_dir
+        # With a fixed run_id the run may be a resume: keep progress.txt (the runner trimmed it to the checkpoint).
         self.log_file = open(
-            os.path.join(run_dir, "progress.txt"), "w", encoding="utf-8"
+            os.path.join(run_dir, "progress.txt"), "a" if args.get("run_id") else "w", encoding="utf-8"
         )
 
     def get_task_name(self):

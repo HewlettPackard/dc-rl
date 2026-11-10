@@ -22,6 +22,7 @@ from harl.utils.envs_tools import (
 )
 from harl.utils.models_tools import init_device
 from harl.utils.configs_tools import init_dir, save_config
+from harl.utils import checkpoint as ckpt
 from harl.envs import LOGGER_REGISTRY
 import time
 
@@ -65,7 +66,17 @@ class OnPolicyBaseRunner:
             args["exp_name"],
             algo_args["seed"]["seed"],
             logger_path=algo_args["logger"]["log_dir"],
+            run_id=args.get("run_id"),
         )
+        # Resumable checkpoints (harl/utils/checkpoint.py): with a fixed run_id, continue from the newest checkpoint.
+        self.checkpoint_interval = int(args.get("checkpoint_interval") or 0)
+        self.resume_steps, self.resume_path = (
+            ckpt.latest_checkpoint(self.run_dir) if args.get("run_id") else (0, None))
+        self.resume_episode = 0
+        if self.resume_path is not None:
+            ckpt.check_config(self.run_dir, args, algo_args, env_args)
+        if args.get("run_id"):
+            ckpt.trim_progress(self.run_dir, self.resume_steps)  # drop lines logged after the checkpoint
         save_config(args, algo_args, env_args, self.run_dir)
         # set the title of the process
         setproctitle.setproctitle(
@@ -102,7 +113,8 @@ class OnPolicyBaseRunner:
 
         self.envs = make_train_env(
             args["env"],
-            algo_args["seed"]["seed"],
+            # on resume, new env seeds so the restarted envs don't replay the episode starts of the first segment
+            (algo_args["seed"]["seed"] + self.resume_steps) % (2**31),
             algo_args["train"]["n_rollout_threads"],
             env_args,
         )
@@ -206,6 +218,39 @@ class OnPolicyBaseRunner:
         )
         if self.algo_args["train"]["model_dir"] is not None:  # restore model
             self.restore()
+        if self.resume_path is not None:
+            self.load_training_checkpoint()
+
+    def steps_done(self, episode):
+        """Env steps collected after `episode` training iterations."""
+        return episode * self.algo_args["train"]["episode_length"] * self.algo_args["train"]["n_rollout_threads"]
+
+    def training_state(self, episode):
+        return {
+            "episode": episode,
+            "actors": [ckpt.object_state(actor) for actor in self.actor],
+            "critic": ckpt.object_state(self.critic),
+            "value_normalizer": self.value_normalizer.state_dict() if self.value_normalizer is not None else None,
+            "best_eval": self.current_best_avg_eval_episode_reward,
+            "rng": ckpt.rng_state(),
+        }
+
+    def save_training_checkpoint(self, episode):
+        ckpt.save_checkpoint(self.run_dir, self.steps_done(episode), self.training_state(episode))
+
+    def load_training_checkpoint(self):
+        state = ckpt.load_checkpoint(self.resume_path)
+        for actor, actor_state in zip(self.actor, state["actors"]):
+            ckpt.load_object_state(actor, actor_state)
+        ckpt.load_object_state(self.critic, state["critic"])
+        if self.value_normalizer is not None:
+            self.value_normalizer.load_state_dict(state["value_normalizer"])
+        # models/ may hold a better model saved after this checkpoint: never overwrite it with a worse one
+        self.current_best_avg_eval_episode_reward = max(state["best_eval"], ckpt.saved_best_eval(self.save_dir))
+        self.resume_episode = state["episode"]
+        ckpt.set_rng_state(state["rng"])
+        print(f"Resuming from {self.resume_path} (episode {self.resume_episode}, {state['steps']} env steps)",
+              flush=True)
 
     def run(self):
         """Run the training (or rendering) pipeline."""
@@ -223,7 +268,8 @@ class OnPolicyBaseRunner:
 
         self.logger.init(episodes)  # logger callback at the beginning of training
 
-        for episode in range(1, episodes + 1):
+        for episode in range(self.resume_episode + 1, episodes + 1):
+            self.cur_episode = episode
             if self.algo_args["train"][
                 "use_linear_lr_decay"
             ]:  # linear decay of learning rate
@@ -309,6 +355,12 @@ class OnPolicyBaseRunner:
                 self.render()
 
             self.after_update()
+
+            if self.checkpoint_interval > 0 and (
+                self.steps_done(episode) // self.checkpoint_interval
+                > self.steps_done(episode - 1) // self.checkpoint_interval
+            ):
+                self.save_training_checkpoint(episode)
 
     def warmup(self):
         """Warm up the replay buffer."""
@@ -924,6 +976,8 @@ class OnPolicyBaseRunner:
                 self.value_normalizer.state_dict(),
                 str(self.save_dir) + "/value_normalizer" + ".pt",
             )
+        ckpt.record_best_eval(self.save_dir, self.current_best_avg_eval_episode_reward,
+                              self.steps_done(getattr(self, "cur_episode", 0)))
         self.logger.save_weights_log()
 
     def restore(self):

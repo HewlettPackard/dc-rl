@@ -16,6 +16,7 @@ from harl.utils.envs_tools import (
 )
 from harl.utils.models_tools import init_device
 from harl.utils.configs_tools import init_dir, save_config, get_task_name
+from harl.utils import checkpoint as ckpt
 from harl.algorithms.actors import ALGO_REGISTRY
 from harl.algorithms.critics import CRITIC_REGISTRY
 from harl.common.buffers.off_policy_buffer_ep import OffPolicyBufferEP
@@ -57,10 +58,22 @@ class OffPolicyBaseRunner:
                 args["exp_name"],
                 algo_args["seed"]["seed"],
                 logger_path=algo_args["logger"]["log_dir"],
+                run_id=args.get("run_id"),
             )
+        # Resumable checkpoints (harl/utils/checkpoint.py): with a fixed run_id, continue from the newest checkpoint.
+        self.checkpoint_interval = int(args.get("checkpoint_interval") or 0)
+        self.resume_steps, self.resume_path = (
+            ckpt.latest_checkpoint(self.run_dir)
+            if args.get("run_id") and not self.algo_args["render"]["use_render"] else (0, None))
+        self.resume_step = 0
+        if not self.algo_args["render"]["use_render"]:
+            if self.resume_path is not None:
+                ckpt.check_config(self.run_dir, args, algo_args, env_args)
+            if args.get("run_id"):
+                ckpt.trim_progress(self.run_dir, self.resume_steps)  # drop lines logged after the checkpoint
             save_config(args, algo_args, env_args, self.run_dir)
             self.log_file = open(
-                os.path.join(self.run_dir, "progress.txt"), "w", encoding="utf-8"
+                os.path.join(self.run_dir, "progress.txt"), "a" if args.get("run_id") else "w", encoding="utf-8"
             )
         setproctitle.setproctitle(
             str(args["algo"]) + "-" + str(args["env"]) + "-" + str(args["exp_name"])
@@ -78,7 +91,8 @@ class OffPolicyBaseRunner:
         else:  # make envs for training and evaluation
             self.envs = make_train_env(
                 args["env"],
-                algo_args["seed"]["seed"],
+                # on resume, new env seeds so the restarted envs don't replay the episode starts of the first segment
+                (algo_args["seed"]["seed"] + self.resume_steps) % (2**31),
                 algo_args["train"]["n_rollout_threads"],
                 env_args,
             )
@@ -211,6 +225,41 @@ class OffPolicyBaseRunner:
         elif "alpha" in self.algo_args["algo"].keys():
             self.alpha = [self.algo_args["algo"]["alpha"]] * self.num_agents
 
+        if self.resume_path is not None:
+            self.load_training_checkpoint()
+
+    def steps_done(self, step):
+        """Env steps collected after `step` loop iterations (warmup included)."""
+        return self.algo_args["train"]["warmup_steps"] + step * self.algo_args["train"]["n_rollout_threads"]
+
+    def training_state(self, step):
+        if getattr(self, "log_alpha", None):
+            raise NotImplementedError("checkpointing of auto_alpha (HASAC) is not implemented")
+        return {
+            "step": step,
+            "total_it": self.total_it,
+            "actors": [ckpt.object_state(actor) for actor in self.actor],
+            "critic": ckpt.object_state(self.critic),
+            "value_normalizer": self.value_normalizer.state_dict() if self.value_normalizer is not None else None,
+            "rng": ckpt.rng_state(),
+        }
+
+    def save_training_checkpoint(self, step):
+        ckpt.save_checkpoint(self.run_dir, self.steps_done(step), self.training_state(step), buffer=self.buffer)
+
+    def load_training_checkpoint(self):
+        state = ckpt.load_checkpoint(self.resume_path, buffer=self.buffer)
+        for actor, actor_state in zip(self.actor, state["actors"]):
+            ckpt.load_object_state(actor, actor_state)
+        ckpt.load_object_state(self.critic, state["critic"])
+        if self.value_normalizer is not None:
+            self.value_normalizer.load_state_dict(state["value_normalizer"])
+        self.total_it = state["total_it"]
+        self.resume_step = state["step"]
+        ckpt.set_rng_state(state["rng"])
+        print(f"Resuming from {self.resume_path} (loop step {self.resume_step}, {state['steps']} env steps, "
+              f"replay buffer {self.buffer.cur_size} transitions)", flush=True)
+
     def run(self):
         """Run the training (or rendering) pipeline."""
         if self.algo_args["render"]["use_render"]:  # render, not train
@@ -220,10 +269,13 @@ class OffPolicyBaseRunner:
             self.algo_args["train"]["n_rollout_threads"]
         )
         self.done_episodes_rewards = []
-        # warmup
-        print("start warmup")
-        obs, share_obs, available_actions = self.warmup()
-        print("finish warmup, start training")
+        if self.resume_path is not None:  # the restored replay buffer already holds the warmup data
+            obs, share_obs, available_actions = self.envs.reset()
+        else:
+            # warmup
+            print("start warmup")
+            obs, share_obs, available_actions = self.warmup()
+            print("finish warmup, start training")
         # train and eval
         steps = (
             self.algo_args["train"]["num_env_steps"]
@@ -233,7 +285,7 @@ class OffPolicyBaseRunner:
             self.algo_args["train"]["update_per_train"]
             * self.algo_args["train"]["train_interval"]
         )
-        for step in range(1, steps + 1):
+        for step in range(self.resume_step + 1, steps + 1):
             actions = self.get_actions(
                 obs, available_actions=available_actions, add_random=True
             )
@@ -308,6 +360,11 @@ class OffPolicyBaseRunner:
                         self.log_file.flush()
                         self.done_episodes_rewards = []
                 self.save()
+            if self.checkpoint_interval > 0 and (
+                self.steps_done(step) // self.checkpoint_interval
+                > self.steps_done(step - 1) // self.checkpoint_interval
+            ):
+                self.save_training_checkpoint(step)
 
     def warmup(self):
         """Warmup the replay buffer with random actions"""

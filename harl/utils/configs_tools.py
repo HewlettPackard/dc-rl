@@ -54,17 +54,18 @@ def get_task_name(env, env_args):
     return task
 
 
-def init_dir(env, env_args, algo, exp_name, seed, logger_path):
-    """Init directory for saving results."""
+def init_dir(env, env_args, algo, exp_name, seed, logger_path, run_id=None):
+    """Init directory for saving results. The run directory ends with a timestamp, or with run_id when given (a fixed
+    name, so a restarted job, e.g. requeued after preemption, finds its checkpoints and resumes)."""
     task = get_task_name(env, env_args)
-    hms_time = time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
+    suffix = str(run_id) if run_id else time.strftime("%Y-%m-%d-%H-%M-%S", time.localtime())
     results_path = os.path.join(
         logger_path,
         env,
         task,
         algo,
         exp_name,
-        "-".join(["seed-{:0>5}".format(seed), hms_time]),
+        "-".join(["seed-{:0>5}".format(seed), suffix]),
     )
     log_path = os.path.join(results_path, "logs")
     os.makedirs(log_path, exist_ok=True)

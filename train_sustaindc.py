@@ -63,6 +63,20 @@ def main():
     )
     
     # Parse known arguments and process unknown arguments
+    parser.add_argument(
+        "--run_id",
+        type=str,
+        default=None,
+        help="Name the run directory seed-<seed>-<run_id> instead of using a timestamp. Running again with the same "
+             "run_id resumes from the run's latest checkpoint (e.g. pass the Slurm job id, which a job requeued after "
+             "preemption keeps)."
+    )
+    parser.add_argument(
+        "--checkpoint_interval",
+        type=int,
+        default=500_000,
+        help="Save a resumable checkpoint (networks, optimizers, RNG states, replay buffer) every N env steps; 0 = off."
+    )
     args, unparsed_args = parser.parse_known_args()
 
     def process(arg):
