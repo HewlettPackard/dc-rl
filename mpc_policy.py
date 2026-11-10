@@ -10,7 +10,8 @@ inputs (carbon intensity, workload, weather) depends on `forecast`:
                  the last `forecast_days` days (the profile then repeats for later days). This is a deployable MPC;
                  the gap to `oracle` is the value of perfect forecasts.
 The forecast replaces the series the managers read during a step (CI raw and normalized, workload, temperature and
-wet bulb raw and normalized) from the step after the current one onward, so no future value reaches the planner.
+wet bulb raw and normalized, on-site PV output) from the step after the current one onward, so no future value reaches
+the planner.
 (The RL agents observe 2 h of true future normalized CI; persistence does not use it.)
 
 Optimizer: receding-horizon cross-entropy method (CEM) over joint-action sequences with move blocking. The horizon
@@ -29,15 +30,16 @@ Cost (grams of CO2, minimized):
                           + drop_w    * task_g * tasks dropped      (deferred while the queue is full: work lost)
                           + overdue_w * task_g * overdue tasks      (tasks older than 24 h, per step)
   + terminal value:         task_g' * tasks still queued            (they must run later)
-                          - battery stored energy (kWh) * CI'       (stored energy offsets later grid energy)
+                          - usable battery energy (kWh) * CI'       (stored energy above the SoC floor, after
+                                                                     discharge losses, offsets later grid energy)
 where task_g is the CO2 of running one task (1% of the DC for 15 min) at the marginal IT+HVAC energy and the
 current CI, and CI' / task_g' use the mean (forecast) CI of the 24 h after the horizon. Without the terminal value
 the controller would defer work past the horizon and drain the battery at its end for free.
 
-Usage (from the repo root), next to the other baselines:
-    python eval_compare.py --policy noop --policy mpc=mpc_oracle --policy mpc:forecast=persistence=mpc_persist \\
-        --days_per_episode 3
-    python eval_compare.py --policy mpc:horizon=96,block=8,samples=64,iters=4,workers=8=mpc_long ...
+Usage (from the repo root), next to the other baselines (policy kind `mpc_joint`; `mpc` is mpc_value.py):
+    python eval_compare.py --policy noop --policy mpc_joint=mpc_oracle \\
+        --policy mpc_joint:forecast=persistence=mpc_persist --days_per_episode 3
+    python eval_compare.py --policy mpc_joint:horizon=96,block=8,samples=64,iters=4,workers=8=mpc_long ...
 Parameters (key=value, comma separated): horizon, block, replan, samples, iters, elites, smoothing, drop_w,
 overdue_w, forecast, forecast_days, workers, seed, verbose. See MPCPolicy.__init__.
 
@@ -68,7 +70,9 @@ EXOGENOUS_SERIES = {
     'workload_m': ('cpu_smooth',),
     'ci_m': ('carbon_smooth', 'norm_carbon'),
     'weather_m': ('temperature_data', 'wet_bulb_data', 'norm_temp_data', 'norm_wet_bulb_data'),
+    'pv_m': ('pv_kw',),
 }
+MANAGERS = tuple(EXOGENOUS_SERIES)
 
 
 def _zero_rewards(params):
@@ -95,8 +99,8 @@ class SimCloner:
     @classmethod
     def shared_objects(cls, sdc):
         shared = {}
-        for manager in (sdc.workload_m, sdc.ci_m, sdc.weather_m):
-            for v in vars(manager).values():
+        for name in MANAGERS:
+            for v in vars(getattr(sdc, name)).values():
                 if isinstance(v, np.ndarray) and v.size >= cls.MIN_SHARED_SIZE:
                     shared[id(v)] = v
         for obj in (sdc.dc_env.dc, sdc.dc_env.DC_Config):
@@ -166,8 +170,13 @@ def rollout_cost(model, shared, plan, params):
     window = ci[sim.ci_m.time_step:sim.ci_m.time_step + DAY]
     ci_after = float(np.mean(window)) if len(window) else float(ci[-1])
     cost += params['task_kwh'] * ci_after * len(sim.ls_env.tasks_queue)
-    cost -= float(sim.bat_env.battery.current_load) * 1e3 * ci_after  # stored MWh -> kWh
+    cost -= usable_battery_kwh(sim.bat_env.battery) * ci_after
     return cost
+
+
+def usable_battery_kwh(battery):
+    """Energy (kWh) the battery can still deliver: stored energy above the SoC floor, after discharge losses."""
+    return max(float(battery.current_load) - battery.soc_min * battery.capacity, 0.0) * battery.eff_discharge * 1e3
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -412,7 +421,7 @@ class MPCPolicy:
 
 
 def make_mpc_policy(rest):
-    """Build an MPCPolicy from 'key=value,...' (the part after 'mpc:' in an eval_compare spec)."""
+    """Build an MPCPolicy from 'key=value,...' (the part after 'mpc_joint:' in an eval_compare spec)."""
     params = dict(kv.split('=', 1) for kv in rest.split(',') if kv) if rest else {}
     ints = {'horizon', 'block', 'replan', 'samples', 'iters', 'elites', 'seed', 'forecast_days', 'workers'}
     floats = {'smoothing', 'drop_w', 'overdue_w'}

@@ -16,18 +16,19 @@ sys.path.insert(0, os.getcwd())
 import numpy as np
 
 from sustaindc_single_env import SustainDCSingleAgentEnv
-from train_single_agent import ALGOS
+from train_single_agent import ALGOS, load_obs_normalizer
 
 DO_NOTHING = {'agent_ls': 1, 'agent_dc': 1, 'agent_bat': 2}  # ls: do nothing, dc: keep setpoint, bat: idle
 
 
 def run_episode(env, policy, seed):
     obs, _ = env.reset(seed=seed)
-    m = dict(co2=0.0, energy=0.0, water=0.0, dropped=0.0, queue=0.0, ret=0.0, steps=0)
+    m = dict(co2=0.0, energy=0.0, pv=0.0, water=0.0, dropped=0.0, queue=0.0, ret=0.0, steps=0)
     while True:
         obs, r, term, trunc, info = env.step(policy(obs))
         m['co2'] += info['bat_CO2_footprint']
         m['energy'] += info['bat_total_energy_with_battery_KWh']
+        m['pv'] += info['pv_energy_KWh']
         m['water'] += info['dc_water_usage']
         m['dropped'] += info['ls_tasks_dropped']
         m['queue'] += info['ls_tasks_in_queue']
@@ -62,11 +63,13 @@ def main():
     with open(os.path.join(args.run_dir, 'config.json')) as f:
         cfg = json.load(f)
     env = SustainDCSingleAgentEnv(dict(cfg['env_args']))
-    model = ALGOS[cfg['main_args']['algo']].load(os.path.join(args.run_dir, 'models', args.model), device='cpu')
+    model_path = os.path.join(args.run_dir, 'models', args.model)
+    model = ALGOS[cfg['main_args']['algo']].load(model_path, device='cpu')
+    normalize = load_obs_normalizer(model_path)
 
     seeds = [args.seed + i for i in range(args.n_episodes)]
     agent = summarize(f"{cfg['main_args']['algo']} ({args.model})",
-                      [run_episode(env, lambda o: model.predict(o, deterministic=True)[0], s) for s in seeds])
+                      [run_episode(env, lambda o: model.predict(normalize(o), deterministic=True)[0], s) for s in seeds])
 
     if args.baseline:
         if env.action_type == 'discrete':

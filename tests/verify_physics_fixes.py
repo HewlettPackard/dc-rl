@@ -86,10 +86,12 @@ check("COP falls as wet bulb rises", all(np.diff(cop_wb) < 0), " -> ".join(f"{x:
 cop_s = [op(0.5, s)['cool'] / op(0.5, s)['chiller'] for s in [15, 17, 19, 21.6]]
 check("COP rises with the CRAC setpoint (warmer chilled water)", all(np.diff(cop_s) > 0), " -> ".join(f"{x:.2f}" for x in cop_s))
 check("COP in a realistic water-cooled range (3-9)", 3 < min(cop_wb + cop_s) and max(cop_wb + cop_s) < 9)
-cond, chw = D.chiller_operating_temps(15.0, 32.0, cfg)
+from utils.make_envs_pyenv import design_weather
+design_wb = design_weather('ca')[1]  # the chiller is sized for each location's own peak wet bulb (+ margin)
+cond, chw = D.chiller_operating_temps(15.0, design_wb, cfg)
 avail = cfg.CHILLER_NOMINAL_CAP * D.chiller_available_capacity_ratio(cond, chw)
 check("sized chiller covers peak heat at the worst conditions", avail >= op(1.0, 21.6)['it'] - 1e-6,
-      f"available {avail / 1e3:.0f} kW vs peak IT {op(1.0, 21.6)['it'] / 1e3:.0f} kW")
+      f"available {avail / 1e3:.0f} kW vs peak IT {op(1.0, 21.6)['it'] / 1e3:.0f} kW at design wet bulb {design_wb:.1f} C")
 
 print("5. The cooling agent faces a real trade-off")
 stpts = [15, 16, 17, 18, 19, 20, 21, 21.6]
@@ -135,3 +137,4 @@ while True:
 check("30-day episode completes", steps == 30 * 96, f"{steps} steps")
 
 print(f"\n{sum(results)}/{len(results)} checks passed")
+sys.exit(0 if all(results) else 1)

@@ -449,7 +449,7 @@ def calculate_HVAC_power(CRAC_setpoint, avg_CRAC_return_temp, ambient_temp, data
 
     # Chiller: condenser water from the cooling tower, chilled water temperature follows the CRAC setpoint
     cond_inlet_temp, chw_outlet_temp = chiller_operating_temps(CRAC_setpoint, wet_bulb_temp, DC_Config)
-    chiller_capacity = getattr(DC_Config, 'CHILLER_NOMINAL_CAP', None) or DC_Config.CT_FAN_REF_P
+    chiller_capacity = getattr(DC_Config, 'CHILLER_NOMINAL_CAP', None) or getattr(DC_Config, 'CT_RATED_LOAD', DC_Config.CT_FAN_REF_P)
     chiller_power = calculate_chiller_power(chiller_capacity, CRAC_cooling_load, cond_inlet_temp, chw_outlet_temp)
 
     # Chilled water pump power calculation

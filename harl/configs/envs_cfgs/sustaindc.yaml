@@ -5,6 +5,14 @@ agents:
 location: ca
 workload_file: 'Alibaba_CPU_Data_Hourly_1.csv'
 max_bat_cap_Mw: 1.0
+# Stationary Li-ion battery (envs/battery_model.py): symmetric charge/discharge power = c_rate x capacity.
+battery_config:
+  c_rate: 0.5          # 0.5 = 2-hour battery (0.25 = 4-hour, 1.0 = 1-hour)
+  eff_charge: 0.95     # one-way efficiencies (~90% round trip)
+  eff_discharge: 0.95
+  soc_min: 0.05        # usable SoC window
+  soc_max: 0.95
+  taper_start: 0.90    # charging power tapers linearly to 0 between taper_start and soc_max
 individual_reward_weight: 0.8
 flexible_load: 0.6
 ls_reward: default_ls_reward
@@ -18,3 +26,21 @@ nonoverlapping_shared_obs_space: True
 # Observe the current CRAC setpoint (cooling agent obs 14->15, shared/joint obs 29->30). Code default is False so
 # configs of models trained before this keep their observation size.
 include_dc_setpoint: True
+# On-site solar PV computed with pvlib from the location's EPW weather file (envs/pv_model.py). capacity_kWp 0 = no PV
+# (the simulation is then unchanged). With HARL, override single keys from the command line, e.g. --capacity_kWp 500.
+pv_config:
+  capacity_kWp: 0             # DC nameplate (kWp)
+  surface_tilt: null          # deg from horizontal; null = site latitude (fixed mount)
+  surface_azimuth: 180        # deg, 180 = south (tracker axis azimuth for single_axis)
+  tracking: fixed             # fixed | single_axis
+  gamma_pdc: -0.0035          # power temperature coefficient (1/degC)
+  temp_model: open_rack_glass_polymer
+  system_losses_pct: 14
+  dc_ac_ratio: 1.2
+  inverter_eff_nom: 0.96
+  albedo: null                # null = from the EPW file (else 0.2)
+# Append current + 4 h forecast PV (5 dims) to every agent's observation. Off so existing checkpoints keep their sizes.
+include_pv_obs: False
+# PV goes to the DC load first, then automatically to the battery; the rest is curtailed (False) or exported and
+# credited at the grid CI (True).
+pv_export_credit: False

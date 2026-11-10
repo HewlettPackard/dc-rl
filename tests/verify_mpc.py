@@ -8,7 +8,8 @@ import yaml
 
 import utils.reward_creator as rc
 from eval_compare import NoOpPolicy, run_episode, split_label
-from mpc_policy import DAY, MPCPolicy, SimCloner, make_mpc_policy, persistence_forecast, planning_model
+from mpc_policy import (DAY, EXOGENOUS_SERIES, MPCPolicy, SimCloner, make_mpc_policy, persistence_forecast,
+                        planning_model)
 from sustaindc_env import SustainDC
 from sustaindc_single_env import AGENTS, decode_joint_action
 
@@ -73,16 +74,13 @@ def main():
     check("planning model CI is the forecast after now",
           np.array_equal(model.ci_m.carbon_smooth[tc + 1:tc + 1 + DAY], ci_live[tc + 1 - DAY:tc + 1]))
     check("planning model CI is the truth up to now", np.array_equal(model.ci_m.carbon_smooth[:tc + 1], ci_live[:tc + 1]))
-    check("all exogenous series replaced", all(
+    check("all exogenous series replaced (incl. PV)", all(
         getattr(getattr(model, m), a) is not getattr(getattr(sdc, m), a)
-        for m, attrs in (('workload_m', ('cpu_smooth',)), ('ci_m', ('carbon_smooth', 'norm_carbon')),
-                         ('weather_m', ('temperature_data', 'wet_bulb_data', 'norm_temp_data', 'norm_wet_bulb_data')))
-        for a in attrs))
+        for m, attrs in EXOGENOUS_SERIES.items() for a in attrs) and 'pv_m' in EXOGENOUS_SERIES)
 
     # Two simulators identical up to now but with a different future: persistence must plan the same, oracle not.
     twin = copy.deepcopy(sdc)
-    for m, attrs in (('workload_m', ('cpu_smooth',)), ('ci_m', ('carbon_smooth', 'norm_carbon')),
-                     ('weather_m', ('temperature_data', 'wet_bulb_data', 'norm_temp_data', 'norm_wet_bulb_data'))):
+    for m, attrs in EXOGENOUS_SERIES.items():
         mgr = getattr(twin, m)
         for a in attrs:
             arr = getattr(mgr, a).copy()
@@ -99,6 +97,14 @@ def main():
           np.array_equal(plans['persistence', 'real'], plans['persistence', 'twin']))
     check("oracle: plan depends on the true future", not np.array_equal(plans['oracle', 'real'], plans['oracle', 'twin']))
 
+    pv_scn = {**SCENARIO, 'pv_config': {'capacity_kWp': 500}}
+    random.seed(3); np.random.seed(3)
+    pv_env = SustainDC(dict(pv_scn)); pv_env.reset()
+    tp = pv_env.pv_m.time_step
+    pv_model = planning_model(pv_env, 'persistence')
+    check("PV forecast is yesterday's profile",
+          pv_env.pv_m.enabled and np.array_equal(pv_model.pv_m.pv_kw[tp + 1:tp + 1 + DAY], pv_env.pv_m.pv_kw[tp + 1 - DAY:tp + 1]))
+
     print("3. Parameter and spec parsing")
     p = make_mpc_policy('horizon=50,block=8,samples=4,iters=2')
     check("horizon rounds up to whole blocks", (p.horizon, p.n_blocks, p.replan) == (56, 7, 8))
@@ -108,9 +114,12 @@ def main():
         except ValueError:
             check(f"bad parameter rejected: {bad}", True)
     cases = {
-        'mpc': ('mpc', ''), 'mpc=lbl': ('mpc', 'lbl'),
-        'mpc:forecast=persistence': ('mpc:forecast=persistence', ''),
-        'mpc:horizon=96,forecast=persistence=lbl': ('mpc:horizon=96,forecast=persistence', 'lbl'),
+        'mpc_joint': ('mpc_joint', ''), 'mpc_joint=lbl': ('mpc_joint', 'lbl'),
+        'mpc_joint:forecast=persistence': ('mpc_joint:forecast=persistence', ''),
+        'mpc_joint:horizon=96,forecast=persistence=lbl': ('mpc_joint:horizon=96,forecast=persistence', 'lbl'),
+        'mpc:H=16,forecast=realistic': ('mpc:H=16,forecast=realistic', ''),  # mpc_value.py specs
+        'mpc:H=8,value=naive=mpc8': ('mpc:H=8,value=naive', 'mpc8'),
+        'mpc:value=runs/v.npz': ('mpc:value=runs/v.npz', ''),
         'rule:ls,dc,bat=lbl': ('rule:ls,dc,bat', 'lbl'),
         'rule:bat:bat_lo=0.2': ('rule:bat:bat_lo=0.2', ''),
         'rule:bat:bat_lo=0.2=lbl': ('rule:bat:bat_lo=0.2', 'lbl'),

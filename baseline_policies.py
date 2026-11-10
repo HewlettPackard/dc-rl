@@ -79,42 +79,59 @@ def expected_utilization(sdc, ls_action):
 # ---------------------------------------------------------------------------------------------------------------------
 # Load shifting
 # ---------------------------------------------------------------------------------------------------------------------
-class LSRule:
-    """Defer flexible work when CI is above the `hi` quantile of the past day; run queued work below the `lo` quantile."""
+def queue_can_take(sdc):
+    """True if deferring this step's flexible tasks fits in the queue (otherwise the env drops the excess)."""
+    ls = sdc.ls_env
+    shiftable = int(np.floor(float(ls.workload) * ls.flexible_workload_ratio * 100))
+    return len(ls.tasks_queue) + shiftable <= ls.queue_max_len
 
-    def __init__(self, hi=0.6, lo=0.4):
-        self.hi, self.lo = hi, lo
+
+def oldest_task_age_hours(sdc):
+    ls = sdc.ls_env
+    if not ls.tasks_queue:
+        return 0.0
+    t = ls.tasks_queue[0]
+    return (ls.current_day - t['day']) * 24 + (ls.current_hour - t['hour'])
+
+
+class LSRule:
+    """Defer flexible work when CI is above the `hi` quantile of the past day; run queued work when CI is below the
+    `lo` quantile. Queue-aware: never defers more than the queue can hold (no dropped tasks) and runs the oldest work
+    once it is `deadline` hours old, before the env would force it at whatever CI it happens to be (24 h)."""
+
+    def __init__(self, hi=0.6, lo=0.4, deadline=20.0):
+        self.hi, self.lo, self.deadline = hi, lo, deadline
 
     def init(self, sdc):
         pass
 
+    def reference_ci(self, sdc):
+        return past_ci(sdc)
+
     def act(self, sdc):
-        hist = past_ci(sdc)
-        if len(hist) < DAY // 2:
+        ref = self.reference_ci(sdc)
+        if len(ref) < DAY // 2:
             return 1
         ci = current_ci(sdc)
-        if ci > np.quantile(hist, self.hi):
+        queued = len(sdc.ls_env.tasks_queue) > 0
+        if queued and oldest_task_age_hours(sdc) >= self.deadline:
+            return 2
+        if ci > np.quantile(ref, self.hi) and queue_can_take(sdc):
             return 0
-        if len(sdc.ls_env.tasks_queue) > 0 and ci < np.quantile(hist, self.lo):
+        if queued and ci <= np.quantile(ref, self.lo):
             return 2
         return 1
 
 
 class LSOracle(LSRule):
-    """Same rule, but against the true CI of the *next* day (deferred work must run within 24 h): defer when cheaper
-    hours are coming (CI above the `hi` quantile of the next day), run queued work in the cheapest hours (below `lo`)."""
+    """Same queue-aware rule, but against the true CI of the *next* day (deferred work must run within 24 h): defer when
+    cheaper hours are coming (CI above the `hi` quantile of the next day), run queued work in the cheap hours (`lo`)."""
 
-    def __init__(self, hi=0.5, lo=0.2):
-        super().__init__(hi, lo)
+    def __init__(self, hi=0.5, lo=0.3, deadline=20.0):
+        super().__init__(hi, lo, deadline)
 
-    def act(self, sdc):
-        fut = future_ci(sdc)
-        ci = current_ci(sdc)
-        if ci > np.quantile(fut, self.hi):
-            return 0
-        if len(sdc.ls_env.tasks_queue) > 0 and ci <= np.quantile(fut, self.lo):
-            return 2
-        return 1
+    def reference_ci(self, sdc):
+        return future_ci(sdc)
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -150,28 +167,29 @@ class DCOracle:
 # ---------------------------------------------------------------------------------------------------------------------
 # Battery
 # ---------------------------------------------------------------------------------------------------------------------
-def battery_transition(soc, cap, action, dc_load_mwh):
-    """Vectorized replica of BatteryEnvFwd + Battery2 for one 15-minute step.
+def battery_transition(stored, battery, action, dc_load_mwh, pv_mwh=0.0, dt=0.25):
+    """Vectorized replica of BatteryEnvFwd's battery step, using the env's own Battery limits (envs/battery_model.py).
 
-    soc: stored energy (MWh, array); action: 'charge' | 'discharge' | 'idle'; dc_load_mwh: this step's DC energy cap
-    on discharge (dcload / 4). Returns (next soc, grid energy change in MWh: + when charging, - when discharging).
+    stored: stored energy (MWh, array); battery: the env's Battery; action: 'charge' | 'discharge' | 'idle';
+    dc_load_mwh / pv_mwh: this step's DC energy and PV energy (scalars). PV surplus is stored automatically whatever
+    the action (self-consumption), charge tops up from the grid, discharge covers the net load.
+    Returns (next stored energy, grid energy change in MWh: + when charging from the grid, - when discharging,
+    PV energy stored in MWh).
     """
-    soc = np.asarray(soc, dtype=float)
-    frac = soc / cap
+    stored = np.asarray(stored, dtype=float)
+    zeros = np.zeros_like(stored)
+    surplus = max(pv_mwh - dc_load_mwh, 0.0)
     if action == 'charge':
-        rate = np.round(0.5 * (1 - 1 / (1 + np.exp(-10 * (frac - 0.5)))), 4)
-        t_u = rate * 15 / 60
-        max_charge = np.minimum(cap * 0.1, (cap - soc) / (t_u + 0.04))
-        added = np.minimum(max_charge, cap) * t_u
-        return np.round(soc + added, 8), added
+        draw = battery.charge_limit(stored, dt)
+        from_pv = np.minimum(draw, surplus)
+        return stored + draw * battery.eff_charge, draw - from_pv, from_pv
+    if surplus > 0:
+        draw = np.minimum(battery.charge_limit(stored, dt), surplus)
+        return stored + draw * battery.eff_charge, zeros, draw
     if action == 'discharge':
-        rate = np.maximum(0.5, 4 / (1 + np.exp(-10 * (frac - 0.25))))
-        t_u = rate * 15 / 60
-        max_dis = np.minimum(np.minimum(cap, soc / (0.01 + t_u)), dc_load_mwh)
-        nxt = np.round(soc - np.minimum(max_dis, cap) * t_u, 8)
-        delivered = np.where(max_dis < cap, max_dis * t_u, cap * t_u)
-        return nxt, -delivered
-    return soc, np.zeros_like(soc)
+        out = np.minimum(battery.discharge_limit(stored, dt), max(dc_load_mwh - pv_mwh, 0.0))
+        return np.maximum(stored - out / battery.eff_discharge, battery.soc_min * battery.capacity), -out, zeros
+    return stored, zeros, zeros
 
 
 BAT_ACTIONS = {0: 'charge', 1: 'discharge', 2: 'idle'}
@@ -199,45 +217,54 @@ class BatRule:
 
 
 class BatOracle:
-    """Dynamic programming over the battery's stored energy with the true CI and an estimated DC load for the whole
-    episode (load at a 18 C setpoint without load shifting). Minimizes sum_t CI_t * (grid energy added by the battery)."""
+    """Dynamic programming over the battery's stored energy with the true CI, PV and an estimated DC load for the whole
+    episode (load at a 18 C setpoint without load shifting). Minimizes sum_t CI_t * (grid energy added by the battery,
+    plus PV export credit forgone by storing PV when pv_export_credit is on)."""
 
     def __init__(self, grid_points=201):
         self.g = grid_points
 
     def init(self, sdc):
         bat = sdc.bat_env
+        self.battery = bat.battery
         self.cap = float(bat.max_bat_cap)
+        # With pv_export_credit, PV stored in the battery is PV not exported: it loses the export credit.
+        self.export_credit = bool(bat.pv_export_credit)
         self.t0 = sdc.t_m.current_timestep
         n = int(sdc.t_m.total_timesteps - sdc.t_m.current_timestep)
         ci = np.asarray(sdc.ci_m.carbon_smooth[sdc.ci_m.time_step:sdc.ci_m.time_step + n])
         wl = np.asarray(sdc.workload_m.cpu_smooth[sdc.workload_m.time_step:sdc.workload_m.time_step + n])
         amb = np.asarray(sdc.weather_m.temperature_data[sdc.weather_m.time_step:sdc.weather_m.time_step + n])
         wb = np.asarray(sdc.weather_m.wet_bulb_data[sdc.weather_m.time_step:sdc.weather_m.time_step + n])
-        n = min(len(ci), len(wl), len(amb), len(wb))
+        pv = np.asarray(sdc.pv_m.pv_kw[sdc.pv_m.time_step:sdc.pv_m.time_step + n])
+        n = min(len(ci), len(wl), len(amb), len(wb), len(pv))
         self.ci = ci[:n]
+        self.pv_mwh = pv[:n] / 1e3 / 4
         self.load_mwh = np.array([sum(dc_power(sdc, float(wl[k]), 18.0, float(amb[k]), float(wb[k]))) / 1e6 / 4
                                   for k in range(n)])
-        grid = np.linspace(0, self.cap, self.g)
+        b = self.battery
+        grid = np.linspace(b.soc_min * self.cap, b.soc_max * self.cap, self.g)
         self.grid = grid
         V = np.zeros((n + 1, self.g))
         for k in range(n - 1, -1, -1):
             best = np.full(self.g, np.inf)
             for a in ('charge', 'discharge', 'idle'):
-                nxt, de = battery_transition(grid, self.cap, a, self.load_mwh[k])
-                best = np.minimum(best, self.ci[k] * de * 1e3 + np.interp(nxt, grid, V[k + 1]))
+                best = np.minimum(best, self._cost(k, grid, a, V[k + 1]))
             V[k] = best
         self.V = V
+
+    def _cost(self, k, stored, action, v_next):
+        """CO2 of the battery's effect this step (g) plus the cost-to-go of the next stored energy."""
+        nxt, grid_delta, pv_stored = battery_transition(stored, self.battery, action, self.load_mwh[k], self.pv_mwh[k])
+        step = self.ci[k] * (grid_delta + self.export_credit * pv_stored) * 1e3
+        return step + np.interp(nxt, self.grid, v_next)
 
     def act(self, sdc):
         k = int(sdc.t_m.current_timestep - self.t0)
         if k >= len(self.ci):
             return 2
-        soc = float(sdc.bat_env.battery.current_load)
-        cost = {}
-        for a_id, a in BAT_ACTIONS.items():
-            nxt, de = battery_transition(np.array([soc]), self.cap, a, self.load_mwh[k])
-            cost[a_id] = float(self.ci[k] * de[0] * 1e3 + np.interp(nxt[0], self.grid, self.V[k + 1]))
+        stored = np.array([float(sdc.bat_env.battery.current_load)])
+        cost = {a_id: float(self._cost(k, stored, a, self.V[k + 1])[0]) for a_id, a in BAT_ACTIONS.items()}
         return min(cost, key=cost.get)
 
 
@@ -248,6 +275,7 @@ class ComposedPolicy:
     """One controller per subsystem; subsystems without a controller do nothing. Same interface as eval_compare's
     policies: reset(seed) at the start of each episode, act(sdc) -> {agent: action}."""
     include_dc_setpoint = False
+    include_pv_obs = False
     train_config = {}
 
     def __init__(self, ls=None, dc=None, bat=None):
@@ -285,12 +313,12 @@ def make_baseline_policy(kind, rest):
         raise ValueError(f"Unknown subsystem(s) {unknown}; use ls, dc, bat")
     if kind == 'rule':
         return ComposedPolicy(
-            ls=LSRule(p.get('ls_hi', 0.6), p.get('ls_lo', 0.4)) if 'ls' in subsystems else None,
+            ls=LSRule(p.get('ls_hi', 0.6), p.get('ls_lo', 0.4), p.get('ls_deadline', 20.0)) if 'ls' in subsystems else None,
             dc=DCFixed(p.get('dc_setpoint', 18.0)) if 'dc' in subsystems else None,
             bat=BatRule(p.get('bat_lo', 0.3), p.get('bat_hi', 0.7)) if 'bat' in subsystems else None)
     if kind == 'oracle':
         return ComposedPolicy(
-            ls=LSOracle(p.get('ls_hi', 0.5), p.get('ls_lo', 0.2)) if 'ls' in subsystems else None,
+            ls=LSOracle(p.get('ls_hi', 0.5), p.get('ls_lo', 0.3), p.get('ls_deadline', 20.0)) if 'ls' in subsystems else None,
             dc=DCOracle() if 'dc' in subsystems else None,
             bat=BatOracle(int(p.get('bat_grid', 201))) if 'bat' in subsystems else None)
     raise ValueError(f"Unknown baseline policy kind {kind!r}")

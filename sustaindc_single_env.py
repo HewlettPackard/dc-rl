@@ -37,6 +37,8 @@ class SustainDCSingleAgentEnv(gym.Env):
         include_dc_setpoint: passed to SustainDC, which appends the normalized current CRAC setpoint to the cooling
                      observation; the joint observation then includes it as its last element (30 dims instead of 29).
                      Default False; the training yaml turns it on for both this env and MARL.
+        include_pv_obs: passed to SustainDC, which appends 5 PV features to every agent's observation; the joint
+                     observation then ends with them (+5 dims). Default False.
     """
 
     metadata = {'render_modes': []}
@@ -47,6 +49,7 @@ class SustainDCSingleAgentEnv(gym.Env):
         self.action_type = env_config.pop('action_type', 'multidiscrete')
         self.reward_type = env_config.pop('reward_type', 'agent_ls')
         self.include_dc_setpoint = bool(env_config.get('include_dc_setpoint', False))
+        self.include_pv_obs = bool(env_config.get('include_pv_obs', False))
         env_config['agents'] = list(AGENTS)
 
         if self.action_type not in ('multidiscrete', 'discrete'):
@@ -56,7 +59,7 @@ class SustainDCSingleAgentEnv(gym.Env):
 
         self.env = SustainDC(env_config)
 
-        obs_dim = joint_obs_dim(self.include_dc_setpoint)
+        obs_dim = joint_obs_dim(self.include_dc_setpoint, self.include_pv_obs)
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32)
         if self.action_type == 'multidiscrete':
             self.action_space = spaces.MultiDiscrete(N_SUB_ACTIONS)
@@ -68,7 +71,8 @@ class SustainDCSingleAgentEnv(gym.Env):
         return decode_joint_action(action, self.action_type)
 
     def _obs(self):
-        return build_joint_obs(self.env.ls_state, self.env.dc_state, self.env.bat_state, self.include_dc_setpoint)
+        return build_joint_obs(self.env.ls_state, self.env.dc_state, self.env.bat_state, self.include_dc_setpoint,
+                               self.include_pv_obs)
 
     def reset(self, seed=None, options=None):
         super().reset(seed=seed)
@@ -85,6 +89,15 @@ class SustainDCSingleAgentEnv(gym.Env):
         truncated = bool(truncs.get('__all__', False) or truncs['agent_ls'])
         # info['agent_ls'] already merges ls/dc/bat infos and the reward params.
         return self._obs(), reward, False, truncated, info['agent_ls']
+
+    def reset_reward_history(self):
+        """Clear this process's energy history used by the reward normalization.
+
+        The rewards are z-scored against a process-wide history, so the same episode scores differently depending
+        on what ran before it. Clearing it before an evaluation makes the evaluation returns reproducible.
+        """
+        import utils.reward_creator as rc
+        rc.energy_history.clear()
 
     def close(self):
         pass
