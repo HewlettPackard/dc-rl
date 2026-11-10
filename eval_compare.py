@@ -37,6 +37,7 @@ Several result folders (e.g. from parallel jobs on the same seeds) can be merged
     python eval_compare.py --combine results/eval_compare/a results/eval_compare/b --out_dir results/eval_compare/all
 """
 import argparse
+import csv
 import datetime
 import glob
 import hashlib
@@ -361,17 +362,28 @@ def paired_report(results, seeds, base='noop'):
     return report
 
 
+def read_episodes_csv(path):
+    """Rows of an episodes.csv as dicts. Older files wrote labels unquoted, so a label with commas (rule:ls,dc,bat)
+    spilled into extra columns; the label is the only field that can contain commas, so those rows are rejoined."""
+    with open(path, newline='') as f:
+        reader = csv.reader(f)
+        header = next(reader)
+        for row in reader:
+            extra = len(row) - len(header)
+            if extra > 0:
+                row = [','.join(row[:extra + 1])] + row[extra + 1:]
+            yield dict(zip(header, row))
+
+
 def combine(dirs, out_dir):
     """Merge episodes.csv files from several eval_compare runs on the same seeds and report them together."""
-    import csv
     results, fps, seeds = {}, {}, None
     for d in dirs:
-        with open(os.path.join(d, 'episodes.csv')) as f:
-            for row in csv.DictReader(f):
-                label = row['policy']
-                # Metrics added later (e.g. PV) are missing from older CSVs: read them as 0.
-                results.setdefault(label, {})[int(row['seed'])] = {n: float(row.get(n, 0.0)) for n, _ in METRICS}
-                fps.setdefault(int(row['seed']), set()).add(row['inputs_fingerprint'])
+        for row in read_episodes_csv(os.path.join(d, 'episodes.csv')):
+            label = row['policy']
+            # Metrics added later (e.g. PV) are missing from older CSVs: read them as 0.
+            results.setdefault(label, {})[int(row['seed'])] = {n: float(row.get(n, 0.0)) for n, _ in METRICS}
+            fps.setdefault(int(row['seed']), set()).add(row['inputs_fingerprint'])
     seeds = sorted(next(iter(results.values())))
     if any(sorted(r) != seeds for r in results.values()):
         raise ValueError('Policies were evaluated on different seeds; cannot combine.')
@@ -434,8 +446,10 @@ def main():
     results, fingerprints = {}, {}
     for label, pol in policies:
         # Observation flags follow the policy; everything that shapes the episode comes from the scenario.
-        sdc = SustainDC({**scenario, 'agents': list(AGENTS), 'include_dc_setpoint': pol.include_dc_setpoint,
-                         'include_pv_obs': pol.include_pv_obs})
+        # Controllers that read the simulator directly need no observation flags (default off).
+        sdc = SustainDC({**scenario, 'agents': list(AGENTS),
+                         'include_dc_setpoint': getattr(pol, 'include_dc_setpoint', False),
+                         'include_pv_obs': getattr(pol, 'include_pv_obs', False)})
         results[label], fingerprints[label] = [], []
         for seed in seeds:
             m, fp = run_episode(sdc, pol, seed)
@@ -469,11 +483,12 @@ def main():
 
     out_dir = args.out_dir or os.path.join('results', 'eval_compare', datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
     os.makedirs(out_dir, exist_ok=True)
-    with open(os.path.join(out_dir, 'episodes.csv'), 'w') as f:
-        f.write('policy,seed,' + ','.join(n for n, _ in METRICS) + ',inputs_fingerprint\n')
+    with open(os.path.join(out_dir, 'episodes.csv'), 'w', newline='') as f:
+        writer = csv.writer(f)  # quotes labels containing commas, e.g. rule:ls,dc,bat
+        writer.writerow(['policy', 'seed'] + [n for n, _ in METRICS] + ['inputs_fingerprint'])
         for label, eps in results.items():
             for seed, e, fp in zip(seeds, eps, fingerprints[label]):
-                f.write(f'{label},{seed},' + ','.join(f'{e[n]:.6g}' for n, _ in METRICS) + f',{fp}\n')
+                writer.writerow([label, seed] + [f'{e[n]:.6g}' for n, _ in METRICS] + [fp])
     with open(os.path.join(out_dir, 'summary.json'), 'w') as f:
         json.dump({'scenario': scenario, 'seeds': seeds, 'policies': args.policy,
                    'inputs_identical': same_inputs, 'summary': summary, 'paired_vs_noop': paired}, f, indent=2)

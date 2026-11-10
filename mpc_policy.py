@@ -292,6 +292,7 @@ class MPCPolicy:
     """Receding-horizon CEM over the joint (ls, dc, bat) action. eval_compare policy interface:
     reset(seed) at the start of each episode, act(sdc) -> {agent: action} after each reset/step."""
     include_dc_setpoint = False
+    include_pv_obs = False
     train_config = {}
 
     def __init__(self, horizon=48, block=4, replan=None, samples=32, iters=3, elites=6, smoothing=0.7,
