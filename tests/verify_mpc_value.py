@@ -68,17 +68,24 @@ check("realistic forecast = truth for the observed steps (9 CI, 2 workload)",
       np.allclose(ci_r[:9], ci_p[:9]) and np.allclose(wl_r[:2], wl_p[:2]))
 check("...and differs beyond them", not np.allclose(ci_r[9:], ci_p[9:]))
 
-print("3. Battery DP plans with the exact battery transition")
+print("3. Battery DP plans with the env's battery model (usable window, efficiencies, power limit)")
+from envs.battery_model import Battery
+bt = Battery(1.0)
 pol = M.MPCPolicy(H=8, value='none')
 pol.reset(0)
 ci = np.array([100.0] * 4 + [500.0] * 4)
-a = pol.plan_bat(0.0, 1.0, ci, np.full(8, 1.0), lambda g: np.zeros(len(g)))
+floor = bt.soc_min * bt.capacity
+a = pol.plan_bat(floor, bt, ci, np.full(8, 1.0), lambda g: np.zeros(len(g)))
 check("charges ahead of a CI peak inside the horizon", a == M.BAT_ACTION_IDS['charge'], f"action {a}")
-a = pol.plan_bat(0.5, 1.0, np.full(8, 300.0), np.full(8, 1.0), lambda g: np.zeros(len(g)))
+a = pol.plan_bat(0.5, bt, np.full(8, 300.0), np.full(8, 1.0), lambda g: np.zeros(len(g)))
 check("with no terminal value, discharges stored energy (it looks worthless after the horizon)",
       a == M.BAT_ACTION_IDS['discharge'], f"action {a}")
-a = pol.plan_bat(0.5, 1.0, np.full(8, 300.0), np.full(8, 1.0), lambda g: -g * 1000.0)
+a = pol.plan_bat(0.5, bt, np.full(8, 300.0), np.full(8, 1.0), lambda g: -g * 1000.0)
 check("a terminal value that prices stored energy above the current CI keeps it", a != M.BAT_ACTION_IDS['discharge'])
+a = pol.plan_bat(floor, bt, np.array([100.0] * 4 + [104.0] * 4), np.full(8, 1.0), lambda g: np.zeros(len(g)))
+check("round-trip losses: no charging for a CI spread below the ~10% loss", a != M.BAT_ACTION_IDS['charge'], f"action {a}")
+nxt, de, _ = battery_transition(np.array([floor]), bt, 'discharge', 1.0)
+check("an empty battery (at the SoC floor) cannot discharge", nxt[0] == floor and de[0] == 0.0)
 
 print("4. Value-learning pieces")
 d = np.arange(10, dtype=float)
@@ -126,6 +133,8 @@ syn = {'q': np.zeros((4, M.AGE_BINS)), 'q_final': np.zeros(M.AGE_BINS), 'task_co
 _, (_, yb_syn) = per_unit_targets(syn)
 check("battery target = mean CI of the discharges of the stored energy (FIFO)",
       np.allclose(yb_syn[:3], [300.0, 300.0, 200.0]) and yb_syn[3] == 0.0, f"{yb_syn}")
+_, (_, yb_eff) = per_unit_targets({**syn, 'eff_discharge': 0.95})
+check("...times the discharge efficiency (CO2 displaced per stored kWh)", np.allclose(yb_eff, 0.95 * yb_syn))
 
 print("5. eval_compare specs")
 check("label after an mpc keyword value is not taken as a label",

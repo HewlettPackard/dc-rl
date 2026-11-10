@@ -96,7 +96,9 @@ def collect_episode(job):
     data = {k: np.asarray(v, dtype=np.float64) for k, v in rec.items()}
     # end of episode: queued work is charged like eval_compare.py does (marginal energy x mean CI); stored energy is lost
     data['q_final'] = M.queue_counts(sdc.ls_env)
-    data['soc_final'] = float(sdc.bat_env.battery.current_load)
+    battery = sdc.bat_env.battery  # 'soc' entries are usable stored energy (MWh above the SoC floor), as MPCPolicy records
+    data['soc_final'] = float(battery.current_load - battery.soc_min * battery.capacity)
+    data['eff_discharge'] = float(battery.eff_discharge)
     data['end_task_cost'] = float(M.task_kwh(policy.last['coef'], submitted / steps) * ci_sum / steps / 1e3)
     data['cap'] = float(sdc.bat_env.max_bat_cap)
     metrics = {'seed': seed, 'co2_work_adjusted': co2_adj, 'noop_co2_work_adjusted': noop['co2_work_adjusted'],
@@ -119,7 +121,7 @@ def naive_values(data, ci_scale):
     The marginal task energy is not recorded per state, so a constant is used (only the first fit uses this)."""
     ci_mean = data['ctx'][:, 2] * ci_scale
     tasks = data['queue'][:, 7] * 1000
-    return tasks * data['task_kwh'] * ci_mean / 1e3, -data['soc'] * ci_mean
+    return tasks * data['task_kwh'] * ci_mean / 1e3, -data['soc'] * data['eff_discharge'] * ci_mean
 
 
 def nstep_targets(d, v, n, ends):
@@ -144,10 +146,11 @@ def per_unit_targets(ep):
     Queue: tasks are tracked first-in first-out (the env pops the oldest first and overdue tasks are the oldest). Each
     task gets the CO2 of the step that ran it (task_cost) or, if still queued at the end, the episode-end cost. For each
     state and age bucket the target is the mean cost of the tasks in that bucket, weighted by their number.
-    Battery: stored energy is discharged first-in first-out as well, so the energy stored at t is the next soc_t MWh to be
-    discharged; its target is the mean CI of those discharges (energy never discharged counts as 0). With an empty
-    battery it is the CI of the next discharge (the marginal value of a small amount of stored energy).
-    Returns (ls inputs, ls targets kg/task, ls weights) and (bat inputs, bat targets g/kWh).
+    Battery: stored energy is discharged first-in first-out as well, so the usable energy stored at t (soc_t, MWh above
+    the SoC floor) is the next soc_t MWh to be discharged; its target is the mean CI of those discharges times the
+    discharge efficiency, i.e. grid CO2 displaced per stored kWh (energy never discharged counts as 0). With an empty
+    battery it is that of the next discharge (the marginal value of a small amount of stored energy).
+    Returns (ls inputs, ls targets kg/task, ls weights) and (bat inputs, bat targets g per stored kWh).
     """
     import mpc_value as M
     q, cost, ctx, soc, ci = ep['q'], ep['task_cost'], ep['ctx'], ep['soc'], ep['ci']
@@ -203,7 +206,7 @@ def per_unit_targets(ep):
         return np.where(x >= D[-1], P[-1], P[k] + (x - D[k]) * ci[k])
 
     s = np.maximum(soc, 0.01 * ep['cap'])
-    y_bat = (G(D[:-1] + s) - G(D[:-1])) / s
+    y_bat = (G(D[:-1] + s) - G(D[:-1])) / s * ep.get('eff_discharge', 1.0)
     x_bat = np.hstack([soc[:, None], ctx])
     return (x_ls, np.array(ys), np.array(ws, dtype=float)), (x_bat, y_bat)
 
@@ -382,6 +385,7 @@ def main():
             ends = np.cumsum([len(d['d_ls']) for d, _ in results])
             # marginal task energy for the naive bootstrap: from the energy model at the mean utilization
             data['task_kwh'] = np.full(len(data['d_ls']), np.nan)
+            data['eff_discharge'] = results[0][0]['eff_discharge']
             if value == 'naive':
                 import mpc_value as M
                 sdc = make_env(scenario)

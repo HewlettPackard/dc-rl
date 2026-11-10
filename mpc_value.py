@@ -13,7 +13,7 @@ Subsystems (the CO2 is additive and the subsystems are almost decoupled, so each
 
 * load shifting (ls): the deferred-task queue is simulated exactly (vectorized over candidate plans, same rules as
   envs/carbon_ls.py); the plan is searched with the cross-entropy method (CEM). V_ls(queue, context).
-* battery (bat): exact dynamic programming over the stored energy (same transition as BatOracle). V_bat(soc, context).
+* battery (bat): exact dynamic programming over the stored energy (same transition as BatOracle). V_bat(usable stored energy, context).
 * cooling (dc): holds a fixed setpoint (the tuned rule-based setpoint, 15 C by default); the energy model of the plan uses
   that setpoint.
 
@@ -30,7 +30,7 @@ Terminal value (`value=`):
 * none: V = 0 (myopic MPC)
 * naive: queued tasks run later at the past day's mean CI; stored battery energy displaces grid energy at that CI
 * <path.npz>: learned value (train_mpc_value.py). Default form `per_unit`: the same structure as `naive`, but with
-  learned prices, V_ls = sum_b q_b c_ls(b, |q|, context) and V_bat = -soc c_bat(soc, context), where c_ls is the expected
+  learned prices, V_ls = sum_b q_b c_ls(b, |q|, context) and V_bat = -e c_bat(e, context) (e: usable stored energy), where c_ls is the expected
   CO2 of one queued task of age bucket b and c_bat the CI at which stored energy will be discharged, both fitted to
   Monte Carlo targets tracked through the MPC's own rollouts. Form `mlp` (ablation): unstructured MLPs fitted to n-step
   average-cost returns (see "Value learning"); the planner tends to exploit its errors (e.g. by hoarding work), because
@@ -216,29 +216,31 @@ class ZeroValue:
     def ls(self, q, ctx, ci_win, coef, u):
         return np.zeros(len(q))
 
-    def bat(self, soc, ctx, ci_win):
-        return np.zeros(len(soc))
+    def bat(self, usable, ctx, ci_win, eff_discharge):
+        """Value (kg CO2, <= 0) of `usable` MWh stored above the battery's SoC floor."""
+        return np.zeros(len(usable))
 
 
 class NaiveValue(ZeroValue):
-    """Queued tasks run later at the mean CI of the past day; stored energy displaces grid energy at that CI."""
+    """Queued tasks run later at the mean CI of the past day; stored energy (after discharge losses) displaces grid
+    energy at that CI."""
     name = 'naive'
 
     def ls(self, q, ctx, ci_win, coef, u):
         return q.sum(axis=1) * task_kwh(coef, u) * ci_win.mean() / 1e3
 
-    def bat(self, soc, ctx, ci_win):
-        return -soc * ci_win.mean()  # MWh x g/kWh = kg
+    def bat(self, usable, ctx, ci_win, eff_discharge):
+        return -np.asarray(usable, float) * eff_discharge * ci_win.mean()  # MWh x g/kWh = kg
 
 
 class LearnedValue(ZeroValue):
     """Learned terminal value (train_mpc_value.py), in one of two forms:
 
-    * per_unit (default): V_ls(q) = sum_b q_b * c_ls(b, |q|, ctx) and V_bat(soc) = -soc * c_bat(soc, ctx), where c_ls is
-      the expected CO2 (kg) of running one queued task of age bucket b and c_bat the CI (g/kWh) at which stored energy is
-      later discharged (so -soc * c_bat is the CO2 it will displace). Both are learned from Monte Carlo targets tracked
-      through the MPC's own rollouts.
-    * mlp: unstructured MLPs V_ls(queue features, ctx), V_bat(soc, ctx) fitted to n-step average-cost returns (ablation).
+    * per_unit (default): V_ls(q) = sum_b q_b * c_ls(b, |q|, ctx) and V_bat(e) = -e * c_bat(e, ctx), where e is the usable
+      stored energy (MWh above the SoC floor), c_ls the expected CO2 (kg) of running one queued task of age bucket b and
+      c_bat the grid CO2 (g) displaced per stored kWh when it is later discharged (CI x discharge efficiency). Both are
+      learned from Monte Carlo targets tracked through the MPC's own rollouts.
+    * mlp: unstructured MLPs V_ls(queue features, ctx), V_bat(e, ctx) fitted to n-step average-cost returns (ablation).
     """
 
     def __init__(self, path):
@@ -256,12 +258,12 @@ class LearnedValue(ZeroValue):
         counts = queue_features(q)[:, :N_BUCKETS] * 100
         return (counts * self.v_ls(per_task_inputs(q.sum(axis=1), ctx)).reshape(len(q), N_BUCKETS)).sum(axis=1)
 
-    def bat(self, soc, ctx, ci_win):
-        soc = np.asarray(soc, float)
-        x = np.hstack([soc[:, None], np.repeat(ctx[None], len(soc), axis=0)])
+    def bat(self, usable, ctx, ci_win, eff_discharge):
+        usable = np.asarray(usable, float)
+        x = np.hstack([usable[:, None], np.repeat(ctx[None], len(usable), axis=0)])
         if self.form == 'mlp':
             return self.v_bat(x)
-        return -soc * self.v_bat(x)
+        return -usable * self.v_bat(x)  # c_bat already includes the discharge losses (train_mpc_value.py)
 
 
 N_BUCKETS = len(QUEUE_BUCKETS) - 1
@@ -346,20 +348,29 @@ class MPCPolicy:
         return int(best_plan[0]), best_util
 
     # -- battery: dynamic programming over stored energy ---------------------------------------------------------
-    def plan_bat(self, soc, cap, ci, load_mwh, terminal):
-        grid = np.linspace(0, cap, self.bat_grid)
+    def plan_bat(self, stored, battery, ci, load_mwh, terminal):
+        """Exact DP over the stored energy (MWh) in the battery's usable window, with the env's Battery limits.
+        terminal(grid) is the value of the stored energy at the end of the horizon. (PV is not modelled: act() refuses
+        to run with PV enabled.)"""
+        cap = battery.capacity
+        grid = np.linspace(battery.soc_min * cap, battery.soc_max * cap, self.bat_grid)
         v = terminal(grid)
         for k in range(len(ci) - 1, 0, -1):
             v = np.min([ci[k] * de + np.interp(nxt, grid, v)
-                        for nxt, de in (battery_transition(grid, cap, a, load_mwh[k]) for a in BAT_ACTION_IDS)], axis=0)
+                        for nxt, de, _ in (battery_transition(grid, battery, a, load_mwh[k]) for a in BAT_ACTION_IDS)],
+                       axis=0)
         costs = {}
         for name, a_id in BAT_ACTION_IDS.items():
-            nxt, de = battery_transition(np.array([soc]), cap, name, load_mwh[0])
+            nxt, de, _ = battery_transition(np.array([stored]), battery, name, load_mwh[0])
             costs[a_id] = float(ci[0] * de[0] + np.interp(nxt[0], grid, v))
         return min(costs, key=costs.get)
 
     def act(self, sdc):
         ls, bat = sdc.ls_env, sdc.bat_env
+        if getattr(sdc, 'pv_m', None) is not None and np.any(sdc.pv_m.original_pv_kw > 0):
+            raise NotImplementedError('MPCPolicy does not model on-site PV yet; run it with pv_config.capacity_kWp = 0.')
+        battery = bat.battery
+        floor = battery.soc_min * battery.capacity
         remaining = int(sdc.t_m.total_timesteps - sdc.t_m.current_timestep)
         horizon = max(1, min(self.H, remaining))
         at_end = remaining <= self.H
@@ -382,12 +393,11 @@ class MPCPolicy:
                 return self.value.ls(q, ctx_end, ci_win, coef, u)
 
             def bat_terminal(grid):
-                return self.value.bat(grid, ctx_end, ci_win)
+                return self.value.bat(grid - floor, ctx_end, ci_win, battery.eff_discharge)
 
         a_ls, util = self.plan_ls(q0, ci, wl, coef, ls, ls_terminal)
-        cap = float(bat.max_bat_cap)
-        soc = float(bat.battery.current_load)
-        a_bat = self.plan_bat(soc, cap, ci, energy_kwh(coef, util) / 1e3, bat_terminal)
+        stored = float(battery.current_load)
+        a_bat = self.plan_bat(stored, battery, ci, energy_kwh(coef, util) / 1e3, bat_terminal)
         if self.explore > 0:
             if self.rng.random() < self.explore:
                 a_ls = int(self.rng.integers(3))
@@ -395,7 +405,7 @@ class MPCPolicy:
                 a_bat = int(self.rng.integers(3))
         if self.record:
             self.last = {
-                'queue': queue_features(q0)[0], 'q': q0, 'soc': soc,
+                'queue': queue_features(q0)[0], 'q': q0, 'soc': stored - floor,  # usable stored energy (MWh)
                 'ctx': context_features(ls.current_hour, ci_past, wl_past, ci_scale),
                 'coef': coef, 'ci': float(ci[0]), 'workload': float(wl[0])}
         return {'agent_ls': a_ls, 'agent_dc': setpoint_action(sdc.dc_env.raw_curr_stpt, self.dc_setpoint),
