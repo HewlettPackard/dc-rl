@@ -88,7 +88,7 @@ def default_ls_reward(params: dict) -> float:
     tasks_age_penalty = -age_penalty_scale * params['ls_oldest_task_age']  # Assume normalized between 0 and 1
 
     # Dropped Tasks Penalty: tasks deferred while the queue is full are lost. Same value as the original SustainDC
-    # reward (-10 per task). Note the total is clipped to [-10, 10] below, so any drop drives the reward to -10.
+    # reward (-10 per task). The total is clipped to [-10, 10] below, so a drop drives the reward to (or within ~0.3 of) -10.
     tasks_dropped_penalty = PENALTY_PER_DROPPED_TASK * params['ls_tasks_dropped']
 
     # Total Reward

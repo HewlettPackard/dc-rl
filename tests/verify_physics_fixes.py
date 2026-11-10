@@ -137,3 +137,4 @@ while True:
 check("30-day episode completes", steps == 30 * 96, f"{steps} steps")
 
 print(f"\n{sum(results)}/{len(results)} checks passed")
+sys.exit(0 if all(results) else 1)
