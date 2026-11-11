@@ -25,6 +25,8 @@ Policy specs:
     mpc[:<params>]                MPC with a terminal value, e.g. mpc:H=16,value=<value.npz>,forecast=realistic
                                   (see mpc_value.py)
     setpoint:<C>                  hold the CRAC setpoint at <C>, everything else does nothing
+    mpc_joint[:<params>]          MPC (CEM over the joint action) on a simulator clone, e.g. mpc_joint:horizon=96,
+                                  mpc_joint:forecast=persistence (past data only), mpc_joint:workers=8 (see mpc_policy.py)
 Add =<label> to any spec to name it in the table, e.g. harl:<dir>=happo. See baseline_policies.py for the controllers.
 
 Each policy is compared with `noop` episode by episode (paired), which removes the episode-to-episode variation:
@@ -35,6 +37,7 @@ Several result folders (e.g. from parallel jobs on the same seeds) can be merged
     python eval_compare.py --combine results/eval_compare/a results/eval_compare/b --out_dir results/eval_compare/all
 """
 import argparse
+import csv
 import json
 import os
 import sys
@@ -52,7 +55,7 @@ from sdc_eval.constants import ENV_CFG, FINAL_EVAL_SEED, NOOP, SCENARIO_KEYS, ST
 from sdc_eval.metrics import METRICS, PAIRED_METRICS, aggregate, marginal_kwh_per_util_step
 from sdc_eval.paths import add_out_root_arg, report_dir, resolve_root
 from sdc_eval.policies import (HARLPolicy, NoOpPolicy, RandomPolicy, SB3Policy, expand_specs, make_policy,
-                               split_label)
+                               obs_flags, split_label)
 from sdc_eval.decisions import DecisionRecorder, battery_summary, frame as decision_frame
 from sdc_eval.rollout import run_episode
 from sustaindc_env import SustainDC
@@ -102,17 +105,28 @@ def paired_report(results, seeds, base='noop'):
     return report
 
 
+def read_episodes_csv(path):
+    """Rows of an episodes.csv as dicts. Older files wrote labels unquoted, so a label with commas (rule:ls,dc,bat)
+    spilled into extra columns; the label is the only field that can contain commas, so those rows are rejoined."""
+    with open(path, newline='') as f:
+        reader = csv.reader(f)
+        header = next(reader)
+        for row in reader:
+            extra = len(row) - len(header)
+            if extra > 0:
+                row = [','.join(row[:extra + 1])] + row[extra + 1:]
+            yield dict(zip(header, row))
+
+
 def combine(dirs, out_dir):
     """Merge episodes.csv files from several eval_compare runs on the same seeds and report them together."""
-    import csv
     results, fps, seeds = {}, {}, None
     for d in dirs:
-        with open(os.path.join(d, 'episodes.csv')) as f:
-            for row in csv.DictReader(f):
-                label = row['policy']
-                # Metrics added later are missing from older CSVs: read them as NaN.
-                results.setdefault(label, {})[int(row['seed'])] = {n: float(row.get(n) or 'nan') for n, _ in METRICS}
-                fps.setdefault(int(row['seed']), set()).add(row['inputs_fingerprint'])
+        for row in read_episodes_csv(os.path.join(d, 'episodes.csv')):
+            label = row['policy']
+            # Metrics added later are missing from older CSVs: read them as NaN.
+            results.setdefault(label, {})[int(row['seed'])] = {n: float(row.get(n) or 'nan') for n, _ in METRICS}
+            fps.setdefault(int(row['seed']), set()).add(row['inputs_fingerprint'])
     seeds = sorted(next(iter(results.values())))
     if any(sorted(r) != seeds for r in results.values()):
         raise ValueError('Policies were evaluated on different seeds; cannot combine.')
@@ -187,8 +201,9 @@ def main():
 
     policies = [make_policy(s) for s in expand_specs(args.policy)]
     for label, pol in policies:
-        diff = {k: (pol.train_config[k], scenario.get(k)) for k in SCENARIO_KEYS
-                if k in pol.train_config and pol.train_config[k] != scenario.get(k)}
+        trained = getattr(pol, 'train_config', None) or {}
+        diff = {k: (trained[k], scenario.get(k)) for k in SCENARIO_KEYS
+                if k in trained and trained[k] != scenario.get(k)}
         if diff:
             print(f"Note: '{label}' was trained on a different scenario (trained vs eval): {diff}")
 
@@ -197,8 +212,9 @@ def main():
     results, fingerprints, decision_frames = {}, {}, []
     for label, pol in policies:
         # Observation flags follow the policy; everything that shapes the episode comes from the scenario.
-        sdc = SustainDC({**scenario, 'agents': list(AGENTS), 'include_dc_setpoint': pol.include_dc_setpoint,
-                         'include_pv_obs': pol.include_pv_obs})
+        # Controllers that read the simulator directly need no observation flags (default off).
+        dc_sp, pv_obs = obs_flags(pol)
+        sdc = SustainDC({**scenario, 'agents': list(AGENTS), 'include_dc_setpoint': dc_sp, 'include_pv_obs': pv_obs})
         results[label], fingerprints[label] = [], []
         episode_rows = []
         for seed in seeds:
@@ -238,11 +254,12 @@ def main():
 
     out_dir = args.out_dir or report_dir(resolve_root(args.out_root), 'eval_compare')
     os.makedirs(out_dir, exist_ok=True)
-    with open(os.path.join(out_dir, 'episodes.csv'), 'w') as f:
-        f.write('policy,seed,' + ','.join(n for n, _ in METRICS) + ',inputs_fingerprint\n')
+    with open(os.path.join(out_dir, 'episodes.csv'), 'w', newline='') as f:
+        writer = csv.writer(f)  # quotes labels containing commas, e.g. rule:ls,dc,bat
+        writer.writerow(['policy', 'seed'] + [n for n, _ in METRICS] + ['inputs_fingerprint'])
         for label, eps in results.items():
             for seed, e, fp in zip(seeds, eps, fingerprints[label]):
-                f.write(f'{label},{seed},' + ','.join(f'{e[n]:.6g}' for n, _ in METRICS) + f',{fp}\n')
+                writer.writerow([label, seed] + [f'{e[n]:.6g}' for n, _ in METRICS] + [fp])
     with open(os.path.join(out_dir, 'summary.json'), 'w') as f:
         json.dump({'scenario': scenario, 'seeds': seeds, 'policies': args.policy,
                    'inputs_identical': same_inputs, 'summary': summary, 'paired_vs_noop': paired,

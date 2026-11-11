@@ -43,5 +43,19 @@ print("3. Different seeds -> different episodes")
 _, fp_other = run_episode(env, NoOpPolicy(), 1001)
 check("seed 1001 differs from seed 1000", fp_other != fp1)
 
+print("4. episodes.csv round trip with commas in labels")
+import csv, tempfile
+from eval_compare import read_episodes_csv
+with tempfile.TemporaryDirectory() as tmp:
+    new_path, old_path = os.path.join(tmp, 'new.csv'), os.path.join(tmp, 'old.csv')
+    with open(new_path, 'w', newline='') as f:
+        csv.writer(f).writerows([['policy', 'seed', 'co2', 'inputs_fingerprint'], ['rule:ls,dc,bat', 1000, '1.5', 'abc']])
+    with open(old_path, 'w') as f:  # the format written before the fix: label not quoted
+        f.write('policy,seed,co2,inputs_fingerprint\nrule:ls,dc,bat,1000,1.5,abc\nnoop,1000,2.5,abc\n')
+    want = {'policy': 'rule:ls,dc,bat', 'seed': '1000', 'co2': '1.5', 'inputs_fingerprint': 'abc'}
+    check("quoted label read back intact", list(read_episodes_csv(new_path)) == [want])
+    old_rows = list(read_episodes_csv(old_path))
+    check("unquoted label from older files repaired", old_rows[0] == want and old_rows[1]['policy'] == 'noop')
+
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)
