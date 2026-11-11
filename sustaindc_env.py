@@ -74,10 +74,11 @@ class EnvConfig(dict):
         # flexible load ratio of the total workload
         'flexible_load': 0.1,
         
-        # Specify reward methods. These are defined in utils/reward_creator.
-        'ls_reward': 'default_ls_reward',
-        'dc_reward': 'default_dc_reward',
-        'bat_reward': 'default_bat_reward',
+        # Specify reward methods. These are defined in utils/reward_creator. co2_team_reward: the step's grid CO2 plus
+        # 2x the CO2 of dropped work, the same for every agent (default_*_reward: the original SustainDC rewards).
+        'ls_reward': 'co2_team_reward',
+        'dc_reward': 'co2_team_reward',
+        'bat_reward': 'co2_team_reward',
 
         # Evaluation flag that is required by the load-shifting environment
         # To be set only during offline evaluation
@@ -165,13 +166,13 @@ class SustainDC(gym.Env):
 
         ci_loc, wea_loc = obtain_paths(self.location)
         
-        ls_reward_method = 'default_ls_reward' if not 'ls_reward' in env_config.keys() else env_config['ls_reward']
+        ls_reward_method = env_config.get('ls_reward', 'co2_team_reward')
         self.ls_reward_method = reward_creator.get_reward_method(ls_reward_method)
 
-        dc_reward_method =  'default_dc_reward' if not 'dc_reward' in env_config.keys() else env_config['dc_reward']
+        dc_reward_method = env_config.get('dc_reward', 'co2_team_reward')
         self.dc_reward_method = reward_creator.get_reward_method(dc_reward_method)
         
-        bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
+        bat_reward_method = env_config.get('bat_reward', 'co2_team_reward')
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
         n_vars_energy, n_vars_battery = 0, 0  # For partial observability (for p.o.)

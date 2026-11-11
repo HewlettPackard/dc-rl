@@ -71,9 +71,10 @@ for seed in (1000, 1001):
     check(f"seed {seed}: same ranking (pairs > 0.2% apart)", not bad,
           " > ".join(f"{k} ({vals[k][0]:.1f}, {vals[k][1] / 1e3:.3f} t)" for k in by_return) + (f"; mismatched {bad}" if bad else ""))
 
-print("3. Default rewards unchanged")
+print("3. Default reward")
 d = SustainDC({k: v for k, v in BASE.items() if not k.endswith('_reward')})
-check("default config still uses the default rewards", d.ls_reward_method is rc.default_ls_reward and d.dc_reward_method is rc.default_dc_reward)
+check("the default config uses co2_team_reward for all three agents",
+      d.ls_reward_method is d.dc_reward_method is d.bat_reward_method is rc.co2_team_reward)
 
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)
