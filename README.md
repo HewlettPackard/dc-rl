@@ -553,6 +553,29 @@ Benchmarking the performance of different reinforcement learning algorithms usin
 - Water Usage: Efficient utilization of water for cooling.
 - Task Dropped: Number of dropped tasks due to workload scheduling.
 
+### Shared evaluation protocol (comparing methods)
+
+Every method (MPC, MARL, single-agent, rules) is scored with `eval_compare.py` on the same fixed episodes, so the
+results go into one table. `scripts/eval_protocol.sh` fixes the settings: 10 episodes (seeds 1000–1009), 30 days in
+July, PV off, location `az` or `ny`, each paired with `noop` on the same episodes. The headline metric is
+**work-adjusted CO2** (% change vs `noop`): emitted CO2 plus a charge for work dropped or still queued at the end.
+Training rewards are not used, so methods trained with different rewards are directly comparable.
+
+```bash
+# single-agent run from train_single_agent.py (loads best_model; add :<model> to pick another)
+scripts/eval_protocol.sh az results/eval_protocol/az/single_ppo \
+    "sb3:results/sustaindc/az/single_ppo/<exp>/seed-00001-<id>=single_ppo_s1"
+# several seeds: one spec each, labelled <label>_s<seed>, so they are also pooled per method
+# Slurm: sbatch -c 4 --mem 16G -t 12:00:00 scripts/eval_protocol.sh az <out_dir> "<spec>" ...
+
+# merge result folders for the same location into one paired table
+python eval_compare.py --combine <out_dir_1> <out_dir_2> ... --out_dir <combined_dir>
+```
+
+Each output folder has `summary.json` (means, paired changes and 95% CIs) and `episodes.csv` (per-episode metrics).
+The combined table checks that the workload, weather and carbon-intensity inputs were identical for every policy.
+Train with `--eval_seed` away from 1000+ (the default, 10000, is) so model selection never sees these episodes.
+
 
 ## Dashboard
 
