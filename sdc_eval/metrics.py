@@ -19,7 +19,8 @@ METRIC_SPECS = [
     Metric('co2', 'kgCO2', True, 'grid CO2 (energy drawn from the grid x carbon intensity)'),
     Metric('total_energy', 'MWh', True, 'grid energy incl. battery charging/discharging (net of on-site PV)'),
     Metric('pv_energy', 'MWh', False, 'on-site PV generation'),
-    Metric('pv_curtailed', 'MWh', True, 'PV surplus not used by the DC or the battery (curtailed or exported)'),
+    Metric('pv_curtailed', 'MWh', True, 'PV surplus curtailed (not used by the DC, stored or exported); '
+                                          'before sdc_eval it included pv_exported'),
     Metric('it_energy', 'MWh', None, 'IT energy'),
     Metric('hvac_energy', 'MWh', True, 'cooling energy (cooling tower + chiller)'),
     Metric('water', 'L', True, 'cooling-tower water use'),
@@ -38,6 +39,7 @@ METRIC_SPECS = [
     Metric('bat_charged', 'MWh', None, 'energy drawn to charge the battery (grid and/or PV, incl. losses)'),
     Metric('bat_cycles', 'cycles', None, 'equivalent full cycles: bat_discharged / capacity'),
     Metric('pv_self_consumed', 'MWh', False, 'PV used directly by the DC'),
+    Metric('pv_exported', 'MWh', None, 'PV surplus exported to the grid (credited in co2 at the grid CI)'),
     Metric('task_age_mean', 'h', True, 'mean over steps of the average age of the deferred tasks'),
     Metric('task_age_max', 'h', True, 'oldest deferred task seen during the episode'),
     Metric('return_team', '-', False, 'sum of the mean of the three agents\' rewards (reward-function dependent)'),
@@ -83,7 +85,8 @@ class EpisodeAccumulator:
         m['co2'] += i['bat_CO2_footprint'] / 1e3
         m['total_energy'] += i['bat_total_energy_with_battery_KWh'] / 1e3
         m['pv_energy'] += i['pv_energy_KWh'] / 1e3
-        m['pv_curtailed'] += (i['pv_curtailed_KWh'] + i['pv_exported_KWh']) / 1e3
+        m['pv_curtailed'] += i['pv_curtailed_KWh'] / 1e3
+        m['pv_exported'] += i['pv_exported_KWh'] / 1e3
         m['it_energy'] += i['dc_ITE_total_power_kW'] * STEP_HOURS / 1e3
         m['hvac_energy'] += i['dc_HVAC_total_power_kW'] * STEP_HOURS / 1e3
         m['water'] += i['dc_water_usage']
