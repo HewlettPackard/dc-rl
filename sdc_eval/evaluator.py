@@ -27,22 +27,28 @@ def run_spec_episode(job):
     from sdc_eval.policies import make_policy
     from sustaindc_env import SustainDC
     torch.set_num_threads(1)
-    scenario, spec, seed = job
+    scenario, spec, seed, record = (job + (False,))[:4]
     _, policy = make_policy(spec)
     sdc = SustainDC({**scenario, 'agents': list(AGENTS), 'include_dc_setpoint': bool(policy.include_dc_setpoint),
                      'include_pv_obs': bool(policy.include_pv_obs)})
+    from sdc_eval.decisions import DecisionRecorder
     from sdc_eval.rollout import run_episode
-    return run_episode(sdc, policy, seed)
+    rec = DecisionRecorder(sdc) if record else None
+    m, fp = run_episode(sdc, policy, seed, trace=rec)
+    return m, fp, (rec.rows if record else None)
 
 
 class FixedSeedEvaluator:
     def __init__(self, scenario, run_dir, logger=None, n_episodes=5, seed=TRAIN_EVAL_SEED, drop_tolerance=1.0,
-                 days_per_episode=None):
+                 days_per_episode=None, save_decisions=True):
         """
         scenario: the training env config (dict). Observation flags are taken from each evaluated policy.
         days_per_episode: optionally shorten evaluation episodes (default: the training scenario's).
         drop_tolerance: max increase over noop of the mean tasks dropped per episode for a model to be selectable.
+        save_decisions: write every evaluation's per-step decisions to <run>/eval/decisions/<env_steps>.csv.gz
+            (sdc_eval.decisions) and the best one's to <run>/eval/decisions_best.csv.gz.
         """
+        self.save_decisions = save_decisions
         self.scenario = {k: v for k, v in scenario.items()}
         if days_per_episode is not None:
             self.scenario['days_per_episode'] = days_per_episode
@@ -83,11 +89,20 @@ class FixedSeedEvaluator:
             multiprocessing pool (for slow policies such as MPC).
         """
         if spec is not None:
-            jobs = [(self.scenario, spec, s) for s in self.seeds]
+            jobs = [(self.scenario, spec, s, self.save_decisions) for s in self.seeds]
             out = pool.map(run_spec_episode, jobs) if pool is not None else [run_spec_episode(j) for j in jobs]
-            episodes = [m for m, _ in out]
+            episodes = [m for m, _, _ in out]
+            decisions = [(s, rows) for s, (_, _, rows) in zip(self.seeds, out)]
+        elif self.save_decisions:
+            episodes, _, decisions = run_episodes(self._env(policy), policy, self.seeds, record=True)
         else:
             episodes, _ = run_episodes(self._env(policy), policy, self.seeds)
+        decisions_path = None
+        if self.save_decisions:
+            from sdc_eval.decisions import frame
+            os.makedirs(os.path.join(self.dir, 'decisions'), exist_ok=True)
+            decisions_path = os.path.join(self.dir, 'decisions', f'{int(env_steps):012d}.csv.gz')
+            frame(decisions, env_steps=int(env_steps)).to_csv(decisions_path, index=False)
         agg = aggregate(episodes)
         means = {k: v[0] for k, v in agg.items()}
         out = dict(means)
@@ -106,6 +121,9 @@ class FixedSeedEvaluator:
                          'metrics': out}
             with open(self.best_path, 'w') as f:
                 json.dump(self.best, f, indent=2)
+            if decisions_path is not None:
+                import shutil
+                shutil.copy(decisions_path, os.path.join(self.dir, 'decisions_best.csv.gz'))
             if save_fn is not None:
                 save_fn('best')
         if self.best is not None:

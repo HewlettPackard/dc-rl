@@ -358,6 +358,8 @@ def main():
                    help='Fixed-seed evaluation episodes per iteration (seeds TRAIN_EVAL_SEED + i); 0 = no evaluation '
                         '(value.npz then falls back to the best iteration on its own training episodes).')
     p.add_argument('--eval_days', type=int, default=None, help='Days per evaluation episode (default: days_per_episode).')
+    p.add_argument('--save_decisions', action=argparse.BooleanOptionalAction, default=True,
+                   help='Save the per-step decisions of every evaluation to <run>/eval/decisions/.')
     p.add_argument('--drop_tolerance', type=float, default=1.0,
                    help='Best-model guard: max mean tasks dropped per eval episode above noop.')
     args = p.parse_args()
@@ -388,7 +390,8 @@ def main():
                    hparams={'algo': hp['algo'], 'env': scenario,
                             'eval': {'n_eval_episodes': args.n_eval_episodes, 'eval_days': args.eval_days}})
     evaluator = (FixedSeedEvaluator(scenario, out_dir, rl, n_episodes=args.n_eval_episodes, seed=TRAIN_EVAL_SEED,
-                                    drop_tolerance=args.drop_tolerance, days_per_episode=args.eval_days)
+                                    drop_tolerance=args.drop_tolerance, days_per_episode=args.eval_days,
+                                    save_decisions=args.save_decisions)
                  if args.n_eval_episodes > 0 else None)
 
     from mpc_value import DAY

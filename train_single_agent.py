@@ -204,6 +204,8 @@ def main():
                    help='First evaluation seed. Keep it away from the eval_compare.py test seeds (1000+).')
     p.add_argument('--eval_days', type=int, default=None,
                    help='Days per evaluation episode (default: the training days_per_episode).')
+    p.add_argument('--save_decisions', action=argparse.BooleanOptionalAction, default=True,
+                   help='Save the per-step decisions of every evaluation to <run>/eval/decisions/.')
     p.add_argument('--drop_tolerance', type=float, default=1.0,
                    help='Best-model guard: max increase over noop of the mean tasks dropped per eval episode.')
     p.add_argument('--checkpoint_freq', type=int, default=250_000, help='Save a checkpoint every N total env steps.')
@@ -297,7 +299,7 @@ def main():
                            hparams=hparams)
     evaluator = FixedSeedEvaluator(env_config, run_dir, run_logger, n_episodes=args.n_eval_episodes,
                                    seed=args.eval_seed, drop_tolerance=args.drop_tolerance,
-                                   days_per_episode=args.eval_days)
+                                   days_per_episode=args.eval_days, save_decisions=args.save_decisions)
     if checkpoints:
         evaluator.trim_after(resumed_at)
     eval_cb = CommonEvalCallback(evaluator, env_config, args.eval_freq, os.path.join(run_dir, 'models'),

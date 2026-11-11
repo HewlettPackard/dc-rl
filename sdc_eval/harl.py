@@ -29,6 +29,7 @@ EVAL_DEFAULTS = {
     'eval_days': None,                     # days per evaluation episode (None: the training days_per_episode)
     'drop_tolerance': 1.0,                 # best-model guard: max mean tasks dropped per episode above noop
     'legacy_eval': False,                  # also run HARL's original (not fixed-seed) evaluation
+    'save_decisions': True,                # per-step decisions of every evaluation -> eval/decisions/
 }
 __doc__ += '\n'.join(f'    {k}: {v!r}' for k, v in EVAL_DEFAULTS.items()) + '\n'
 
@@ -58,7 +59,8 @@ class HarlTracker:
                             hparams={k: v for k, v in a.items() if k != 'logger'} | {'env': runner.env_args})
         self.evaluator = FixedSeedEvaluator(runner.env_args, runner.run_dir, self.rl, n_episodes=ev['n_eval_episodes'],
                                             seed=TRAIN_EVAL_SEED, drop_tolerance=ev['drop_tolerance'],
-                                            days_per_episode=ev['eval_days'])
+                                            days_per_episode=ev['eval_days'],
+                                            save_decisions=ev['save_decisions'])
         if resumed:
             self.evaluator.trim_after(self.resume_steps)
         self.every = int(ev['eval_every_steps'])

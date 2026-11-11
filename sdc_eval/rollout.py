@@ -41,7 +41,16 @@ def run_episode(sdc, policy, seed, trace=None):
     return acc.finalize(sdc), acc.fingerprint()
 
 
-def run_episodes(sdc, policy, seeds):
-    """run_episode over several seeds -> (list of metrics, list of fingerprints)."""
-    out = [run_episode(sdc, policy, s) for s in seeds]
-    return [m for m, _ in out], [fp for _, fp in out]
+def run_episodes(sdc, policy, seeds, record=False):
+    """run_episode over several seeds -> (list of metrics, list of fingerprints), plus [(seed, decision rows)]
+    if record (sdc_eval.decisions)."""
+    from sdc_eval.decisions import DecisionRecorder
+    metrics, fps, decisions = [], [], []
+    for s in seeds:
+        rec = DecisionRecorder(sdc) if record else None
+        m, fp = run_episode(sdc, policy, s, trace=rec)
+        metrics.append(m)
+        fps.append(fp)
+        if record:
+            decisions.append((s, rec.rows))
+    return (metrics, fps, decisions) if record else (metrics, fps)

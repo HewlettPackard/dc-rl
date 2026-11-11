@@ -44,6 +44,7 @@ warnings.filterwarnings('ignore')
 sys.path.insert(0, os.getcwd())
 
 import numpy as np
+import pandas as pd
 import torch
 import yaml
 
@@ -52,6 +53,7 @@ from sdc_eval.metrics import METRICS, PAIRED_METRICS, aggregate, marginal_kwh_pe
 from sdc_eval.paths import add_out_root_arg, report_dir, resolve_root
 from sdc_eval.policies import (HARLPolicy, NoOpPolicy, RandomPolicy, SB3Policy, expand_specs, make_policy,
                                split_label)
+from sdc_eval.decisions import DecisionRecorder, battery_summary, frame as decision_frame
 from sdc_eval.rollout import run_episode
 from sustaindc_env import SustainDC
 from sustaindc_single_env import AGENTS
@@ -128,6 +130,21 @@ def combine(dirs, out_dir):
     print(f'\nSaved {out_dir}/summary.json')
 
 
+def print_battery(battery):
+    """How each policy uses the battery (from its decisions; sdc_eval.decisions.battery_summary)."""
+    print('\nBattery use (per episode; "effective" = share of charge/discharge decisions that moved energy):')
+    print(f"  {'policy':34s}{'charge':>8s}{'disch.':>8s}{'idle':>7s}{'eff. ch':>9s}{'eff. dis':>9s}"
+          f"{'in MWh':>8s}{'out MWh':>8s}{'SoC min-max':>13s}{'CI ch/dis g/kWh':>18s}{'net CO2 kg':>12s}")
+    for label, b in battery.items():
+        if not b:
+            continue
+        soc = f"{b['soc_min']:.2f}-{b['soc_max']:.2f}"
+        ci = f"{b['ci_when_charging']:.0f}/{b['ci_when_discharging']:.0f}"
+        print(f"  {label[:34]:34s}{b['share_charge']:8.1%}{b['share_discharge']:8.1%}{b['share_idle']:7.1%}"
+              f"{b['charge_effective']:9.1%}{b['discharge_effective']:9.1%}{b['charged_mwh_per_ep']:8.2f}"
+              f"{b['discharged_mwh_per_ep']:8.2f}{soc:>13s}{ci:>18s}{b['net_co2_saved_kg_per_ep']:12.1f}")
+
+
 def print_table(summary):
     width = max(len(l) for l in summary) + 2
     print('\n' + 'policy'.ljust(width) + ''.join(f'{f"{n} ({u})":>26}' for n, u in TABLE_METRICS))
@@ -147,6 +164,9 @@ def main():
     p.add_argument('--pv_capacity_kWp', type=float, default=None,
                    help="Override the env config's on-site PV capacity (pv_config.capacity_kWp; 0 = no PV).")
     p.add_argument('--out_dir', default=None, help='Default: <out_root>/eval_compare/<timestamp>')
+    p.add_argument('--save_decisions', action=argparse.BooleanOptionalAction, default=True,
+                   help='Save every step\'s decisions (actions + context) to <out_dir>/decisions.csv.gz '
+                        '(sdc_eval/decisions.py) and print how each policy uses the battery.')
     add_out_root_arg(p)
     args = p.parse_args()
     torch.set_num_threads(1)
@@ -174,17 +194,23 @@ def main():
 
     print(f"Scenario: location={scenario['location']} month={scenario['month']} days={scenario['days_per_episode']} | "
           f"{len(seeds)} episodes, seeds {seeds[0]}..{seeds[-1]}")
-    results, fingerprints = {}, {}
+    results, fingerprints, decision_frames = {}, {}, []
     for label, pol in policies:
         # Observation flags follow the policy; everything that shapes the episode comes from the scenario.
         sdc = SustainDC({**scenario, 'agents': list(AGENTS), 'include_dc_setpoint': pol.include_dc_setpoint,
                          'include_pv_obs': pol.include_pv_obs})
         results[label], fingerprints[label] = [], []
+        episode_rows = []
         for seed in seeds:
-            m, fp = run_episode(sdc, pol, seed)
+            rec = DecisionRecorder(sdc) if args.save_decisions else None
+            m, fp = run_episode(sdc, pol, seed, trace=rec)
             results[label].append(m); fingerprints[label].append(fp)
+            if rec is not None:
+                episode_rows.append((seed, rec.rows))
             print(f"  {label} seed {seed}: CO2 {m['co2']:.1f} kg, dropped {m['tasks_dropped']:.0f}, "
                   f"queued at end {m['tasks_queued_end']:.0f}", flush=True)
+        if args.save_decisions:
+            decision_frames.append(decision_frame(episode_rows, policy=label))
 
     ref = next(iter(fingerprints.values()))
     same_inputs = all(fp == ref for fp in fingerprints.values())
@@ -203,7 +229,12 @@ def main():
             print(f"  {label}: {', '.join(ch)} | dropped {s['tasks_dropped'][0]:.0f} vs {summary[base]['tasks_dropped'][0]:.0f}, "
                   f"queued at end {s['tasks_queued_end'][0]:.0f} vs {summary[base]['tasks_queued_end'][0]:.0f}")
 
+
     paired = paired_report(results, seeds) if any(l == 'noop' for l, _ in policies) else {}
+    battery = {}
+    if decision_frames:
+        battery = {label: battery_summary(df) for (label, _), df in zip(policies, decision_frames)}
+        print_battery(battery)
 
     out_dir = args.out_dir or report_dir(resolve_root(args.out_root), 'eval_compare')
     os.makedirs(out_dir, exist_ok=True)
@@ -214,8 +245,11 @@ def main():
                 f.write(f'{label},{seed},' + ','.join(f'{e[n]:.6g}' for n, _ in METRICS) + f',{fp}\n')
     with open(os.path.join(out_dir, 'summary.json'), 'w') as f:
         json.dump({'scenario': scenario, 'seeds': seeds, 'policies': args.policy,
-                   'inputs_identical': same_inputs, 'summary': summary, 'paired_vs_noop': paired}, f, indent=2)
-    print(f'\nSaved {out_dir}/episodes.csv and summary.json')
+                   'inputs_identical': same_inputs, 'summary': summary, 'paired_vs_noop': paired,
+                   'battery_usage': battery}, f, indent=2, default=float)
+    if decision_frames:
+        pd.concat(decision_frames, ignore_index=True).to_csv(os.path.join(out_dir, 'decisions.csv.gz'), index=False)
+    print(f'\nSaved {out_dir}/episodes.csv and summary.json' + (' and decisions.csv.gz' if decision_frames else ''))
 
 
 if __name__ == '__main__':
