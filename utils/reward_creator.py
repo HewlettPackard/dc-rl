@@ -340,13 +340,14 @@ def water_usage_efficiency_reward(params: dict) -> float:
 # CO2-aligned team reward
 # ---------------------------------------------------------------------------------------------------------------------
 CO2_REWARD_SCALE_G = 1e5          # grams of CO2 per unit of reward (fixed, no running normalization)
-DROPPED_TASK_CO2_FACTOR = 2.0     # dropped work is charged at 2x its energy x current CI, so dropping never pays
+from sdc_eval.constants import DROPPED_TASK_CO2_FACTOR  # dropped work is charged at 2x, so dropping never pays
 
 
 def task_energy_kwh(params: dict) -> float:
-    """Approximate energy (kWh) of one task (1% CPU utilization for one 15-minute step), from the data center's power
-    range; slightly above the true marginal IT + HVAC energy, so charging unexecuted work is conservative."""
-    return (params['dc_power_ub_kW'] - params['dc_power_lb_kW']) / 100 * 0.25
+    """Marginal IT + HVAC energy (kWh) of one task (1% CPU utilization for one 15-minute step) at this step's
+    utilization and weather: SustainDC.task_kwh, the same definition as the MPC and the evaluation's
+    co2_work_adjusted (sdc_eval.metrics.task_marginal_kwh)."""
+    return params['dc_task_kwh']
 
 
 def co2_team_reward(params: dict) -> float:

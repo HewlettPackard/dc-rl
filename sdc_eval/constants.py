@@ -4,6 +4,11 @@ AGENTS = ('agent_ls', 'agent_dc', 'agent_bat')
 NOOP = {'agent_ls': 1, 'agent_dc': 1, 'agent_bat': 2}  # ls: no shifting, dc: hold setpoint, bat: idle
 N_ACTIONS = 3
 STEP_HOURS = 0.25  # 15-minute steps
+TASK_UTILIZATION = 0.01  # one task = 1 % of the data center's CPU for one step
+# Dropped work is charged at this multiple of its marginal energy x current CI in the training objectives
+# (co2_team_reward, the MPC's stage cost), so that dropping never pays. Evaluation (co2_work_adjusted) charges
+# unexecuted work at 1x: it is accounting, not an incentive.
+DROPPED_TASK_CO2_FACTOR = 2.0
 
 # Config keys that define the simulated scenario. Policies may differ in observation settings, not in these.
 SCENARIO_KEYS = ['location', 'month', 'days_per_episode', 'workload_file', 'cintensity_file', 'weather_file',

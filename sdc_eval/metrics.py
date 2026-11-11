@@ -10,7 +10,7 @@ from collections import namedtuple
 
 import numpy as np
 
-from sdc_eval.constants import AGENTS, N_ACTIONS, STEP_HOURS
+from sdc_eval.constants import AGENTS, N_ACTIONS, STEP_HOURS, TASK_UTILIZATION
 
 Metric = namedtuple('Metric', 'name unit lower_is_better description')
 
@@ -161,6 +161,13 @@ def marginal_kwh_per_util_step(sdc, utilization, ambient):
     lo, hi = max(utilization - 0.05, 0.0), min(utilization + 0.05, 1.0)
     p_lo, p_hi = sum(dc_power(sdc, lo, 18.0, ambient, wb)), sum(dc_power(sdc, hi, 18.0, ambient, wb))
     return (p_hi - p_lo) / (hi - lo) / 1e3 * STEP_HOURS
+
+
+def task_marginal_kwh(sdc, utilization, ambient):
+    """Marginal energy (kWh) of one task (TASK_UTILIZATION for one step) at the given utilization and ambient
+    temperature: the one definition used by the reward (co2_team_reward, per step), the MPC and the evaluation
+    (co2_work_adjusted, at the episode's mean conditions)."""
+    return marginal_kwh_per_util_step(sdc, utilization, ambient) * TASK_UTILIZATION
 
 
 def aggregate(episodes):

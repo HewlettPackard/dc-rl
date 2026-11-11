@@ -88,5 +88,19 @@ except KeyError:
     check("unknown env key raises", True)
 check("flatten for run_meta/HParams", flatten(cfg)['algo.net'] == '[64, 64]' and flatten(cfg)['env.pv_config.capacity_kWp'] == 500)
 
+print("5. One definition of a task's marginal energy (reward, MPC, evaluation)")
+from sdc_eval.metrics import task_marginal_kwh
+import mpc_value
+from utils import reward_creator
+_, rnd = make_policy('random')
+sdc = env_for(rnd)
+errs = []
+run_episode(sdc, rnd, 1000, trace=lambda k, i, a: errs.append(
+    i['dc_task_kwh'] / task_marginal_kwh(sdc, i['ls_shifted_workload'], i['outside_temp']) - 1))
+errs = np.abs(errs)
+check("SustainDC's cached per-step task energy matches task_marginal_kwh", errs.mean() < 0.01 and errs.max() < 0.05,
+      f"mean |err| {100 * errs.mean():.2f}%, max {100 * errs.max():.2f}%")
+check("reward and MPC share the dropped-task factor", reward_creator.DROPPED_TASK_CO2_FACTOR == mpc_value.DROP_PENALTY == 2.0)
+
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)

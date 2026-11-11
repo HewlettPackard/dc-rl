@@ -40,9 +40,9 @@ check("terminal step does not charge the unfinished queue (time limit: the learn
       i['isterminal'] and i['ls_tasks_in_queue'] > 0 and abs(r - (-(i['bat_CO2_footprint'] + 2.0 * i['ls_tasks_dropped']
       * rc.task_energy_kwh(i) * i['bat_avg_CI']) / 1e5)) < 1e-12,
       f"{i['ls_tasks_in_queue']} tasks queued at the end")
-check("per-task energy estimate is conservative (>= the evaluation's marginal energy)",
-      rc.task_energy_kwh(i) >= marginal_kwh_per_util_step(e, 0.5, 30.0) / 100,
-      f"{rc.task_energy_kwh(i):.2f} kWh vs marginal {marginal_kwh_per_util_step(e, 0.5, 30.0) / 100:.2f} kWh per task")
+exact = marginal_kwh_per_util_step(e, i['ls_shifted_workload'], i['outside_temp']) / 100
+check("per-task energy = the evaluation's marginal energy at this step's conditions (shared definition)",
+      abs(rc.task_energy_kwh(i) / exact - 1) < 0.05, f"{rc.task_energy_kwh(i):.3f} vs {exact:.3f} kWh per task")
 
 print("2. Episode return + value of the work left queued ranks policies like work-adjusted CO2")
 def ret_and_metric(policy, seed):

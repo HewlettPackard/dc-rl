@@ -666,6 +666,7 @@ class SustainDC(gym.Env):
 
         # Calculate rewards for all agents based on the updated state
         reward_params = self._calculate_reward_params(workload, temp, ci_i, ci_i_future, day, hour, terminal)
+        reward_params['dc_task_kwh'] = self.task_kwh(self.ls_info['ls_shifted_workload'], temp)
         self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
 
         # Update rewards, terminations, and truncations for each agent
@@ -707,6 +708,27 @@ class SustainDC(gym.Env):
 
         return obs, rew, terminateds, truncateds, info
 
+
+    TASK_KWH_GRID = np.linspace(0.0, 1.0, 21)  # utilization grid of the cached power curves
+
+    def task_kwh(self, utilization, ambient):
+        """Marginal energy (kWh) of one task now: sdc_eval.metrics.task_marginal_kwh (slope of IT + HVAC power over
+        utilization +- 0.05, 18 C setpoint), computed from a cached power curve.
+
+        The DC model is too slow to evaluate every step, so per weather condition (ambient and wet bulb rounded to
+        0.5 C) the power is tabulated on a 0.05 utilization grid and the slope is read off it by linear
+        interpolation. Matches task_marginal_kwh closely (tests/verify_common_eval.py).
+        """
+        from baseline_policies import dc_power
+        key = (round(float(ambient) * 2) / 2, round(float(self.dc_env.wet_bulb) * 2) / 2)
+        cache = self.__dict__.setdefault('_task_kwh_cache', {})
+        curve = cache.get(key)
+        if curve is None:
+            curve = cache[key] = np.array([sum(dc_power(self, u, 18.0, key[0], key[1])) for u in self.TASK_KWH_GRID])
+        u = min(max(float(utilization), 0.0), 1.0)
+        lo, hi = max(u - 0.05, 0.0), min(u + 0.05, 1.0)
+        slope_w = (np.interp(hi, self.TASK_KWH_GRID, curve) - np.interp(lo, self.TASK_KWH_GRID, curve)) / (hi - lo)
+        return float(slope_w / 1e3 * 0.25 * 0.01)  # W per unit utilization -> kWh per task (1 % for 15 minutes)
 
     def _validate_actions(self, action_dict):
         """Check that every active agent has a valid discrete action and return them as plain ints.
