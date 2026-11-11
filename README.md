@@ -545,7 +545,27 @@ Benchmarking the performance of different reinforcement learning algorithms usin
    ```bash
    python eval_sustaindc.py
    ```
-   
+
+### MARL runs on Slurm (IFT 6162 setup)
+
+`scripts/marl/launch.sh` submits one Slurm job per algorithm × location × seed with the settings used for the
+project's MARL baselines (16 CPUs, 32 GB, HAPPO/MAPPO: lr 3e-4, entropy 0.01, [64, 64] networks; HAD3QN: its own
+config, 2-day limit). Jobs requeue after preemption and resume from their last checkpoint. Activate your Python
+environment first; the script records its `python` in each job.
+
+```bash
+# reward: co2 (co2_team_reward, the default) or default (original SustainDC rewards), always passed explicitly
+REWARD=co2 scripts/marl/launch.sh marl_co2 20000000 1-00:00:00 "happo mappo" "az ny" "1 2 3"
+# evaluate on the shared protocol once training is done (one job per algorithm and location)
+sbatch -c 8 --mem 16G -t 12:00:00 scripts/marl/eval.sh marl_co2 az happo
+```
+
+Runs go to `$SDC_RUNS/<exp>` (default `results/marl_runs/<exp>`): job scripts, Slurm logs, HARL run directories and a
+`manifest.tsv` of job ids. Live logging goes to wandb (`pip install wandb`; `WANDB_ENTITY`, `WANDB_PROJECT`), or set
+`WANDB=0`. Jobs read the code when they start, so to keep editing while jobs wait, pin a copy:
+`git worktree add ../code-$(git rev-parse --short HEAD) HEAD` and launch with `CODE=../code-<sha>`. Other options
+(`SBATCH_ARGS`, `EXTRA`, `DRY_RUN=1`) are described at the top of the script.
+
 ## Evaluation Metrics
 - Carbon Footprint (CFP): Cumulative carbon emissions over the evaluation period.
 - HVAC Energy: Energy consumed by the DC cooling system.
