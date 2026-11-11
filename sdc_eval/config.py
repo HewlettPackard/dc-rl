@@ -92,3 +92,21 @@ def flatten(d, prefix=''):
         else:
             out[key] = str(v)
     return out
+
+
+def explicit_dests(parser, argv):
+    """argparse dests whose flags were given on the command line (as opposed to left at their defaults)."""
+    given = {a.split('=', 1)[0] for a in argv if a.startswith('-')}
+    return {a.dest for a in parser._actions if any(o in given for o in a.option_strings)}
+
+
+def resolve_hparams(defaults, config_path, overrides, explicit=(), open_sections=()):
+    """defaults < --config file < explicitly given flags < --set.
+
+    defaults: {section: {key: value}} already holding the command-line values; explicit: (section, key) pairs that
+    were given as flags, so a config file does not override them.
+    """
+    cfg = merge(defaults, load_config(config_path), open_sections)
+    for section, key in explicit:
+        cfg[section][key] = copy.deepcopy(defaults[section][key])
+    return merge(cfg, parse_overrides(overrides), open_sections)

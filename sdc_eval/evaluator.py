@@ -21,6 +21,20 @@ from sdc_eval.policies import NoOpPolicy
 from sdc_eval.rollout import run_episodes
 
 
+def run_spec_episode(job):
+    """Pool worker: build the policy from its spec (sdc_eval.policies.make_policy) and run one seeded episode."""
+    import torch
+    from sdc_eval.policies import make_policy
+    from sustaindc_env import SustainDC
+    torch.set_num_threads(1)
+    scenario, spec, seed = job
+    _, policy = make_policy(spec)
+    sdc = SustainDC({**scenario, 'agents': list(AGENTS), 'include_dc_setpoint': bool(policy.include_dc_setpoint),
+                     'include_pv_obs': bool(policy.include_pv_obs)})
+    from sdc_eval.rollout import run_episode
+    return run_episode(sdc, policy, seed)
+
+
 class FixedSeedEvaluator:
     def __init__(self, scenario, run_dir, logger=None, n_episodes=5, seed=TRAIN_EVAL_SEED, drop_tolerance=1.0,
                  days_per_episode=None):
@@ -61,9 +75,19 @@ class FixedSeedEvaluator:
             self._noop, _ = run_episodes(self._env(pol), pol, self.seeds)
         return self._noop
 
-    def evaluate(self, policy, env_steps, save_fn=None):
-        """Evaluate `policy` (sdc_eval.policies interface) and log eval/*. Returns {metric: mean}."""
-        episodes, _ = run_episodes(self._env(policy), policy, self.seeds)
+    def evaluate(self, policy, env_steps, save_fn=None, spec=None, pool=None):
+        """Evaluate a policy and log eval/*. Returns {metric: mean}.
+
+        policy: a policy object (sdc_eval.policies interface), run in this process; or
+        spec + pool: a policy spec string (as for eval_compare.py), each episode run by a worker of a
+            multiprocessing pool (for slow policies such as MPC).
+        """
+        if spec is not None:
+            jobs = [(self.scenario, spec, s) for s in self.seeds]
+            out = pool.map(run_spec_episode, jobs) if pool is not None else [run_spec_episode(j) for j in jobs]
+            episodes = [m for m, _ in out]
+        else:
+            episodes, _ = run_episodes(self._env(policy), policy, self.seeds)
         agg = aggregate(episodes)
         means = {k: v[0] for k, v in agg.items()}
         out = dict(means)
