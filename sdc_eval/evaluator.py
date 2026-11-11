@@ -29,8 +29,9 @@ def run_spec_episode(job):
     torch.set_num_threads(1)
     scenario, spec, seed, record = (job + (False,))[:4]
     _, policy = make_policy(spec)
-    sdc = SustainDC({**scenario, 'agents': list(AGENTS), 'include_dc_setpoint': bool(policy.include_dc_setpoint),
-                     'include_pv_obs': bool(policy.include_pv_obs)})
+    from sdc_eval.policies import obs_flags
+    dc_sp, pv_obs = obs_flags(policy)
+    sdc = SustainDC({**scenario, 'agents': list(AGENTS), 'include_dc_setpoint': dc_sp, 'include_pv_obs': pv_obs})
     from sdc_eval.decisions import DecisionRecorder
     from sdc_eval.rollout import run_episode
     rec = DecisionRecorder(sdc) if record else None
@@ -68,7 +69,8 @@ class FixedSeedEvaluator:
 
     def _env(self, policy):
         from sustaindc_env import SustainDC
-        key = (bool(policy.include_dc_setpoint), bool(policy.include_pv_obs))
+        from sdc_eval.policies import obs_flags
+        key = obs_flags(policy)
         if key not in self._envs:
             self._envs[key] = SustainDC({**self.scenario, 'agents': list(AGENTS), 'include_dc_setpoint': key[0],
                                          'include_pv_obs': key[1]})

@@ -23,6 +23,12 @@ from sustaindc_single_env import AGENTS, decode_joint_action
 from utils.joint_obs import PV_OBS_DIM, build_joint_obs
 
 
+def obs_flags(policy):
+    """(include_dc_setpoint, include_pv_obs) of a policy; controllers that read the simulator directly may not
+    declare them (default off)."""
+    return bool(getattr(policy, 'include_dc_setpoint', False)), bool(getattr(policy, 'include_pv_obs', False))
+
+
 class Policy(Protocol):
     include_dc_setpoint: bool
     include_pv_obs: bool
@@ -190,18 +196,23 @@ class HARLPolicy:
         return actions
 
 
+PARAM_SEGMENT = {'rule': 2, 'oracle': 2, 'mpc': 1, 'mpc_joint': 1}  # ':'-separated segment holding key=value parameters
+
+
 def split_label(spec):
-    """'<spec>=<label>' -> (spec, label). Controller parameters also use '=' (rule:ls:ls_hi=0.8), so the label is the
-    text after the last '=' unless that text is a parameter value: a number, an MPC keyword or a .npz path."""
-    from mpc_value import PARAM_WORDS
-    head, sep, tail = spec.rpartition('=')
-    if not sep or tail in PARAM_WORDS or tail.endswith('.npz'):
+    """Split '<spec>=<label>' into (spec, label). In a key=value parameter list the label is after an extra '=' on the
+    last parameter (rule:bat:bat_lo=0.2=lbl, mpc:value=v.npz=lbl, mpc_joint:forecast=persistence=lbl); otherwise
+    after the first '='."""
+    segments = spec.split(':')
+    idx = PARAM_SEGMENT.get(segments[0])
+    if idx is not None and len(segments) > idx:
+        last = segments[idx].split(',')[-1]
+        if last.count('=') >= 2:
+            body, _, label = spec.rpartition('=')
+            return body, label
         return spec, ''
-    try:
-        float(tail)
-        return spec, ''
-    except ValueError:
-        return head, tail
+    body, _, label = spec.partition('=')
+    return body, label
 
 
 def make_policy(spec):
@@ -222,6 +233,9 @@ def make_policy(spec):
     elif kind == 'mpc':
         from mpc_value import make_mpc_policy
         policy = make_mpc_policy(rest)
+    elif kind == 'mpc_joint':
+        from mpc_policy import make_mpc_policy as make_joint_mpc_policy
+        policy = make_joint_mpc_policy(rest)
     else:
         raise ValueError(f'Unknown policy spec {spec!r}')
     return label or spec, policy
