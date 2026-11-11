@@ -123,10 +123,16 @@ class HARLPolicy:
         obs_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.pad_dim,), dtype=np.float32)
         act_space = spaces.Discrete(3)
 
+        models_dir = 'models'
+        if not os.path.exists(os.path.join(run_dir, 'models', 'actor_agent0.pt')) and \
+                os.path.exists(os.path.join(run_dir, 'models_final', 'actor_agent0.pt')):
+            # No evaluation passed the best-model guard (see eval/evals.csv): use the final model.
+            print(f'Note: {run_dir} has no best model in models/; using models_final/.')
+            models_dir = 'models_final'
         self.actors = []
         for i, _ in enumerate(self.agents):
             actor = ALGO_REGISTRY[self.algo]({**model_args, **algo_args}, obs_space, act_space, device=torch.device('cpu'))
-            state = torch.load(os.path.join(run_dir, 'models', f'actor_agent{i}.pt'), map_location='cpu')
+            state = torch.load(os.path.join(run_dir, models_dir, f'actor_agent{i}.pt'), map_location='cpu')
             in_dim = next(v.shape[1] for k, v in state.items() if k.endswith('weight') and v.dim() == 2)
             if in_dim != self.pad_dim:
                 raise ValueError(
@@ -136,6 +142,25 @@ class HARLPolicy:
             actor.actor.load_state_dict(state)
             actor.actor.eval()
             self.actors.append(actor)
+
+    @classmethod
+    def from_live(cls, actors, algo, env_args, model_args, pad_dim):
+        """Wrap the actors of a HARL run being trained (in-training evaluation). pad_dim: the padded observation
+        size of the training envs."""
+        self = cls.__new__(cls)
+        self.algo = algo
+        if algo not in cls.ON_POLICY + cls.OFF_POLICY:
+            raise ValueError(f"HARL algo {algo!r} not supported (discrete-action algos: {cls.ON_POLICY + cls.OFF_POLICY})")
+        self.train_config = env_args
+        self.include_dc_setpoint = bool(env_args.get('include_dc_setpoint', False))
+        self.include_pv_obs = bool(env_args.get('include_pv_obs', False))
+        self.agents = list(env_args['agents'])
+        self.recurrent = model_args.get('use_recurrent_policy', False) or model_args.get('use_naive_recurrent_policy', False)
+        hidden = model_args.get('hidden_sizes') or model_args.get('base_hidden_sizes') or [1]
+        self.rnn_shape = (1, model_args.get('recurrent_n', 1), hidden[-1])
+        self.pad_dim = pad_dim
+        self.actors = list(actors)
+        return self
 
     def reset(self, seed):
         self.rnn_states = [np.zeros(self.rnn_shape, dtype=np.float32) for _ in self.agents]

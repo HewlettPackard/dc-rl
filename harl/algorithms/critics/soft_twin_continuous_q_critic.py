@@ -4,6 +4,7 @@ import torch
 import torch.nn.functional as F
 from harl.algorithms.critics.twin_continuous_q_critic import TwinContinuousQCritic
 from harl.utils.envs_tools import check
+from harl.utils.models_tools import get_grad_norm
 
 
 class SoftTwinContinuousQCritic(TwinContinuousQCritic):
@@ -237,4 +238,18 @@ class SoftTwinContinuousQCritic(TwinContinuousQCritic):
         critic_loss = critic_loss1 + critic_loss2
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
+        grad_norm = get_grad_norm(list(self.critic.parameters()) + list(self.critic2.parameters()))
         self.critic_optimizer.step()
+        # Diagnostics of this update, read by the runner (sdc_eval common logging). Q values are in the value
+        # normalizer's units when use_valuenorm is on.
+        with torch.no_grad():
+            q1 = self.critic(share_obs, actions)
+            self.last_info = {
+                "train/q_loss": critic_loss.item(),
+                "health/q_mean": q1.mean().item(),
+                "health/q_max": q1.max().item(),
+                "health/target_q_mean": q_targets.mean().item(),
+                "health/td_error_abs": (q1 - q_targets).abs().mean().item(),
+                "health/critic_grad_norm": float(grad_norm),
+                "health/critic_alpha": float(self.alpha) if not torch.is_tensor(self.alpha) else self.alpha.item(),
+            }

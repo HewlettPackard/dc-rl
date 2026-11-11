@@ -3,6 +3,8 @@ import torch
 import numpy as np
 import torch.nn.functional as F
 from harl.runners.off_policy_base_runner import OffPolicyBaseRunner
+from harl.utils.models_tools import get_grad_norm
+from sdc_eval.logger import ENTROPY_MAX
 
 
 class OffPolicyHARunner(OffPolicyBaseRunner):
@@ -72,6 +74,7 @@ class OffPolicyHARunner(OffPolicyBaseRunner):
                 sp_gamma,
             )
         self.critic.turn_off_grad()
+        self.record_stats(getattr(self.critic, "last_info", {}))
         sp_valid_transition = torch.tensor(sp_valid_transition, device=self.device)
         if self.total_it % self.policy_freq == 0:
             # train actors
@@ -144,6 +147,15 @@ class OffPolicyHARunner(OffPolicyBaseRunner):
                         )
                     self.actor[agent_id].actor_optimizer.zero_grad()
                     actor_loss.backward()
+                    a = self.env_args["agents"][agent_id].replace("agent_", "")
+                    entropy = -logp_actions[agent_id].detach().mean().item()  # sample estimate (gumbel actions)
+                    self.record_stats({
+                        f"train/agent_{a}/actor_loss": actor_loss.item(),
+                        f"health/agent_{a}/grad_norm": get_grad_norm(self.actor[agent_id].actor.parameters()),
+                        f"health/agent_{a}/entropy": entropy,
+                        f"health/agent_{a}/entropy_norm": entropy / ENTROPY_MAX,
+                        f"health/agent_{a}/alpha": float(self.alpha[agent_id]),
+                    })
                     self.actor[agent_id].actor_optimizer.step()
                     self.actor[agent_id].turn_off_grad()
                     # train this agent's alpha
@@ -200,6 +212,12 @@ class OffPolicyHARunner(OffPolicyBaseRunner):
                         actor_loss = torch.mean(F.mse_loss(actor_values, critic_values))
                         self.actor[agent_id].actor_optimizer.zero_grad()
                         actor_loss.backward()
+                        a = self.env_args["agents"][agent_id].replace("agent_", "")
+                        self.record_stats({
+                            f"train/agent_{a}/actor_loss": actor_loss.item(),
+                            f"health/agent_{a}/grad_norm": get_grad_norm(self.actor[agent_id].actor.parameters()),
+                            f"health/agent_{a}/epsilon": float(self.actor[agent_id].epsilon),
+                        })
                         self.actor[agent_id].actor_optimizer.step()
                         self.actor[agent_id].turn_off_grad()
                         update_actions(agent_id)

@@ -154,7 +154,10 @@ class RunLogger:
             metrics['hparam/best_env_steps'] = float((best_eval or {}).get('env_steps', float('nan')))
             hp = {k: ('None' if v is None else v) for k, v in self.hparams.items()}
             try:
-                self.writer.add_hparams(hp, metrics, run_name='hparams')
+                try:
+                    self.writer.add_hparams(hp, metrics, run_name='hparams')  # torch SummaryWriter
+                except TypeError:
+                    self.writer.add_hparams(hp, metrics, name='hparams')  # tensorboardX (HARL)
             except Exception as e:  # never fail a finished run over the HParams summary
                 print(f'Warning: could not write the TensorBoard HParams summary: {e}')
             with open(os.path.join(self.run_dir, 'run_meta.json')) as f:

@@ -3,7 +3,9 @@ from harl.common.base_logger import BaseLogger
 import numpy as np
 
 class SustainDCLogger(BaseLogger):
-    
+    """HARL logger for SustainDC. Training metrics use the common schema (sdc_eval/harl.py: rollout/, train/, health/,
+    eval/); the eval_* methods are HARL's original evaluation, used only with eval.legacy_eval or eval_sustaindc.py."""
+
     def __init__(self, args, algo_args, env_args, num_agents, writter, run_dir):
         super().__init__(args, algo_args, env_args, num_agents, writter, run_dir)
         
@@ -84,29 +86,9 @@ class SustainDCLogger(BaseLogger):
         self.is_off_policy = True
         
     def per_step(self, data):
-        """Capture and update metrics per step."""
+        """Per-step callback. The environment metrics of the training episodes are logged per completed episode under
+        rollout/* by the common tracker (sdc_eval/harl.py); this logger only keeps HARL's own reward bookkeeping."""
         super().per_step(data)
-        obs, _, rewards, dones, infos, _, _, _, _, _, _ = data
-        dones_env = np.all(dones, axis=1)
-        
-        for i in range(len(infos)):  # Assuming infos are structured with one dict per environment
-            self.metrics["net_energy_sum"] += infos[i][0].get("bat_total_energy_with_battery_KWh", 0)
-            self.metrics["pv_energy_sum"] += infos[i][0].get("pv_energy_KWh", 0)
-            self.metrics["pv_curtailed_sum"] += infos[i][0].get("pv_curtailed_KWh", 0)
-            self.metrics["CO2_footprint_sum"] += infos[i][0].get("bat_CO2_footprint", 0)
-            self.metrics["water_usage"] += infos[i][0].get("dc_water_usage", 0)
-            self.metrics["load_left"] += infos[i][0].get("ls_unasigned_day_load_left", 0)
-            self.metrics["ls_tasks_in_queue"] += infos[i][0].get("ls_tasks_in_queue", 0)
-            self.metrics["ls_tasks_dropped"] += infos[i][0].get("ls_tasks_dropped", 0)
-            self.metrics["ite_power_sum"] += infos[i][0].get("dc_ITE_total_power_kW", 0)
-            self.metrics['ct_power_sum'] += infos[i][0].get("dc_CT_total_power_kW", 0)  # Added
-            self.metrics['chiller_power_sum'] += infos[i][0].get("dc_Compressor_total_power_kW", 0)  # Added
-            self.metrics["hvac_power_sum"] += infos[i][0].get("dc_HVAC_total_power_kW", 0)
-            
-            if infos[i][0].get("dc_HVAC_total_power_kW", 0)> 0:
-                self.metrics["hvac_power_on_used"].append(infos[i][0].get("dc_HVAC_total_power_kW", 0))
-
-            self.metrics["step_count"] += 1
 
     def eval_per_step(self, eval_data):
         """Capture and update metrics per step during evaluation."""
@@ -134,76 +116,9 @@ class SustainDCLogger(BaseLogger):
 
 
     def episode_log(self, actor_train_infos, critic_train_info, actor_buffer, critic_buffer):
-        """Calculate and log metrics at the end of the episode."""
+        """HARL's own train/* logs. The former metrics/* tags (aggregated over a rollout window across threads rather
+        than per episode) are replaced by rollout/* (sdc_eval)."""
         super().episode_log(actor_train_infos, critic_train_info, actor_buffer, critic_buffer)
-        
-        if self.metrics["step_count"] > 0:
-            average_net_energy = self.metrics["net_energy_sum"] / self.metrics["step_count"]
-            average_ite_power = self.metrics["ite_power_sum"] / self.metrics["step_count"]
-            average_ct_power = self.metrics["ct_power_sum"] / self.metrics["step_count"]  # Added
-            average_chiller_power = self.metrics["chiller_power_sum"] / self.metrics["step_count"]  # Added
-            average_hvac_power = self.metrics["hvac_power_sum"] / self.metrics["step_count"]
-
-            average_CO2_footprint = self.metrics["CO2_footprint_sum"] / self.metrics["step_count"]
-            total_water_usage = self.metrics["water_usage"]
-            total_load_left = self.metrics["load_left"]
-            total_tasks_in_queue = self.metrics["ls_tasks_in_queue"]
-            total_tasks_dropped = self.metrics["ls_tasks_dropped"]
-        else:
-            average_net_energy = 0
-            average_ite_power = 0
-            average_hvac_power = 0
-            average_CO2_footprint = 0
-            total_water_usage = 0
-            total_load_left = 0
-            total_tasks_in_queue = 0
-            total_tasks_dropped = 0
-        
-        if len(self.metrics["hvac_power_on_used"]) > 0:
-            self.writter.add_scalar("metrics/Average HVAC Power on use", np.mean(self.metrics["hvac_power_on_used"]), self.total_num_steps)
-            self.writter.add_scalar("metrics/Max HVAC Power on use", np.max(self.metrics["hvac_power_on_used"]), self.total_num_steps)
-            self.writter.add_scalar("metrics/Percentile 90% HVAC Power on use", np.percentile(self.metrics["hvac_power_on_used"], 90), self.total_num_steps)
-            
-        # Log the calculated metrics to TensorBoard or similar
-        self.writter.add_scalar("metrics/Average Net Energy", average_net_energy, self.total_num_steps)
-        self.writter.add_scalar("metrics/Average ITE Power", average_ite_power, self.total_num_steps)
-        self.writter.add_scalar("metrics/Average CT Power", average_ct_power, self.total_num_steps)  # Added
-        self.writter.add_scalar("metrics/Average Chiller Power", average_chiller_power, self.total_num_steps)  # Added
-        self.writter.add_scalar("metrics/Average HVAC Power", average_hvac_power, self.total_num_steps)
-
-        PUE = 1 + average_hvac_power/average_ite_power
-        self.writter.add_scalar("metrics/Average PUE", PUE, self.total_num_steps)
-
-        self.writter.add_scalar("metrics/Average CO2 Footprint", average_CO2_footprint, self.total_num_steps)
-        if self.metrics["step_count"] > 0:
-            self.writter.add_scalar("metrics/Average PV Energy", self.metrics["pv_energy_sum"] / self.metrics["step_count"], self.total_num_steps)
-            self.writter.add_scalar("metrics/Average PV Curtailed", self.metrics["pv_curtailed_sum"] / self.metrics["step_count"], self.total_num_steps)
-        self.writter.add_scalar("metrics/Total Water Usage", total_water_usage, self.total_num_steps)
-        self.writter.add_scalar("metrics/Total Tasks in Queue", total_tasks_in_queue, self.total_num_steps)
-        self.writter.add_scalar("metrics/Total Tasks Dropped", total_tasks_dropped, self.total_num_steps)
-
-        # Optionally, log to the console or to a file
-        print(f"Episode {self.episode}: Avg Net Energy={average_net_energy:.3f}, Avg CO2={average_CO2_footprint:.3f}, Water Usage={total_water_usage:.3f}")
-        print(f"Tasks in Queue={total_tasks_in_queue:.3f}, Tasks Dropped={total_tasks_dropped:.3f}")
-
-        # Reset metrics for the next episode
-        self.metrics = {
-            "net_energy_sum": 0,
-            "pv_energy_sum": 0,
-            "pv_curtailed_sum": 0,
-            "ite_power_sum": 0,
-            'ct_power_sum': 0,
-            'chiller_power_sum': 0,
-            "hvac_power_sum": 0,
-            "CO2_footprint_sum": 0,
-            "water_usage": 0,
-            "step_count": 0,
-            "load_left": 0,
-            "ls_tasks_in_queue": 0,
-            "ls_tasks_dropped": 0,
-            "instantaneous_net_energy": [],
-            'hvac_power_on_used': []
-        }
 
     def eval_log(self, eval_episode):
         """Log evaluation information at the end of an evaluation session."""

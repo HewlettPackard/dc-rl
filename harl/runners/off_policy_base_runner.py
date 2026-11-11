@@ -22,6 +22,7 @@ from harl.algorithms.critics import CRITIC_REGISTRY
 from harl.common.buffers.off_policy_buffer_ep import OffPolicyBufferEP
 from harl.common.buffers.off_policy_buffer_fp import OffPolicyBufferFP
 from harl.envs import LOGGER_REGISTRY
+from sdc_eval.harl import HarlTracker, add_eval_defaults
 
 class OffPolicyBaseRunner:
     """Base runner for off-policy algorithms."""
@@ -37,6 +38,7 @@ class OffPolicyBaseRunner:
         self.args = args
         self.algo_args = algo_args
         self.env_args = env_args
+        add_eval_defaults(algo_args)  # common fixed-seed evaluation settings (sdc_eval/harl.py)
 
         if "policy_freq" in self.algo_args["algo"]:
             self.policy_freq = self.algo_args["algo"]["policy_freq"]
@@ -96,16 +98,9 @@ class OffPolicyBaseRunner:
                 algo_args["train"]["n_rollout_threads"],
                 env_args,
             )
-            self.eval_envs = (
-                make_eval_env(
-                    args["env"],
-                    algo_args["seed"]["seed"],
-                    algo_args["eval"]["n_eval_rollout_threads"],
-                    env_args,
-                )
-                if algo_args["eval"]["use_eval"]
-                else None
-            )
+            # HARL's own evaluation envs are only built when used (legacy_eval): training is evaluated by the
+            # common fixed-seed evaluator (sdc_eval), which has its own envs.
+        self._eval_envs = None
         self.num_agents = get_num_agents(args["env"], env_args, self.envs)
         self.agent_deaths = np.zeros(
             (self.algo_args["train"]["n_rollout_threads"], self.num_agents, 1)
@@ -227,6 +222,41 @@ class OffPolicyBaseRunner:
 
         if self.resume_path is not None:
             self.load_training_checkpoint()
+        self.stats = {}
+        if not self.algo_args["render"]["use_render"]:
+            self.tracker = HarlTracker(self, "off_policy")
+
+    @property
+    def eval_envs(self):
+        if self._eval_envs is None and self.algo_args["eval"]["use_eval"]:
+            self._eval_envs = make_eval_env(
+                self.args["env"],
+                self.algo_args["seed"]["seed"],
+                self.algo_args["eval"]["n_eval_rollout_threads"],
+                self.env_args,
+            )
+        return self._eval_envs
+
+    def record_stats(self, values):
+        """Accumulate per-update diagnostics; averaged and logged after each training phase."""
+        for k, v in values.items():
+            self.stats.setdefault(k, []).append(float(v))
+
+    def log_stats(self, env_steps, update_time):
+        out = {k: float(np.mean(v)) for k, v in self.stats.items()}
+        # Means over agents, one curve per algorithm (same keys as the on-policy runners and SB3).
+        for key in ("entropy_norm", "grad_norm", "epsilon", "alpha"):
+            vals = [v for k, v in out.items() if k.startswith("health/agent_") and k.endswith("/" + key)]
+            if vals:
+                out[f"health/{key}"] = float(np.mean(vals))
+        losses = [v for k, v in out.items() if k.startswith("train/agent_") and k.endswith("/actor_loss")]
+        if losses:
+            out["train/actor_loss"] = float(np.mean(losses))
+        out["health/buffer_size"] = float(self.buffer.cur_size)
+        out["health/lr"] = self.actor[0].actor_optimizer.param_groups[0]["lr"]
+        out["health/n_updates"] = float(self.total_it)
+        self.tracker.off_policy_update(out, env_steps, update_time)
+        self.stats = {}
 
     def steps_done(self, step):
         """Env steps collected after `step` loop iterations (warmup included)."""
@@ -320,6 +350,7 @@ class OffPolicyBaseRunner:
                 else None,
             )
             self.insert(data)
+            self.tracker.rollout_step(rewards, infos, self.steps_done(step))
             obs = new_obs
             share_obs = new_share_obs
             available_actions = new_available_actions
@@ -331,18 +362,23 @@ class OffPolicyBaseRunner:
                         for agent_id in range(self.num_agents):
                             self.actor[agent_id].lr_decay(step, steps)
                     self.critic.lr_decay(step, steps)
+                t_update = time.time()
                 for _ in range(update_num):
                     self.train()
+                self.log_stats(self.steps_done(step), time.time() - t_update)
+            # Common fixed-seed evaluation every eval_every_steps; models/ = best (sdc_eval/evaluator.py).
+            if self.algo_args["eval"]["use_eval"]:
+                self.tracker.maybe_evaluate(self.steps_done(step), self.save)
             if step % self.algo_args["train"]["eval_interval"] == 0:
                 cur_step = (
                     self.algo_args["train"]["warmup_steps"]
                     + step * self.algo_args["train"]["n_rollout_threads"]
                 )
-                if self.algo_args["eval"]["use_eval"]:
+                if self.algo_args["eval"]["use_eval"] and self.algo_args["eval"]["legacy_eval"]:
                     print(
                         f"Env {self.args['env']} Task {self.task_name} Algo {self.args['algo']} Exp {self.args['exp_name']} Evaluation at step {cur_step} / {self.algo_args['train']['num_env_steps']}:"
                     )
-                    self.eval(cur_step)
+                    self.eval(cur_step)  # HARL's original evaluation, logged only (it no longer selects the model)
                 else:
                     print(
                         f"Env {self.args['env']} Task {self.task_name} Algo {self.args['algo']} Exp {self.args['exp_name']} Step {cur_step} / {self.algo_args['train']['num_env_steps']}, average step reward in buffer: {self.buffer.get_mean_rewards()}.\n"
@@ -359,12 +395,18 @@ class OffPolicyBaseRunner:
                         )
                         self.log_file.flush()
                         self.done_episodes_rewards = []
-                self.save()
             if self.checkpoint_interval > 0 and (
                 self.steps_done(step) // self.checkpoint_interval
                 > self.steps_done(step - 1) // self.checkpoint_interval
             ):
                 self.save_training_checkpoint(step)
+
+        final = lambda: self.save(os.path.join(self.run_dir, "models_final"))
+        if self.algo_args["eval"]["use_eval"]:
+            self.tracker.finish(self.steps_done(steps), self.save, final)
+        else:
+            final()
+            self.tracker.rl.close()
 
     def warmup(self):
         """Warmup the replay buffer with random actions"""
@@ -407,6 +449,9 @@ class OffPolicyBaseRunner:
                 else None,
             )
             self.insert(data)
+            warmup_done = getattr(self, "_warmup_steps_done", 0) + self.algo_args["train"]["n_rollout_threads"]
+            self._warmup_steps_done = warmup_done
+            self.tracker.rollout_step(rewards, infos, warmup_done)  # random-action episodes are logged too
             obs = new_obs
             share_obs = new_share_obs
             available_actions = new_available_actions
@@ -745,15 +790,17 @@ class OffPolicyBaseRunner:
                 )
                 self.value_normalizer.load_state_dict(value_normalizer_state_dict)
 
-    def save(self):
-        """Save the model"""
+    def save(self, save_dir=None):
+        """Save the model to save_dir (default: models/, which holds the best model)."""
+        save_dir = save_dir or self.save_dir
+        os.makedirs(save_dir, exist_ok=True)
         for agent_id in range(self.num_agents):
-            self.actor[agent_id].save(self.save_dir, agent_id)
-        self.critic.save(self.save_dir)
+            self.actor[agent_id].save(save_dir, agent_id)
+        self.critic.save(save_dir)
         if self.value_normalizer is not None:
             torch.save(
                 self.value_normalizer.state_dict(),
-                str(self.save_dir) + "/value_normalizer" + ".pt",
+                str(save_dir) + "/value_normalizer" + ".pt",
             )
 
     def close(self):
@@ -763,8 +810,8 @@ class OffPolicyBaseRunner:
             self.envs.close()
         else:
             self.envs.close()
-            if self.algo_args["eval"]["use_eval"] and self.eval_envs is not self.envs:
-                self.eval_envs.close()
+            if self._eval_envs is not None and self._eval_envs is not self.envs:
+                self._eval_envs.close()
             self.writter.export_scalars_to_json(str(self.log_dir + "/summary.json"))
             self.writter.close()
             self.log_file.close()

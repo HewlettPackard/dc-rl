@@ -16,6 +16,9 @@ FINAL_EVAL_SEED = 1000   # final reported comparison (eval_compare.py); never us
 TUNE_SEED = 2000         # baseline parameter tuning (tune_baselines.py)
 MPC_TRAIN_SEED = 3000    # MPC value-iteration data collection (train_mpc_value.py)
 
+# Default in-training evaluation interval (env steps summed over parallel envs), the same for every trainer.
+EVAL_EVERY_STEPS = 100_000
+
 
 def seeds(base, n):
     return [base + i for i in range(n)]

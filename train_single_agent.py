@@ -40,7 +40,7 @@ from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
 
 from sdc_eval.config import add_config_args, load_config, merge, parse_overrides
-from sdc_eval.constants import ENV_CFG, TRAIN_EVAL_SEED
+from sdc_eval.constants import ENV_CFG, EVAL_EVERY_STEPS, TRAIN_EVAL_SEED
 from sdc_eval.evaluator import FixedSeedEvaluator
 from sdc_eval.logger import RunLogger
 from sdc_eval.paths import resolve_root
@@ -197,7 +197,7 @@ def main():
                    help="On-site PV capacity (pv_config.capacity_kWp; 0 = no PV). Default: the value in the env yaml.")
     p.add_argument('--include_pv_obs', action=argparse.BooleanOptionalAction, default=None,
                    help='Observe current and forecast PV. Default: the value in the env yaml (off).')
-    p.add_argument('--eval_freq', type=int, default=50_000, help='Evaluate every N total env steps.')
+    p.add_argument('--eval_freq', type=int, default=EVAL_EVERY_STEPS, help='Evaluate every N total env steps.')
     p.add_argument('--n_eval_episodes', type=int, default=5,
                    help='Episodes per evaluation; always the same seeds (eval_seed + i).')
     p.add_argument('--eval_seed', type=int, default=TRAIN_EVAL_SEED,

@@ -3,6 +3,15 @@ Train the environment using the selected algorithm.
 
 The original code is from https://github.com/PKU-MARL/HARL
 Several modifications are made to adapt to the SustainDC environment.
+
+Hyperparameters: harl/configs/algos_cfgs/<algo>.yaml and harl/configs/envs_cfgs/sustaindc.yaml, then
+    --config my.yaml          sections env: (env config) and seed:/device:/train:/eval:/model:/algo:/... (algo config)
+    --<leaf_key> <value>      HARL's original overrides by leaf key name, e.g. --lr 1e-4 --location ny
+    --set train.lr=1e-4       explicit dotted overrides (repeatable), highest precedence
+Training is logged and evaluated with the common suite (sdc_eval/harl.py): rollout/, train/, health/, perf/, eval/
+in <run>/metrics.csv and <run>/logs (TensorBoard); models/ = best fixed-seed work-adjusted CO2, models_final/ = last.
+Runs go to <out_root>/sustaindc/<location>/<algo>/<exp_name>/seed-XXXXX-<run_id>, out_root = --out_root, else
+$SDC_OUT_ROOT, else logger.log_dir from the yaml (./results).
 """
 
 import os
@@ -15,6 +24,9 @@ warnings.filterwarnings('ignore')
 # sys.path.insert(0, os.getcwd())
 
 from harl.utils.configs_tools import get_defaults_yaml_args, update_args
+from sdc_eval.config import add_config_args, load_config, merge, parse_overrides
+from sdc_eval.harl import add_eval_defaults
+from sdc_eval.paths import ENV_VAR, resolve_root
 
 def main():
     """Main function to train the environment using the selected algorithm."""
@@ -77,6 +89,13 @@ def main():
         default=500_000,
         help="Save a resumable checkpoint (networks, optimizers, RNG states, replay buffer) every N env steps; 0 = off."
     )
+    parser.add_argument(
+        "--out_root",
+        type=str,
+        default=None,
+        help=f"Output root (default: ${ENV_VAR} if set, else logger.log_dir from the algo yaml)."
+    )
+    add_config_args(parser)
     args, unparsed_args = parser.parse_known_args()
 
     def process(arg):
@@ -107,8 +126,17 @@ def main():
         # Load config from corresponding yaml file
         algo_args, env_args = get_defaults_yaml_args(args["algo"], args["env"])
 
-    # Update args from command line
+    # Hyperparameters: yaml < --config < --<leaf_key> flags < --set (sdc_eval/config.py)
+    add_eval_defaults(algo_args)
+    cfg = merge({**algo_args, "env": env_args}, load_config(args["config"]))
+    env_args = cfg.pop("env")
+    algo_args = cfg
     update_args(unparsed_dict, algo_args, env_args)
+    cfg = merge({**algo_args, "env": env_args}, parse_overrides(args["overrides"]))
+    env_args = cfg.pop("env")
+    algo_args = cfg
+    if args["out_root"] or ("log_dir" not in unparsed_dict and os.environ.get(ENV_VAR)):
+        algo_args["logger"]["log_dir"] = resolve_root(args["out_root"])
 
     # Start training
     from harl.runners import RUNNER_REGISTRY
