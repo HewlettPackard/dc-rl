@@ -297,6 +297,7 @@ class MPCPolicy:
     With record=True, `self.last` holds what train_mpc_value.py needs after each act(): the value features of the
     current state and the energy model used to compute the stage costs."""
     include_dc_setpoint = False
+    include_pv_obs = False  # act() refuses PV > 0, so the PV observation features are never used
     train_config = {}
 
     def __init__(self, H=16, value='naive', forecast='realistic', dc_setpoint=15.0, samples=256, iters=3,
