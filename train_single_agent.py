@@ -8,6 +8,14 @@ PPO hyperparameters default to harl/configs/algos_cfgs/happo.yaml so runs are co
 --learning_rate, --ent_coef, --clip_range, --n_epochs and --vf_coef override them.
 Observations and rewards are normalized with VecNormalize by default (--no-norm_obs / --no-norm_reward to turn off);
 its statistics are saved next to every model as <model>_vecnormalize.pkl.
+
+Logging and evaluation use the common suite (sdc_eval/), like every other trainer: rollout/, train/, health/, perf/
+and eval/ scalars in <run>/metrics.csv and <run>/tb_common (SB3's own logs stay in <run>/tb), fixed-seed evaluation
+every --eval_freq steps, and models/best_model = lowest work-adjusted CO2 (see sdc_eval/evaluator.py).
+Hyperparameters: --config <yaml> with env:/algo: sections and --set algo.learning_rate=1e-4 overrides
+(sdc_eval/config.py); 'algo' keys are SB3 constructor arguments plus net_arch and activation (tanh/relu).
+Runs are written to <out_root>/sustaindc/<location>/single_<algo>/<exp_name>/seed-XXXXX-<run_id>, where out_root is
+--out_root, else $SDC_OUT_ROOT, else ./results.
 """
 import argparse
 import datetime
@@ -26,131 +34,21 @@ import numpy as np
 import torch
 import yaml
 from stable_baselines3 import A2C, DQN, PPO
-from stable_baselines3.common.callbacks import BaseCallback, CallbackList, EvalCallback
+from stable_baselines3.common.callbacks import BaseCallback, CallbackList
 from stable_baselines3.common.off_policy_algorithm import OffPolicyAlgorithm
 from stable_baselines3.common.env_util import make_vec_env
 from stable_baselines3.common.vec_env import DummyVecEnv, SubprocVecEnv, VecNormalize
 
+from sdc_eval.config import add_config_args, load_config, merge, parse_overrides
+from sdc_eval.constants import ENV_CFG, TRAIN_EVAL_SEED
+from sdc_eval.evaluator import FixedSeedEvaluator
+from sdc_eval.logger import RunLogger
+from sdc_eval.paths import resolve_root
+from sdc_eval.sb3 import CommonEvalCallback, CommonMetricsCallback
 from sustaindc_single_env import SustainDCSingleAgentEnv
 
-ENV_CFG = 'harl/configs/envs_cfgs/sustaindc.yaml'
 HAPPO_CFG = 'harl/configs/algos_cfgs/happo.yaml'
 ALGOS = {'ppo': PPO, 'a2c': A2C, 'dqn': DQN}
-
-# Per-step info keys summed over an episode and logged (same metrics as harl/envs/sustaindc/sustaindc_logger.py).
-EPISODE_SUM_METRICS = {
-    'CO2_footprint_sum': 'bat_CO2_footprint',
-    'net_energy_sum': 'bat_total_energy_with_battery_KWh',
-    'pv_energy_sum': 'pv_energy_KWh',
-    'pv_curtailed_sum': 'pv_curtailed_KWh',
-    'water_usage': 'dc_water_usage',
-    'ls_tasks_dropped': 'ls_tasks_dropped',
-    'ite_power_sum': 'dc_ITE_total_power_kW',
-    'hvac_power_sum': 'dc_HVAC_total_power_kW',
-    'ct_power_sum': 'dc_CT_total_power_kW',
-    'chiller_power_sum': 'dc_Compressor_total_power_kW',
-}
-EPISODE_MEAN_METRICS = {'ls_tasks_in_queue': 'ls_tasks_in_queue', 'bat_SOC': 'bat_SOC',
-                        'dc_crac_setpoint': 'dc_crac_setpoint'}
-
-
-class SustainDCMetricsCallback(BaseCallback):
-    """Accumulate SustainDC info metrics per env and log their per-episode values to tensorboard."""
-
-    def _on_training_start(self):
-        n = self.training_env.num_envs
-        self._sums = [dict.fromkeys(EPISODE_SUM_METRICS, 0.0) for _ in range(n)]
-        self._means = [dict.fromkeys(EPISODE_MEAN_METRICS, 0.0) for _ in range(n)]
-        self._steps = [0] * n
-
-    def _on_step(self):
-        for i, (info, done) in enumerate(zip(self.locals['infos'], self.locals['dones'])):
-            for name, key in EPISODE_SUM_METRICS.items():
-                self._sums[i][name] += float(info.get(key, 0.0))
-            for name, key in EPISODE_MEAN_METRICS.items():
-                self._means[i][name] += float(info.get(key, 0.0))
-            self._steps[i] += 1
-            if done:
-                for name, v in self._sums[i].items():
-                    self.logger.record_mean(f'sustaindc/{name}', v)
-                for name, v in self._means[i].items():
-                    self.logger.record_mean(f'sustaindc/{name}_mean', v / max(self._steps[i], 1))
-                self.logger.record_mean('sustaindc/ls_tasks_queued_end', float(info.get('ls_tasks_in_queue', 0.0)))
-                self._sums[i] = dict.fromkeys(EPISODE_SUM_METRICS, 0.0)
-                self._means[i] = dict.fromkeys(EPISODE_MEAN_METRICS, 0.0)
-                self._steps[i] = 0
-        return True
-
-
-# Physical metrics logged at each evaluation (summed over the episode), as {name: (info key, scale)}.
-EVAL_SUM_METRICS = {
-    'co2_kg': ('bat_CO2_footprint', 1e-3),
-    'energy_mwh': ('bat_total_energy_with_battery_KWh', 1e-3),
-    'water': ('dc_water_usage', 1.0),
-    'tasks_dropped': ('ls_tasks_dropped', 1.0),
-    'setpoint_sum': ('dc_crac_setpoint', 1.0),
-    'steps': (None, 1.0),
-}
-
-
-class FixedSeedEvalCallback(EvalCallback):
-    """EvalCallback that scores the policy on the same episodes every time.
-
-    Eval env i always replays seed `eval_seed + i` (one episode per env), and the reward normalization history of
-    the eval processes is cleared first, so eval/mean_reward only changes when the policy does. It also logs
-    physical metrics under eval/ (CO2, energy, water, dropped tasks, tasks still queued at the end, mean setpoint),
-    appends them to <log_path>/metrics.csv, and saves the VecNormalize statistics with the best model.
-    """
-
-    def __init__(self, eval_env, eval_seed, **kwargs):
-        super().__init__(eval_env, **kwargs)
-        assert self.n_eval_episodes == eval_env.num_envs, 'use one eval env per evaluation episode'
-        self.eval_seed = eval_seed
-
-    @property
-    def metrics_csv(self):
-        return os.path.join(os.path.dirname(self.log_path), 'metrics.csv')
-
-    def _on_step(self):
-        if not (self.eval_freq > 0 and self.n_calls % self.eval_freq == 0):
-            return True
-        self.eval_env.seed(self.eval_seed)  # used by the reset at the start of evaluate_policy
-        self.eval_env.env_method('reset_reward_history')
-        self._acc = [dict.fromkeys(EVAL_SUM_METRICS, 0.0) for _ in range(self.eval_env.num_envs)]
-        self._episodes = []
-        best_before = self.best_mean_reward
-        continue_training = super()._on_step()
-        vec_norm = self.model.get_vec_normalize_env()
-        if self.best_mean_reward > best_before and vec_norm is not None and self.best_model_save_path is not None:
-            vec_norm.save(vecnormalize_path(os.path.join(self.best_model_save_path, 'best_model')))
-        return continue_training
-
-    def _log_success_callback(self, locals_, globals_):
-        super()._log_success_callback(locals_, globals_)
-        i, info = locals_['i'], locals_['info']
-        acc = self._acc[i]
-        for name, (key, scale) in EVAL_SUM_METRICS.items():
-            acc[name] += 1.0 if key is None else float(info.get(key, 0.0)) * scale
-        if not locals_['done']:
-            return
-        ep = {k: v for k, v in acc.items() if k not in ('setpoint_sum', 'steps')}
-        ep['tasks_queued_end'] = float(info.get('ls_tasks_in_queue', 0.0))
-        ep['avg_setpoint'] = acc['setpoint_sum'] / max(acc['steps'], 1)
-        ep['reward'] = float(locals_['current_rewards'][i])  # eval rewards are not normalized
-        self._episodes.append(ep)
-        self._acc[i] = dict.fromkeys(EVAL_SUM_METRICS, 0.0)
-        if len(self._episodes) == self.n_eval_episodes:
-            # Recorded before EvalCallback dumps the logger, so they land on the same timestep as eval/mean_reward.
-            means = {k: float(np.mean([e[k] for e in self._episodes])) for k in ep}
-            for k, v in means.items():
-                if k != 'reward':
-                    self.logger.record(f'eval/{k}', v)
-            write_header = not os.path.exists(self.metrics_csv)
-            with open(self.metrics_csv, 'a') as f:
-                if write_header:
-                    f.write(','.join(['timesteps'] + list(means)) + '\n')
-                f.write(','.join(f'{x:.6g}' for x in [self.num_timesteps] + list(means.values())) + '\n')
-
 
 def vecnormalize_path(model_path):
     """VecNormalize statistics saved next to a model: <model>_vecnormalize.pkl."""
@@ -225,40 +123,12 @@ class ResumableCheckpointCallback(BaseCallback):
         print(f'Checkpoint saved at {self.num_timesteps} steps: {path}', flush=True)
 
 
-def restore_eval_history(eval_cb, npz_path, resumed_at):
-    """Reload EvalCallback's history so a resumed run keeps evaluations.npz and the best-model threshold."""
-    _trim_metrics_csv(os.path.join(os.path.dirname(npz_path), 'metrics.csv'), resumed_at)
-    if not os.path.exists(npz_path):
-        return
-    d = np.load(npz_path)
-    if len(d['timesteps']) == 0:
-        return
-    # best_model.zip on disk is the best over *all* past evals, even ones after the checkpoint we resume from.
-    eval_cb.best_mean_reward = float(np.max(np.mean(d['results'], axis=1)))
-    keep = d['timesteps'] <= resumed_at  # keep the logged history monotonic in timesteps
-    eval_cb.evaluations_timesteps = d['timesteps'][keep].tolist()
-    eval_cb.evaluations_results = d['results'][keep].tolist()
-    eval_cb.evaluations_length = d['ep_lengths'][keep].tolist()
-
-
-def _trim_metrics_csv(path, resumed_at):
-    """Drop metric rows logged after the checkpoint we resume from (they will be logged again)."""
-    if not os.path.exists(path):
-        return
-    with open(path) as f:
-        lines = f.readlines()
-    keep = lines[:1] + [l for l in lines[1:] if float(l.split(',')[0]) <= resumed_at]
-    with open(path, 'w') as f:
-        f.writelines(keep)
-
-
 def ppo_kwargs_from_happo(n_envs):
     """Map the HAPPO config onto SB3 PPO arguments."""
     with open(HAPPO_CFG) as f:
         cfg = yaml.safe_load(f)
     train, model, algo = cfg['train'], cfg['model'], cfg['algo']
     n_steps = train['episode_length']
-    act = {'tanh': torch.nn.Tanh, 'relu': torch.nn.ReLU}[model['activation_func']]
     return dict(
         learning_rate=model['lr'],  # HARL keeps lr under 'model'
         n_steps=n_steps,
@@ -269,13 +139,39 @@ def ppo_kwargs_from_happo(n_envs):
         clip_range=algo['clip_param'],
         ent_coef=algo['entropy_coef'],
         max_grad_norm=algo['max_grad_norm'],
-        policy_kwargs=dict(net_arch=list(model['hidden_sizes']), activation_fn=act),
+        net_arch=list(model['hidden_sizes']),
+        activation=model['activation_func'],
     )
+
+
+ACTIVATIONS = {'tanh': torch.nn.Tanh, 'relu': torch.nn.ReLU}
+POLICY_KEYS = ('net_arch', 'activation')  # 'algo' config keys that go to policy_kwargs instead of the constructor
+
+
+def build_algo_kwargs(algo, hp):
+    """Hyperparameters ('algo' config section) -> SB3 constructor kwargs. Unknown keys raise."""
+    import inspect
+    # Set by the trainer itself (--seed, --device, logging), not hyperparameters.
+    reserved = {'self', 'policy', 'env', 'seed', 'device', 'verbose', 'tensorboard_log', 'policy_kwargs'}
+    valid = {k for k in inspect.signature(ALGOS[algo].__init__).parameters if not k.startswith('_')} - reserved
+    unknown = sorted(set(hp) - valid - set(POLICY_KEYS))
+    if unknown:
+        raise SystemExit(f'Unknown {algo} hyperparameters {unknown}. Valid: {sorted(valid | set(POLICY_KEYS))}')
+    kwargs = {k: v for k, v in hp.items() if k not in POLICY_KEYS}
+    policy_kwargs = {}
+    if 'net_arch' in hp:
+        policy_kwargs['net_arch'] = list(hp['net_arch'])
+    if 'activation' in hp:
+        policy_kwargs['activation_fn'] = ACTIVATIONS[hp['activation']]
+    if policy_kwargs:
+        kwargs['policy_kwargs'] = policy_kwargs
+    return kwargs
 
 
 def main():
     p = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     p.add_argument('--algo', choices=list(ALGOS), default='ppo')
+    add_config_args(p)
     p.add_argument('--exp_name', default='single_agent')
     p.add_argument('--seed', type=int, default=1)
     p.add_argument('--n_envs', type=int, default=8)
@@ -303,12 +199,17 @@ def main():
                    help='Observe current and forecast PV. Default: the value in the env yaml (off).')
     p.add_argument('--eval_freq', type=int, default=50_000, help='Evaluate every N total env steps.')
     p.add_argument('--n_eval_episodes', type=int, default=5,
-                   help='Episodes per evaluation, run in parallel; always the same seeds (eval_seed + i).')
-    p.add_argument('--eval_seed', type=int, default=10_000,
+                   help='Episodes per evaluation; always the same seeds (eval_seed + i).')
+    p.add_argument('--eval_seed', type=int, default=TRAIN_EVAL_SEED,
                    help='First evaluation seed. Keep it away from the eval_compare.py test seeds (1000+).')
+    p.add_argument('--eval_days', type=int, default=None,
+                   help='Days per evaluation episode (default: the training days_per_episode).')
+    p.add_argument('--drop_tolerance', type=float, default=1.0,
+                   help='Best-model guard: max increase over noop of the mean tasks dropped per eval episode.')
     p.add_argument('--checkpoint_freq', type=int, default=250_000, help='Save a checkpoint every N total env steps.')
-    p.add_argument('--results_root', default='results',
-                   help='Top-level folder for runs: <root>/sustaindc/<location>/single_<algo>/<exp_name>/<run>.')
+    p.add_argument('--out_root', '--results_root', dest='out_root', default=None,
+                   help='Top-level folder for runs: <root>/sustaindc/<location>/single_<algo>/<exp_name>/<run>. '
+                        'Default: $SDC_OUT_ROOT if set, else ./results.')
     p.add_argument('--run_id', default=None,
                    help='Run directory suffix (default: a timestamp). Reusing a run id resumes from its latest '
                         'checkpoint, e.g. the Slurm job id, so a preempted/requeued job continues where it stopped.')
@@ -318,39 +219,39 @@ def main():
     args = p.parse_args()
     torch.set_num_threads(args.torch_threads)
 
+    # Hyperparameters: defaults < --config < explicit flags < --set (sdc_eval/config.py).
     with open(ENV_CFG) as f:
         env_config = yaml.safe_load(f)
-    for key in ['location', 'month', 'days_per_episode']:
-        if getattr(args, key) is not None:
-            env_config[key] = getattr(args, key)
-    env_config['action_type'] = 'discrete' if args.algo == 'dqn' else args.action_type
+    env_config['action_type'] = args.action_type
     env_config['reward_type'] = args.reward_type
-    if args.include_dc_setpoint is not None:
-        env_config['include_dc_setpoint'] = args.include_dc_setpoint
+    hp = {'env': env_config, 'algo': ppo_kwargs_from_happo(args.n_envs) if args.algo == 'ppo' else dict(gamma=0.995)}
+    hp = merge(hp, load_config(args.config), open_sections=('algo',))
+    for key in ['location', 'month', 'days_per_episode', 'include_dc_setpoint', 'include_pv_obs']:
+        if getattr(args, key) is not None:
+            hp['env'][key] = getattr(args, key)
     if args.pv_capacity_kWp is not None:
-        env_config['pv_config'] = {**env_config.get('pv_config', {}), 'capacity_kWp': args.pv_capacity_kWp}
-    if args.include_pv_obs is not None:
-        env_config['include_pv_obs'] = args.include_pv_obs
-
-    run_id = args.run_id or datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
-    run_dir = os.path.join(args.results_root, 'sustaindc', env_config['location'], f'single_{args.algo}', args.exp_name,
-                           f'seed-{args.seed:0>5}-{run_id}')
-    ckpt_dir = os.path.join(run_dir, 'models', 'checkpoints')
-    os.makedirs(run_dir, exist_ok=True)
-
-    if args.algo == 'ppo':
-        algo_kwargs = ppo_kwargs_from_happo(args.n_envs)
-    else:
-        algo_kwargs = dict(gamma=0.995)
+        hp['env']['pv_config'] = {**hp['env'].get('pv_config', {}), 'capacity_kWp': args.pv_capacity_kWp}
     overridable = {'ppo': ('learning_rate', 'ent_coef', 'clip_range', 'n_epochs', 'vf_coef'),
                    'a2c': ('learning_rate', 'ent_coef', 'vf_coef'), 'dqn': ('learning_rate',)}[args.algo]
     for key in ('learning_rate', 'ent_coef', 'clip_range', 'n_epochs', 'vf_coef'):
         if getattr(args, key) is not None:
             if key not in overridable:
                 raise SystemExit(f'--{key} does not apply to {args.algo}')
-            algo_kwargs[key] = getattr(args, key)
+            hp['algo'][key] = getattr(args, key)
+    hp = merge(hp, parse_overrides(args.overrides), open_sections=('algo',))
+    env_config = hp['env']
+    if args.algo == 'dqn':
+        env_config['action_type'] = 'discrete'
+    algo_kwargs = build_algo_kwargs(args.algo, hp['algo'])
+
+    run_id = args.run_id or datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
+    run_dir = os.path.join(resolve_root(args.out_root), 'sustaindc', env_config['location'], f'single_{args.algo}', args.exp_name,
+                           f'seed-{args.seed:0>5}-{run_id}')
+    ckpt_dir = os.path.join(run_dir, 'models', 'checkpoints')
+    os.makedirs(run_dir, exist_ok=True)
+
     use_vecnorm = args.norm_obs or args.norm_reward
-    norm_args = dict(norm_obs=args.norm_obs, norm_reward=args.norm_reward, gamma=algo_kwargs['gamma'])
+    norm_args = dict(norm_obs=args.norm_obs, norm_reward=args.norm_reward, gamma=algo_kwargs.get('gamma', 0.99))
     config = {'main_args': vars(args), 'env_args': env_config,
               'algo_args': {k: str(v) if k == 'policy_kwargs' else v for k, v in algo_kwargs.items()},
               'vecnormalize_args': norm_args if use_vecnorm else None}
@@ -372,18 +273,12 @@ def main():
     vec_cls = SubprocVecEnv if args.n_envs > 1 else DummyVecEnv
     env = make_vec_env(SustainDCSingleAgentEnv, n_envs=args.n_envs, seed=args.seed + resumed_at,
                        env_kwargs={'env_config': dict(env_config)}, vec_env_cls=vec_cls)
-    # One eval env per episode, each in its own process: the env seeds the process-wide `random`/`np.random`.
-    eval_env = make_vec_env(SustainDCSingleAgentEnv, n_envs=args.n_eval_episodes, seed=args.eval_seed,
-                            env_kwargs={'env_config': dict(env_config)},
-                            vec_env_cls=SubprocVecEnv if args.n_eval_episodes > 1 else DummyVecEnv)
     if use_vecnorm:
         ckpt_vn = vecnormalize_path(checkpoints[-1][1]) if checkpoints else None
         if ckpt_vn and os.path.exists(ckpt_vn):
             env = VecNormalize.load(ckpt_vn, env)
         else:
             env = VecNormalize(env, **norm_args)
-        # Eval uses the training statistics (synced before each evaluation) and reports raw rewards.
-        eval_env = VecNormalize(eval_env, training=False, norm_obs=args.norm_obs, norm_reward=False)
 
     if checkpoints:
         ckpt = checkpoints[-1][1]
@@ -395,14 +290,20 @@ def main():
         model = ALGOS[args.algo]('MlpPolicy', env, seed=args.seed, device=args.device, verbose=1,
                                  tensorboard_log=os.path.join(run_dir, 'tb'), **algo_kwargs)
 
-    eval_cb = FixedSeedEvalCallback(eval_env, args.eval_seed, n_eval_episodes=args.n_eval_episodes, deterministic=True,
-                           eval_freq=max(args.eval_freq // args.n_envs, 1),
-                           best_model_save_path=os.path.join(run_dir, 'models'),
-                           log_path=os.path.join(run_dir, 'eval'))
+    hparams = {'algo': hp['algo'], 'env': env_config, 'vecnormalize': norm_args if use_vecnorm else None,
+               'train': {k: vars(args)[k] for k in ('n_envs', 'total_timesteps', 'seed', 'eval_freq', 'n_eval_episodes')}}
+    run_logger = RunLogger(run_dir, f'single_{args.algo}', 'off_policy' if args.algo == 'dqn' else 'on_policy',
+                           env_cfg=env_config, seed=args.seed, resume_from_step=resumed_at if checkpoints else None,
+                           hparams=hparams)
+    evaluator = FixedSeedEvaluator(env_config, run_dir, run_logger, n_episodes=args.n_eval_episodes,
+                                   seed=args.eval_seed, drop_tolerance=args.drop_tolerance,
+                                   days_per_episode=args.eval_days)
     if checkpoints:
-        restore_eval_history(eval_cb, os.path.join(run_dir, 'eval', 'evaluations.npz'), resumed_at)
+        evaluator.trim_after(resumed_at)
+    eval_cb = CommonEvalCallback(evaluator, env_config, args.eval_freq, os.path.join(run_dir, 'models'),
+                                 vecnormalize_path)
     callbacks = CallbackList([
-        SustainDCMetricsCallback(),
+        CommonMetricsCallback(run_logger, is_dqn=args.algo == 'dqn'),
         eval_cb,
         ResumableCheckpointCallback(ckpt_dir, args.algo, save_freq=args.checkpoint_freq),
     ])
@@ -416,7 +317,14 @@ def main():
     model.save(os.path.join(run_dir, 'models', 'final_model'))
     if use_vecnorm:
         env.save(vecnormalize_path(os.path.join(run_dir, 'models', 'final_model')))
-    env.close(); eval_env.close()
+    if eval_cb.last_eval_step != model.num_timesteps:
+        eval_cb.init_callback(model)
+        eval_cb.evaluate()  # the final model is evaluated too (it may become the best)
+    if evaluator.best is None:
+        print('Note: no evaluation passed the best-model guard (tasks dropped vs noop), so there is no '
+              'models/best_model; eval_compare.py falls back to final_model.', flush=True)
+    run_logger.close(evaluator.best)
+    env.close()
     print(f'Saved final model to {run_dir}/models/final_model.zip')
 
 

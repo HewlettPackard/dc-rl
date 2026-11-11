@@ -35,12 +35,8 @@ Several result folders (e.g. from parallel jobs on the same seeds) can be merged
     python eval_compare.py --combine results/eval_compare/a results/eval_compare/b --out_dir results/eval_compare/all
 """
 import argparse
-import datetime
-import glob
-import hashlib
 import json
 import os
-import random
 import sys
 import warnings
 
@@ -51,264 +47,17 @@ import numpy as np
 import torch
 import yaml
 
+from sdc_eval.constants import ENV_CFG, FINAL_EVAL_SEED, NOOP, SCENARIO_KEYS, STEP_HOURS
+from sdc_eval.metrics import METRICS, PAIRED_METRICS, aggregate, marginal_kwh_per_util_step
+from sdc_eval.paths import add_out_root_arg, report_dir, resolve_root
+from sdc_eval.policies import (HARLPolicy, NoOpPolicy, RandomPolicy, SB3Policy, expand_specs, make_policy,
+                               split_label)
+from sdc_eval.rollout import run_episode
 from sustaindc_env import SustainDC
-from sustaindc_single_env import AGENTS, decode_joint_action
-from utils.joint_obs import PV_OBS_DIM, build_joint_obs
+from sustaindc_single_env import AGENTS
 
-ENV_CFG = 'harl/configs/envs_cfgs/sustaindc.yaml'
-NOOP = {'agent_ls': 1, 'agent_dc': 1, 'agent_bat': 2}
-STEP_HOURS = 0.25  # 15-minute steps
-
-# Config keys that define the simulated scenario. Policies may differ in observation settings, not in these.
-SCENARIO_KEYS = ['location', 'month', 'days_per_episode', 'workload_file', 'cintensity_file', 'weather_file',
-                 'flexible_load', 'max_bat_cap_Mw', 'dc_config_file', 'datacenter_capacity_mw', 'timezone_shift',
-                 'pv_config', 'pv_export_credit', 'battery_config']
-
-METRICS = [  # (name, unit)
-    ('co2', 'kgCO2'),
-    ('total_energy', 'MWh'),   # grid energy incl. battery charging/discharging (net of on-site PV)
-    ('pv_energy', 'MWh'),      # on-site PV generation
-    ('pv_curtailed', 'MWh'),   # PV surplus not used by the DC or the battery (curtailed or exported)
-    ('it_energy', 'MWh'),
-    ('hvac_energy', 'MWh'),
-    ('water', 'L'),
-    ('tasks_dropped', 'tasks'),
-    ('tasks_queued_end', 'tasks'),
-    ('avg_setpoint', 'C'),
-    ('work_submitted', 'util-steps'),   # sum over steps of the original CPU utilization (1.0 = full DC for 15 min)
-    ('work_executed', 'util-steps'),    # sum of the utilization actually run after load shifting
-    ('co2_work_adjusted', 'kgCO2'),     # co2 + unexecuted work at its marginal energy x the episode's mean CI
-]
-
-
-# ---------------------------------------------------------------------------------------------------------------------
-# Policies. Each one reads the SustainDC state after reset/step and returns {agent: int action}.
-# ---------------------------------------------------------------------------------------------------------------------
-class NoOpPolicy:
-    include_dc_setpoint = False
-    include_pv_obs = False
-    train_config = {}
-
-    def reset(self, seed):
-        pass
-
-    def act(self, sdc):
-        return dict(NOOP)
-
-
-class RandomPolicy(NoOpPolicy):
-    def reset(self, seed):
-        self.rng = np.random.default_rng(seed)
-
-    def act(self, sdc):
-        return {agent: int(self.rng.integers(3)) for agent in AGENTS}
-
-
-class SB3Policy:
-    def __init__(self, run_dir, model_name='best_model'):
-        from train_single_agent import ALGOS, load_obs_normalizer
-        with open(os.path.join(run_dir, 'config.json')) as f:
-            cfg = json.load(f)
-        self.train_config = cfg['env_args']
-        self.include_dc_setpoint = bool(self.train_config.get('include_dc_setpoint', False))
-        self.include_pv_obs = bool(self.train_config.get('include_pv_obs', False))
-        self.action_type = self.train_config.get('action_type', 'multidiscrete')
-        model_path = os.path.join(run_dir, 'models', model_name)
-        self.model = ALGOS[cfg['main_args']['algo']].load(model_path, device='cpu')
-        self.normalize = load_obs_normalizer(model_path)  # VecNormalize stats saved with the model, if any
-
-    def reset(self, seed):
-        pass
-
-    def act(self, sdc):
-        obs = build_joint_obs(sdc.ls_state, sdc.dc_state, sdc.bat_state, self.include_dc_setpoint, self.include_pv_obs)
-        action, _ = self.model.predict(self.normalize(obs), deterministic=True)
-        return decode_joint_action(action, self.action_type)
-
-
-class HARLPolicy:
-    """Deterministic HARL actors loaded from a run directory, fed the same padded per-agent observations as in training."""
-    ON_POLICY = ('happo', 'mappo', 'haa2c', 'hatrpo')
-    OFF_POLICY = ('hasac', 'had3qn')
-
-    def __init__(self, run_dir):
-        from gymnasium import spaces
-        from harl.algorithms.actors import ALGO_REGISTRY
-        with open(os.path.join(run_dir, 'config.json')) as f:
-            cfg = json.load(f)
-        self.algo = cfg['main_args']['algo']
-        if self.algo not in self.ON_POLICY + self.OFF_POLICY:
-            raise ValueError(f"HARL algo {self.algo!r} not supported here (discrete-action algos: {self.ON_POLICY + self.OFF_POLICY})")
-        self.train_config = cfg['env_args']
-        self.include_dc_setpoint = bool(self.train_config.get('include_dc_setpoint', False))
-        self.include_pv_obs = bool(self.train_config.get('include_pv_obs', False))
-        self.agents = list(self.train_config['agents'])
-        model_args, algo_args = cfg['algo_args']['model'], cfg['algo_args']['algo']
-        self.recurrent = model_args.get('use_recurrent_policy', False) or model_args.get('use_naive_recurrent_policy', False)
-        # RNN state shape only matters for recurrent on-policy actors; off-policy configs (e.g. HAD3QN) name their
-        # layers base_hidden_sizes instead of hidden_sizes.
-        hidden = model_args.get('hidden_sizes') or model_args.get('base_hidden_sizes') or [1]
-        self.rnn_shape = (1, model_args.get('recurrent_n', 1), hidden[-1])
-
-        # Supersuit pads every active agent's observation with zeros up to the largest one.
-        n_pv = PV_OBS_DIM * int(self.include_pv_obs)
-        obs_dims = {'agent_ls': 26 + n_pv, 'agent_dc': 14 + int(self.include_dc_setpoint) + n_pv, 'agent_bat': 13 + n_pv}
-        self.pad_dim = max(obs_dims[a] for a in self.agents)
-        obs_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.pad_dim,), dtype=np.float32)
-        act_space = spaces.Discrete(3)
-
-        self.actors = []
-        for i, _ in enumerate(self.agents):
-            actor = ALGO_REGISTRY[self.algo]({**model_args, **algo_args}, obs_space, act_space, device=torch.device('cpu'))
-            state = torch.load(os.path.join(run_dir, 'models', f'actor_agent{i}.pt'), map_location='cpu')
-            in_dim = next(v.shape[1] for k, v in state.items() if k.endswith('weight') and v.dim() == 2)
-            if in_dim != self.pad_dim:
-                raise ValueError(
-                    f"{run_dir}: actor {i} expects {in_dim}-dim observations, but the current env gives "
-                    f"{self.pad_dim} for this run's config. It was trained on an older observation layout and can't "
-                    f"be evaluated on the current simulator (e.g. the 2024 trained_models/ use 14-dim observations).")
-            actor.actor.load_state_dict(state)
-            actor.actor.eval()
-            self.actors.append(actor)
-
-    def reset(self, seed):
-        self.rnn_states = [np.zeros(self.rnn_shape, dtype=np.float32) for _ in self.agents]
-
-    def _obs(self, sdc, agent):
-        state = {'agent_ls': sdc.ls_state, 'agent_dc': sdc.dc_state, 'agent_bat': sdc.bat_state}[agent]
-        if agent == 'agent_dc' and not self.include_dc_setpoint and sdc.include_dc_setpoint:
-            state = np.delete(state, 14)  # the eval env appends the setpoint; this policy was trained without it
-        padded = np.zeros((1, self.pad_dim), dtype=np.float32)
-        padded[0, :len(state)] = state
-        return padded
-
-    @torch.no_grad()
-    def act(self, sdc):
-        actions = dict(NOOP)  # agents this run did not train keep the do-nothing action (as SustainDC does)
-        masks = np.ones((1, 1), dtype=np.float32)
-        for i, (agent, actor) in enumerate(zip(self.agents, self.actors)):
-            obs = self._obs(sdc, agent)
-            if self.algo in self.ON_POLICY:
-                a, rnn = actor.act(obs, self.rnn_states[i], masks, None, deterministic=True)
-                self.rnn_states[i] = rnn.cpu().numpy() if torch.is_tensor(rnn) else rnn
-            elif self.algo == 'hasac':
-                a = actor.get_actions(obs, None, stochastic=False)
-            else:  # had3qn
-                a = actor.get_actions(obs, epsilon_greedy=False)
-            actions[agent] = int(np.asarray(a.cpu() if torch.is_tensor(a) else a).reshape(-1)[0])
-        return actions
-
-
-def split_label(spec):
-    """'<spec>=<label>' -> (spec, label). Controller parameters also use '=' (rule:ls:ls_hi=0.8), so the label is the
-    text after the last '=' unless that text is a parameter value: a number, an MPC keyword or a .npz path."""
-    from mpc_value import PARAM_WORDS
-    head, sep, tail = spec.rpartition('=')
-    if not sep or tail in PARAM_WORDS or tail.endswith('.npz'):
-        return spec, ''
-    try:
-        float(tail)
-        return spec, ''
-    except ValueError:
-        return head, tail
-
-
-def make_policy(spec):
-    spec, label = split_label(spec)
-    kind, _, rest = spec.partition(':')
-    if kind == 'noop':
-        policy = NoOpPolicy()
-    elif kind == 'random':
-        policy = RandomPolicy()
-    elif kind == 'sb3':
-        run_dir, _, model = rest.partition(':')
-        policy = SB3Policy(run_dir, model or 'best_model')
-    elif kind == 'harl':
-        policy = HARLPolicy(rest)
-    elif kind in ('rule', 'oracle', 'setpoint'):
-        from baseline_policies import make_baseline_policy
-        policy = make_baseline_policy(kind, rest)
-    elif kind == 'mpc':
-        from mpc_value import make_mpc_policy
-        policy = make_mpc_policy(rest)
-    else:
-        raise ValueError(f'Unknown policy spec {spec!r}')
-    return label or spec, policy
-
-
-# ---------------------------------------------------------------------------------------------------------------------
-# Evaluation
-# ---------------------------------------------------------------------------------------------------------------------
-def run_episode(sdc, policy, seed):
-    """Run one seeded episode. Returns (metrics dict, fingerprint of the exogenous inputs)."""
-    random.seed(seed)
-    np.random.seed(seed)
-    sdc.reset()
-    policy.reset(seed)
-    m = {name: 0.0 for name, _ in METRICS}
-    exo = []
-    steps = 0
-    ci_sum = amb_sum = 0.0
-    while True:
-        _, _, _, truncs, info = sdc.step(policy.act(sdc))
-        i = info['agent_ls']  # merged ls/dc/bat info
-        m['co2'] += i['bat_CO2_footprint'] / 1e3
-        m['total_energy'] += i['bat_total_energy_with_battery_KWh'] / 1e3
-        m['pv_energy'] += i['pv_energy_KWh'] / 1e3
-        m['pv_curtailed'] += (i['pv_curtailed_KWh'] + i['pv_exported_KWh']) / 1e3
-        m['it_energy'] += i['dc_ITE_total_power_kW'] * STEP_HOURS / 1e3
-        m['hvac_energy'] += i['dc_HVAC_total_power_kW'] * STEP_HOURS / 1e3
-        m['water'] += i['dc_water_usage']
-        m['tasks_dropped'] += i['ls_tasks_dropped']
-        m['avg_setpoint'] += i['dc_crac_setpoint']
-        m['work_submitted'] += i['ls_original_workload']
-        m['work_executed'] += i['ls_shifted_workload']
-        ci_sum += i['bat_avg_CI']
-        amb_sum += i['outside_temp']
-        exo.append((i['ls_original_workload'], i['outside_temp'], i['norm_CI'], i['day'], i['hour']))
-        steps += 1
-        if truncs['__all__']:
-            break
-    m['tasks_queued_end'] = float(i['ls_tasks_in_queue'])
-    m['avg_setpoint'] /= steps
-    # Work deferred but never run (dropped or still queued at the end) did not consume energy. Charge it at the
-    # marginal energy of running it (IT + HVAC, at the mean utilization, 18 C, mean outdoor temperature) and the
-    # episode's mean carbon intensity, so a policy cannot look greener by not doing the work.
-    unexecuted = max(m['work_submitted'] - m['work_executed'], 0.0)
-    m['co2_work_adjusted'] = m['co2'] + unexecuted * marginal_kwh_per_util_step(
-        sdc, m['work_submitted'] / steps, amb_sum / steps) * (ci_sum / steps) / 1e3
-    m['steps'] = steps
-    fingerprint = hashlib.sha1(np.round(np.array(exo, dtype=np.float64), 9).tobytes()).hexdigest()[:12]
-    return m, fingerprint
-
-
-def marginal_kwh_per_util_step(sdc, utilization, ambient):
-    """Energy (kWh) to run 1.0 utilization-step (the whole DC for 15 min) at the margin: slope of IT + HVAC power."""
-    from baseline_policies import dc_power
-    wb = sdc.dc_env.wet_bulb
-    lo, hi = max(utilization - 0.05, 0.0), min(utilization + 0.05, 1.0)
-    p_lo, p_hi = sum(dc_power(sdc, lo, 18.0, ambient, wb)), sum(dc_power(sdc, hi, 18.0, ambient, wb))
-    return (p_hi - p_lo) / (hi - lo) / 1e3 * STEP_HOURS
-
-
-def expand_specs(specs):
-    """Expand harl:<glob> specs into one spec per run directory, labelled <label>_s<seed>."""
-    out = []
-    for spec in specs:
-        body, label = split_label(spec)
-        kind, _, rest = body.partition(':')
-        if kind == 'harl' and any(ch in rest for ch in '*?['):
-            dirs = sorted(d for d in glob.glob(rest) if os.path.isfile(os.path.join(d, 'config.json')))
-            if not dirs:
-                raise ValueError(f'No HARL run directories match {rest!r}')
-            base = label or os.path.basename(os.path.dirname(dirs[0]))
-            for d in dirs:
-                with open(os.path.join(d, 'config.json')) as f:
-                    seed = json.load(f)['algo_args']['seed']['seed']
-                out.append(f'harl:{d}={base}_s{seed}')
-        else:
-            out.append(spec)
-    return out
+# Columns printed in the terminal table (all METRICS are saved to episodes.csv and summary.json).
+TABLE_METRICS = [(n, u) for n, u in METRICS[:13]] + [('pue', '-'), ('bat_cycles', 'cycles')]
 
 
 def paired_report(results, seeds, base='noop'):
@@ -338,7 +87,7 @@ def paired_report(results, seeds, base='noop'):
     print(f"  {'policy':44s}{'CO2 (work-adjusted)':>24s}{'CO2':>24s}{'total energy':>24s}{'water':>24s}{'dropped':>10s}{'queued end':>12s}")
     for label, eps in rows.items():
         cells, rep = [], {}
-        for key in ('co2_work_adjusted', 'co2', 'total_energy', 'water'):
+        for key in PAIRED_METRICS:
             d = pct(eps, key)
             half = stats.t.ppf(0.975, len(d) - 1) * d.std(ddof=1) / np.sqrt(len(d)) if len(d) > 1 else float('nan')
             rep[key] = {'mean_pct': float(d.mean()), 'ci95_pct': float(half), 'per_episode_pct': d.tolist()}
@@ -359,8 +108,8 @@ def combine(dirs, out_dir):
         with open(os.path.join(d, 'episodes.csv')) as f:
             for row in csv.DictReader(f):
                 label = row['policy']
-                # Metrics added later (e.g. PV) are missing from older CSVs: read them as 0.
-                results.setdefault(label, {})[int(row['seed'])] = {n: float(row.get(n, 0.0)) for n, _ in METRICS}
+                # Metrics added later are missing from older CSVs: read them as NaN.
+                results.setdefault(label, {})[int(row['seed'])] = {n: float(row.get(n) or 'nan') for n, _ in METRICS}
                 fps.setdefault(int(row['seed']), set()).add(row['inputs_fingerprint'])
     seeds = sorted(next(iter(results.values())))
     if any(sorted(r) != seeds for r in results.values()):
@@ -369,12 +118,8 @@ def combine(dirs, out_dir):
     print(f"Combined {len(results)} policies from {len(dirs)} folders, {len(seeds)} episodes (seeds {seeds[0]}..{seeds[-1]}). "
           f"Exogenous inputs identical across policies: {'yes' if same_inputs else 'NO, comparison is not fair'}")
     results = {label: [r[s] for s in seeds] for label, r in results.items()}
-    summary = {label: {name: (float(np.mean([e[name] for e in eps])), float(np.std([e[name] for e in eps])))
-                       for name, _ in METRICS} for label, eps in results.items()}
-    width = max(len(l) for l in summary) + 2
-    print('\n' + 'policy'.ljust(width) + ''.join(f'{f"{n} ({u})":>26}' for n, u in METRICS))
-    for label, s in summary.items():
-        print(label.ljust(width) + ''.join(f'{f"{mu:.1f} ± {sd:.1f}":>26}' for mu, sd in s.values()))
+    summary = {label: aggregate(eps) for label, eps in results.items()}
+    print_table(summary)
     paired = paired_report(results, seeds)
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, 'summary.json'), 'w') as f:
@@ -383,22 +128,30 @@ def combine(dirs, out_dir):
     print(f'\nSaved {out_dir}/summary.json')
 
 
+def print_table(summary):
+    width = max(len(l) for l in summary) + 2
+    print('\n' + 'policy'.ljust(width) + ''.join(f'{f"{n} ({u})":>26}' for n, u in TABLE_METRICS))
+    for label, s in summary.items():
+        print(label.ljust(width) + ''.join(f'{f"{s[n][0]:.1f} ± {s[n][1]:.1f}":>26}' for n, _ in TABLE_METRICS))
+
+
 def main():
     p = argparse.ArgumentParser(formatter_class=argparse.RawDescriptionHelpFormatter, description=__doc__)
     p.add_argument('--policy', action='append', help='Policy spec (repeatable), see above.')
     p.add_argument('--combine', nargs='+', default=None, help='Merge the episodes.csv of these eval_compare folders.')
     p.add_argument('--n_episodes', type=int, default=5)
-    p.add_argument('--seed', type=int, default=1000, help='Episode i uses seed + i.')
+    p.add_argument('--seed', type=int, default=FINAL_EVAL_SEED, help='Episode i uses seed + i.')
     p.add_argument('--location', default=None)
     p.add_argument('--month', type=int, default=None)
     p.add_argument('--days_per_episode', type=int, default=None)
     p.add_argument('--pv_capacity_kWp', type=float, default=None,
                    help="Override the env config's on-site PV capacity (pv_config.capacity_kWp; 0 = no PV).")
-    p.add_argument('--out_dir', default=None, help='Default: results/eval_compare/<timestamp>')
+    p.add_argument('--out_dir', default=None, help='Default: <out_root>/eval_compare/<timestamp>')
+    add_out_root_arg(p)
     args = p.parse_args()
     torch.set_num_threads(1)
     if args.combine:
-        combine(args.combine, args.out_dir or os.path.join('results', 'eval_compare', 'combined'))
+        combine(args.combine, args.out_dir or report_dir(resolve_root(args.out_root), 'eval_compare', 'combined'))
         return
     if not args.policy:
         p.error('--policy is required (or use --combine)')
@@ -437,13 +190,8 @@ def main():
     same_inputs = all(fp == ref for fp in fingerprints.values())
     print('\nExogenous inputs identical across policies: ' + ('yes' if same_inputs else 'NO, comparison is not fair'))
 
-    summary = {label: {name: (float(np.mean([e[name] for e in eps])), float(np.std([e[name] for e in eps])))
-                       for name, _ in METRICS} for label, eps in results.items()}
-    width = max(len(l) for l in summary) + 2
-    header = ''.join(f'{f"{n} ({u})":>26}' for n, u in METRICS)
-    print('\n' + 'policy'.ljust(width) + header)
-    for label, s in summary.items():
-        print(label.ljust(width) + ''.join(f'{f"{mu:.1f} ± {sd:.1f}":>26}' for mu, sd in s.values()))
+    summary = {label: aggregate(eps) for label, eps in results.items()}
+    print_table(summary)
     base = next((l for l, pol in policies if isinstance(pol, NoOpPolicy) and type(pol) is NoOpPolicy), None)
     if base:
         print(f'\nChange vs {base} (mean over episodes; negative = less):')
@@ -457,7 +205,7 @@ def main():
 
     paired = paired_report(results, seeds) if any(l == 'noop' for l, _ in policies) else {}
 
-    out_dir = args.out_dir or os.path.join('results', 'eval_compare', datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
+    out_dir = args.out_dir or report_dir(resolve_root(args.out_root), 'eval_compare')
     os.makedirs(out_dir, exist_ok=True)
     with open(os.path.join(out_dir, 'episodes.csv'), 'w') as f:
         f.write('policy,seed,' + ','.join(n for n, _ in METRICS) + ',inputs_fingerprint\n')

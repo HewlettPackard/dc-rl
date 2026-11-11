@@ -19,6 +19,8 @@ from utils.managers import (CI_Manager, PV_Manager, Time_Manager, Weather_Manage
                             Workload_Manager, epw_utc_offset)
 from utils.utils_cf import get_energy_variables, get_init_day, obtain_paths
 from utils.joint_obs import PV_OBS_DIM as N_PV_OBS
+from sdc_eval.constants import NOOP
+from sdc_eval.metrics import EpisodeAccumulator
 
 import matplotlib
 matplotlib.use('Agg')  # Use a non-interactive backend suitable for servers without display
@@ -517,6 +519,9 @@ class SustainDC(gym.Env):
         self.ls_terminated = self.dc_terminated = self.bat_terminated = False
         self.ls_truncated = self.dc_truncated = self.bat_truncated = False
         self.ls_reward = self.dc_reward = self.bat_reward = 0
+        # Physical metrics of the episode (sdc_eval.metrics), attached to the info of the last step as
+        # info[agent]['episode_metrics'] so every wrapper/trainer logs the same per-episode metrics.
+        self.episode_acc = EpisodeAccumulator(record_inputs=False)
 
         # Reset the managers
         random_init_day =  random.randint(max(0, self.ranges_day[0]), min(364, self.ranges_day[1])) # self.init_day 
@@ -690,9 +695,15 @@ class SustainDC(gym.Env):
         }
 
 
+        self.episode_acc.step(info['agent_ls'], {**NOOP, **action_dict}, (  # inactive agents do nothing
+            self.ls_reward, self.dc_reward, self.bat_reward))
+
         # Handle termination if the episode ends
         if terminal:
             self._handle_terminal(terminateds, truncateds)
+            episode_metrics = self.episode_acc.finalize(self)
+            for agent in ('agent_ls', 'agent_dc', 'agent_bat'):
+                info[agent]['episode_metrics'] = episode_metrics
 
         return obs, rew, terminateds, truncateds, info
 

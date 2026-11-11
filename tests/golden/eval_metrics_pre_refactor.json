@@ -1,0 +1,122 @@
+{
+ "noop": {
+  "1000": {
+   "metrics": {
+    "co2": 3053.612667387405,
+    "total_energy": 14.367881255869175,
+    "pv_energy": 0.0,
+    "pv_curtailed": 0.0,
+    "it_energy": 12.490503199346978,
+    "hvac_energy": 1.8773780565222074,
+    "water": 26623.657534914826,
+    "tasks_dropped": 0.0,
+    "tasks_queued_end": 0.0,
+    "avg_setpoint": 18.0,
+    "work_submitted": 49.126026544127456,
+    "work_executed": 49.08999999999997,
+    "co2_work_adjusted": 3055.7302045615334,
+    "steps": 96
+   },
+   "fingerprint": "da77f9eb991f"
+  },
+  "1001": {
+   "metrics": {
+    "co2": 3226.6698083839556,
+    "total_energy": 15.769898884914467,
+    "pv_energy": 0.0,
+    "pv_curtailed": 0.0,
+    "it_energy": 13.630899266373701,
+    "hvac_energy": 2.1389996185407645,
+    "water": 29188.537602467277,
+    "tasks_dropped": 0.0,
+    "tasks_queued_end": 0.0,
+    "avg_setpoint": 18.0,
+    "work_submitted": 53.896620394381486,
+    "work_executed": 53.85,
+    "co2_work_adjusted": 3229.3375817828583,
+    "steps": 96
+   },
+   "fingerprint": "1f1ac43d06ef"
+  }
+ },
+ "random": {
+  "1000": {
+   "metrics": {
+    "co2": 3010.79385668801,
+    "total_energy": 13.924691976873696,
+    "pv_energy": 0.0,
+    "pv_curtailed": 0.0,
+    "it_energy": 11.683656020526742,
+    "hvac_energy": 1.834493416165681,
+    "water": 25035.352374226663,
+    "tasks_dropped": 0.0,
+    "tasks_queued_end": 324.0,
+    "avg_setpoint": 17.547916666666644,
+    "work_submitted": 49.126026544127456,
+    "work_executed": 45.849999999999994,
+    "co2_work_adjusted": 3203.3493226264577,
+    "steps": 96
+   },
+   "fingerprint": "da77f9eb991f"
+  },
+  "1001": {
+   "metrics": {
+    "co2": 3306.512807624098,
+    "total_energy": 16.122267425097736,
+    "pv_energy": 0.0,
+    "pv_curtailed": 0.0,
+    "it_energy": 13.306873155504872,
+    "hvac_energy": 2.2023820352833376,
+    "water": 28666.469182876514,
+    "tasks_dropped": 0.0,
+    "tasks_queued_end": 122.0,
+    "avg_setpoint": 17.53125,
+    "work_submitted": 53.896620394381486,
+    "work_executed": 52.629999999999974,
+    "co2_work_adjusted": 3378.993022334173,
+    "steps": 96
+   },
+   "fingerprint": "1f1ac43d06ef"
+  }
+ },
+ "rule:ls,dc,bat": {
+  "1000": {
+   "metrics": {
+    "co2": 2708.7474952458283,
+    "total_energy": 14.424257038494348,
+    "pv_energy": 0.0,
+    "pv_curtailed": 0.0,
+    "it_energy": 11.6160398286227,
+    "hvac_energy": 1.7755362888190271,
+    "water": 24806.524902381374,
+    "tasks_dropped": 0.0,
+    "tasks_queued_end": 365.0,
+    "avg_setpoint": 18.0,
+    "work_submitted": 49.126026544127456,
+    "work_executed": 45.44000000000002,
+    "co2_work_adjusted": 2925.4015879723524,
+    "steps": 96
+   },
+   "fingerprint": "da77f9eb991f"
+  },
+  "1001": {
+   "metrics": {
+    "co2": 2365.666919156191,
+    "total_energy": 13.474015425497997,
+    "pv_energy": 0.0,
+    "pv_curtailed": 0.0,
+    "it_energy": 11.50583348601087,
+    "hvac_energy": 1.8758135184344966,
+    "water": 24737.055426490228,
+    "tasks_dropped": 0.0,
+    "tasks_queued_end": 887.0,
+    "avg_setpoint": 18.0,
+    "work_submitted": 53.896620394381486,
+    "work_executed": 44.98000000000002,
+    "co2_work_adjusted": 2875.905474874835,
+    "steps": 96
+   },
+   "fingerprint": "1f1ac43d06ef"
+  }
+ }
+}
