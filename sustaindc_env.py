@@ -102,6 +102,21 @@ class EnvConfig(dict):
         # limit). What is left is curtailed (False) or exported and credited at the current carbon intensity (True;
         # net CO2 can then be negative).
         'pv_export_credit': False,
+
+        # Master switch for on-site PV in the run.
+        #   None (default): previous behaviour. PV is on iff pv_config.capacity_kWp > 0 and is dispatched by the
+        #                   automatic self-consumption rule above (pv_export_credit applies).
+        #   False:          no PV in the run, whatever pv_config says.
+        #   True:           PV is on (pv_config.capacity_kWp must be > 0) and the battery agent decides what to do
+        #                   with it every step: 'use' (supply the DC), 'battery' (charge the battery) or 'resell'
+        #                   (sell to the grid, credited against CO2 at the current CI). The battery agent's action
+        #                   space becomes Discrete(9): action = battery_action + 3 * pv_action (see
+        #                   envs/bat_env_fwd_view.py). pv_export_credit is ignored.
+        'include_pv': None,
+
+        # include_pv=True only: CO2 credit per kWh of resold PV, as a fraction of the current carbon intensity
+        # (1.0 = resold renewable energy displaces the same amount of grid energy).
+        'pv_resell_credit': 1.0,
     }
 
     def __init__(self, raw_config):
@@ -189,7 +204,23 @@ class SustainDC(gym.Env):
         self.bat_env.dcload_max = self.dc_env.power_ub_kW / 4  # Assuming 15 minutes timestep. Kwh
         
         self.bat_env.dcload_min = self.dc_env.power_lb_kW / 4  # Assuming 15 minutes timestep. Kwh
-        
+
+        # PV switch (see EnvConfig): 'auto' (legacy self-consumption rule), 'off' or 'agent' (PV dispatch actions).
+        pv_config = dict(env_config['pv_config'] or {})
+        include_pv = env_config['include_pv']
+        if include_pv is None:
+            self.pv_mode = 'auto'
+        elif include_pv:
+            if not pv_config.get('capacity_kWp', 0) > 0:
+                raise ValueError("include_pv=True needs an on-site PV array: set pv_config.capacity_kWp > 0 "
+                                 f"(got {pv_config.get('capacity_kWp', 0)!r}).")
+            self.pv_mode = 'agent'
+        else:
+            self.pv_mode = 'off'
+            pv_config['capacity_kWp'] = 0
+        self.include_pv = self.pv_mode == 'agent'
+        self.bat_env.set_pv_dispatch(self.include_pv, resell_credit=env_config['pv_resell_credit'])
+
         self._obs_space_in_preferred_format = True
         
         self.observation_space = []
@@ -247,8 +278,8 @@ class SustainDC(gym.Env):
         self.ci_m = CI_Manager(init_day=self.init_day, location=ci_loc, filename=self.ci_file, future_steps=n_vars_ci, timezone_shift=self.timezone_shift,
                                utc_offset_hours=utc_offset)
         # On-site PV from the same EPW file as the weather manager (and kept in sync with its random day roll).
-        self.pv_m = PV_Manager(wea_loc, pv_config=env_config['pv_config'], init_day=self.init_day, timezone_shift=self.timezone_shift)
-        self.bat_env.pv_export_credit = bool(env_config['pv_export_credit'])
+        self.pv_m = PV_Manager(wea_loc, pv_config=pv_config, init_day=self.init_day, timezone_shift=self.timezone_shift)
+        self.bat_env.pv_export_credit = bool(env_config['pv_export_credit']) and self.pv_mode == 'auto'
 
         # This actions_are_logits is True only for MADDPG if continuous actions is used on the algorithm.
         self.actions_are_logits = env_config.get("actions_are_logits", False)

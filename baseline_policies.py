@@ -226,6 +226,9 @@ class BatOracle:
 
     def init(self, sdc):
         bat = sdc.bat_env
+        if bat.pv_dispatch:
+            raise NotImplementedError('BatOracle models the automatic PV rule (include_pv unset), not the PV dispatch '
+                                      'actions of include_pv=True.')
         self.battery = bat.battery
         self.cap = float(bat.max_bat_cap)
         # With pv_export_credit, PV stored in the battery is PV not exported: it loses the export credit.

@@ -65,13 +65,14 @@ STEP_HOURS = 0.25  # 15-minute steps
 # Config keys that define the simulated scenario. Policies may differ in observation settings, not in these.
 SCENARIO_KEYS = ['location', 'month', 'days_per_episode', 'workload_file', 'cintensity_file', 'weather_file',
                  'flexible_load', 'max_bat_cap_Mw', 'dc_config_file', 'datacenter_capacity_mw', 'timezone_shift',
-                 'pv_config', 'pv_export_credit', 'battery_config']
+                 'pv_config', 'pv_export_credit', 'include_pv', 'pv_resell_credit', 'battery_config']
 
 METRICS = [  # (name, unit)
     ('co2', 'kgCO2'),
     ('total_energy', 'MWh'),   # grid energy incl. battery charging/discharging (net of on-site PV)
     ('pv_energy', 'MWh'),      # on-site PV generation
     ('pv_curtailed', 'MWh'),   # PV surplus not used by the DC or the battery (curtailed or exported)
+    ('pv_exported', 'MWh'),    # PV sold to the grid (pv_export_credit, or the 'resell' PV action with include_pv)
     ('it_energy', 'MWh'),
     ('hvac_energy', 'MWh'),
     ('water', 'L'),
@@ -116,6 +117,7 @@ class SB3Policy:
         self.include_dc_setpoint = bool(self.train_config.get('include_dc_setpoint', False))
         self.include_pv_obs = bool(self.train_config.get('include_pv_obs', False))
         self.action_type = self.train_config.get('action_type', 'multidiscrete')
+        self.include_pv = bool(self.train_config.get('include_pv') or False)
         model_path = os.path.join(run_dir, 'models', model_name)
         self.model = ALGOS[cfg['main_args']['algo']].load(model_path, device='cpu')
         self.normalize = load_obs_normalizer(model_path)  # VecNormalize stats saved with the model, if any
@@ -126,7 +128,7 @@ class SB3Policy:
     def act(self, sdc):
         obs = build_joint_obs(sdc.ls_state, sdc.dc_state, sdc.bat_state, self.include_dc_setpoint, self.include_pv_obs)
         action, _ = self.model.predict(self.normalize(obs), deterministic=True)
-        return decode_joint_action(action, self.action_type)
+        return decode_joint_action(action, self.action_type, self.include_pv)
 
 
 class HARLPolicy:
@@ -158,7 +160,11 @@ class HARLPolicy:
         obs_dims = {'agent_ls': 26 + n_pv, 'agent_dc': 14 + int(self.include_dc_setpoint) + n_pv, 'agent_bat': 13 + n_pv}
         self.pad_dim = max(obs_dims[a] for a in self.agents)
         obs_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.pad_dim,), dtype=np.float32)
-        act_space = spaces.Discrete(3)
+        # With include_pv the battery agent has 9 actions (battery x PV); supersuit pads every agent to the largest.
+        include_pv = bool(self.train_config.get('include_pv') or False)
+        self.n_actions = {a: 9 if (a == 'agent_bat' and include_pv) else 3 for a in self.agents}
+        self.pad_actions = max(self.n_actions.values())
+        act_space = spaces.Discrete(self.pad_actions)
 
         self.actors = []
         for i, _ in enumerate(self.agents):
@@ -191,14 +197,17 @@ class HARLPolicy:
         masks = np.ones((1, 1), dtype=np.float32)
         for i, (agent, actor) in enumerate(zip(self.agents, self.actors)):
             obs = self._obs(sdc, agent)
+            n = self.n_actions[agent]
+            avail = np.array([[1] * n + [0] * (self.pad_actions - n)], dtype=np.float32)
             if self.algo in self.ON_POLICY:
-                a, rnn = actor.act(obs, self.rnn_states[i], masks, None, deterministic=True)
+                a, rnn = actor.act(obs, self.rnn_states[i], masks, avail, deterministic=True)
                 self.rnn_states[i] = rnn.cpu().numpy() if torch.is_tensor(rnn) else rnn
             elif self.algo == 'hasac':
                 a = actor.get_actions(obs, None, stochastic=False)
             else:  # had3qn
                 a = actor.get_actions(obs, epsilon_greedy=False)
-            actions[agent] = int(np.asarray(a.cpu() if torch.is_tensor(a) else a).reshape(-1)[0])
+            a = int(np.asarray(a.cpu() if torch.is_tensor(a) else a).reshape(-1)[0])
+            actions[agent] = a if a < n else 0  # padded actions map to 0, as supersuit does in training
         return actions
 
 
@@ -267,6 +276,7 @@ def run_episode(sdc, policy, seed):
         m['total_energy'] += i['bat_total_energy_with_battery_KWh'] / 1e3
         m['pv_energy'] += i['pv_energy_KWh'] / 1e3
         m['pv_curtailed'] += (i['pv_curtailed_KWh'] + i['pv_exported_KWh']) / 1e3
+        m['pv_exported'] += i['pv_exported_KWh'] / 1e3
         m['it_energy'] += i['dc_ITE_total_power_kW'] * STEP_HOURS / 1e3
         m['hvac_energy'] += i['dc_HVAC_total_power_kW'] * STEP_HOURS / 1e3
         m['water'] += i['dc_water_usage']
@@ -416,6 +426,9 @@ def main():
     p.add_argument('--days_per_episode', type=int, default=None)
     p.add_argument('--pv_capacity_kWp', type=float, default=None,
                    help="Override the env config's on-site PV capacity (pv_config.capacity_kWp; 0 = no PV).")
+    p.add_argument('--include_pv', action=argparse.BooleanOptionalAction, default=None,
+                   help="--include_pv: PV on, dispatched by the battery agent's PV action (use/battery/resell; "
+                        "needs --pv_capacity_kWp > 0). --no-include_pv: no PV. Default: the env yaml (automatic PV rule).")
     p.add_argument('--out_dir', default=None, help='Default: results/eval_compare/<timestamp>')
     args = p.parse_args()
     torch.set_num_threads(1)
@@ -432,6 +445,8 @@ def main():
             scenario[key] = getattr(args, key)
     if args.pv_capacity_kWp is not None:
         scenario['pv_config'] = {**scenario.get('pv_config', {}), 'capacity_kWp': args.pv_capacity_kWp}
+    if args.include_pv is not None:
+        scenario['include_pv'] = args.include_pv
     seeds = [args.seed + i for i in range(args.n_episodes)]
 
     policies = [make_policy(s) for s in expand_specs(args.policy)]
