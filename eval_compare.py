@@ -25,6 +25,8 @@ Policy specs:
     mpc[:<params>]                MPC with a terminal value, e.g. mpc:H=16,value=<value.npz>,forecast=realistic
                                   (see mpc_value.py)
     setpoint:<C>                  hold the CRAC setpoint at <C>, everything else does nothing
+    mpc_joint[:<params>]          MPC (CEM over the joint action) on a simulator clone, e.g. mpc_joint:horizon=96,
+                                  mpc_joint:forecast=persistence (past data only), mpc_joint:workers=8 (see mpc_policy.py)
 Add =<label> to any spec to name it in the table, e.g. harl:<dir>=happo. See baseline_policies.py for the controllers.
 
 Each policy is compared with `noop` episode by episode (paired), which removes the episode-to-episode variation:
@@ -35,6 +37,7 @@ Several result folders (e.g. from parallel jobs on the same seeds) can be merged
     python eval_compare.py --combine results/eval_compare/a results/eval_compare/b --out_dir results/eval_compare/all
 """
 import argparse
+import csv
 import datetime
 import glob
 import hashlib
@@ -199,18 +202,23 @@ class HARLPolicy:
         return actions
 
 
+PARAM_SEGMENT = {'rule': 2, 'oracle': 2, 'mpc': 1, 'mpc_joint': 1}  # ':'-separated segment holding key=value parameters
+
+
 def split_label(spec):
-    """'<spec>=<label>' -> (spec, label). Controller parameters also use '=' (rule:ls:ls_hi=0.8), so the label is the
-    text after the last '=' unless that text is a parameter value: a number, an MPC keyword or a .npz path."""
-    from mpc_value import PARAM_WORDS
-    head, sep, tail = spec.rpartition('=')
-    if not sep or tail in PARAM_WORDS or tail.endswith('.npz'):
+    """Split '<spec>=<label>' into (spec, label). In a key=value parameter list the label is after an extra '=' on the
+    last parameter (rule:bat:bat_lo=0.2=lbl, mpc:value=v.npz=lbl, mpc_joint:forecast=persistence=lbl); otherwise
+    after the first '='."""
+    segments = spec.split(':')
+    idx = PARAM_SEGMENT.get(segments[0])
+    if idx is not None and len(segments) > idx:
+        last = segments[idx].split(',')[-1]
+        if last.count('=') >= 2:
+            body, _, label = spec.rpartition('=')
+            return body, label
         return spec, ''
-    try:
-        float(tail)
-        return spec, ''
-    except ValueError:
-        return head, tail
+    body, _, label = spec.partition('=')
+    return body, label
 
 
 def make_policy(spec):
@@ -231,6 +239,9 @@ def make_policy(spec):
     elif kind == 'mpc':
         from mpc_value import make_mpc_policy
         policy = make_mpc_policy(rest)
+    elif kind == 'mpc_joint':
+        from mpc_policy import make_mpc_policy as make_joint_mpc_policy
+        policy = make_joint_mpc_policy(rest)
     else:
         raise ValueError(f'Unknown policy spec {spec!r}')
     return label or spec, policy
@@ -351,17 +362,28 @@ def paired_report(results, seeds, base='noop'):
     return report
 
 
+def read_episodes_csv(path):
+    """Rows of an episodes.csv as dicts. Older files wrote labels unquoted, so a label with commas (rule:ls,dc,bat)
+    spilled into extra columns; the label is the only field that can contain commas, so those rows are rejoined."""
+    with open(path, newline='') as f:
+        reader = csv.reader(f)
+        header = next(reader)
+        for row in reader:
+            extra = len(row) - len(header)
+            if extra > 0:
+                row = [','.join(row[:extra + 1])] + row[extra + 1:]
+            yield dict(zip(header, row))
+
+
 def combine(dirs, out_dir):
     """Merge episodes.csv files from several eval_compare runs on the same seeds and report them together."""
-    import csv
     results, fps, seeds = {}, {}, None
     for d in dirs:
-        with open(os.path.join(d, 'episodes.csv')) as f:
-            for row in csv.DictReader(f):
-                label = row['policy']
-                # Metrics added later (e.g. PV) are missing from older CSVs: read them as 0.
-                results.setdefault(label, {})[int(row['seed'])] = {n: float(row.get(n, 0.0)) for n, _ in METRICS}
-                fps.setdefault(int(row['seed']), set()).add(row['inputs_fingerprint'])
+        for row in read_episodes_csv(os.path.join(d, 'episodes.csv')):
+            label = row['policy']
+            # Metrics added later (e.g. PV) are missing from older CSVs: read them as 0.
+            results.setdefault(label, {})[int(row['seed'])] = {n: float(row.get(n, 0.0)) for n, _ in METRICS}
+            fps.setdefault(int(row['seed']), set()).add(row['inputs_fingerprint'])
     seeds = sorted(next(iter(results.values())))
     if any(sorted(r) != seeds for r in results.values()):
         raise ValueError('Policies were evaluated on different seeds; cannot combine.')
@@ -424,8 +446,10 @@ def main():
     results, fingerprints = {}, {}
     for label, pol in policies:
         # Observation flags follow the policy; everything that shapes the episode comes from the scenario.
-        sdc = SustainDC({**scenario, 'agents': list(AGENTS), 'include_dc_setpoint': pol.include_dc_setpoint,
-                         'include_pv_obs': pol.include_pv_obs})
+        # Controllers that read the simulator directly need no observation flags (default off).
+        sdc = SustainDC({**scenario, 'agents': list(AGENTS),
+                         'include_dc_setpoint': getattr(pol, 'include_dc_setpoint', False),
+                         'include_pv_obs': getattr(pol, 'include_pv_obs', False)})
         results[label], fingerprints[label] = [], []
         for seed in seeds:
             m, fp = run_episode(sdc, pol, seed)
@@ -459,11 +483,12 @@ def main():
 
     out_dir = args.out_dir or os.path.join('results', 'eval_compare', datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
     os.makedirs(out_dir, exist_ok=True)
-    with open(os.path.join(out_dir, 'episodes.csv'), 'w') as f:
-        f.write('policy,seed,' + ','.join(n for n, _ in METRICS) + ',inputs_fingerprint\n')
+    with open(os.path.join(out_dir, 'episodes.csv'), 'w', newline='') as f:
+        writer = csv.writer(f)  # quotes labels containing commas, e.g. rule:ls,dc,bat
+        writer.writerow(['policy', 'seed'] + [n for n, _ in METRICS] + ['inputs_fingerprint'])
         for label, eps in results.items():
             for seed, e, fp in zip(seeds, eps, fingerprints[label]):
-                f.write(f'{label},{seed},' + ','.join(f'{e[n]:.6g}' for n, _ in METRICS) + f',{fp}\n')
+                writer.writerow([label, seed] + [f'{e[n]:.6g}' for n, _ in METRICS] + [fp])
     with open(os.path.join(out_dir, 'summary.json'), 'w') as f:
         json.dump({'scenario': scenario, 'seeds': seeds, 'policies': args.policy,
                    'inputs_identical': same_inputs, 'summary': summary, 'paired_vs_noop': paired}, f, indent=2)
