@@ -20,6 +20,16 @@ Subsystems (the CO2 is additive and the subsystems are almost decoupled, so each
 Costs are in kg CO2. The energy model is IT + HVAC energy as a quadratic in CPU utilization, fitted each step from
 baseline_policies.dc_power at the current weather and the cooling setpoint.
 
+On-site PV (pv_config.capacity_kWp > 0). The mode is read from the env (pv_setup):
+* automatic rule (include_pv unset): PV serves the DC first, its surplus charges the battery whatever the action. The
+  battery DP uses battery_transition with the PV forecast; load shifting pays only the energy PV does not cover.
+* PV actions (include_pv=True): the battery DP chooses among the 9 (battery, PV) actions with
+  battery_dispatch_transition, the step's CO2 being grid import x CI - resold PV x pv_resell_credit x CI; load
+  shifting pays the better of using the PV for the load and reselling it (grid_co2_kg).
+PV forecast (pv_forecast): realistic = the true PV of the current step and the next 4 h (what the agents observe with
+include_pv_obs), then yesterday's profile; perfect = the true PV. Values trained with PV add the PV context features
+(current PV and next-4 h mean, / AC rating) to the context; their value.npz has pv_ctx = 1.
+
 Forecasts (`forecast=`):
 * realistic (default): what the agents observe. Carbon intensity (CI): the current value and the next 8 steps (the
   env's CI forecast), then yesterday's profile anchored on the last known value. Workload: the current and next step
@@ -50,11 +60,13 @@ Policy spec for eval_compare.py:  mpc[:key=value,...], e.g.
 keys: H (horizon steps, 16), value (none|naive|<npz>, naive), forecast (realistic|perfect), dc_setpoint (15),
       samples (CEM samples, 256), iters (CEM iterations, 3), explore (probability of a random action, 0).
 """
+import json
 import math
 
 import numpy as np
 
-from baseline_policies import NOOP, DAY, battery_transition, dc_power, setpoint_action
+from baseline_policies import NOOP, DAY, battery_dispatch_transition, battery_transition, dc_power, setpoint_action
+from envs.bat_env_fwd_view import combine_bat_pv_action
 
 AGE_BINS = 98          # queue counts by age in steps 0..96; bin 97 holds overdue tasks (older than 24 h)
 OVERDUE = AGE_BINS - 1
@@ -64,6 +76,8 @@ from sdc_eval.constants import DROPPED_TASK_CO2_FACTOR as DROP_PENALTY  # droppe
 KNOWN_CI_STEPS = 8     # the env's CI forecast length (n_vars_ci)
 FORECAST_DECAY = 16.0  # steps over which a forecast blends from the anchor value into yesterday's profile
 BAT_ACTION_IDS = {'charge': 0, 'discharge': 1, 'idle': 2}
+PV_ACTION_IDS = {'use': 0, 'battery': 1, 'resell': 2}  # include_pv=True (envs/bat_env_fwd_view.PV_ACTIONS)
+KNOWN_PV_STEPS = 16    # PV the agents observe with include_pv_obs: the current step and the next 4 h
 
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -168,15 +182,75 @@ def forecasts(sdc, horizon, mode):
     return ci, wl, np.asarray(ci_all[t_ci - DAY:t_ci], float), np.asarray(wl_all[t_wl - DAY:t_wl], float)
 
 
-def context_features(hour, ci_win, wl_win, ci_scale):
-    """Exogenous context of a state at a given hour: the CI and workload of the 96 steps before it."""
+def pv_setup(sdc):
+    """(mode, resell_credit, export_credit) of the env's on-site PV. mode: 'off' (no PV generated), 'auto' (the
+    self-consumption rule) or 'agent' (include_pv=True: the battery agent's PV action)."""
+    pv_m = getattr(sdc, 'pv_m', None)
+    mode = getattr(sdc, 'pv_mode', 'auto')
+    if pv_m is None or not pv_m.enabled or mode == 'off':
+        return 'off', 0.0, False
+    bat = sdc.bat_env
+    return mode, float(getattr(bat, 'pv_resell_credit', 1.0)), bool(getattr(bat, 'pv_export_credit', False))
+
+
+def pv_forecast(sdc, horizon, mode):
+    """On-site PV energy (kWh per step) for the steps t..t+horizon-1. realistic: the true values for the steps the
+    agents observe with include_pv_obs (current + next 4 h), then yesterday's profile at the same time of day
+    (repeated for later days); perfect: the true values."""
+    pv_m = sdc.pv_m
+    series = np.asarray(pv_m.pv_kw, float) * 0.25
+    t = pv_m.time_step
+    k = np.arange(horizon)
+    known = horizon if mode == 'perfect' else min(horizon, 1 + KNOWN_PV_STEPS)
+    idx = np.where(k < known, t + k, t - DAY + k % DAY)
+    out = series[idx % len(series)]
+    out[0] = float(sdc.bat_env.pv_kw) * 0.25
+    return out
+
+
+def grid_co2_kg(e_kwh, ci, pv_kwh, pv=('off', 0.0, False)):
+    """CO2 (kg) of serving e_kwh of DC energy with the battery idle, in steps with pv_kwh of PV (arrays broadcast).
+    auto: PV first serves the DC (surplus curtailed, or credited if export_credit); agent: the better of 'use'
+    (PV serves the DC, surplus curtailed) and 'resell' (all PV credited at resell_credit x CI)."""
+    mode, credit, export = pv
+    e = np.asarray(e_kwh, float)
+    if mode == 'off':
+        return e * ci / 1e3
+    net = np.maximum(e - pv_kwh, 0.0)
+    if mode == 'auto':
+        cost = net - (np.maximum(pv_kwh - e, 0.0) if export else 0.0)
+    else:
+        cost = np.minimum(net, e - credit * pv_kwh)
+    return cost * ci / 1e3
+
+
+def marginal_task_co2_kg(coef, u, ci, pv_kwh, pv=('off', 0.0, False)):
+    """CO2 (kg) of one more task (1 % utilization for one step) at utilization u, with the step's PV."""
+    if pv[0] == 'off':
+        return task_kwh(coef, u) * ci / 1e3
+    return float(grid_co2_kg(energy_kwh(coef, u + 0.01), ci, pv_kwh, pv) - grid_co2_kg(energy_kwh(coef, u), ci, pv_kwh, pv))
+
+
+def pv_context(pv_kwh, rating_kwh):
+    """PV features of a state from the PV of its next 17 steps (kWh): current and next-4 h mean, / AC rating."""
+    pv_kwh = np.asarray(pv_kwh, float)
+    return np.array([pv_kwh[0], pv_kwh[1:1 + KNOWN_PV_STEPS].mean()]) / rating_kwh
+
+
+def context_features(hour, ci_win, wl_win, ci_scale, pv_ctx=None):
+    """Exogenous context of a state at a given hour: the CI and workload of the 96 steps before it, plus the PV
+    features (pv_context) when the run has PV."""
     s = ci_scale
     h = 2 * np.pi * hour / 24
     hours_since_min = (DAY - int(np.argmin(ci_win))) / 4
     m = 2 * np.pi * hours_since_min / 24
-    return np.array([np.sin(h), np.cos(h), ci_win.mean() / s, ci_win.std() / s, ci_win[-1] / s, ci_win.min() / s,
-                     ci_win.max() / s, (ci_win[-1] - ci_win[-5]) / s, np.sin(m), np.cos(m),
-                     wl_win.mean(), wl_win[-1]])
+    ctx = np.array([np.sin(h), np.cos(h), ci_win.mean() / s, ci_win.std() / s, ci_win[-1] / s, ci_win.min() / s,
+                    ci_win.max() / s, (ci_win[-1] - ci_win[-5]) / s, np.sin(m), np.cos(m),
+                    wl_win.mean(), wl_win[-1]])
+    return ctx if pv_ctx is None else np.concatenate([ctx, pv_ctx])
+
+
+N_BASE_CTX = 12  # context_features without PV
 
 
 def queue_features(q):
@@ -249,8 +323,18 @@ class LearnedValue(ZeroValue):
         self.form = str(params.get('form', 'mlp'))
         self.v_ls, self.v_bat = MLP(params, 'ls_'), MLP(params, 'bat_')
         self.ci_scale = float(params['ci_scale'])
+        # Values trained with PV take the PV context features (files from before PV support have no flag).
+        self.pv_ctx = bool(params.get('pv_ctx', False))
+        self.scenario = json.loads(str(params['scenario'])) if 'scenario' in params else {}
+
+    def _ctx(self, ctx):
+        """The context this value was trained on: a value trained without PV ignores the PV features."""
+        if self.pv_ctx and len(ctx) == N_BASE_CTX:
+            raise ValueError(f'{self.name} was trained with on-site PV; evaluate it on a scenario with PV.')
+        return ctx if self.pv_ctx else ctx[:N_BASE_CTX]
 
     def ls(self, q, ctx, ci_win, coef, u):
+        ctx = self._ctx(ctx)
         q = np.atleast_2d(q)
         if self.form == 'mlp':
             x = np.hstack([queue_features(q), np.repeat(ctx[None], len(q), axis=0)])
@@ -259,6 +343,7 @@ class LearnedValue(ZeroValue):
         return (counts * self.v_ls(per_task_inputs(q.sum(axis=1), ctx)).reshape(len(q), N_BUCKETS)).sum(axis=1)
 
     def bat(self, usable, ctx, ci_win, eff_discharge):
+        ctx = self._ctx(ctx)
         usable = np.asarray(usable, float)
         x = np.hstack([usable[:, None], np.repeat(ctx[None], len(usable), axis=0)])
         if self.form == 'mlp':
@@ -297,8 +382,7 @@ class MPCPolicy:
     With record=True, `self.last` holds what train_mpc_value.py needs after each act(): the value features of the
     current state and the energy model used to compute the stage costs."""
     include_dc_setpoint = False
-    include_pv_obs = False  # act() refuses PV > 0, so the PV observation features are never used
-    train_config = {}
+    include_pv_obs = False  # PV is read from the simulator (pv_forecast), not from the observations
 
     def __init__(self, H=16, value='naive', forecast='realistic', dc_setpoint=15.0, samples=256, iters=3,
                  elite_frac=0.1, smoothing=0.7, explore=0.0, bat_grid=101, record=False):
@@ -306,6 +390,8 @@ class MPCPolicy:
         self.value = make_value(value) if isinstance(value, (str, type(None))) else value
         self.samples, self.iters, self.n_elite = int(samples), int(iters), max(2, int(elite_frac * samples))
         self.smoothing, self.explore, self.bat_grid, self.record = smoothing, float(explore), int(bat_grid), record
+        # The scenario a learned value was trained on, so eval_compare.py flags a different eval scenario (e.g. PV).
+        self.train_config = dict(getattr(self.value, 'scenario', None) or {})
 
     def reset(self, seed):
         self.rng = np.random.default_rng(seed)
@@ -313,13 +399,15 @@ class MPCPolicy:
         self.last = None
 
     # -- load shifting: CEM over action sequences ----------------------------------------------------------------
-    def plan_ls(self, q0, ci, wl, coef, ls, terminal):
+    def plan_ls(self, q0, ci, wl, coef, ls, terminal, pv_kwh=None, pv=('off', 0.0, False)):
+        """CEM over load-shifting action sequences. With PV, the energy of each step costs only what PV does not
+        cover (grid_co2_kg, battery idle; the battery's use of PV is planned by plan_bat)."""
         horizon = len(ci)
         ns_frac, sh_frac, qmax = ls.non_shiftable_tasks_percentage, ls.shiftable_tasks_percentage, ls.queue_max_len
 
         def cost(plans):
             util, dropped, q_end = simulate_queue(q0, plans, wl, ns_frac, sh_frac, qmax)
-            stage = (energy_kwh(coef, util) * ci).sum(axis=1) / 1e3
+            stage = grid_co2_kg(energy_kwh(coef, util), ci, pv_kwh, pv).sum(axis=1)
             drops = DROP_PENALTY * (dropped * task_kwh(coef, util) * ci).sum(axis=1) / 1e3
             return stage + drops + terminal(q_end, util[:, -1]), util
 
@@ -349,27 +437,43 @@ class MPCPolicy:
         return int(best_plan[0]), best_util
 
     # -- battery: dynamic programming over stored energy ---------------------------------------------------------
-    def plan_bat(self, stored, battery, ci, load_mwh, terminal):
-        """Exact DP over the stored energy (MWh) in the battery's usable window, with the env's Battery limits.
-        terminal(grid) is the value of the stored energy at the end of the horizon. (PV is not modelled: act() refuses
-        to run with PV enabled.)"""
+    def plan_bat(self, stored, battery, ci, load_mwh, terminal, pv_mwh=None, pv=('off', 0.0, False)):
+        """Exact DP over the stored energy (MWh) in the battery's usable window, with the env's Battery limits and
+        PV rules. terminal(grid) is the value of the stored energy at the end of the horizon.
+        Without PV or with the automatic rule (battery_transition), the actions are the 3 battery actions and the stage
+        cost is the CO2 the battery adds to the step (plus the export credit its PV charging forgoes); with
+        include_pv (pv mode 'agent', battery_dispatch_transition) they are the 9 (battery, PV) pairs and the stage cost
+        is the step's CO2: grid import x CI - resold PV x resell_credit x CI. Costs that are the same for every
+        action do not change the plan. Returns (battery action id, PV action id or None)."""
+        mode, credit, export = pv
+        pv_mwh = np.zeros(len(ci)) if pv_mwh is None else pv_mwh
+        if mode == 'agent':
+            pairs = [(b, p) for p in PV_ACTION_IDS for b in BAT_ACTION_IDS]
+
+            def step(s, k, b, p):
+                nxt, grid_e, resold = battery_dispatch_transition(s, battery, b, p, load_mwh[k], pv_mwh[k])
+                return nxt, ci[k] * (grid_e - credit * resold)
+        else:
+            pairs = [(b, None) for b in BAT_ACTION_IDS]
+
+            def step(s, k, b, p):
+                nxt, de, from_pv = battery_transition(s, battery, b, load_mwh[k], pv_mwh[k])
+                return nxt, ci[k] * (de + (from_pv if export else 0.0))
+
         cap = battery.capacity
         grid = np.linspace(battery.soc_min * cap, battery.soc_max * cap, self.bat_grid)
         v = terminal(grid)
         for k in range(len(ci) - 1, 0, -1):
-            v = np.min([ci[k] * de + np.interp(nxt, grid, v)
-                        for nxt, de, _ in (battery_transition(grid, battery, a, load_mwh[k]) for a in BAT_ACTION_IDS)],
-                       axis=0)
+            v = np.min([c + np.interp(nxt, grid, v) for nxt, c in (step(grid, k, b, p) for b, p in pairs)], axis=0)
         costs = {}
-        for name, a_id in BAT_ACTION_IDS.items():
-            nxt, de, _ = battery_transition(np.array([stored]), battery, name, load_mwh[0])
-            costs[a_id] = float(ci[0] * de[0] + np.interp(nxt[0], grid, v))
-        return min(costs, key=costs.get)
+        for b, p in pairs:
+            nxt, c = step(np.array([stored]), 0, b, p)
+            costs[(b, p)] = float(c[0] + np.interp(nxt[0], grid, v))
+        b, p = min(costs, key=costs.get)
+        return BAT_ACTION_IDS[b], (None if p is None else PV_ACTION_IDS[p])
 
     def act(self, sdc):
         ls, bat = sdc.ls_env, sdc.bat_env
-        if getattr(sdc, 'pv_m', None) is not None and np.any(sdc.pv_m.original_pv_kw > 0):
-            raise NotImplementedError('MPCPolicy does not model on-site PV yet; run it with pv_config.capacity_kWp = 0.')
         battery = bat.battery
         floor = battery.soc_min * battery.capacity
         remaining = int(sdc.t_m.total_timesteps - sdc.t_m.current_timestep)
@@ -380,7 +484,15 @@ class MPCPolicy:
         ci_scale = getattr(self.value, 'ci_scale', None) or float(np.mean(sdc.ci_m.original_data))
         ci_win = np.concatenate([ci_past, ci])[-DAY:]
         wl_win = np.concatenate([wl_past, wl])[-DAY:]
-        ctx_end = context_features((ls.current_hour + horizon / 4) % 24, ci_win, wl_win, ci_scale)
+        pv = pv_setup(sdc)
+        if pv[0] == 'off':
+            pv_kwh, ctx_pv_now, ctx_pv_end = np.zeros(horizon), None, None
+        else:  # PV of the horizon, plus the 17 steps after it for the PV context of the state it ends in
+            pv_all = pv_forecast(sdc, horizon + 1 + KNOWN_PV_STEPS, self.forecast)
+            rating = sdc.pv_m.ac_rating_kw * 0.25
+            pv_kwh = pv_all[:horizon]
+            ctx_pv_now, ctx_pv_end = pv_context(pv_all, rating), pv_context(pv_all[horizon:], rating)
+        ctx_end = context_features((ls.current_hour + horizon / 4) % 24, ci_win, wl_win, ci_scale, ctx_pv_end)
         q0 = queue_counts(ls)
 
         if at_end:  # episode-end cost, as charged by eval_compare.py
@@ -396,21 +508,24 @@ class MPCPolicy:
             def bat_terminal(grid):
                 return self.value.bat(grid - floor, ctx_end, ci_win, battery.eff_discharge)
 
-        a_ls, util = self.plan_ls(q0, ci, wl, coef, ls, ls_terminal)
+        a_ls, util = self.plan_ls(q0, ci, wl, coef, ls, ls_terminal, pv_kwh, pv)
         stored = float(battery.current_load)
-        a_bat = self.plan_bat(stored, battery, ci, energy_kwh(coef, util) / 1e3, bat_terminal)
+        a_bat, a_pv = self.plan_bat(stored, battery, ci, energy_kwh(coef, util) / 1e3, bat_terminal,
+                                    pv_kwh / 1e3, pv)
         if self.explore > 0:
             if self.rng.random() < self.explore:
                 a_ls = int(self.rng.integers(3))
             if self.rng.random() < self.explore:
                 a_bat = int(self.rng.integers(3))
+            if a_pv is not None and self.rng.random() < self.explore:
+                a_pv = int(self.rng.integers(len(PV_ACTION_IDS)))
         if self.record:
             self.last = {
                 'queue': queue_features(q0)[0], 'q': q0, 'soc': stored - floor,  # usable stored energy (MWh)
-                'ctx': context_features(ls.current_hour, ci_past, wl_past, ci_scale),
-                'coef': coef, 'ci': float(ci[0]), 'workload': float(wl[0])}
+                'ctx': context_features(ls.current_hour, ci_past, wl_past, ci_scale, ctx_pv_now),
+                'coef': coef, 'ci': float(ci[0]), 'workload': float(wl[0]), 'pv': pv}
         return {'agent_ls': a_ls, 'agent_dc': setpoint_action(sdc.dc_env.raw_curr_stpt, self.dc_setpoint),
-                'agent_bat': a_bat}
+                'agent_bat': a_bat if a_pv is None else combine_bat_pv_action(a_bat, a_pv)}
 
 
 PARAM_WORDS = {'none', 'naive', 'realistic', 'perfect'}

@@ -192,6 +192,38 @@ def battery_transition(stored, battery, action, dc_load_mwh, pv_mwh=0.0, dt=0.25
     return stored, zeros, zeros
 
 
+def battery_dispatch_transition(stored, battery, action, pv_action, dc_load_mwh, pv_mwh, dt=0.25):
+    """Vectorized replica of BatteryEnvFwd._dispatch_step (agent-dispatched PV, SustainDC include_pv=True).
+
+    stored: stored energy (MWh, array); action: 'charge' | 'discharge' | 'idle'; pv_action: 'use' | 'battery' |
+    'resell'; dc_load_mwh / pv_mwh: this step's DC energy and PV energy (scalars).
+    Returns (next stored energy, grid import in MWh (>= 0), PV resold in MWh). The step's CO2 is
+    grid x CI - resold x pv_resell_credit x CI.
+    """
+    stored = np.asarray(stored, dtype=float)
+    load, pv = float(dc_load_mwh), float(pv_mwh)
+    zeros = np.zeros_like(stored)
+    limit = battery.charge_limit(stored, dt)
+    if pv_action == 'battery':
+        draw = limit if action == 'charge' else np.minimum(limit, pv)  # 'discharge' is overridden by PV charging
+        to_bat = np.minimum(pv, draw)
+        pv_self = np.minimum(pv - to_bat, load)
+        grid = np.maximum(load - pv_self + draw - to_bat, 0.0)
+        return stored + draw * battery.eff_charge, grid, zeros
+    pv_self = min(pv, load) if pv_action == 'use' else 0.0
+    resold = pv if pv_action == 'resell' else 0.0
+    surplus = pv - pv_self - resold
+    if action == 'charge':
+        to_bat = np.minimum(surplus, limit)
+        grid = np.maximum(load - pv_self + limit - to_bat, 0.0)
+        return stored + limit * battery.eff_charge, grid, zeros + resold
+    if action == 'discharge':
+        out = np.minimum(battery.discharge_limit(stored, dt), load - pv_self)
+        nxt = np.maximum(stored - out / battery.eff_discharge, battery.soc_min * battery.capacity)
+        return nxt, np.maximum(load - pv_self - out, 0.0), zeros + resold
+    return stored, zeros + max(load - pv_self, 0.0), zeros + resold
+
+
 BAT_ACTIONS = {0: 'charge', 1: 'discharge', 2: 'idle'}
 
 

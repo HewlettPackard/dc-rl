@@ -29,6 +29,7 @@ INFO_COLS = {
     'bat_out_kwh': 'bat_energy_out_KWh',                  # delivered to the DC
     'pv_kwh': 'pv_energy_KWh', 'pv_self_kwh': 'pv_self_consumed_KWh', 'pv_to_bat_kwh': 'pv_to_battery_KWh',
     'pv_curtailed_kwh': 'pv_curtailed_KWh', 'pv_exported_kwh': 'pv_exported_KWh',
+    'pv_action': 'pv_action',                             # 0 use, 1 battery, 2 resell; -1 = include_pv off
 }
 ACTION_COLS = {'act_ls': 'agent_ls', 'act_dc': 'agent_dc', 'act_bat': 'agent_bat'}
 
@@ -67,11 +68,12 @@ def battery_summary(df):
     the carbon intensity when charging vs discharging (arbitrage needs charge CI < discharge CI)."""
     if df.empty:
         return {}
-    ch, dis = df['act_bat'] == 0, df['act_bat'] == 1
+    bat = df['act_bat'] % 3  # with include_pv the battery agent's action is battery + 3 x PV
+    ch, dis = bat == 0, bat == 1
     moved_in, moved_out = df['bat_in_kwh'] > 1e-6, df['bat_out_kwh'] > 1e-6
     n_ep = df['seed'].nunique()
     out = {
-        'share_charge': ch.mean(), 'share_discharge': dis.mean(), 'share_idle': (df['act_bat'] == 2).mean(),
+        'share_charge': ch.mean(), 'share_discharge': dis.mean(), 'share_idle': (bat == 2).mean(),
         'charge_effective': (ch & moved_in).sum() / max(ch.sum(), 1),
         'discharge_effective': (dis & moved_out).sum() / max(dis.sum(), 1),
         'charged_mwh_per_ep': df['bat_in_kwh'].sum() / 1e3 / n_ep,
@@ -86,4 +88,7 @@ def battery_summary(df):
                                     - ((df['bat_in_kwh'] - df['pv_to_bat_kwh']).clip(lower=0) * df['ci']).sum())
         / 1e3 / n_ep,
     }
+    if 'pv_action' in df and (df['pv_action'] >= 0).any():
+        for k, name in enumerate(('use', 'battery', 'resell')):
+            out[f'share_pv_{name}'] = (df['pv_action'] == k).mean()
     return out

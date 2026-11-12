@@ -118,8 +118,9 @@ class EnvConfig(dict):
         'include_pv': None,
 
         # include_pv=True only: CO2 credit per kWh of resold PV, as a fraction of the current carbon intensity
-        # (1.0 = resold renewable energy displaces the same amount of grid energy).
-        'pv_resell_credit': 1.0,
+        # (1.0 = resold renewable energy displaces the same amount of grid energy; then every PV action is worth
+        # the same except to avoid curtailment, so the default is 0.5: export pays less than self-consumption).
+        'pv_resell_credit': 0.5,
     }
 
     def __init__(self, raw_config):

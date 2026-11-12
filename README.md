@@ -303,9 +303,9 @@ With `include_pv: True`, the battery agent picks a PV action every step:
 |---|---|
 | *use* (0) | PV supplies the DC load. A battery *charge* takes any surplus before the grid; the rest is curtailed. |
 | *battery* (1) | PV charges the battery first, up to its charge limit. A *charge* action tops it up from the grid; *discharge* is overridden, because the battery cannot charge and discharge in the same step. PV the battery cannot take supplies the DC load. |
-| *resell* (2) | All PV is sold to the grid. It is renewable energy, so it is credited against CO2 at `pv_resell_credit` × the current carbon intensity (default 1.0). The DC load and the battery then run as if there were no PV. |
+| *resell* (2) | All PV is sold to the grid. It is renewable energy, so it is credited against CO2 at `pv_resell_credit` × the current carbon intensity (default 0.5, so that using PV on site or storing it is worth more than reselling it; at 1.0 every PV action is worth the same except to avoid curtailment). The DC load and the battery then run as if there were no PV. |
 
-The battery agent's action is `battery_action + 3 × pv_action`, so actions 0–2 are the usual battery actions with PV *use*. Existing rule-based and MPC controllers therefore keep working, but they never choose *battery* or *resell*. `BatOracle` refuses to run with `include_pv: True`, because it models the automatic rule. The single-agent env gets a 4th sub-action: `MultiDiscrete([3, 3, 3, 3])`, or `Discrete(81)`. In HARL, supersuit pads every agent to 9 actions. The padded actions of the load-shifting and cooling agents are masked through the available-actions mask. `pv_export_credit` is ignored in this mode.
+The battery agent's action is `battery_action + 3 × pv_action`, so actions 0–2 are the usual battery actions with PV *use*. Existing rule-based controllers and the joint MPC (`mpc_joint`) therefore keep working, but they never choose *battery* or *resell*. The learned-value MPC (`mpc:`, `mpc_value.py`) plans with PV in both modes: with the automatic rule, and with `include_pv: True`, where its battery planner picks among all 9 battery × PV actions. Train its value with PV using `train_mpc_value.py --pv_capacity_kWp 500 [--include_pv]`. `BatOracle` refuses to run with `include_pv: True`, because it models the automatic rule. The single-agent env gets a 4th sub-action: `MultiDiscrete([3, 3, 3, 3])`, or `Discrete(81)`. In HARL, supersuit pads every agent to 9 actions. The padded actions of the load-shifting and cooling agents are masked through the available-actions mask. `pv_export_credit` is ignored in this mode.
 
 The info dict adds `pv_action` (0/1/2, or -1 when PV is not dispatched), `pv_a_t` (the action's name) and `pv_export_credit_gCO2`. Resold PV is reported in `pv_exported_KWh`. The credit is included in `bat_CO2_footprint`, and so in `co2_team_reward`. The default rewards use grid energy only (`bat_total_energy_with_battery_KWh`), so they see *resell* as plain grid import and give it no credit. Use `co2_team_reward` when resale should pay off.
 
@@ -313,7 +313,7 @@ The info dict adds `pv_action` (0/1/2, or -1 when PV is not dispatched), `pv_a_t
 
 **Overriding from the command line.**
 - HARL: pass keys directly, e.g. `--capacity_kWp 500 --include_pv_obs True`.
-- `train_single_agent.py` and `eval_compare.py`: use `--pv_capacity_kWp 500`. Both take `--include_pv` / `--no-include_pv`. `train_single_agent.py` also takes `--include_pv_obs`.
+- `train_single_agent.py`, `train_mpc_value.py` and `eval_compare.py`: use `--pv_capacity_kWp 500`. All three take `--include_pv` / `--no-include_pv`. `train_single_agent.py` also takes `--include_pv_obs`.
 - Example: `python train_single_agent.py --pv_capacity_kWp 1000 --include_pv --include_pv_obs` (HARL: `--capacity_kWp 1000 --include_pv True --include_pv_obs True`).
 
 

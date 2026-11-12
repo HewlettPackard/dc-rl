@@ -46,8 +46,11 @@ METRIC_SPECS = [
     Metric('return_ls', '-', False, 'sum of the load-shifting agent\'s own reward'),
     Metric('return_dc', '-', False, 'sum of the cooling agent\'s own reward'),
     Metric('return_bat', '-', False, 'sum of the battery agent\'s own reward'),
-] + [Metric(f'act_{a[6:]}_{k}', 'share', None, f'share of steps where {a} took action {k}')
-     for a in AGENTS for k in range(N_ACTIONS)]
+] + [Metric(f'act_{a[6:]}_{k}', 'share', None, f'share of steps where {a} took action {k}'
+            + (' (its battery sub-action with include_pv)' if a == 'agent_bat' else ''))
+     for a in AGENTS for k in range(N_ACTIONS)] + [
+    Metric(f'act_pv_{k}', 'share', None, f'share of steps with PV action {k} ({name}); 0 without include_pv')
+    for k, name in enumerate(('use', 'battery', 'resell'))]
 
 METRICS = [(m.name, m.unit) for m in METRIC_SPECS]  # (name, unit), the historical eval_compare.py format
 METRIC_NAMES = [m.name for m in METRIC_SPECS]
@@ -75,6 +78,7 @@ class EpisodeAccumulator:
         self.record_inputs = record_inputs
         self.exo = []
         self.act_counts = np.zeros((len(AGENTS), N_ACTIONS))
+        self.pv_counts = np.zeros(N_ACTIONS)
         self.n_actions = 0
         self.has_rewards = False
         self.bat_capacity = 0.0
@@ -108,7 +112,10 @@ class EpisodeAccumulator:
         if actions is not None:
             for k, agent in enumerate(AGENTS):
                 if agent in actions:
-                    self.act_counts[k, int(actions[agent])] += 1
+                    # With include_pv the battery action is battery + 3 x PV (envs/bat_env_fwd_view.py)
+                    self.act_counts[k, int(actions[agent]) % N_ACTIONS] += 1
+            if i.get('pv_action', -1) >= 0:
+                self.pv_counts[int(i['pv_action'])] += 1
             self.n_actions += 1
         if rewards is not None:
             r_ls, r_dc, r_bat = (float(r) for r in rewards)
@@ -147,6 +154,9 @@ class EpisodeAccumulator:
         for k, agent in enumerate(AGENTS):
             for a in range(N_ACTIONS):
                 m[f'act_{agent[6:]}_{a}'] = (self.act_counts[k, a] / self.n_actions) if self.n_actions else float('nan')
+        n_pv = self.pv_counts.sum()
+        for a in range(N_ACTIONS):
+            m[f'act_pv_{a}'] = self.pv_counts[a] / n_pv if n_pv else 0.0
         m['steps'] = steps
         return m
 

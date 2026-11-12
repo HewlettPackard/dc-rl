@@ -99,12 +99,17 @@ def collect_episode(job):
         _, _, _, truncs, info = sdc.step(actions)
         i = info['agent_ls']
         acc.step(i, actions, (sdc.ls_reward, sdc.dc_reward, sdc.bat_reward))
-        ci, coef = i['bat_avg_CI'], last['coef']
+        ci, coef, pv = i['bat_avg_CI'], last['coef'], last['pv']
         u, w = i['ls_shifted_workload'], i['ls_original_workload']
-        d_ls = ci * (M.energy_kwh(coef, u) - M.energy_kwh(coef, w)) / 1e3
+        pv_kwh = i.get('pv_energy_KWh', 0.0)  # the PV of this step
+        # Load shifting: CO2 of the executed vs submitted energy with this step's PV, battery idle (no PV: E x CI).
+        d_ls = float(M.grid_co2_kg(M.energy_kwh(coef, u), ci, pv_kwh, pv) - M.grid_co2_kg(M.energy_kwh(coef, w), ci, pv_kwh, pv))
         d_ls += M.DROP_PENALTY * i['ls_tasks_dropped'] * M.task_kwh(coef, u) * ci / 1e3
-        d_bat = ci * (i['bat_total_energy_with_battery_KWh'] - i['bat_total_energy_without_battery_KWh']) / 1e3
-        task_cost = M.task_kwh(coef, u) * ci / 1e3  # kg CO2 of one task run at this step
+        # Battery: the step's CO2 minus that of the same load with the battery idle (and PV used as in grid_co2_kg).
+        load_kwh = i['bat_total_energy_without_battery_KWh']
+        d_bat = i['bat_CO2_footprint'] / 1e3 -float(M.grid_co2_kg(load_kwh, ci, pv_kwh, pv)) if pv[0] != 'off' \
+            else ci * (i['bat_total_energy_with_battery_KWh'] - load_kwh) / 1e3
+        task_cost = M.marginal_task_co2_kg(coef, u, ci, pv_kwh, pv)  # kg CO2 of one more task run at this step
         for k, v in (('queue', last['queue']), ('q', last['q']), ('soc', last['soc']), ('ctx', last['ctx']),
                      ('d_ls', d_ls), ('d_bat', d_bat), ('task_cost', task_cost), ('ci', ci)):
             rec[k].append(v)
@@ -215,7 +220,7 @@ def per_unit_targets(ep):
                 ys.append((csum[hi] - csum[lo]) / (hi - lo))
                 ws.append(hi - lo)
     xs = np.array(xs, dtype=float).reshape(-1, 3)
-    x_ls = M.per_task_inputs(xs[:, 1], ctx[xs[:, 2].astype(int)]) if len(xs) else np.zeros((0, M.N_BUCKETS + 13))
+    x_ls = M.per_task_inputs(xs[:, 1], ctx[xs[:, 2].astype(int)]) if len(xs) else np.zeros((0, M.N_BUCKETS + 1 + ctx.shape[1]))
     # per_task_inputs returns all buckets per row; keep the one of each sample
     if len(xs):
         x_ls = x_ls.reshape(len(xs), M.N_BUCKETS, -1)[np.arange(len(xs)), xs[:, 0].astype(int)]
@@ -335,6 +340,11 @@ def main():
     p.add_argument('--location', required=True)
     p.add_argument('--month', type=int, default=None, help='Default: the env config month (6, July).')
     p.add_argument('--days_per_episode', type=int, default=30)
+    p.add_argument('--pv_capacity_kWp', type=float, default=None,
+                   help="On-site PV capacity (pv_config.capacity_kWp; 0 = no PV). Default: the env yaml.")
+    p.add_argument('--include_pv', action=argparse.BooleanOptionalAction, default=None,
+                   help="--include_pv: PV on and dispatched by the battery's PV action (use/battery/resell; needs "
+                        "--pv_capacity_kWp > 0). --no-include_pv: no PV. Default: the env yaml (automatic PV rule).")
     p.add_argument('--exp_name', default='mpc_value')
     p.add_argument('--run_id', default=None, help='Run directory suffix (default: a timestamp).')
     p.add_argument('--out_root', default=None, help='Output root (default: $SDC_OUT_ROOT if set, else ./results).')
@@ -371,11 +381,17 @@ def main():
     scenario['days_per_episode'] = args.days_per_episode
     if args.month is not None:
         scenario['month'] = args.month
+    if args.pv_capacity_kWp is not None:
+        scenario['pv_config'] = {**(scenario.get('pv_config') or {}), 'capacity_kWp': args.pv_capacity_kWp}
+    if args.include_pv is not None:
+        scenario['include_pv'] = args.include_pv
     explicit = explicit_dests(p, sys.argv[1:])
+    env_flags = {'location': 'location', 'days_per_episode': 'days_per_episode', 'month': 'month',
+                 'pv_capacity_kWp': 'pv_config', 'include_pv': 'include_pv'}
     hp = resolve_hparams(
         {'env': scenario, 'algo': {k: getattr(args, k) for k in ALGO_KEYS}}, args.config, args.overrides,
         explicit=[('algo', k) for k in ALGO_KEYS if k in explicit] +
-                 [('env', k) for k in ('location', 'days_per_episode', 'month') if k in explicit])
+                 [('env', key) for flag, key in env_flags.items() if flag in explicit])
     scenario = hp['env']
     for k, v in hp['algo'].items():
         setattr(args, k, v)
@@ -454,7 +470,7 @@ def main():
                 log_fits(rl, fit_log, env_steps)
                 history.append(entry)
                 path = os.path.join(out_dir, f'value_iter{it + 1}.npz')
-                np.savez(path, **params)
+                np.savez(path, **params, **value_meta(scenario, results))
                 value = path
                 with open(os.path.join(out_dir, 'history.json'), 'w') as f:
                     json.dump(history, f, indent=2)
@@ -480,7 +496,7 @@ def main():
             log_fits(rl, [f for f in fit_log if f['fit'] == args.fits - 1], env_steps)  # the last fit of each head
             history.append(entry)
             path = os.path.join(out_dir, f'value_iter{it + 1}.npz')
-            np.savez(path, **params)
+            np.savez(path, **params, **value_meta(scenario, results))
             value = path
             with open(os.path.join(out_dir, 'history.json'), 'w') as f:
                 json.dump(history, f, indent=2)
@@ -503,6 +519,16 @@ def main():
         print(f'Saved {out_dir}/value.npz')
     else:
         print('The naive value was best (or no evaluation passed the drop guard); no value.npz saved.')
+
+
+def value_meta(scenario, results):
+    """Saved with each value: pv_ctx (its context has the PV features, mpc_value.LearnedValue) and the training
+    scenario (eval_compare.py warns when a policy is evaluated on a different one)."""
+    import mpc_value as M
+    from sdc_eval.constants import SCENARIO_KEYS
+    pv_ctx = int(results[0][0]['ctx'].shape[1] > M.N_BASE_CTX)
+    trained = {k: scenario.get(k) for k in SCENARIO_KEYS if k in scenario}
+    return {'pv_ctx': np.array(pv_ctx), 'scenario': np.array(json.dumps(trained))}
 
 
 def save_value(out_dir, value):

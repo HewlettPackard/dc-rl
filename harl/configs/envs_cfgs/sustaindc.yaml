@@ -51,5 +51,6 @@ pv_export_credit: False
 # capacity_kWp > 0) and the battery agent picks a PV action every step: use (supply the DC), battery (charge the
 # battery) or resell (sell to the grid, credited against CO2 at the current CI). Its action space becomes Discrete(9).
 include_pv: null
-# include_pv True only: CO2 credit of resold PV, as a fraction of the current CI.
-pv_resell_credit: 1.0
+# include_pv True only: CO2 credit of resold PV, as a fraction of the current CI. Below 1 so that using PV on
+# site or storing it beats reselling it (at 1.0 every PV action is worth the same except to avoid curtailment).
+pv_resell_credit: 0.5

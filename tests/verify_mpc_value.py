@@ -75,16 +75,16 @@ pol = M.MPCPolicy(H=8, value='none')
 pol.reset(0)
 ci = np.array([100.0] * 4 + [500.0] * 4)
 floor = bt.soc_min * bt.capacity
-a = pol.plan_bat(floor, bt, ci, np.full(8, 1.0), lambda g: np.zeros(len(g)))
+a, _ = pol.plan_bat(floor, bt, ci, np.full(8, 1.0), lambda g: np.zeros(len(g)))
 check("charges ahead of a CI peak inside the horizon", a == M.BAT_ACTION_IDS['charge'], f"action {a}")
 # full battery, 4-step horizon: at the 0.5C power limit it cannot empty unless it starts now
 full = bt.soc_max * bt.capacity
-a = pol.plan_bat(full, bt, np.full(4, 300.0), np.full(4, 1.0), lambda g: np.zeros(len(g)))
+a, _ = pol.plan_bat(full, bt, np.full(4, 300.0), np.full(4, 1.0), lambda g: np.zeros(len(g)))
 check("with no terminal value, discharges stored energy (it looks worthless after the horizon)",
       a == M.BAT_ACTION_IDS['discharge'], f"action {a}")
-a = pol.plan_bat(0.5, bt, np.full(8, 300.0), np.full(8, 1.0), lambda g: -g * 1000.0)
+a, _ = pol.plan_bat(0.5, bt, np.full(8, 300.0), np.full(8, 1.0), lambda g: -g * 1000.0)
 check("a terminal value that prices stored energy above the current CI keeps it", a != M.BAT_ACTION_IDS['discharge'])
-a = pol.plan_bat(floor, bt, np.array([100.0] * 4 + [104.0] * 4), np.full(8, 1.0), lambda g: np.zeros(len(g)))
+a, _ = pol.plan_bat(floor, bt, np.array([100.0] * 4 + [104.0] * 4), np.full(8, 1.0), lambda g: np.zeros(len(g)))
 check("round-trip losses: no charging for a CI spread below the ~10% loss", a != M.BAT_ACTION_IDS['charge'], f"action {a}")
 nxt, de, _ = battery_transition(np.array([floor]), bt, 'discharge', 1.0)
 check("an empty battery (at the SoC floor) cannot discharge", nxt[0] == floor and de[0] == 0.0)
