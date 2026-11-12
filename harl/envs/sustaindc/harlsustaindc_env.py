@@ -22,6 +22,10 @@ class HARLSustainDCEnv:
         self.max_cycles = 25
         self.cur_step = 0
 
+        # Real action counts before padding (with include_pv the battery agent has 9 actions, the others 3). Supersuit
+        # pads every agent to the largest space; the padded actions are masked out in get_avail_agent_actions.
+        self.n_actions = [self.env.action_spaces[agent].n for agent in self.env.possible_agents]
+
         # Pad action and observation spaces to have the same shape
         self.env = ss.pad_action_space_v0(self.env)
         self.env = ss.pad_observations_v0(self.env)
@@ -206,7 +210,8 @@ class HARLSustainDCEnv:
         Returns:
             list: List of available actions.
         """
-        return [1] * self.action_space[agent_id].n
+        n = self.n_actions[agent_id]
+        return [1] * n + [0] * (self.action_space[agent_id].n - n)
 
     def render(self):
         """

@@ -299,6 +299,9 @@ def main():
                    help='Scale rewards by a running std of the discounted return (VecNormalize).')
     p.add_argument('--pv_capacity_kWp', type=float, default=None,
                    help="On-site PV capacity (pv_config.capacity_kWp; 0 = no PV). Default: the value in the env yaml.")
+    p.add_argument('--include_pv', action=argparse.BooleanOptionalAction, default=None,
+                   help="--include_pv: PV on and a 4th sub-action decides its use (use / battery / resell); needs "
+                        "--pv_capacity_kWp > 0. --no-include_pv: no PV. Default: the env yaml (automatic PV rule).")
     p.add_argument('--include_pv_obs', action=argparse.BooleanOptionalAction, default=None,
                    help='Observe current and forecast PV. Default: the value in the env yaml (off).')
     p.add_argument('--eval_freq', type=int, default=50_000, help='Evaluate every N total env steps.')
@@ -331,6 +334,8 @@ def main():
         env_config['pv_config'] = {**env_config.get('pv_config', {}), 'capacity_kWp': args.pv_capacity_kWp}
     if args.include_pv_obs is not None:
         env_config['include_pv_obs'] = args.include_pv_obs
+    if args.include_pv is not None:
+        env_config['include_pv'] = args.include_pv
 
     run_id = args.run_id or datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S')
     run_dir = os.path.join(args.results_root, 'sustaindc', env_config['location'], f'single_{args.algo}', args.exp_name,

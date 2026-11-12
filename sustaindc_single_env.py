@@ -1,7 +1,8 @@
 """Single-agent view of SustainDC: one agent observes everything and controls all three actions.
 
 The agent sees the de-duplicated joint observation (see utils/joint_obs.py) and outputs one joint action
-for (load shifting, cooling, battery). Must be created from the repo root (data paths are relative).
+for (load shifting, cooling, battery), plus a PV action (use / battery / resell) when include_pv is True.
+Must be created from the repo root (data paths are relative).
 """
 import random
 
@@ -9,20 +10,31 @@ import gymnasium as gym
 import numpy as np
 from gymnasium import spaces
 
+from envs.bat_env_fwd_view import combine_bat_pv_action
 from sustaindc_env import SustainDC
 from utils.joint_obs import build_joint_obs, joint_obs_dim
 
 AGENTS = ('agent_ls', 'agent_dc', 'agent_bat')
 N_SUB_ACTIONS = (3, 3, 3)  # ls: defer/do-nothing/process, dc: setpoint -1/0/+1, bat: charge/discharge/idle
+N_SUB_ACTIONS_PV = N_SUB_ACTIONS + (3,)  # + PV: use/battery/resell (include_pv=True)
 
 
-def decode_joint_action(action, action_type='multidiscrete'):
-    """Map a joint action (MultiDiscrete vector or Discrete(27) index) to SustainDC's {agent: int} action dict."""
+def sub_actions(include_pv=False):
+    return N_SUB_ACTIONS_PV if include_pv else N_SUB_ACTIONS
+
+
+def decode_joint_action(action, action_type='multidiscrete', include_pv=False):
+    """Map a joint action (MultiDiscrete vector, or Discrete(27) / Discrete(81) index) to SustainDC's {agent: int}
+    action dict. With include_pv the 4th sub-action (PV) is folded into the battery agent's Discrete(9) action."""
+    n_sub = sub_actions(include_pv)
     if action_type == 'discrete':
-        sub = np.unravel_index(int(np.asarray(action).reshape(())), N_SUB_ACTIONS)
+        sub = np.unravel_index(int(np.asarray(action).reshape(())), n_sub)
     else:
         sub = np.asarray(action).reshape(-1)
-    return {agent: int(a) for agent, a in zip(AGENTS, sub)}
+    actions = {agent: int(a) for agent, a in zip(AGENTS, sub)}
+    if include_pv:
+        actions['agent_bat'] = combine_bat_pv_action(sub[2], sub[3])
+    return actions
 
 
 class SustainDCSingleAgentEnv(gym.Env):
@@ -39,6 +51,8 @@ class SustainDCSingleAgentEnv(gym.Env):
                      Default False; the training yaml turns it on for both this env and MARL.
         include_pv_obs: passed to SustainDC, which appends 5 PV features to every agent's observation; the joint
                      observation then ends with them (+5 dims). Default False.
+        include_pv:  passed to SustainDC. True adds a 4th sub-action, the PV action (0 use, 1 battery, 2 resell):
+                     MultiDiscrete([3, 3, 3, 3]) or Discrete(81). None/False keep the 3 sub-actions.
     """
 
     metadata = {'render_modes': []}
@@ -50,6 +64,7 @@ class SustainDCSingleAgentEnv(gym.Env):
         self.reward_type = env_config.pop('reward_type', 'agent_ls')
         self.include_dc_setpoint = bool(env_config.get('include_dc_setpoint', False))
         self.include_pv_obs = bool(env_config.get('include_pv_obs', False))
+        self.include_pv = bool(env_config.get('include_pv', False))
         env_config['agents'] = list(AGENTS)
 
         if self.action_type not in ('multidiscrete', 'discrete'):
@@ -61,14 +76,15 @@ class SustainDCSingleAgentEnv(gym.Env):
 
         obs_dim = joint_obs_dim(self.include_dc_setpoint, self.include_pv_obs)
         self.observation_space = spaces.Box(low=-np.inf, high=np.inf, shape=(obs_dim,), dtype=np.float32)
+        n_sub = sub_actions(self.include_pv)
         if self.action_type == 'multidiscrete':
-            self.action_space = spaces.MultiDiscrete(N_SUB_ACTIONS)
+            self.action_space = spaces.MultiDiscrete(n_sub)
         else:
-            self.action_space = spaces.Discrete(int(np.prod(N_SUB_ACTIONS)))
+            self.action_space = spaces.Discrete(int(np.prod(n_sub)))
 
     def decode_action(self, action):
         """Map a joint action to SustainDC's {agent: int} action dict."""
-        return decode_joint_action(action, self.action_type)
+        return decode_joint_action(action, self.action_type, self.include_pv)
 
     def _obs(self):
         return build_joint_obs(self.env.ls_state, self.env.dc_state, self.env.bat_state, self.include_dc_setpoint,
