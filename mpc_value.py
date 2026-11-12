@@ -60,7 +60,7 @@ AGE_BINS = 98          # queue counts by age in steps 0..96; bin 97 holds overdu
 OVERDUE = AGE_BINS - 1
 MAX_UTIL_TASKS = 90    # the env never schedules above 90 % utilization
 QUEUE_BUCKETS = (0, 16, 32, 48, 64, 80, OVERDUE, AGE_BINS)  # value features: 4 h age buckets + overdue
-DROP_PENALTY = 2.0     # cost of a dropped task in multiples of its energy x CI (as in co2_team_reward)
+from sdc_eval.constants import DROPPED_TASK_CO2_FACTOR as DROP_PENALTY  # dropped task cost, x energy x CI (shared)
 KNOWN_CI_STEPS = 8     # the env's CI forecast length (n_vars_ci)
 FORECAST_DECAY = 16.0  # steps over which a forecast blends from the anchor value into yesterday's profile
 BAT_ACTION_IDS = {'charge': 0, 'discharge': 1, 'idle': 2}

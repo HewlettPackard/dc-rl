@@ -55,12 +55,30 @@ def check_config(run_dir, args, algo_args, env_args):
     with open(path, encoding='utf-8') as f:
         saved = json.load(f)
     new = json.loads(json.dumps(convert_json({'main_args': args, 'algo_args': algo_args, 'env_args': env_args})))
-    if saved != new:
-        diff = sorted(k for part in ('main_args', 'algo_args', 'env_args')
-                      for k in set(saved.get(part, {})) | set(new.get(part, {}))
-                      if saved.get(part, {}).get(k) != new.get(part, {}).get(k))
+    diff = sorted(set(_config_diff(saved, new)))
+    if diff:
         raise SystemExit(f'Refusing to resume {run_dir}: the configuration differs from its config.json '
                          f'(keys: {diff}). Use another --run_id to start a new run.')
+
+
+# Options that don't change what is trained: where outputs go and how hyperparameters were passed in.
+_RUN_CONTROL_KEYS = {'main_args.out_root', 'main_args.config', 'main_args.overrides', 'main_args.load_config',
+                     'main_args.checkpoint_interval', 'algo_args.logger.log_dir'}
+
+
+def _config_diff(saved, new, path=''):
+    """Dotted keys whose values differ. Keys absent from the saved config are options added to the code after the run
+    started (e.g. the common evaluation settings): they are ignored, so older runs can still be resumed."""
+    for k, v in saved.items():
+        key = f'{path}.{k}' if path else k
+        if key in _RUN_CONTROL_KEYS:
+            continue
+        if k not in new:
+            yield key
+        elif isinstance(v, dict) and isinstance(new[k], dict):
+            yield from _config_diff(v, new[k], key)
+        elif v != new[k]:
+            yield key
 
 
 # ---------------------------------------------------------------------------------------------------------------------

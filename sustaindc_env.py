@@ -19,6 +19,8 @@ from utils.managers import (CI_Manager, PV_Manager, Time_Manager, Weather_Manage
                             Workload_Manager, epw_utc_offset)
 from utils.utils_cf import get_energy_variables, get_init_day, obtain_paths
 from utils.joint_obs import PV_OBS_DIM as N_PV_OBS
+from sdc_eval.constants import NOOP
+from sdc_eval.metrics import EpisodeAccumulator
 
 import matplotlib
 matplotlib.use('Agg')  # Use a non-interactive backend suitable for servers without display
@@ -72,10 +74,11 @@ class EnvConfig(dict):
         # flexible load ratio of the total workload
         'flexible_load': 0.1,
         
-        # Specify reward methods. These are defined in utils/reward_creator.
-        'ls_reward': 'default_ls_reward',
-        'dc_reward': 'default_dc_reward',
-        'bat_reward': 'default_bat_reward',
+        # Specify reward methods. These are defined in utils/reward_creator. co2_team_reward: the step's grid CO2 plus
+        # 2x the CO2 of dropped work, the same for every agent (default_*_reward: the original SustainDC rewards).
+        'ls_reward': 'co2_team_reward',
+        'dc_reward': 'co2_team_reward',
+        'bat_reward': 'co2_team_reward',
 
         # Evaluation flag that is required by the load-shifting environment
         # To be set only during offline evaluation
@@ -178,13 +181,13 @@ class SustainDC(gym.Env):
 
         ci_loc, wea_loc = obtain_paths(self.location)
         
-        ls_reward_method = 'default_ls_reward' if not 'ls_reward' in env_config.keys() else env_config['ls_reward']
+        ls_reward_method = env_config.get('ls_reward', 'co2_team_reward')
         self.ls_reward_method = reward_creator.get_reward_method(ls_reward_method)
 
-        dc_reward_method =  'default_dc_reward' if not 'dc_reward' in env_config.keys() else env_config['dc_reward']
+        dc_reward_method = env_config.get('dc_reward', 'co2_team_reward')
         self.dc_reward_method = reward_creator.get_reward_method(dc_reward_method)
         
-        bat_reward_method = 'default_bat_reward' if not 'bat_reward' in env_config.keys() else env_config['bat_reward']
+        bat_reward_method = env_config.get('bat_reward', 'co2_team_reward')
         self.bat_reward_method = reward_creator.get_reward_method(bat_reward_method)
         
         n_vars_energy, n_vars_battery = 0, 0  # For partial observability (for p.o.)
@@ -548,6 +551,9 @@ class SustainDC(gym.Env):
         self.ls_terminated = self.dc_terminated = self.bat_terminated = False
         self.ls_truncated = self.dc_truncated = self.bat_truncated = False
         self.ls_reward = self.dc_reward = self.bat_reward = 0
+        # Physical metrics of the episode (sdc_eval.metrics), attached to the info of the last step as
+        # info[agent]['episode_metrics'] so every wrapper/trainer logs the same per-episode metrics.
+        self.episode_acc = EpisodeAccumulator(record_inputs=False)
 
         # Reset the managers
         random_init_day =  random.randint(max(0, self.ranges_day[0]), min(364, self.ranges_day[1])) # self.init_day 
@@ -692,6 +698,7 @@ class SustainDC(gym.Env):
 
         # Calculate rewards for all agents based on the updated state
         reward_params = self._calculate_reward_params(workload, temp, ci_i, ci_i_future, day, hour, terminal)
+        reward_params['dc_task_kwh'] = self.task_kwh(self.ls_info['ls_shifted_workload'], temp)
         self.ls_reward, self.dc_reward, self.bat_reward = self.calculate_reward(reward_params)
 
         # Update rewards, terminations, and truncations for each agent
@@ -721,12 +728,39 @@ class SustainDC(gym.Env):
         }
 
 
+        self.episode_acc.step(info['agent_ls'], {**NOOP, **action_dict}, (  # inactive agents do nothing
+            self.ls_reward, self.dc_reward, self.bat_reward))
+
         # Handle termination if the episode ends
         if terminal:
             self._handle_terminal(terminateds, truncateds)
+            episode_metrics = self.episode_acc.finalize(self)
+            for agent in ('agent_ls', 'agent_dc', 'agent_bat'):
+                info[agent]['episode_metrics'] = episode_metrics
 
         return obs, rew, terminateds, truncateds, info
 
+
+    TASK_KWH_GRID = np.linspace(0.0, 1.0, 21)  # utilization grid of the cached power curves
+
+    def task_kwh(self, utilization, ambient):
+        """Marginal energy (kWh) of one task now: sdc_eval.metrics.task_marginal_kwh (slope of IT + HVAC power over
+        utilization +- 0.05, 18 C setpoint), computed from a cached power curve.
+
+        The DC model is too slow to evaluate every step, so per weather condition (ambient and wet bulb rounded to
+        0.5 C) the power is tabulated on a 0.05 utilization grid and the slope is read off it by linear
+        interpolation. Matches task_marginal_kwh closely (tests/verify_common_eval.py).
+        """
+        from baseline_policies import dc_power
+        key = (round(float(ambient) * 2) / 2, round(float(self.dc_env.wet_bulb) * 2) / 2)
+        cache = self.__dict__.setdefault('_task_kwh_cache', {})
+        curve = cache.get(key)
+        if curve is None:
+            curve = cache[key] = np.array([sum(dc_power(self, u, 18.0, key[0], key[1])) for u in self.TASK_KWH_GRID])
+        u = min(max(float(utilization), 0.0), 1.0)
+        lo, hi = max(u - 0.05, 0.0), min(u + 0.05, 1.0)
+        slope_w = (np.interp(hi, self.TASK_KWH_GRID, curve) - np.interp(lo, self.TASK_KWH_GRID, curve)) / (hi - lo)
+        return float(slope_w / 1e3 * 0.25 * 0.01)  # W per unit utilization -> kWh per task (1 % for 15 minutes)
 
     def _validate_actions(self, action_dict):
         """Check that every active agent has a valid discrete action and return them as plain ints.

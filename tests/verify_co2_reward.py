@@ -40,9 +40,9 @@ check("terminal step does not charge the unfinished queue (time limit: the learn
       i['isterminal'] and i['ls_tasks_in_queue'] > 0 and abs(r - (-(i['bat_CO2_footprint'] + 2.0 * i['ls_tasks_dropped']
       * rc.task_energy_kwh(i) * i['bat_avg_CI']) / 1e5)) < 1e-12,
       f"{i['ls_tasks_in_queue']} tasks queued at the end")
-check("per-task energy estimate is conservative (>= the evaluation's marginal energy)",
-      rc.task_energy_kwh(i) >= marginal_kwh_per_util_step(e, 0.5, 30.0) / 100,
-      f"{rc.task_energy_kwh(i):.2f} kWh vs marginal {marginal_kwh_per_util_step(e, 0.5, 30.0) / 100:.2f} kWh per task")
+exact = marginal_kwh_per_util_step(e, i['ls_shifted_workload'], i['outside_temp']) / 100
+check("per-task energy = the evaluation's marginal energy at this step's conditions (shared definition)",
+      abs(rc.task_energy_kwh(i) / exact - 1) < 0.05, f"{rc.task_energy_kwh(i):.3f} vs {exact:.3f} kWh per task")
 
 print("2. Episode return + value of the work left queued ranks policies like work-adjusted CO2")
 def ret_and_metric(policy, seed):
@@ -71,9 +71,10 @@ for seed in (1000, 1001):
     check(f"seed {seed}: same ranking (pairs > 0.2% apart)", not bad,
           " > ".join(f"{k} ({vals[k][0]:.1f}, {vals[k][1] / 1e3:.3f} t)" for k in by_return) + (f"; mismatched {bad}" if bad else ""))
 
-print("3. Default rewards unchanged")
+print("3. Default reward")
 d = SustainDC({k: v for k, v in BASE.items() if not k.endswith('_reward')})
-check("default config still uses the default rewards", d.ls_reward_method is rc.default_ls_reward and d.dc_reward_method is rc.default_dc_reward)
+check("the default config uses co2_team_reward for all three agents",
+      d.ls_reward_method is d.dc_reward_method is d.bat_reward_method is rc.co2_team_reward)
 
 print(f"\n{sum(results)}/{len(results)} checks passed")
 sys.exit(0 if all(results) else 1)

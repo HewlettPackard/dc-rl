@@ -168,7 +168,7 @@ while True:
 check("episode completes", n == args['days_per_episode'] * 96, f"{n} steps; flexible_load {sdc.ls_env.flexible_workload_ratio if sdc else '?'}, battery {sdc.bat_env.max_bat_cap if sdc else '?'} MWh")
 
 print("10. Dropped tasks are penalized in the default load-shifting reward")
-e = make(flexible_load=0.6, days_per_episode=7); e.seed(1); e.reset()
+e = make(flexible_load=0.6, days_per_episode=7, ls_reward='default_ls_reward', dc_reward='default_dc_reward', bat_reward='default_bat_reward'); e.seed(1); e.reset()  # the original rewards
 drop_rewards, clean_rewards, drop_exact = [], [], []
 while True:
     before = list(rc.energy_history)  # only default_ls_reward updates the history (once per step)

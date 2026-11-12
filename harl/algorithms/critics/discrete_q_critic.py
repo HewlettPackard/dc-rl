@@ -3,7 +3,7 @@ from copy import deepcopy
 import torch
 from harl.models.value_function_models.dueling_q_net import DuelingQNet
 from harl.utils.envs_tools import check
-from harl.utils.models_tools import update_linear_schedule
+from harl.utils.models_tools import get_grad_norm, update_linear_schedule
 
 
 class DiscreteQCritic:
@@ -129,14 +129,22 @@ class DiscreteQCritic:
             q_targets = reward + gamma * next_q_values * (1 - term)
         else:
             q_targets = reward + gamma * next_q_values * (1 - done)
-        critic_loss = torch.mean(
-            torch.nn.functional.mse_loss(
-                torch.gather(self.critic(share_obs), 1, action), q_targets
-            )
-        )
+        q_taken = torch.gather(self.critic(share_obs), 1, action)
+        critic_loss = torch.mean(torch.nn.functional.mse_loss(q_taken, q_targets))
         self.critic_optimizer.zero_grad()
         critic_loss.backward()
+        grad_norm = get_grad_norm(self.critic.parameters())
         self.critic_optimizer.step()
+        # Diagnostics of this update, read by the runner (sdc_eval common logging).
+        with torch.no_grad():
+            self.last_info = {
+                "train/q_loss": critic_loss.item(),
+                "health/q_mean": q_taken.mean().item(),
+                "health/q_max": q_taken.max().item(),
+                "health/target_q_mean": q_targets.mean().item(),
+                "health/td_error_abs": (q_taken - q_targets).abs().mean().item(),
+                "health/critic_grad_norm": float(grad_norm),
+            }
 
     def process_action_spaces(self, action_spaces):
         """Process action spaces."""

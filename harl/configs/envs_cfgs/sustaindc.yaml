@@ -15,9 +15,12 @@ battery_config:
   taper_start: 0.90    # charging power tapers linearly to 0 between taper_start and soc_max
 individual_reward_weight: 0.8
 flexible_load: 0.6
-ls_reward: default_ls_reward
-dc_reward: default_dc_reward
-bat_reward: default_bat_reward
+# Reward: the grid CO2 of each step plus 2x the CO2 of dropped work, the same for all three agents
+# (utils/reward_creator.co2_team_reward). The original SustainDC rewards (z-scored energy x normalized CI against a
+# running history) remain available as default_ls_reward / default_dc_reward / default_bat_reward.
+ls_reward: co2_team_reward
+dc_reward: co2_team_reward
+bat_reward: co2_team_reward
 dc_config_file: 'dc_config.json'
 month: 6
 days_per_episode: 30

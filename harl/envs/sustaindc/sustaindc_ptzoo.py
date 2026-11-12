@@ -1,3 +1,5 @@
+import random
+
 import numpy as np
 from gymnasium import spaces
 from pettingzoo import ParallelEnv
@@ -59,7 +61,10 @@ class SustainDCPettingZooEnv(ParallelEnv):
             dict: Initial observations for all agents.
         """
         if seed is not None:
-            np.random.seed(seed)  # Example of setting seed, adjust based on your environment's requirements
+            # SustainDC draws the episode start (day, hour) with `random` and the noise with `np.random`: seed both,
+            # so a run's training episodes are determined by its seed (reproducible), as in SustainDCSingleAgentEnv.
+            random.seed(seed)
+            np.random.seed(seed)
         
         # initial_observation should be a dictionary with agent names as keys and their observations as values
         initial_observations_with_info = self.env.reset()

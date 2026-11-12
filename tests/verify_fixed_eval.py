@@ -13,7 +13,9 @@ from sustaindc_single_env import SustainDCSingleAgentEnv
 from train_single_agent import load_obs_normalizer, vecnormalize_path
 
 with open('harl/configs/envs_cfgs/sustaindc.yaml') as f:
-    CFG = {**yaml.safe_load(f), 'days_per_episode': 1}
+    # the original SustainDC rewards, whose running energy history is what these checks are about
+    CFG = {**yaml.safe_load(f), 'days_per_episode': 1,
+           'ls_reward': 'default_ls_reward', 'dc_reward': 'default_dc_reward', 'bat_reward': 'default_bat_reward'}
 results = []
 
 
