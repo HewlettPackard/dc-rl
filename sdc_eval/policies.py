@@ -18,7 +18,7 @@ from typing import Protocol
 import numpy as np
 import torch
 
-from sdc_eval.constants import NOOP
+from sdc_eval.constants import N_ACTIONS, NOOP
 from sustaindc_single_env import AGENTS, decode_joint_action
 from utils.joint_obs import PV_OBS_DIM, build_joint_obs
 
@@ -68,6 +68,7 @@ class SB3Policy:
         self.include_dc_setpoint = bool(self.train_config.get('include_dc_setpoint', False))
         self.include_pv_obs = bool(self.train_config.get('include_pv_obs', False))
         self.action_type = self.train_config.get('action_type', 'multidiscrete')
+        self.include_pv = bool(self.train_config.get('include_pv') or False)
         model_path = os.path.join(run_dir, 'models', model_name)
         if model_name == 'best_model' and not os.path.exists(model_path + '.zip'):
             # No evaluation passed the best-model guard (e.g. every one dropped more tasks than noop).
@@ -85,6 +86,7 @@ class SB3Policy:
         self.include_dc_setpoint = bool(env_config.get('include_dc_setpoint', False))
         self.include_pv_obs = bool(env_config.get('include_pv_obs', False))
         self.action_type = env_config.get('action_type', 'multidiscrete')
+        self.include_pv = bool(env_config.get('include_pv') or False)
         self.model = model
         self.normalize = normalize or (lambda obs: obs)
         return self
@@ -95,7 +97,7 @@ class SB3Policy:
     def act(self, sdc):
         obs = build_joint_obs(sdc.ls_state, sdc.dc_state, sdc.bat_state, self.include_dc_setpoint, self.include_pv_obs)
         action, _ = self.model.predict(self.normalize(obs), deterministic=True)
-        return decode_joint_action(action, self.action_type)
+        return decode_joint_action(action, self.action_type, self.include_pv)
 
 
 class HARLPolicy:
@@ -127,7 +129,8 @@ class HARLPolicy:
         obs_dims = {'agent_ls': 26 + n_pv, 'agent_dc': 14 + int(self.include_dc_setpoint) + n_pv, 'agent_bat': 13 + n_pv}
         self.pad_dim = max(obs_dims[a] for a in self.agents)
         obs_space = spaces.Box(low=-np.inf, high=np.inf, shape=(self.pad_dim,), dtype=np.float32)
-        act_space = spaces.Discrete(3)
+        self._set_action_sizes()
+        act_space = spaces.Discrete(self.pad_actions)
 
         models_dir = 'models'
         if not os.path.exists(os.path.join(run_dir, 'models', 'actor_agent0.pt')) and \
@@ -165,8 +168,15 @@ class HARLPolicy:
         hidden = model_args.get('hidden_sizes') or model_args.get('base_hidden_sizes') or [1]
         self.rnn_shape = (1, model_args.get('recurrent_n', 1), hidden[-1])
         self.pad_dim = pad_dim
+        self._set_action_sizes()
         self.actors = list(actors)
         return self
+
+    def _set_action_sizes(self):
+        # With include_pv the battery agent has 9 actions (battery x PV); supersuit pads every agent to the largest.
+        include_pv = bool(self.train_config.get('include_pv') or False)
+        self.n_actions = {a: 9 if (a == 'agent_bat' and include_pv) else N_ACTIONS for a in self.agents}
+        self.pad_actions = max(self.n_actions.values())
 
     def reset(self, seed):
         self.rnn_states = [np.zeros(self.rnn_shape, dtype=np.float32) for _ in self.agents]
@@ -185,14 +195,17 @@ class HARLPolicy:
         masks = np.ones((1, 1), dtype=np.float32)
         for i, (agent, actor) in enumerate(zip(self.agents, self.actors)):
             obs = self._obs(sdc, agent)
+            n = self.n_actions[agent]
+            avail = np.array([[1] * n + [0] * (self.pad_actions - n)], dtype=np.float32)
             if self.algo in self.ON_POLICY:
-                a, rnn = actor.act(obs, self.rnn_states[i], masks, None, deterministic=True)
+                a, rnn = actor.act(obs, self.rnn_states[i], masks, avail, deterministic=True)
                 self.rnn_states[i] = rnn.cpu().numpy() if torch.is_tensor(rnn) else rnn
             elif self.algo == 'hasac':
                 a = actor.get_actions(obs, None, stochastic=False)
             else:  # had3qn
                 a = actor.get_actions(obs, epsilon_greedy=False)
-            actions[agent] = int(np.asarray(a.cpu() if torch.is_tensor(a) else a).reshape(-1)[0])
+            a = int(np.asarray(a.cpu() if torch.is_tensor(a) else a).reshape(-1)[0])
+            actions[agent] = a if a < n else 0  # padded actions map to 0, as supersuit does in training
         return actions
 
 

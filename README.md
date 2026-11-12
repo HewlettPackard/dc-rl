@@ -289,11 +289,32 @@ Every 15-minute step:
 - `bat_total_energy_with_battery_KWh`, which the rewards use, is this grid import. The PV breakdown is in the info dict: `pv_power_kW`, `pv_energy_KWh`, `pv_self_consumed_KWh`, `pv_to_battery_KWh`, `pv_curtailed_KWh`, `pv_exported_KWh` and `grid_energy_KWh`.
 - With `pv_export_credit: True`, the surplus left after the battery is exported instead of curtailed and credited at the current carbon intensity, so net CO2 can go negative.
 
+**Including PV, and letting the agent dispatch it (`include_pv`).** The `include_pv` switch decides whether PV is part of the run and who decides where it goes:
+
+| `include_pv` | PV in the run | Who dispatches it | Battery agent action space |
+|---|---|---|---|
+| `null` (default) | iff `capacity_kWp > 0` | the automatic rule above | Discrete(3) |
+| `False` | no, whatever `pv_config` says | – | Discrete(3) |
+| `True` | yes (`capacity_kWp` must be > 0) | the battery agent, every step | Discrete(9) |
+
+With `include_pv: True`, the battery agent picks a PV action every step:
+
+| PV action | Effect |
+|---|---|
+| *use* (0) | PV supplies the DC load. A battery *charge* takes any surplus before the grid; the rest is curtailed. |
+| *battery* (1) | PV charges the battery first, up to its charge limit. A *charge* action tops it up from the grid; *discharge* is overridden, because the battery cannot charge and discharge in the same step. PV the battery cannot take supplies the DC load. |
+| *resell* (2) | All PV is sold to the grid. It is renewable energy, so it is credited against CO2 at `pv_resell_credit` × the current carbon intensity (default 1.0). The DC load and the battery then run as if there were no PV. |
+
+The battery agent's action is `battery_action + 3 × pv_action`, so actions 0–2 are the usual battery actions with PV *use*. Existing rule-based and MPC controllers therefore keep working, but they never choose *battery* or *resell*. `BatOracle` refuses to run with `include_pv: True`, because it models the automatic rule. The single-agent env gets a 4th sub-action: `MultiDiscrete([3, 3, 3, 3])`, or `Discrete(81)`. In HARL, supersuit pads every agent to 9 actions. The padded actions of the load-shifting and cooling agents are masked through the available-actions mask. `pv_export_credit` is ignored in this mode.
+
+The info dict adds `pv_action` (0/1/2, or -1 when PV is not dispatched), `pv_a_t` (the action's name) and `pv_export_credit_gCO2`. Resold PV is reported in `pv_exported_KWh`. The credit is included in `bat_CO2_footprint`, and so in `co2_team_reward`. The default rewards use grid energy only (`bat_total_energy_with_battery_KWh`), so they see *resell* as plain grid import and give it no credit. Use `co2_team_reward` when resale should pay off.
+
 **Observation.** `include_pv_obs: True` appends 5 values to every agent's observation, and to the end of the joint and shared observation. The values are current PV and the mean PV of each of the next 4 hours, as fractions of the AC rating. The flag is off by default, so existing checkpoints keep their observation sizes.
 
 **Overriding from the command line.**
 - HARL: pass keys directly, e.g. `--capacity_kWp 500 --include_pv_obs True`.
-- `train_single_agent.py` and `eval_compare.py`: use `--pv_capacity_kWp 500`. `train_single_agent.py` also takes `--include_pv_obs`.
+- `train_single_agent.py` and `eval_compare.py`: use `--pv_capacity_kWp 500`. Both take `--include_pv` / `--no-include_pv`. `train_single_agent.py` also takes `--include_pv_obs`.
+- Example: `python train_single_agent.py --pv_capacity_kWp 1000 --include_pv --include_pv_obs` (HARL: `--capacity_kWp 1000 --include_pv True --include_pv_obs True`).
 
 
 ## Customization
@@ -545,13 +566,56 @@ Benchmarking the performance of different reinforcement learning algorithms usin
    ```bash
    python eval_sustaindc.py
    ```
-   
+
+### MARL runs on Slurm (IFT 6162 setup)
+
+`scripts/marl/launch.sh` submits one Slurm job per algorithm × location × seed with the settings used for the
+project's MARL baselines (16 CPUs, 32 GB, HAPPO/MAPPO: lr 3e-4, entropy 0.01, [64, 64] networks; HAD3QN: its own
+config, 2-day limit). Jobs requeue after preemption and resume from their last checkpoint. Activate your Python
+environment first; the script records its `python` in each job.
+
+```bash
+# reward: co2 (co2_team_reward, the default) or default (original SustainDC rewards), always passed explicitly
+REWARD=co2 scripts/marl/launch.sh marl_co2 20000000 1-00:00:00 "happo mappo" "az ny" "1 2 3"
+# evaluate on the shared protocol once training is done (one job per algorithm and location)
+sbatch -c 8 --mem 16G -t 12:00:00 scripts/marl/eval.sh marl_co2 az happo
+```
+
+Runs go to `$SDC_RUNS/<exp>` (default `results/marl_runs/<exp>`): job scripts, Slurm logs, HARL run directories and a
+`manifest.tsv` of job ids. Live logging goes to wandb (`pip install wandb`; `WANDB_ENTITY`, `WANDB_PROJECT`), or set
+`WANDB=0`. Jobs read the code when they start, so to keep editing while jobs wait, pin a copy:
+`git worktree add ../code-$(git rev-parse --short HEAD) HEAD` and launch with `CODE=../code-<sha>`. Other options
+(`SBATCH_ARGS`, `EXTRA`, `DRY_RUN=1`) are described at the top of the script.
+
 ## Evaluation Metrics
 - Carbon Footprint (CFP): Cumulative carbon emissions over the evaluation period.
 - HVAC Energy: Energy consumed by the DC cooling system.
 - IT Energy: Energy consumed by the DC servers.
 - Water Usage: Efficient utilization of water for cooling.
 - Task Dropped: Number of dropped tasks due to workload scheduling.
+
+### Shared evaluation protocol (comparing methods)
+
+Every method (MPC, MARL, single-agent, rules) is scored with `eval_compare.py` on the same fixed episodes, so the
+results go into one table. `scripts/eval_protocol.sh` fixes the settings: 10 episodes (seeds 1000–1009), 30 days in
+July, PV off, location `az` or `ny`, each paired with `noop` on the same episodes. The headline metric is
+**work-adjusted CO2** (% change vs `noop`): emitted CO2 plus a charge for work dropped or still queued at the end.
+Training rewards are not used, so methods trained with different rewards are directly comparable.
+
+```bash
+# single-agent run from train_single_agent.py (loads best_model; add :<model> to pick another)
+scripts/eval_protocol.sh az results/eval_protocol/az/single_ppo \
+    "sb3:results/sustaindc/az/single_ppo/<exp>/seed-00001-<id>=single_ppo_s1"
+# several seeds: one spec each, labelled <label>_s<seed>, so they are also pooled per method
+# Slurm: sbatch -c 4 --mem 16G -t 12:00:00 scripts/eval_protocol.sh az <out_dir> "<spec>" ...
+
+# merge result folders for the same location into one paired table
+python eval_compare.py --combine <out_dir_1> <out_dir_2> ... --out_dir <combined_dir>
+```
+
+Each output folder has `summary.json` (means, paired changes and 95% CIs) and `episodes.csv` (per-episode metrics).
+The combined table checks that the workload, weather and carbon-intensity inputs were identical for every policy.
+Train with `--eval_seed` away from 1000+ (the default, 10000, is) so model selection never sees these episodes.
 
 
 ## Dashboard

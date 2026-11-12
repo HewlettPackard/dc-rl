@@ -13,7 +13,7 @@ DROPPED_TASK_CO2_FACTOR = 2.0
 # Config keys that define the simulated scenario. Policies may differ in observation settings, not in these.
 SCENARIO_KEYS = ['location', 'month', 'days_per_episode', 'workload_file', 'cintensity_file', 'weather_file',
                  'flexible_load', 'max_bat_cap_Mw', 'dc_config_file', 'datacenter_capacity_mw', 'timezone_shift',
-                 'pv_config', 'pv_export_credit', 'battery_config']
+                 'pv_config', 'pv_export_credit', 'include_pv', 'pv_resell_credit', 'battery_config']
 
 # Disjoint episode seeds. Episode i of a set uses base + i.
 TRAIN_EVAL_SEED = 10000  # in-training evaluation and best-model selection

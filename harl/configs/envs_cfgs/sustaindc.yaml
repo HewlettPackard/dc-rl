@@ -47,3 +47,9 @@ include_pv_obs: False
 # PV goes to the DC load first, then automatically to the battery; the rest is curtailed (False) or exported and
 # credited at the grid CI (True).
 pv_export_credit: False
+# PV switch. null: as above (PV on iff capacity_kWp > 0, automatic rule). False: no PV. True: PV on (needs
+# capacity_kWp > 0) and the battery agent picks a PV action every step: use (supply the DC), battery (charge the
+# battery) or resell (sell to the grid, credited against CO2 at the current CI). Its action space becomes Discrete(9).
+include_pv: null
+# include_pv True only: CO2 credit of resold PV, as a fraction of the current CI.
+pv_resell_credit: 1.0

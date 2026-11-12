@@ -195,6 +195,9 @@ def main():
                    help='Scale rewards by a running std of the discounted return (VecNormalize).')
     p.add_argument('--pv_capacity_kWp', type=float, default=None,
                    help="On-site PV capacity (pv_config.capacity_kWp; 0 = no PV). Default: the value in the env yaml.")
+    p.add_argument('--include_pv', action=argparse.BooleanOptionalAction, default=None,
+                   help="--include_pv: PV on and a 4th sub-action decides its use (use / battery / resell); needs "
+                        "--pv_capacity_kWp > 0. --no-include_pv: no PV. Default: the env yaml (automatic PV rule).")
     p.add_argument('--include_pv_obs', action=argparse.BooleanOptionalAction, default=None,
                    help='Observe current and forecast PV. Default: the value in the env yaml (off).')
     p.add_argument('--eval_freq', type=int, default=EVAL_EVERY_STEPS, help='Evaluate every N total env steps.')
@@ -233,6 +236,8 @@ def main():
             hp['env'][key] = getattr(args, key)
     if args.pv_capacity_kWp is not None:
         hp['env']['pv_config'] = {**hp['env'].get('pv_config', {}), 'capacity_kWp': args.pv_capacity_kWp}
+    if args.include_pv is not None:
+        hp['env']['include_pv'] = args.include_pv
     overridable = {'ppo': ('learning_rate', 'ent_coef', 'clip_range', 'n_epochs', 'vf_coef'),
                    'a2c': ('learning_rate', 'ent_coef', 'vf_coef'), 'dqn': ('learning_rate',)}[args.algo]
     for key in ('learning_rate', 'ent_coef', 'clip_range', 'n_epochs', 'vf_coef'):
